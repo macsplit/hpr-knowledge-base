@@ -800,7 +800,9 @@ app.get('/sse', async (req, res) => {
 
 // POST endpoint for MCP messages
 app.post('/message', async (req, res) => {
-  const connectionId = req.headers['x-connection-id'];
+  const headerConnectionId = req.headers['x-connection-id'];
+  const queryConnectionId = req.query.sessionId;
+  const connectionId = headerConnectionId || queryConnectionId;
   const transport = activeSseTransports.get(connectionId);
 
   if (transport) {
