@@ -52,11 +52,43 @@ curl http://localhost:3000/health
 
 5. Click "Create Web Service"
 
-6. Your server will be available at: `https://hpr-knowledge-base.onrender.com`
+6. **Wait for deployment to complete** (see timing notes below)
+
+7. Your server will be available at: `https://hpr-knowledge-base.onrender.com`
+
+**⏱️ Deployment Timing (IMPORTANT)**:
+
+First deployment takes **2-5 minutes** total:
+1. **Build phase** (~30s): `npm install` runs
+2. **Deploy phase** (~30-60s): Container starts
+3. **Data loading phase** (~30-90s): Server loads 4,511 episodes + 4,481 transcripts
+4. **Server ready**: Health endpoint responds
+
+**What to expect in logs**:
+```
+Loading HPR knowledge base data...
+Data loaded successfully!
+HPR Knowledge Base MCP Server running on http://localhost:3000
+SSE endpoint: http://localhost:3000/sse
+Health check: http://localhost:3000/health
+```
+
+**Important notes**:
+- **Wait for "Server running" message** in logs before testing
+- Free tier uses slower hardware (2-5 min startup)
+- Paid tier ($7/mo) starts faster (1-3 min)
+- Free tier spins down after 15 min inactivity (30-60s wake time on first request)
+- Data stays in memory once loaded (subsequent requests are fast)
+
+**How to verify it's ready**:
+- Dashboard shows green "Live" indicator
+- Logs show "Server running" message
+- Health endpoint responds: `curl https://hpr-knowledge-base.onrender.com/health`
 
 **Health Check Configuration**:
 - Path: `/health`
 - Success Codes: 200
+- **Grace Period**: Set to 180 seconds (3 minutes) to allow data loading
 
 **Auto-scaling**: Available on paid plans
 
@@ -327,6 +359,40 @@ pm2 logs hpr-mcp
 - Rate limit hits
 
 ## Troubleshooting
+
+### Deployment Taking Too Long
+
+**Symptom**: Server shows "Deploying..." for several minutes, or health endpoint doesn't respond
+
+**Causes and Solutions**:
+
+1. **Data loading in progress** (Most common):
+   - Server loads 4,511 episodes + 4,481 transcripts on startup
+   - This takes 30-90 seconds on free tier, 15-30 seconds on paid tier
+   - **Solution**: Wait 2-5 minutes total, check logs for "Server running" message
+
+2. **Render health check failing too early**:
+   - Default health check timeout may be too short
+   - **Solution**: In Render dashboard, set health check grace period to 180 seconds
+
+3. **Build completed but server not starting**:
+   - Check start command is exactly: `npm run start:http`
+   - Check logs for errors during data loading
+   - Verify all data files are in repository
+
+4. **Free tier spin-down**:
+   - After 15 min inactivity, service sleeps
+   - First request takes 30-60 seconds to wake
+   - **Solution**: Upgrade to $7/mo always-on, or accept wake-up delay
+
+**How to check progress**:
+```bash
+# Watch the logs in Render dashboard
+# Look for these messages in order:
+# 1. "Loading HPR knowledge base data..."
+# 2. "Data loaded successfully!"
+# 3. "HPR Knowledge Base MCP Server running on..."
+```
 
 ### High Memory Usage
 
