@@ -42,13 +42,26 @@ chmod +x index.js
 
 ## Usage
 
-### Running Locally
+### Running Locally (Stdio Mode)
 
-You can test the server directly:
+You can test the stdio server directly (for local MCP clients like Claude Desktop):
 
 ```bash
 npm start
 ```
+
+### Running as HTTP Server (Network Access)
+
+For network access and public deployment, use the HTTP/SSE server:
+
+```bash
+npm run start:http
+```
+
+This starts an HTTP server on port 3000 (configurable via `PORT` environment variable) with:
+- **SSE endpoint**: `http://localhost:3000/sse`
+- **Health check**: `http://localhost:3000/health`
+- Built-in rate limiting, compression, and graceful degradation
 
 ### Using with Claude Desktop
 
@@ -183,11 +196,71 @@ knowledge_base/
     └── ...
 ```
 
+## Deployment
+
+The HTTP/SSE server (`server-http.js`) is designed for public deployment with graceful degradation features:
+
+### Features
+
+- **Rate Limiting**: 50 requests per minute per IP address
+- **Request Timeouts**: 30-second timeout per request
+- **Concurrent Request Limiting**: Maximum 10 concurrent requests
+- **Circuit Breaker**: Automatically stops accepting requests if failure rate is too high
+- **Memory Monitoring**: Rejects requests if memory usage exceeds 450MB
+- **Compression**: Gzip compression for all responses
+- **CORS**: Enabled for cross-origin requests
+
+### Recommended Hosting Options
+
+#### Render.com (Recommended)
+```bash
+# Free tier available, $7/mo for always-on
+# Auto-scaling and health checks built-in
+```
+
+#### Railway.app
+```bash
+# $5 free credit/month, pay-per-usage
+# Scales to zero when idle
+```
+
+#### Fly.io
+```bash
+# Free tier: 256MB RAM
+# Global edge deployment
+```
+
+### Environment Variables
+
+- `PORT`: Server port (default: 3000)
+
+### Health Check
+
+The server provides a health check endpoint at `/health` for monitoring:
+
+```bash
+curl http://localhost:3000/health
+```
+
+Returns:
+```json
+{
+  "status": "ok",
+  "memory": {
+    "used": "45.23MB",
+    "threshold": "450MB"
+  },
+  "activeRequests": 2,
+  "circuitBreaker": "CLOSED"
+}
+```
+
 ## Development
 
 ### Project Structure
 
-- `index.js` - Main MCP server implementation
+- `index.js` - Stdio MCP server (for local use)
+- `server-http.js` - HTTP/SSE MCP server (for network deployment)
 - `data-loader.js` - Data loading and searching functionality
 - `package.json` - Node.js package configuration
 
