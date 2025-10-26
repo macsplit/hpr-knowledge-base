@@ -138,16 +138,29 @@ Get details for episode 16 including transcript and comments
 
 ### 3. `search_transcripts`
 
-Search through episode transcripts for specific keywords.
+Search through episode transcripts for phrases or multiple terms with flexible matching.
 
 **Parameters:**
-- `query` (string, required): Search query
-- `limit` (number, optional): Maximum episodes to return (default: 20)
-- `contextLines` (number, optional): Lines of context around matches (default: 3)
+- `query` (string, optional): Phrase to search for. Useful for exact-phrase lookups.
+- `terms` (string[], optional): Explicit list of terms to search for; combine with `matchMode` for logical AND/OR searches.
+- `matchMode` (`'phrase' | 'any' | 'all'`, optional): How to combine `query`/`terms`. Defaults to `'phrase'`. Use `'any'` to match if any term is present, `'all'` to require every term somewhere in the transcript.
+- `limit` (number, optional): Maximum episodes to return (default: 20).
+- `contextLines` (number, optional): Lines of context to include around each match (default: 3).
+- `hostId` (number, optional): Only return matches for this host ID.
+- `hostName` (string, optional): Only return matches for hosts whose name includes this value.
+- `caseSensitive` (boolean, optional): Treat terms as case-sensitive (default: false).
+- `wholeWord` (boolean, optional): Match whole words only (default: false).
+- `maxMatchesPerEpisode` (number, optional): Maximum number of excerpts per episode (default: 5).
 
-**Example:**
+**Example queries:**
 ```
-Search transcripts for mentions of "virtual machine"
+Find transcripts mentioning "virtual machine"
+```
+```
+Find transcripts where klaatu talks about bash or python
+```
+```
+List episodes where host ID 123 mentions "encryption" and "privacy" (require all terms)
 ```
 
 ### 4. `get_host_info`

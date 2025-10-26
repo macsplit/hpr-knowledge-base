@@ -5,6 +5,10 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 class HPRDataLoader {
   constructor() {
     this.episodes = [];
@@ -178,41 +182,147 @@ class HPRDataLoader {
    * Search transcripts by keyword
    */
   searchTranscripts(query, options = {}) {
-    const { limit = 20, contextLines = 3 } = options;
-    const queryLower = query.toLowerCase();
+    const {
+      limit = 20,
+      contextLines = 3,
+      terms = [],
+      matchMode = 'auto',
+      hostId = null,
+      hostName = null,
+      caseSensitive = false,
+      wholeWord = false,
+      maxMatchesPerEpisode = 5,
+    } = options;
+
+    const resolvedHostIds = new Set();
+    if (hostId) {
+      resolvedHostIds.add(Number(hostId));
+    }
+    if (hostName) {
+      const hostMatches = this.searchHosts(hostName);
+      hostMatches.forEach(host => resolvedHostIds.add(host.hostid));
+    }
+    const filterByHost = resolvedHostIds.size > 0;
+
+    const explicitTerms = Array.isArray(terms)
+      ? terms.map(t => (t ?? '').toString().trim()).filter(Boolean)
+      : [];
+
+    const splitQueryTerms = (matchMode === 'any' || matchMode === 'all')
+      ? (query || '')
+          .split(/[|,;\n]/)
+          .map(part => part.trim())
+          .filter(Boolean)
+      : [];
+
+    const hasQuery = typeof query === 'string' && query.trim().length > 0;
+
+    let searchTerms = explicitTerms.length > 0 ? explicitTerms : splitQueryTerms;
+    if (searchTerms.length === 0 && hasQuery) {
+      searchTerms = [query.trim()];
+    }
+
+    let resolvedMatchMode = matchMode;
+    if (!['any', 'all', 'phrase'].includes(resolvedMatchMode)) {
+      resolvedMatchMode = searchTerms.length > 1 ? 'any' : 'phrase';
+    }
+
+    const effectiveTerms = resolvedMatchMode === 'phrase'
+      ? [(hasQuery ? query.trim() : searchTerms[0] || '')].filter(Boolean)
+      : searchTerms;
+
+    if (effectiveTerms.length === 0) {
+      return [];
+    }
+
+    const regexFlags = caseSensitive ? 'g' : 'gi';
+    const matchers = effectiveTerms.map(term => {
+      if (!term) return null;
+      const escaped = escapeRegExp(term);
+      const pattern = wholeWord ? `\\b${escaped}\\b` : escaped;
+      try {
+        return {
+          term,
+          regex: new RegExp(pattern, regexFlags),
+        };
+      } catch (error) {
+        console.error(`Invalid search pattern for term "${term}":`, error.message);
+        return null;
+      }
+    }).filter(Boolean);
+
+    if (matchers.length === 0) {
+      return [];
+    }
+
     const results = [];
 
     for (const [episodeId, transcript] of this.transcripts) {
-      const lines = transcript.split('\n');
-      const matches = [];
+      if (results.length >= limit) break;
 
-      // Find all matching lines
-      lines.forEach((line, index) => {
-        if (line.toLowerCase().includes(queryLower)) {
-          // Get context around the match
+      const episode = this.getEpisode(episodeId);
+      if (!episode) continue;
+
+      if (filterByHost && !resolvedHostIds.has(episode.hostid)) {
+        continue;
+      }
+
+      const lines = transcript.split(/\r?\n/);
+      const matches = [];
+      const matchedTerms = new Set();
+      const termHitCounts = new Map();
+      let truncated = false;
+
+      for (let index = 0; index < lines.length; index++) {
+        const line = lines[index];
+        const matchedOnLine = [];
+
+        for (const matcher of matchers) {
+          matcher.regex.lastIndex = 0;
+          if (matcher.regex.test(line)) {
+            matchedOnLine.push(matcher.term);
+            matchedTerms.add(matcher.term);
+            termHitCounts.set(matcher.term, (termHitCounts.get(matcher.term) || 0) + 1);
+          }
+        }
+
+        if (matchedOnLine.length > 0) {
           const start = Math.max(0, index - contextLines);
           const end = Math.min(lines.length, index + contextLines + 1);
           const context = lines.slice(start, end).join('\n');
 
           matches.push({
             lineNumber: index + 1,
-            line: line.trim(),
-            context: context
+            terms: [...new Set(matchedOnLine)],
+            context,
           });
         }
-      });
 
-      if (matches.length > 0) {
-        const episode = this.getEpisode(episodeId);
-        if (episode) {
-          results.push({
-            episode,
-            matches: matches.slice(0, 5) // Limit matches per episode
-          });
+        if (matches.length >= maxMatchesPerEpisode) {
+          truncated = true;
+          break;
         }
       }
 
-      if (results.length >= limit) break;
+      if (matches.length === 0) {
+        continue;
+      }
+
+      if (resolvedMatchMode === 'all' && matchedTerms.size < matchers.length) {
+        continue;
+      }
+
+      results.push({
+        episode,
+        matches,
+        matchSummary: {
+          matchMode: resolvedMatchMode,
+          matchedTerms: [...matchedTerms],
+          totalMatches: matches.length,
+          termHitCounts: Object.fromEntries(termHitCounts),
+          truncated,
+        },
+      });
     }
 
     return results;

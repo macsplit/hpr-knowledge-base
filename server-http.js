@@ -168,6 +168,97 @@ ${stripHtml(episode.notes)}`;
   return result;
 }
 
+function formatTranscriptSearchResults(results, args) {
+  if (results.length === 0) {
+    return '';
+  }
+
+  const descriptorParts = [];
+  if (args.query) {
+    descriptorParts.push(`phrase="${args.query}"`);
+  }
+  if (Array.isArray(args.terms) && args.terms.length > 0) {
+    descriptorParts.push(`terms=[${args.terms.join(', ')}]`);
+  }
+  if (descriptorParts.length === 0) {
+    descriptorParts.push('"no explicit query provided"');
+  }
+
+  const firstSummary = results[0]?.matchSummary || {};
+  const matchMode = firstSummary.matchMode || 'phrase';
+  const contextLines = args.contextLines ?? 3;
+  const caseSensitive = args.caseSensitive ? 'yes' : 'no';
+  const wholeWord = args.wholeWord ? 'yes' : 'no';
+  const maxMatches = args.maxMatchesPerEpisode ?? 5;
+  const hostFilters = [];
+  if (args.hostId) hostFilters.push(`ID ${args.hostId}`);
+  if (args.hostName) hostFilters.push(`name "${args.hostName}"`);
+
+  let text = `# Transcript Search Results (${results.length} episodes)\n\n`;
+  text += `Searching for: ${descriptorParts.join(' | ')}\n`;
+  text += `Match mode: ${matchMode} | Context lines: ${contextLines} | Case sensitive: ${caseSensitive} | Whole word: ${wholeWord}\n`;
+  text += `Maximum matches per episode: ${maxMatches}\n`;
+  if (hostFilters.length > 0) {
+    text += `Host filter: ${hostFilters.join(' & ')}\n`;
+  }
+  text += '\n## Summary\n';
+
+  text += results.map(result => {
+    const host = dataLoader.getHost(result.episode.hostid);
+    const matchedTerms = result.matchSummary.matchedTerms.length > 0
+      ? result.matchSummary.matchedTerms.join(', ')
+      : 'N/A';
+    const termCounts = Object.entries(result.matchSummary.termHitCounts || {});
+    const termCountText = termCounts.length > 0
+      ? termCounts.map(([term, count]) => `${term}: ${count}`).join(', ')
+      : null;
+    const truncatedNote = result.matchSummary.truncated ? ' (truncated)' : '';
+    let line = `- HPR${String(result.episode.id).padStart(4, '0')}: ${result.episode.title} — ${result.matchSummary.totalMatches} match${result.matchSummary.totalMatches === 1 ? '' : 'es'}${truncatedNote}; terms: ${matchedTerms}`;
+    if (termCountText) {
+      line += ` (${termCountText})`;
+    }
+    line += ` | Host: ${host?.host || 'Unknown'} (${result.episode.date})`;
+    return line;
+  }).join('\n');
+
+  text += '\n\n';
+
+  results.forEach(result => {
+    const host = dataLoader.getHost(result.episode.hostid);
+    const matchedTerms = result.matchSummary.matchedTerms.length > 0
+      ? result.matchSummary.matchedTerms.join(', ')
+      : 'N/A';
+    const termCounts = Object.entries(result.matchSummary.termHitCounts || {});
+    const termCountText = termCounts.length > 0
+      ? termCounts.map(([term, count]) => `${term}: ${count}`).join(', ')
+      : null;
+
+    text += `## HPR${String(result.episode.id).padStart(4, '0')}: ${result.episode.title}
+**Host:** ${host?.host || 'Unknown'} | **Date:** ${result.episode.date}
+**Matched terms:** ${matchedTerms}
+**Matches captured:** ${result.matchSummary.totalMatches}${result.matchSummary.truncated ? ' (additional matches omitted after reaching limit)' : ''}
+`;
+    if (termCountText) {
+      text += `**Term counts:** ${termCountText}\n`;
+    }
+    text += '\n';
+
+    result.matches.forEach((match, index) => {
+      const termInfo = match.terms && match.terms.length > 0
+        ? ` | terms: ${match.terms.join(', ')}`
+        : '';
+      text += `### Match ${index + 1} (line ${match.lineNumber}${termInfo})
+\`\`\`
+${match.context}
+\`\`\`
+
+`;
+    });
+  });
+
+  return text;
+}
+
 // Create MCP server factory
 function createMCPServer() {
   const server = new Server(
@@ -370,13 +461,23 @@ All content is contributed by the community, for the community.`,
         },
         {
           name: 'search_transcripts',
-          description: 'Search through episode transcripts for specific keywords or phrases',
+          description: 'Search through episode transcripts using phrases or multiple terms with AND/OR matching and optional host filters',
           inputSchema: {
             type: 'object',
             properties: {
               query: {
                 type: 'string',
-                description: 'Search query to find in transcripts',
+                description: 'Search phrase to find in transcripts. Combine with terms/matchMode for advanced searches.',
+              },
+              terms: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'Explicit list of terms to search for; useful when pairing with matchMode "any" or "all".',
+              },
+              matchMode: {
+                type: 'string',
+                enum: ['any', 'all', 'phrase'],
+                description: 'How to interpret the query/terms. "phrase" (default) matches the phrase exactly, "any" matches if any term is present, "all" requires every term.',
               },
               limit: {
                 type: 'number',
@@ -386,8 +487,28 @@ All content is contributed by the community, for the community.`,
                 type: 'number',
                 description: 'Number of lines of context around matches (default: 3)',
               },
+              hostId: {
+                type: 'number',
+                description: 'Restrict matches to a given host ID.',
+              },
+              hostName: {
+                type: 'string',
+                description: 'Restrict matches to hosts whose name contains this value.',
+              },
+              caseSensitive: {
+                type: 'boolean',
+                description: 'Perform a case-sensitive search (default: false).',
+              },
+              wholeWord: {
+                type: 'boolean',
+                description: 'Match whole words only (default: false).',
+              },
+              maxMatchesPerEpisode: {
+                type: 'number',
+                description: 'Maximum number of excerpt matches to include per episode (default: 5).',
+              },
             },
-            required: ['query'],
+            required: [],
           },
         },
         {
@@ -507,50 +628,50 @@ All content is contributed by the community, for the community.`,
       }
 
       if (name === 'search_transcripts') {
-        const results = dataLoader.searchTranscripts(args.query, {
+        const searchOptions = {
           limit: args.limit || 20,
-          contextLines: args.contextLines || 3,
-        });
+          contextLines: args.contextLines ?? 3,
+          terms: args.terms,
+          matchMode: args.matchMode,
+          hostId: args.hostId,
+          hostName: args.hostName,
+          caseSensitive: args.caseSensitive,
+          wholeWord: args.wholeWord,
+          maxMatchesPerEpisode: args.maxMatchesPerEpisode ?? 5,
+        };
+
+        const results = dataLoader.searchTranscripts(args.query || '', searchOptions);
 
         if (results.length === 0) {
+          const descriptorParts = [];
+          if (args.query) descriptorParts.push(`phrase "${args.query}"`);
+          if (Array.isArray(args.terms) && args.terms.length > 0) descriptorParts.push(`terms [${args.terms.join(', ')}]`);
+          if (args.hostId || args.hostName) descriptorParts.push('host filter applied');
+          const description = descriptorParts.length > 0 ? descriptorParts.join(', ') : 'the provided criteria';
+
           return {
             content: [
               {
                 type: 'text',
-                text: `No transcripts found containing "${args.query}".`,
+                text: `No transcripts found matching ${description}.`,
               },
             ],
           };
         }
 
-        const text = results.map(result => {
-          const { episode, matches } = result;
-          const host = dataLoader.getHost(episode.hostid);
+        const formatArgs = {
+          ...args,
+          contextLines: searchOptions.contextLines,
+          maxMatchesPerEpisode: searchOptions.maxMatchesPerEpisode,
+        };
 
-          let episodeText = `# HPR${String(episode.id).padStart(4, '0')}: ${episode.title}
-**Host:** ${host?.host || 'Unknown'} | **Date:** ${episode.date}
-
-**Matches found:** ${matches.length}
-
-`;
-
-          matches.forEach(match => {
-            episodeText += `### Line ${match.lineNumber}
-\`\`\`
-${match.context}
-\`\`\`
-
-`;
-          });
-
-          return episodeText;
-        }).join('\n---\n\n');
+        const text = formatTranscriptSearchResults(results, formatArgs);
 
         return {
           content: [
             {
               type: 'text',
-              text: `# Transcript Search Results (${results.length} episodes)\n\nSearching for: "${args.query}"\n\n${text}`,
+              text,
             },
           ],
         };
