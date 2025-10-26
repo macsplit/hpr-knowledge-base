@@ -1,0 +1,201 @@
+Episode: 2882
+Title: HPR2882: ONICS Part 1:  Basic Commands
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2882/hpr2882.mp3
+Transcribed: 2025-10-24 12:42:17
+
+---
+
+This is HBR Episode 2008-182 entitled Onyx Part 1, Basic Commands and in part of the series
+networking, it is hosted by Gabriel Eman-Fire and in about 23 minutes long and Karima Cleanflag.
+The summary is, in this episode I review some basic commands for manipulating packet captions.
+This episode of HBR is brought to you by Ananasthost.com.
+Get 15% discount on all shared hosting with the offer code HBR15.
+That's HBR15. Better web hosting that's honest and fair at Ananasthost.com.
+Hello and welcome to Hacker Public Radio. Today I get to be your host. My name is Gabriel Eman-Fire.
+It's been a while since I did an episode and it seemed about time to get back on the bandwagon.
+Now, in my very first episode, which was about six years ago,
+may recall I said something like this. And I thought at about time that I submit my own show to
+the community. Why? Well, I think everybody knows the answer to that. There's all the fame,
+the glory, the money, well, mostly the narcissist in my suppose in my case.
+I just have this project that I've been working on on my own time at home and I love to gush about
+it. I talk about it all the time to my family, to my friends, to my co-workers and apparently I'm
+willing to babble on about it to random strangers in the internet. And I was talking about my
+one of my home projects that I call Onyx, which stands for Open Network Inspection Command Suite.
+If you want to hear more about the origins of this, you can go back and listen to HPR-1350.
+In short, I created Onyx because I thought it would be neat to have a suite of tools
+that could manipulate packets on the command line in a way similar to how tools like said,
+awk, grip, cut, and so forth, manipulate text files. Given that we have some interesting shows
+about bash scripting and awk programming, it seemed like an episode or two about how to use
+the Onyx tool suite might be of interest to the hackers that listen to this program.
+If nothing else, it shows my take on how to develop software in the style of the traditional
+Unix command line. In this episode, I'm going to review how one can install the tool suite,
+describe some basic commands to capture packets, to convert packets to and from the X packet format,
+and do some basic manipulation of the captured network traffic files.
+All right, so let's get to it. Just to review the installation process for those who are interested.
+This process basically is installing by compiling the source at this point.
+I don't have any currently maintained packages in any major distributions.
+Maintainers who are interested in maintaining and marshalling these into packages are welcome
+to contact me, check my contact info at the end of this episode. So to install from source,
+what you do is you first change into a directory where you're going to do the build,
+and then you do the following commands. First, get space clone, space, HTTPS, colon slash slash
+getlab.com slash catlib slash catlib. And that clones the catlib library from getlab.com
+into this current directory. Then you cd into the catlib directory and type make. And if you're
+on any sort of x86 system or even an open BSD system, I've tested it there, hopefully that should
+be enough to build that library, which is sort of my own personal c library that I use for
+standard functions and onyx depends on it. All right, so now you cd.dot back out of the catlib
+directory to the top level directory that you're from building from. Then you do get clone,
+HTTPS colon slash slash getlab.com slash o n i c s slash o n i c s. And so this will clone
+the onyx repository into a directory named onyx. So then you cd, space onyx. And in there,
+you're going to run .slashconfigure, which isn't actually a standard auto-configure,
+but it'll gather information about your system so that it can do the rest of the build.
+And then you do make. And then if you want to check to see if everything works the way it should,
+you do make test. That's make space test. And hopefully you see and a whole lot of output followed
+by all tests passed. Now, if you want to now install this locally, you do sudo, space, make,
+space install to install in your system. And then you can type make very clean all one word.
+And that will clean up all of the build artifacts. And you can get rid of the directory. And now you
+have everything installed locally. If you have installed that tool suite and you want to eventually
+get rid of it, all you can do is you can change into the onyx directory and type make uninstall.
+And that will, well, you'll have to do a sudo make uninstall if you install this route, which you
+most likely would be. So that will clean out all of the artifacts and programs and documentation
+and everything that were installed by the installation script. Finally, if you don't want to
+actually install locally, but you still want to play around with the tools, that's fine. You can do
+that by after you've done the build and the make test, you can add the onyx slash bin and onyx slash
+scripts directories to your path. And that should give you everything you need to run these programs.
+Okay, so that should cover installation. Now, let's talk about the X packet format.
+As I described in more detail in episode 1350, I find the PCAP format that we use for standard
+packet capture to be outdated and it's certainly not extensible. I want to be able to in my tool suite
+to annotate traffic with things like interface identifiers, flow identifiers, packet numbers,
+header offsets, those sorts of things. So I created a separate format called X packet,
+which is abbreviated as XPKT. And in this format, it doesn't have a standard file header at the front
+of the file. Every single packet is really kind of its own, could be its own X packet file,
+which means that you can take a series of these files and just cat them together and you still have
+a valid X packet file. Okay, there are other packet capture formats that are more extensible,
+like PCAPNG and whatnot. I still find that they suffer from some of the limitations that I
+described and I think I'm just happier with the way I ended up engineering things. But
+you know, to each their own. This is why we have programs to convert from one to the other.
+As for the name X packet, for those of you who are Monty Python fans,
+you may recognize this sort of sketch from the dead parrot sketch.
+He's kicked the bucket. He shuffled off his modal coil, run down the curtain, join the bleed
+and choir invisible. This is an X packet. Okay, so that's why I decided to name it X packet.
+And if I, by the way, during the course of this podcast, say .x packet, what I really mean is
+the period or full stop symbol, followed by the letters x, p, k, and t, all lowercase.
+That's the standard suffix for an X packet trace file. All right, so now that you understand
+why I have this file format, roughly, and if you want to hear more, go back to episode 1350.
+Let's just talk about how we can get some packet files to play with. First, let's do it in
+the more traditional way using the TCP dump command. So we can do, for example,
+hundle the next system, sudo, TCP dump, dash i, eth 0, dash c, 5, dash w, file 1 dot p cap.
+So we're capturing five packets from the ethernet 0 interface into a file named file 1 dot p cap.
+And the next five packets that sort of cross your main ethernet interface will be dumped to a file.
+Now, if we were going to do the same thing with the onix tool suite, the command is, I call it
+packet in, but the name is p k t i n. Okay, so if you want to capture some packets from the wire
+using packet in, you would do sudo p k t i n eth 0 greater than file 2 dot x p k t.
+So now that's just going to continuously capture some packets from eth 0 to, and we're going to use
+redirecting standard output to direct it to file 2 dot x p k t. So now we've got two trace files,
+file 1 dot p cap, which is a p cap, and file 2 dot x packet. Now, since we don't want to have to be
+running as root to play with the rest of the commands that we can use, let's make sure that these
+are both readable by a normal user. So now we can do sudo ch o w n, and then whatever your user name
+is, and then file 1 dot p cap and file 2 dot x packet. So your sudo ch o n, whatever your user name
+is, file 1 dot p cap, file 2 dot x packet. So now your local user can manipulate those two files.
+Okay, so let's talk about, we've captured some files with some packets. Let's talk about how
+you would dump them. The traditional way would be, if you want to see what's in them, would be TCP
+dump dash r file 1 dot p cap. And that will show you what's in the p cap file. And there are other
+flags like dash v and dash x that you can use to get more information from them, more verbose
+information about what's in there. The sort of equivalent command in on x for displaying packets
+that you want to you want to read through is x is x packet dump. So let's say you want to see what's
+in the file 2 dot x packet, you do x p k t d u m p for x packet dump, file 2 dot x p k t.
+Now by default, x packet dump invokes your pager or invokes less specifically so that you can
+move up and down and inspect the actual packet contents. And what you'll see, you'll see basically
+every byte that it captured off the wire. In fact, I'll leave this for a future episode, but
+the hex dump format that it outputs in is so faithful that you could actually reconstruct the
+original packet stream using standard Linux command line tools from that hex dump. Okay, so yeah,
+that lets you look. So now you can look at those two files in two different ways. Now let's talk
+about how we'd convert between one and the other. So let's say I've got this p cap file,
+I captured it with p c p dump. Now I want to convert it to an x packet format. So the command to do
+that is p c to x p k t. So p c to x p cap to x packet effectively, but it's p c to x p k t.
+And I'm going to describe three different ways we can do this conversion. And the reason I want
+to do this is because almost all the tools and on x follow a similar pattern. So to just convert
+from one file type to the other, you do p c to x p k t file 1 dot p cap file 1 dot x packet.
+And that basically copies the contents of file 1 dot p cap into file 1 dot x packet, but changes
+it to the x packet format. But you don't necessarily have to go from one file to another.
+The command is designed to be able to be used so that you could actually stream standard input
+and standard output through the command. So another way to do it would be you could say p c to
+x p k t file 1 dot p cap and then greater than to redirect the standard output and then file 1 dot
+x packet. So this is effectively doing exactly the same thing, except it's not giving the file name
+to output to the command instead of it's using standard shell redirection to redirect standard
+output to the file. The reason this is kind of relevant is instead of redirecting to a file,
+you could actually pipe that output to another tool that reads x packets and then does stuff with
+them. Okay. And in fact, now you can go, I'll say, all the way here into the, you know, into
+this notion and you don't even have to specify the input file name. You can actually put a p cap
+file coming in from standard input. So the way you would do that, for example, would be p c to
+x p k t less than for standard input redirection file 1 dot p cap greater than file 1 dot x packet.
+Or if you want to do it in a sort of more verbose, but kind of useless way, you could do this.
+Cat, space file 1 dot p cap, pipe c to x p k t greater than file 1 dot x packet.
+Okay. So this notion that, you know, that the, the traffic can flow that what you're working with,
+the data that you're working with can flow through these commands through standard in and
+standard out in a very standard unique way. This is something that I really strive to preserve in
+most of the programs in this. There are some that I can't, but you'll see this pattern available
+over and over and over again. Okay. So let's assume that you've run one of those commands. So now you
+can look at the file that we just created by say running x p k t dump x p k t d u m p file 1 dot x packet.
+By the way, if you don't want to use the pager, if you don't want it to be dumped to less, for example,
+so you can use instead the command x to h p k t, which stands for x packet to hex packet,
+where I can, I call the hex dump format that I'm using to dump the x packets, hex packet.
+And that will just, so if you did x p x to h p k t file 1 dot x packet, you'd still see that
+the the dump of that packet trace, but now it wouldn't be automatically sent to less. And if you
+wanted to use less or more or something else, you'd have to you'd have to pipe it to one of those
+commands yourself. Okay. Good. So now we've talked about, now we've talked about some basic
+conversion to x packet. Now let's talk about why would we want to convert to x packet in the
+first place? Well, I'm going to just show some things now that we can't do with the standard p
+cap format in in its most basic form that we can with x packets. For example, I already said we
+can concatenate two of these streams together. So we can say cat file 1 dot x packet file 2 dot x packet
+greater than merged dot x packet. And now we've got a merged dot x packet file that contains
+you know one file right after you the other and you can dump that with x packet dump.
+If you just wanted to look at the two files, one right after the other, you could just do cat file
+1 dot x packet file 2 dot x packet pipe to x packet dump. You wouldn't have to create the merged
+file at all. Okay. So let's talk about then how we can convert back to p cap. Let's say we
+captured using the x packet tools, but now we want a p cap file to send over to a friend who doesn't
+have on x. Okay. The file to do that is x p k t to p c. And I'm not going to go through all of the
+invocations that we could do as before, but just very briefly, if we want to convert say file 2 dot
+x packet to a p cap format, we could do x p k t to p c, space file 2 dot x p k t, space file 2 dot
+p cap. And so now we've converted from x packet out into a p cap format. All right. And why would we
+want to do that? Well, like I said, maybe we want to send it to a friend or maybe instead we just
+want to let's say, you know, we consider you want to maybe you really want to look at the packet
+that you captured in on x by let's say you wanted to look at a packet that you captured in on x,
+but you want to look at it in p cap format. Well, you could convert it to a file into a p cap file
+and then read it with TCP dump. For example, or alternately, you don't even have to convert it to
+a file first. For example, if you wanted to just display a x packet file in using TCP dump,
+you can do it this way x p k t to p c file 2 dot x p k t pipe TCP dump dash r and then a hyphen.
+Now the dash r and then a hyphen tells the TCP dump command to read the p cap file from standard
+input. And that's exactly what the x p k t to p c file or p c program outputs is a p cap file.
+And so we can just chain the commands together. All right. Now let's do talk about one other thing
+that we can do with these commands, which is we can take these packet traces and we can actually
+send them back out on the wire. Okay. So sending packets uses the p k t out command,
+which is analogous to the p k t in command. So if you want to see this,
+the way you can look at this live is you should open up a separate terminal.
+And in that separate terminal, you can start TCP dump so you can see what is being sent on the
+wire. So for example, on a Linux box, you could do sudo TCP dump dash i eat zero and you have
+that running in one terminal and you'll see packets flying by. And hopefully if you're not doing
+much on your your machine, then it'll be pretty quiet. And then you can see the result of the next
+command. So now to send packets out on the wire, you can do sudo p k t out dash i eat zero file one
+dot x packet. And that will send that file one dot x packet out on the eat zero interface.
+Or if you wanted to, let's say you wanted to send the file to capture and then the file one capture
+all out using the packet out command, you could do it this way. You could say cap file two dot x
+packet file one dot x packet pipe sudo p k t out dash i eat zero. Again, you can see the notion
+of how we're using a nice standard unixy way of chaining commands together to manipulate data.
+Okay, so that's the end of this episode. This is just a hopefully get, you know, this is the very
+basics of this tool suite. I have about three others sort of ready in mind and one scripted.
+And I'm going to put those up shortly after. But I think the number of these that I'll do will
+depend on the feedback from you, the hpr audience. If you guys want to hear more, then I'll keep
+churning them out. If, yeah, if this is just, you know, not people's cup of tea, maybe I'll move on
+to some other topic. In any case, please, all you guys out there do remember to contribute a show,
+every show, every, every show out there that I've heard, I've found interesting in some way or
+another. So just for future reference, if you want to contact me, you can email me at even fire
+at SDF.org. And I look forward to hearing from you guys and I hope this has been interesting.
+Have a great day. Bye-bye.
+You've been listening to Hacker Public Radio at Hacker Public Radio dot org. We are a community
+podcast network that releases shows every weekday Monday through Friday. Today's show, like all our
+shows, was contributed by an hpr listener like yourself. If you ever thought of recording a podcast,
+then click on our contributing to find out how easy it really is. Hacker Public Radio was
+founded by the digital dog pound and the infonomicon computer club. And it's part of the binary
+revolution at binrev.com. If you have comments on today's show, please email the host directly,
+leave a comment on the website or record a follow-up episode yourself. Unless otherwise status,
+today's show is released on the creative comments, attribution, share a like, 3.0 license.

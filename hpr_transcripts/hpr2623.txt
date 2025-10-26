@@ -1,0 +1,469 @@
+Episode: 2623
+Title: HPR2623: Actors and Agents, Sprites and Fractals
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2623/hpr2623.mp3
+Transcribed: 2025-10-19 06:44:08
+
+---
+
+This in HBR episode 2623 entitled Acton and Agent, Bright and Fractal, it is hosted by
+Clacket and in about 57 minutes long and carrying a clean flag, the summary in which I sit
+down with Seawebber and try to keep it short, but end up with an hour of tangents.
+This episode of HBR is brought to you by archive.org.
+Arch-Universal Access to All Knowledge by heading over to archive.org forward slash donate.
+Hi, I'm Clacket and I'm here with Christopher Lemmerweber and the last time we talked you
+were Christopher Allen Weber, but that's a long time ago and a lot of things will happen.
+Yeah, one thing that happened is that I started collaborating with somebody named Christopher Allen
+and there is already a Christopher Weber person in the free software community.
+And there were a few other naming conflicts that I decided to just my wife is Morgan Lemmerweber,
+so I'm like, well, I'll do that.
+That's a good idea.
+I mean, it's pretty funny that we're discussing this and you're actually doing research
+on how to name things now, so that's pretty suitable.
+So the last time we talked, I was December 2015, but for HBR listeners, that's actually January 2017
+and that's not a mistake I made now.
+That's a mistake I made then.
+I let it linger for a year procrastinating and wanting to edit it.
+And finally, I just let it go.
+So I'm going to try to be faster this time.
+Cool.
+Yeah, so I'm excited to talk.
+I guess we have an agenda.
+So should we jump straight into it?
+Yeah.
+So Chris and I are both racquet users these days and we hang on the racquet users mailing list.
+And we are working on similar, but not quite the same thing.
+So Chris is now working with an actor model library in racquet.
+And I'm working on a flow-based programming library in racquet.
+So Chris, what's the actor model?
+Okay, so the actor model is a pretty old idea.
+So the general idea is that you've got actors are just entities somewhere.
+They have an address that you send messages to.
+And they can be like kind of computer science-y idea.
+Let's see if I can do it off the top of my head because I didn't put up.
+But I is that I think that an actor can do a few things.
+It can receive a message.
+It can send a message.
+It can respond another actor and it can change its behavior in response to the next message.
+But in general, it's really you're kind of setting up some objects somewhere and you're just kind of shooting messages back and forth.
+A lot of things can be perceived as actor model systems.
+So almost any time that you have multiple servers sending messages around to each other that can be perceived as an actor model system.
+And one nice thing about a lot of actor model systems like Erlang and also what I'm trying to do with my systems is that if you it often doesn't matter where the actors are.
+So there's not really a big distinction between message passing against a local actor versus message passing against a remote actor if that makes sense.
+How do the actors find out what other actors they want to talk to?
+So they get a message in general.
+It's that they they get a message from some other actor that you know ends up telling them about things.
+So you do have some sort of minor bootstrapping problem. Presumably there's either initial conditions like the so I might spawn an actor.
+And then when I spawn it, you know, if you think about the character of some sort of object or something like that, there may be the it may come pre loaded when I spawn that actor with references to other actors.
+Or I can send it a message like saying you know like oh well you know the next time you know you send out you know your interesting timing like update about some sort of news feed or something tell my buddy over here right and I give that actor a reference to it.
+And then at that point, you know it can store that in its local state.
+Right or or you could receive a message like I would like to know something that you know and here's the the inbox that I would like you to send it to right.
+Right so and that actually gets into an interesting thing which is you know you actually just described a way of doing kind of request response things right because by default actors don't if we think about HTTP.
+HTTP kind of builds in request and response into one thing right you send a request, but then you just sit there and wait until a response comes back right and then the actor model you're generally not doing that you're sending a request and then the other actor presumably at some point might send a response back to you, you don't have any guarantee of that.
+And that's I guess i'm jumping ahead a bit that is something that in both kind of all the actor model systems that I've worked on ZUD and eight sync and now goblins for racket i've kind of since that's such a common thing to do i've tried is to it's you know especially because programmers are used to being able to invoke some sort of function or method and then get some data back kind of as a return value.
+i've always added i've always made it so that that kind of behavior is as simple and as invisible to the user of the actor model system.
+Even though it technically is that you've sent some sort of message and then you've sent a please respond back type behavior there.
+Okay so the actor model is basically it's asynchronous in its original base conception, but in the systems you have made you've always sort of layered an RPC layer on top of that.
+That's right that's right so you can see you don't that's exactly so it's basically you've got and what I really have liked to do and in the Python version of things so if people are familiar with.
+Async IO you've got co-routines and JavaScript recently picked this up and so no JS has something similar with async you can do the whole.
+You can set up all of your co-routines so that they kind of their generator based co-routines or generator style where they kind of each move a little step and through that you can instead of having kind of call back hell you can.
+It can kind of look like you're just calling some sort of function and then when something's ready it resumes this function that was suspended.
+The main problem with Python and JavaScript is that since this wasn't really baked into the language you kind of have to make sure each one of the functions that you're going to be chaining together you have to kind of align them like gears.
+And if each one of these gears suddenly you have kind of a circle that doesn't have these knobs on it.
+You don't have you can't carry forward that automatic coroutine like behavior what's nice and got in schemes like guile and racket is that they support continuations or I guess delimited continuations which means that this type of behavior is even more invisible to the user and you don't have to align any functions you don't have to mark a function as specifically an async function.
+Any function can do this type of suspend behavior.
+That sounds like an HPR episode on its own.
+Yeah I suppose I went on a we're like we're going to keep each one of these things nice and succinct and I already started going on a tangent there.
+Yeah yeah the whole delimited continuations thing just keeps popping up and I think at some point I knew what it was and then I forgot about it again but let's not dig into that.
+I think it's nice to it's probably important to emphasize though that delimited continuations or co routines in general not required for the actor model though that's something that I've layered on top of the systems that I've built.
+Right okay yeah the actor model doesn't really say much about things on the API level right is very conceptual and then people invented over and over in different implementations for whatever is suitable for what they are using the actor model for.
+Right lots of people invent the actor model over and over again and don't realize it's an actor model right now people are currently calling microservices microservices and really they are actor model systems that kind of don't know that they're the actor model.
+That's a fun little comment because we are calling our flow based programming systems microservices.
+Clack what is flow based programming.
+So flow based programming is a model where in the actor model you talked about sending things to inboxes that you somehow figured out where they are maybe you got a message or maybe you configure it somehow else and every actor has one inbox in flow based programming.
+Each component in the system and in the actor model they actors in flow based programming we call them agents.
+And each agent has not just one inbox it can have several ports they're called and an agent in the flow based programming model has several in ports and it has several out ports.
+And that's all the stuff that it knows about where to get and where to send data.
+So the idea is you write these agents and then you wire them together on a higher level so you start by creating all these small microservices or agents or components that each are like a black box that has inputs and it has outputs.
+And then you take these and you wire them together in a sort of different layer than you write the code.
+So that's one part of flow based programming is you have the agents and you have the graph that connects the agents together.
+And then another thing with flow based programming is that each edge between two nodes in the graph.
+So from one agent to another agent there's an edge that means the communication channel between them that is by design a bounded buffer.
+So that if you have one agent just keeps spewing out messages.
+If the other agents aren't listening and taking care of those messages fast enough then that first agent that is sending the messages is going to block until the buffers start getting the messages start getting peeled off the buffers.
+So there's a sort of flow control model built into it.
+Well, there's flow in the name.
+And the idea is there's some initial message that comes into this graph of agents and that message sort of results in a wave of messages going through the network.
+You can imagine if something goes from left to right in a graph you can see the message coming in at the left and then there's a sort of wave of activity going right and then maybe the next message comes in and then you have these sequential waves of activity going through the graph.
+One concrete example of a flow based programming network would be some kind of for example image processing.
+It worked before on a system that was handling camera input and trying to detect objects classify the objects and maybe generate some safety action like breaking the car or helping the driver steer back into the correct lane or something like that.
+And so then you have a continuous feed of here's an image here's an image now we have another frame of our maybe 30 frames per seconds video stream or whatever.
+And for each frame there's some analysis done like here we have the metadata for this and then in the next step we have the metadata for this.
+And then in the end you have some outputs that actually go into feeding back into the system that now you should take some kind of action that's that's kind of the typical flow based programming network.
+So you and I had a number of exchanges about this on the racket users mailing list and not to get into the racket part of it yet.
+But I think one of the things we were trying to figure out is the way in which flow based systems are the same as indifferent from actor model systems right.
+So maybe that would be interesting to explore since I think as we both said we both of us are like oh microservices those are technically our thing.
+And so we maybe maybe we should try to figure out how how these connect together and I'm going to pause it one thing that seemed kind of clear and see whether or not you think this is right.
+It seems to me that flow based programming systems are a little bit more like circuits where they're kind of fixed is that right conceptually that is right.
+And that's how I thought it needed to be when I got into this but then it turns out the way we use this is well at any given moment the network is fixed but we also allow ourselves to modify it.
+And I'll get into that later when when I talk more specifically about why why we use flow based programming or what we use them for but some systems like the one I was telling you about that's in the car that's like built at compile time.
+But what we're doing if we're building a GUI and we wanted to react dynamically to something happening we also allow ourselves to add new agents and add new edges to talk to those agents in in runtime.
+But you can say that at any moment there's still like this fixed graph that describes the whole flow of the data through the system.
+OK, right. So the so that I mean I guess I'm going to throw in on a different theoretical computer science system. So there's also I'm trying to remember the name of it communicating sequential processes which is kind of in many ways I kind of so which is actually what I'm building.
+It goblins on top of because that's what racket uses for it's a sync system is communicating sequential processes in many ways it seems very similar to flow based programming in that have a some sort of process that can have multiple channels that it can send messages to and listen to to messages coming from.
+And like you said it doesn't unlike the actor model is not one specific inbox is kind of keep returning to I wondered if you've looked at communicating sequential processes and have noticed some sort of way in which it's different from that.
+Is there is there some clear difference between flow based programming and and CSP something that one has that the other doesn't.
+I think the main feature of flow based programming and what it's good for is that you have these restrictions on how things are allowed to interact. So we I know that you use the racket asin channels for for goblins and we also use asin channels for implementing our flow based programming.
+So it's pretty clear that each of these systems can be expressed in the other because that's actually how we implemented.
+But it's yeah I think what what flow based programming offers is not so much all the things you can do but it's more like these are the things you restrict yourself to so that you can reason about the system.
+So what you can do is understand the system I guess is the feature.
+So you mentioned that you had in the car and imaging system that you had kind of compiled time kind of static analysis that you were doing of it.
+Do you lose some of the ability to reason about things when you've allowed the ability to kind of dynamically connect things.
+Well, I'm sure we lose something in that and at the moment where the tooling is we we've also lost other things that originally fractalite was written in in Mozart Oz which is a multiple paradigm programming language that is used in teaching programming concepts.
+And then for practical use Dennis and Stewart made a rust implementation and that had strict typing on all the edges.
+And now we're in racket and we're not doing that anymore so we definitely lost a lot of compile time checks and everything is a little bit more freewheeling now.
+But we're going to find ways to further restrict that again once we got everything put together but right now we're in very rackety and very live coding kind of mode.
+Well, is this a good time to switch over to racket or should maybe we should talk about racket and then the object capability stuff what do you think since we're kind of started moving in that territory.
+Yeah, so let's go into racket you implemented eight sync for the actor model before on dial so why are you now on rackets implementing your goblins actor model implementation.
+So the real reason I started well so so what happened was at the start at the end of last year actually my my spouse and I were talking about how she started doing programming within the last few years and she's an academic and we were like well you know a lot of these academics don't realize how helpful like a lot of people in the humanities don't realize how helpful programming tools could be to them.
+We could probably run a workshop and I just kind of said oh racket might be a good fit because they've got doctor racket and you know they've got this thing called scribble and we started talking about oh you know that may be a good path to teaching academics because then they could write papers for you know non computer science.
+Computer science e academics you know they could write their papers in this markup language and you know if they learn get and things like that they can also check it into there and yeah scribble is the markup language that you use for racket documentation that's right so when you were working out a way to to have humanity's people also write things in the scribble right so we ran this workshop and it was it was successful and but when I first sat down to be like well let's see how feasible this is and I sat down
+and you know I've been working on a lot of things in guile over the last few years and and I kind of looked at once I sat down to play around with it I kind of had this no moment like as I was like wait a minute they've got this and they've got this and they've got this and like it was a large number of thick yaks that I thought I had to shave myself that it turns out that racket kind of came either as a third party library or
+very frequently in the standard library I kind of think of racket is kind of being the Python of lists like it has a very wide standard library that you can even without pulling in third party libraries due to like an astoundingly large amount of things with
+yeah it's very bad reason included that's also my feeling like you're you're implementing on it to talk to this web service or whatever and then I wish I could just require Jason and then I would have a Jason read function I'll just do that oh yeah I do have it
+yeah exactly and and let the glee library is excellent the yeah there's web tooling that comes built in there's just a lot of things that I was like prepping myself for a few years of kind of yaks shaving and guile and I was like oh it's already done and racket and I actually kind of almost got angry about it because I thought you know like well like I'm really
+devoted to guile but I felt like I couldn't justify that in a certain sense because there were so many nice things in a racket so I was like all right you know what I'm going to see how far I can go and
+racket and it turns out that the answer has been pretty far I also really love the community around racket like when when I first created when I started with this
+project project fractal I would do it and then is my first task what to write rackets to nix because we are using nix for the the final composition of things and so
+good choice yeah you and I met talking about geeks and nix is the forefather and here I am two years later getting paid to do stuff in nix
+that's pretty pretty awesome and so I wrote racket to nix and Stuart told the mailing list like we're working on
+this thing and then the same day Matthias Feliz and one of the professors working on the core of this
+language went in and made a pull request like here I fixed all your little style issues this is how
+we write racket and was the most impressive response from from a language community possible I think like here's one of the founders of the
+language and he just told you how to write in this language and he eroded for you and just here take this so that's that's a good gift
+yeah I have to say well okay I will say Giles community was also very good in that the people were very
+friendly to me and I felt like the maintainers were also guided me a lot and helped me a lot but I guess part of
+the thing with racket is that it's not exactly a mainstream language but it's a little bit more mainstream and it has
+a much larger and more stable set of things and I guess partly because of that I didn't expect the kind of
+community responses I've gotten to things I've been I think like you pretty surprised that if you go on
+the racket mailing list and you're like I want to do x y and z there's like you know four or five you
+know like I've had I've had threads where I've had like you know four or five people that I consider like
+you know kind of programming language heroes respond about my stupid racket problem and that's
+kind of surprising yeah it's very very accessible and some very cool people are involved there so
+so that's very it's kind of overwhelming and when you start and it's very friendly feeling
+yeah so here's another okay actually this is another reason why I got into racket one of the
+problems with in Giles is that and I think this is true of pretty much all this except is that
+with the list machine pretty much gone the if you want to get into programming in a list the thing
+that somebody will tell you is okay first go learn emax and then come learn this and like learn
+all these different programming modes and then come learning list and like that's that's like
+that's a pretty high barrier entry whereas racket comes with doctor racket which like is made
+for ittle schoolers to be able to computer programming and yet so like good enough that it can
+scale up to you know a serious language researchers and you also have emax if you want it and the
+documentation is so good that I realized oh one of the challenges I was having in Giles was being
+able to get newcomers to come into a project who didn't have scheme programming experience and
+be able to help get them acclimated and you know with media goblin we were using python and we had
+a really easy time getting people started and I was kind of like oh I I could have that back again
+with racket oh I definitely agree about the documentation it's it's top notch definitely
+yeah so I think I'm gonna bring up I'm gonna I'm gonna throw these one I think we've got
+enough for about how awesome racket is and why we're using it yeah I wait I want to throw in two
+other things that are interesting about one of the things that's interesting and then one
+thing I'm gonna complain about though so one thing that's interesting about racket is that it's
+very language focused in that you know and this is something you're taking advantage of more than I
+am because mine's kind of a library but I think it's built with the intention of people being able to
+build lots of languages in it right it comes with like 200 languages and it's I mean the racket
+people talk about programming language oriented programming I better link to that in show notes
+is a pretty good article but yeah absolutely it comes from the I mean it used to be called PLT
+scheme where PLT is the programming language theory department at MIT so it pretty much comes with
+the territory that it's programming language oriented yep and I'd say that maybe if racket has
+a problem it's that it targets middle schoolers and programming language theorists and there's like
+this large untapped middle ground that I think it it hasn't tapped into but totally could which is
+I kind of consider kind of like the Python programmer style domain sorry I was typing what were you
+saying I was saying that I think that racket targets like middle schoolers and very young programmers
+and also like on the other end of the spectrum like programming language theorists but there's this
+large middle ground that I think is kind of untapped and I think that that's why Python is so
+successful in many ways is that it really caters to people kind of just day to day being able to
+plug things together and I think racket could absolutely be an ideal fit for that middle area too
+but I think isn't kind of marketing itself for it right so Python kind of lives in that
+that middle area and and I guess some people would take this as being condescending but Python is
+a very good gluing language and maybe racket doesn't quite feel that niche but it definitely could
+I agree with that yeah and I mean maybe focusing too much on languages actually doesn't help
+because I'm not sure all languages like blanks and racket semi-compose but not fully always
+so that's that's something I've thought about but I mean racket already has a really great
+amount of libraries so I think it's not a problem but anyway the one downside I'd say to racket is
+that it doesn't support live programming as much as other lists generally in that it's in other
+lists that I've worked with you can kind of run the program and like you're doing web development
+or something and you change world around you or when I was working on mud sync which was this
+live mud development environment for a multiplayer game people could join the game and they could
+say oh it would be really cool if this was here and I'd just add it and like the language itself
+supported that and racket is almost kind of against that because racket wants you to recompile
+every module and then you can play around in the REPL but you can't redefine things that have
+already been there but I guess there's been discussion on the mailing list and I think Matthias has
+even expressed that you know maybe we could support that mode a little bit better yeah it's it's
+quite compile oriented and I guess the compiler is allowed to make a lot of optimizations because
+it has all the information about the sort of final state of the module and what symbols are
+going to be there so I think if I've understood discussions if I've understood the discussions on
+the mailing list correctly then I think the way the REPL works is it creates new modules all the
+time where new definitions new definitions shadow the older definitions so you got like a
+whole layer of modules under the hood and you're always in the sort of latest module and when you
+redefining things you're just adding another module on top and defining things there and then
+sort of importing all the work you did up to this point I think I think if I've understood
+correctly that's that's how the REPL works and that doesn't really work for for a live process
+because you would have to migrate the whole process into each of these new sort of module frames
+right that's my understanding as well and I have an idea on maybe how we could do it
+though I haven't actually tested it yet and since racket is so Lang E it might be possible to build
+another Lang which is what racket people called languages that so that maybe like boxes function
+definitions so that you can actually just replace the contents of that box as you redefine things
+and stuff but I don't know if it'll work or not but that's something I'm very interested in exploring
+okay so now one of the other things you're exploring apart from actors and activity pub and all
+these things is also object capabilities how does that fit into things so a lot of this is so a way
+that most of our security ends up being designed is what is sometimes called perimeter security so
+for example kind of forms of perimeter security you're probably familiar with is your access
+control lists on your computer if you're using a unixe type system you've got your files are
+probably protected by users and groups and stuff like that but and then if in your browser you've
+got like same origin policies and stuff like that but the problem is that so what object capability
+people like to say is that if you've the problem with perimeter securities it's really eggshell
+security if you because you can just make a tiny pinprick in it and suck out the whole yoke
+and some examples of that are so if you have on your imagine you've got lib png or some other
+image display program on your computer and there's just the tiniest bug on the bng just like super
+tiny that's just like a little memory overflow problem or something like that and if somebody can
+exploit that they can have access to everything you can do right not just plitting the wrong things
+on your screen but everything right and if we took an object capability approach that wouldn't
+happen you would be instead able to just blit you know just in pixels and that's it and similarly
+in your browser you've got it's very difficult to control the same origin things and bugs come up
+with that all the time and so object capabilities is an alternative way of looking at security which
+is very often ends up being the pure version of whatever programming language paradigm you're
+interested in so for example most programming languages are very long decalculus
+esque which is you define a lot of procedures and the procedures can call their procedures and
+etc so if we take away the top level like we take away global variables which people generally
+think is a good idea to remove global variables and we end up passing around references to things so
+your function may come in a module that has it has been initially been granted some
+access to some things and then your functions only have access to the things that are passed into
+them effectively then at that point we have object capability security which is you know basically
+principle of least authority applied on a like programming language theory direction similarly
+with actor model if your actors only have references to the other actors that they should have access to
+if they don't have global access to a bunch of other actors then they can't call on other things
+that they shouldn't be able to have access to so they can't if you're you know that if we go
+back and scan through memory and find everything that is there and go on wreak havoc right exactly
+so you you wouldn't and it turns out it's possible to do this in operating systems as well
+so if you're if you've got a if you've got that image problem that image program it wouldn't be
+able to do it wouldn't be able to you know like crypto locker your file system or something like that
+so object capabilities are very desirable in that they're but they it's a different paradigm
+instead of being identity oriented security which is how we're used to thinking about things
+like what can clack do and what can criss do yeah if you want to access my stuff you need to
+become me and then suddenly you have access to all my stuff right so instead of that it's possession
+based it's like kind of like a car key you've got your car doesn't care who you I mean in old
+school cars at least your car doesn't care who you are if you've got the key to turn on the car
+then you can turn on the car right and it may sound cooler to have a car that can scan your face
+and say you know welcome criss this is you know you may now drive but it turns out that introduces
+more security vulnerabilities than the old version of things and object capabilities also allow
+for delegations so I could say okay clock you know it's okay for you to drive my car and I just
+make a copy of my key and I had it to and then you can drive right and I can also revoke that
+I can press a button and it destructs your key and then you can't use it anymore and if you
+had made a copy and give it to somebody else it would destruct that copy effectively as well
+and I can also attenuate it so if you know there's the there's a concept of a
+some cars have that are really fancy have valet keys where they can only be driven a certain number
+of miles so if I give I can make a copy of my key I can delegate it but I can also attenuate
+that delegated copy which means I put some caveats on it that say like oh you can drive this
+but only until this mileage which is five miles from now so now nobody can go on a joy ride
+with my car right so with that kind of idea and by having kind of the possession oriented
+reference to things we can do some really powerful things and make things much more secure
+and I'm currently working on a standard called OCAPLD OCAP is the shorthand for object capabilities so
+object capabilities for linking data it's a standard for linked data systems so that we can bring
+kept object capability security to kind of web APIs and things like that all right very cool
+and I was just thinking when you're talking about the valet key and stuff maybe most people haven't
+had that but many internet banks these days offer you the ability to create a temporary virtual
+credit card so like I'm gonna buy this thing from this company that I may or may not trust
+it's gonna cost a hundred US dollars so I'm just gonna create a virtual credit card that only
+allows one transaction for a hundred US dollars and that's it so even if their credit cards
+leak and my money is still safe right so credit cards are kind of like bearer capabilities
+in a certain sense so bearer meaning like if you have access to it you can do things and OAuth 2.0
+bearer tokens are are also very similar right there was a second example of things that people
+might have used OAuth right so we can so that so the bank example is really good because let's
+point out a very dangerous thing that we don't want people to do but people do all the time right
+which is like are you familiar with mint.com mint i don't know it no okay so they're a budgeting
+application and they are able to they want to be able to give you they want to analyze your
+purchasing habits and then tell you you know you've been spending this much on this this number
+on like groceries right that makes sense right right okay so the problem is you do the identity
+oriented login and to give them your credentials so they can log in as you so you have to really
+trust mint to not also withdraw money and things like that or transfer your money because they
+could in theory but if there was an object capability type approach instead we would be able to
+grant them a capability to just read your bank account but not be able to withdraw yeah
+all right so we got your actors you got your object capabilities how does this fit into
+media sharing applications and and how is sprightly going to take over the world oh before we
+talk about that should we give an activity pub updates since the world has changed dramatically
+since the last recording oh do go ahead well i i don't even remember did we talk about activity
+pub in the last hpr no no that was two years ago you were you were working with it but it wasn't
+like near horizon so we were just talking about keeks oh okay so activity pub is a federated social
+network system so that's a so if you wanted to have no so right now in practice if you wanted to
+have a twitter alternative mastodons an example of that so it's plural and you want you can have
+speak to each other in activity pub is a protocol that says here's how these two different servers
+can talk to each other what a lot of people don't realize is it's actually an actor model system
+you know it's hinted a little bit by the fact that the different users on the network are
+called actors but really you're sending messages from actor and they have in boxes they have
+inboxes so it's absolutely actor model system which also means that we can make an object capability
+system as well the people aren't doing that but anyway what's exciting is that within the last
+couple years so i was working i spent about three years at the w3c standardizing this it got
+standardized and mastodon and pluroma and pure tube and a number of other things that picked it up
+i think we're at near about two million users on the activity pub network or something
+wow cool i think uh yeah so it's been pretty more successful than i anticipated
+and you know mastodon picking it up certainly helped the uh it's image recognition i think quite a
+bit um but i mean one of the things that we didn't do in activity pub was we didn't specify
+anything about um about accessible right um so uh effectively uh i can if i know who you are
+i can send you messages uh okay fine um you know theoretically i can also block you and stuff like
+that if i if i want to but that's kind of your server making that decision um and we describe
+the proper side effects for that and stuff but it's really it's really um um but we don't specify
+anything about like let's say i want to create a mailing list type group right let's say you and i
+want to uh curate a list of photos from foster uh and uh so uh we start this group to curate these
+photos um and uh how do i give you access to becoming curator of that right um and there's nothing
+specified right who has access to update that group who has access to delete content from it uh none
+of that stuff is that is specified in activity pub yeah and when i when we were working on activity
+pub i thought this was a big mistake on our parts and i just was kind of quiet about thinking
+it was a big mistake and now i'm kind of like oh thank god because uh if we probably would have
+done some sort of awful terrible distributed access control list because that's kind of what i
+knew at the time and it would have had confused deputy attack problems and it would have had all
+sorts of things like that um and i think that since activity pub is an actor model system we can layer
+on a a bunch of really interesting object capability type things so we could do that whole who has
+access to curate this gallery well the gallery itself could be an actor and if i give you in
+ocap ld capability to uh to curate it then you would be able to do so right um uh and so that
+that's kind of the way that we can build in uh kind of tie those things together i guess i didn't
+bring up sprightly though that was like three other things so yeah so what is sprightly uh well
+vapor rare currently uh that's one thing uh but uh the the goal is um so what happened kind of
+to my surprise is you know i started working on activity pub because of media goblin which i
+was working on decentralized media hosting and activity pub was originally kind of oriented towards
+that but to my surprise a number of other projects have started working on that uh there's a funk
+whale which is doing audio there's uh um there's pure tube which is doing video and i know federates
+with uh uh other with mastodon and i and pluroma uh and i think there's uh and there's a few others
+like pixel flat i don't remember if they have activity pub implementation working but i know they
+were working on it and funk now it doesn't federate yet he doesn't want to federate until he's got
+a complete solution in place he's he has a branch that does federation but he doesn't want to
+activate it until he has all the sort of blocking and and uh uh moderation and all that stuff in place
+right so i kind of feel like a lot of people are working on those things and um i i kind of was like
+well what can i do that's more interesting for so i also had an itch to do an activity
+public implementation which i had done part of one in guile and so i was like well i want to port
+that to racket and i want to do some more interesting things so part of the idea so this is kind of
+this sounds spacey and futuristic um but what i'd like to do is build an activity pub uh server that's
+kind of generic and an activity pub client that's fairly generic so you can layer a bunch of
+interesting things on top of it but the thing i'd like to do is build a distributed social game
+on top of it which sounds crazy um if but if you know it maybe if you listen to last one or
+something i think i might have talked about the mud i built on top of eight sink so it's not that
+surprising that i'm interested in this and also i showed up at a conference at uh um the w3c
+worldwide web consortium conference and people were like oh well what would you like to do if you
+had all the time to work on things and i'm like well it's embarrassing but i'd really like to do this
+distributed game thing well what i found out is that almost there were a lot of embarrassing people
+in the room yeah there were a lot of people who well also a lot of this technology came out of
+that stuff and i didn't know that at the time oh really uh yeah so object capability stuff
+the most well-known actor model object capability system is called e and where it comes from
+is e-electric communities and electric communities was a semi-distributed um uh online social
+online social network slash game that was built in the 90s uh and in order to be able to manage
+this whole living world that people were walking around in and and everything and be able to
+allow people to program their own functionality in game and stuff like that and keep it secure
+they had to use object capabilities so that's where a lot of the object capability stuff has come
+from and i also am talking with people who are kind of in the digital currency space and i
+know a number of them were working on it in the 90s on distributed games and stuff like that
+partly because it was an interesting way to research digital currency because you have to use it
+in game so um so this kind of kind of sounds crazy and it could just remain vapor where i hope it
+doesn't um but um my goal is after i have more infrastructure written to start experimenting with uh
+getting some of these a lot of the technologies i'm working with and get them running out the door
+with this as kind of a a a test bed and one of the reasons for that is something that struck me is
+that um so you mean you're using sprightly as the sort of uh the driver to to create things like
+governments right exactly the reason why this game stuff uh that i'm interested in implementing it
+is partly because um so one cool thing that people were doing recently with activity pub is they
+were running it over tour onion services so that was happening in pluroma a few pluroma uh
+instances were running over tour onion services which i think is great because that kind of uh
+bridges peer-to-peer and federated systems uh uh and i think that that's a pretty cool thing
+yeah one of the prop one of the problems i think with uh federated so with like
+peer-to-peer systems and stuff like that is that people always immediately think of um kind of the
+nefarious uses of peer-to-peer systems uh so you know the um like people are gonna start selling
+drugs on them they're gonna do food bar bags and stuff like that um and also the other thing that
+struck me is that um not many people are hosting federated social network servers um
+it would be interesting if we could get people hosting things without so another problem is if
+you show up on federated social networks they're kind of two um it's it's great that mastodon
+attracted a lot of people in the LGBT space but really a lot of conversation on mastodon uh um so
+Mikey a friend of mine made a comment a couple years ago which is that federated social networks
+kind of tend to become a place that people end up discussing federated social networks
+which okay that's great um like but do you want to talk to some people who are not
+kind of freedom diehards right like how do we get the networks that it's everybody not just
+people who are really ideologically motivated so i think one of the interesting ways to do that
+is to um have freedom be a side effect of the uh um of something else that people want to do
+so what do people run a lot of servers of who are not um self-hosting nerds um what's the most
+popular um server that teenagers run around the world is Minecraft right right yeah so if
+you could create a world that other people can walk around in and what's what's really appealing
+about Minecraft is that you can walk around the world and build things with friends right so
+if you run muds in the 90s there was a kind of a parallel aspect to this which is that it wasn't
+just it was a social network of the sense of space that you could walk around and do things and
+also in many of these games there was also the ability to kind of affect the world that you were
+walking around in uh and i think that that may be an interesting avenue for being having people
+run servers who don't think about themselves as you know specifically user freedom type people
+and then the next time that if you have it so that you could just click in the sprightly's you know
+gooey and say spin up a game server and people are just doing that everywhere uh and somebody says
+you know the next time that you know some sort of you know politician is like we need to shut down
+right because tour is being used by blah blah blah all these bad people well you could say well
+your kid runs tour yeah your kid runs an onion service and they're not doing it for
+nefarious things they just want to run a game with friends right so i think that normalizing these
+things finding a kind of exciting angle for people to play around with things can can make can be
+a fun way to get the distribution of these uh but it's pretty ambitious who knows if all succeed
+or not i've built most of these components individually building them together as one collective
+thing maybe turn out to be challenging but we'll see it's also kind of something i've wanted to do
+for years so um since i'm not really being um i'm i have a day job where i'm being paid to do
+related things but nobody's paying me to work on social network things specifically right now
+this is the thing that i'm motivated and excited to actually build and i think it could be a real
+contribution if it happens yeah that's that's a whole hpr episode as well like what's
+happening with virtual reality when we can when can we get our federated virtual reality
+network to replace the web or to complement it that's a hole on the other tangent
+right and it doesn't have to be 3d to start out and make it interesting right so i'm interested
+in what's the lowest barrier to entry thing that people can start building things that they will
+participate in uh and right now we've seen a big explosion in interactive fiction stuff again
+mainly because twine uh yeah i think it's called twine i'm forgetting the name exactly uh i think
+it's called twine is a uh a like interactive fiction building application that makes it really
+easy for artists to make interactive fiction and so it turns out this this genre of games that was
+almost dead came back from the grave because it was so easy for people to just start building things
+again and i think that that's a pretty cool i'd like to do i if if it was so easy for you to show up
+in something that's like a chat room but instead of just offering your friend a drink by saying you
+know here's a drink right what if you have you know like paid a little bit of in-game currency and
+you got something that you would hand to them and then they would consume it and they had an
+effect on the world right and they had an effect on their character or something like that it's
+much more fun when you've got a social network with a sense of space and a lot of the social
+networks we have right now are degraded in comparison to the mugs that we had in the 1990s
+they have less functionality in that sense and i think that that's pretty interesting how can we
+bring back the cyberpunk vision of social networks again yeah very cool so uh is that what you're
+working on now uh sprightly and all that that's your spare time what are you what are you doing
+when you get paid oh so i work i'm contracting halftime for an organization called digital bizarre
+and uh they do a bunch of decentralized identity and decentralized uh other type technology things and
+it turns out some of the technology said i was interested in overlapped with theirs so i'm working
+on the object capability the ocap ld stuff i'm actually getting paid to work on that um so
+tying that together with the activity pub and stuff is with my job outside of work um but i do get
+paid and right now to do some standards work uh and thankfully uh oh i'm i'm uh digital bizarre
+i've got i'm pretty strict where i will only do free software development uh and they are
+respecting my wishes there and uh even though they do have some proprietary stuff that they do
+and so i'm i'm getting to work on libraries and stuff like that uh to advance some of this stuff
+oh that's very nice i i consider myself pretty much having the dream job now also i'm i'm i'm
+making only free software i'm creating tools for developers and i'm uh scratching all the
+itches i have accumulated over the last 20 years of working in programming like i would like to have a
+better build system yeah we're going to build a better build system i'd like to have a better way
+to put code together with other code yeah that's what we're developing i want to make better
+distributed applications yeah that's also part of what we're doing very cool very cool uh
+well it sounds like well we're like we shouldn't go uh an hour long and i think we just hit an hour
+so we need to wrap up i think we should wrap up so uh you've got some things you you want to plug
+somewhere you want people to go well i'm going to be co-presenting at racquet con with my spouse
+Morgan Lumberweber uh we are going to be presenting on the workshops that we've been doing and also
+so i'm we're going to be co-presenting a talk called racquet for everyone else so it's kind of that
+very topic about well racquet has targeted these two communities but there's a bunch of other
+groups of people who could really benefit from racquet um and Morgan's going to kind of focus on the
+the humanities academic side of things and i'm going to focus on the um kind of you know the python
+space of developers and stuff like that and so we're i'm pretty excited about that okay cool um
+yeah what i'm working on these days is is fractalite can find us at fractalite.com our biggest
+challenge is to explain what it is we're doing so uh let us know if you understand anything
+after visiting the web page and uh we'll try to make it more understandable as we go along
+sounds great and something that you and i are both doing is trying to get uh racquet better
+packaged and nicks and geeks respectively um so maybe once this episode ends we should have a
+quick check-in on that yeah yeah you're absolutely right let's do that okay this has been Christopher
+Lamberweber and we've been talking about object capabilities and flow-based programming and
+actor models and all other kinds of stuff that happens while we were talking about it and all
+kinds of fodder for new episodes but for now this has been Hacker Public Radio
+listening to Hacker Public Radio at hackerpublicradio.org we are a community podcast network that
+releases shows every week day Monday through Friday today's show like all our shows was contributed
+by an HPR listener like yourself if you ever thought of recording a podcast and clicking our
+contribute link to find out how easy it really is Hacker Public Radio was founded by the digital
+dog pound and the infonomicon computer club and it's part of the binary revolution at binwrap.com
+if you have comments on today's show please email the host directly leave a comment on the website
+or record a follow-up episode yourself unless otherwise stated today's show is released under
+a creative comment attribution share-like 3.0 life and

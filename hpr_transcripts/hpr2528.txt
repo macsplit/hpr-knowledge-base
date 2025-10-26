@@ -1,0 +1,91 @@
+Episode: 2528
+Title: HPR2528: CCTV with DARKNET
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2528/hpr2528.mp3
+Transcribed: 2025-10-19 04:50:49
+
+---
+
+This episode of HBR is brought to you by AnanasThost.com, get 15% discount on all shared hosting
+with the offer code HBR15, that's HBR15, better web hosting that's honest and fair at AnanasThost.com
+Hello everyone and this is Operator with another episode of Hacker Public Radio.
+Today we're going to go over CCT system that I built with a couple of cameras and power Ethernet.
+And this will basically give you alerts on your phone when you're out and inside and do throttling and object recognition and some new alerts.
+Still waiting on something to do facial recognition properly and easily and I don't think that's really quite there.
+There's a lot of work that's into that portion of it.
+So what I wanted was to detect actual people and actual vehicles might be easier actually than faces believe it or not.
+So first things first I had some family members and friends and co-workers looking at this stuff and realized that whatever they had wasn't going to be sufficient.
+I knew whatever link you box I bought wasn't going to be enough for what I wanted to do and I wouldn't have that customization.
+So I looked around for some decent cameras ended up with a real link 16 gig onboard SD deal and I purchased one for the front and one for the back.
+Now there are a number of things online you can look at to help you with placement, things like that.
+What I will say is beware things like high shadow areas where it's in a place where there's a lot of sunlight.
+So if you get a lot of sunlight you're going to get potentially big shadows going across and causing motion.
+And also you want to keep them kind of out of reach but not too high. So I think this nine feet eight feet.
+Anyways I'll go into the setup. So what you'll end up with is alerts, proper motion alerts and proper object recognition alerts.
+So the first step was obviously sending up the cameras, fishing the wire. I got a three foot, I had a three foot auger that I actually used to run cable.
+And that had, we got a little awning that I drilled through and lucky that was long enough to do some of the work for me.
+So I ran that and had I power over the internet switch. That power ethernet switch gave me eight ports.
+It's all really only needed to. And power ethernet switch went to my media server and that media server ran Zollminder.
+And Zollminder is pretty much the only thing I was able to find that is still open source and easy to use and easy to configure.
+There's a couple of other ones out there that didn't really have the gusto in the background that Zollminder has. It's been around forever.
+So started with Zollminder started with learning how preclusions work. So for example, if you've got it aimed at the street, the lights will create a delay in which the motion won't be triggered.
+So if you see lights, then don't trigger motion anywhere else within this old night.
+So that was fairly straightforward. Setting up the sensitivity took a bit of work understanding how the sensitivity works and the different options for when motion is captured.
+You'll get things like rain and shadows again, things like spider webs, moths and different insects flying towards the IR at night and even during the day.
+So once I kind of got the motion parts set up, I and tandem started working with darknet and yellow.
+So the idea here being that these images or a sample of images would run through darknet and try to do object recognition.
+So my first attempts were that of getting things like 38% boat.
+So I quickly realized all I needed to actually filter out is human cat and dog and car right and maybe a few other things.
+As I said, what I'll do later is work on a custom, what they call them weights, I think kind of profiles to scan again.
+So instead of scanning for boats during the motion, I'm just going to scan for what I want to scan for and that will reduce the time.
+Currently it's 10 seconds per frame just about and I want to reduce that by reducing the number of things it's actually scanning for.
+Today I just gripped out the objects that are what I'm looking for.
+So regardless of how many objects it detects, it's only searching for, it's only kind of trigger and alert for for those types of human dog cat person.
+So the hardest part was getting all this kind of horrible bash scripting is going.
+So what happens is I look at the logs inside of Zollminder and I take the logs and look for when an event has been completed and event ends.
+And then when that event ends, it will process that folder.
+Now initially I processed all the images in the folder with darknet.
+What I realized pretty quickly is if you cut 8 hours of rain, you're going to go end up back in time in a huge backlog.
+So every 10 seconds say you have 50 frames, that's an hour roughly, right? For just an hour, for just 50 seconds of motion, quote unquote.
+So what I ended up doing is sending in a maximum of five to I think 10 frames per event for the whole event, meaning that if there's a bunch of motion, we're going to send just five random frames out of that whole event series and do OCR or I'm sorry object recognition on those.
+So that proved to help with the backlogs and the trying to catch up during rain or big motion events.
+What I quickly ended up with is the issue of if you're in your front yard plan or playing with the kids or doing some work, right?
+You're going to end up with multiple alerts and kind of get flooded.
+You most networks probably will let you do this a little easier, but I had to do some shenanigans with checking the ARP cache on the actual router.
+And I had a horrible script it logged and tell it actually tone that's into my router and dumps out the ARP cache and there's different values for ARP cache to say basically if a phone is on the network.
+So we have two Android devices and if one of those indoor devices, one or more of those indoor devices, excuse me, is on the network.
+It's going to throttle the alerts to every hour. So it's going to set a timer right when it sends that first alert out and it's not going to send anything out for another hour after that.
+So if you're in the front yard doing something, you'll only get one alert every hour at a maximum.
+So what I didn't want is to turn alerts off obviously when I'm home because that kind of is the interesting about it.
+So you'll get the male person will come up or maybe you know in laws will come up and you'll get an alert about you know 20 seconds if you're lucky to 10 seconds before they actually get to the door.
+So that that I wanted to keep that part of it, but what I didn't want obviously is to be flooded while I'm outside and stuff.
+So it's a bit of a work around. There might be some other options that I'm not thinking of off the top of my head, but I said, oh wireless is the easiest way to go for this type of detection, whether or not someone is home.
+I've got the scripts online. That's pretty much all of it.
+What I wanted to also mention, I had a big list of everything, but I'll try to add if I find the list or recreated. I'll try to add the notes.
+One of the biggest parts was motion alert or smearing.
+I had some issues with smearing and I changed the type from remote or the impact stream to remote or remote to impact stream within ZoneMinder and that fixed a lot of my smearing issues.
+Kind of smearing is basically ZoneMinder catching an image between frames and you end up with this smeared aspect, which is really bad for ZoneMinder because it thinks that that is an actual motion.
+So I do get a fair amount of errors within my setup because I'm actually capturing too many frames per second.
+So that's probably a big reason why I'm getting a bunch of errors and I'm getting that smearing, but I was able to use a different technique, either the remote or the impact stream, to reduce the times that smearing happens.
+Another outcome I realize is that when you're doing the Zoning and you're doing the sensitivity, you want to set a ZoneMunkey with it.
+Make the sensitivity as high as you can or when you know it's going to trigger and then start backing it off and let it sit for a couple of days.
+Let it go through some rain, let it go through some shadows during the daytime, some high sunlight, and you'll get a feel for how that zone is working before you add more zones.
+The front yard ended up being a longer, took longer than it could have because I had to go and troubleshoot, look in the actual logs and see what zones were being triggered for motion and set the alarm zones and the pre-fusion zones and all that good stuff.
+Another throttle I mentioned or thought of is probably the whole just fishing aspect of it. I already had fishing tape and I had a DONE generator to help taste wires, but I ended up having to poke more holes in the wires than I should have because the tape was going up back up the bottom through the middle of the Tickety U term.
+So how do I run the tone generator in the middle of the water would have known that the thing took a U term. So I ended up poking more holes in my walls and I should have other than that, other than it all being a bash, the actual email script is in Python, but other than most of it being a bash, it's working great.
+I've been using it for a while now, sometimes I've had to restart the zone reminder for whatever reason it's crept out on me.
+But in general, it's pretty sexy stuff. I think my next steps obviously are going to try to be doing face recognition and getting that honed and placing a camera towards the front door.
+So when somebody approaches the front door, it'll train their face that they're not already in the database, but really once they're at the door, it kind of defeats the purpose of the whole setup.
+Another piece I'll say is that a lot of the guidance online says you can, the best thing you can do is actually catch a license plate number.
+So what I'd like to do is shoot a camera farther down the street, almost in someone else's yard pointing down the road.
+So that way I get their tag when they're either driving away or coming to our road. So depending on what side of the road, you're probably going to have to have a camera aiming both directions.
+I'm thinking maybe if I can get one camera aiming, I can hopefully configure that camera for a night time and hopefully be able to see the plates during the day also and then not be washed out.
+They do have plate readers that are fairly expensive. I want to say four, three, five, six, eight hundred.
+But what you can do is mess with the exposure times and mess with the lighting of the actual infrared and get that exposure time pretty low and get your plate numbers that way.
+But during the day is the other is a conundrum. So I do have a bit of work to get the plate stuff to work and I don't even know if I'm going to go down that road because it was just kind of a side project anyways and it's not like we're in a high crime area that we know of and haven't luckily had any issues with that.
+Anyways, feel free to check the links out. Give me give me a heads up. There's not a whole lot of with being easy stuff out there for this. If you want to start, you can actually start with ice by it actually has object recognition built into it.
+They have a little plugin also that has that object recognition stuff. And if you want to just toy around with it, but as far as a was being idiot proof, you know, package will do all this object stuff.
+It's just not there yet. So anyways, if anybody has any other suggestions or is familiar with object recognition and yellow and dark net, please let me know and we can kind of go from there.
+You've been listening to Hacker Public Radio at Hacker Public Radio dot org. We are a community podcast network that release the shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HBR listener like yourself. If you ever thought of recording a podcast and click on our contribute link to find out how easy it really is.
+Hacker Public Radio was founded by the digital dot pound and the infonomicon computer club and is part of the binary revolution at binrev.com. If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise status, today's show is released on the creative comments, attribution, share a light, 3.0 license.

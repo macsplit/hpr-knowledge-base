@@ -1,0 +1,167 @@
+Episode: 1343
+Title: HPR1343: Too Clever For Your Own Good
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1343/hpr1343.mp3
+Transcribed: 2025-10-17 23:52:58
+
+---
+
+.
+Hello, this is Leandere for Hacker Public Radio, recording 20th August 2013.
+Two clever for your own good.
+Today I'd like to talk to you about an experience I had that involved my love of programming
+and Hacker Public Radio.
+Let me set the stage.
+The date is April 1, 2013, and Ken Fallon has just released Hacker Public Radio
+episode 12-16 digital data transfer.
+As some of you may recall, this episode was nothing more than several minutes of Morse
+Code.
+Now there was a time when I spent a great deal of time getting better at translating
+Morse Code, but I haven't stayed in shape and it would have been a lot of work for me
+to sit through this episode and translate it by hand.
+So what I decided to do instead was find a way for the computer to translate it for me.
+Many of you are probably aware that Linux comes with a program that handles translation
+to and from Morse Code, named Morse, but it only works with converting ASCII text of
+DIT and DAW respectively into an out of English text.
+So how was I going to translate an actual audio file into the corresponding DITs and DAWs?
+I thought of a few different possible ways to do this, looking at programs that would convert
+the audio into a waveform, in some kind of an image file, and then parsing the image
+file for periods of sound and silence.
+I looked around for a few different packages and really couldn't find anything that would
+do the work I needed it to do, and that's when I suddenly remembered that really uncompressed
+audio is just a numeric representation of the waveform.
+So if I could just convert it into uncompressed audio, I would probably be able to output it
+in some kind of a format that I could use.
+So I started by converting the org file into an uncompressed wave file using SOX.
+SOX is billed as the kind of audio Swiss Army knife.
+So I just started with SOX, hpr1216.org, hpr1216.wave, which would just use the defaults
+and convert the file.
+After having done that, I needed to know some of the information about the internal structure
+of the wave.
+So I used SOX, another tool that comes with the SOX suite, to get the metadata about
+the wave.
+So SOX, hpr1216.wave, and that gave me a lot of information that I needed.
+The audio was a single channel, that is mono.
+The single rate was 44,100 samples per second, encoded as 16-bit signed integers.
+So really, this gave me all the information I needed, and now I just needed to access
+the actual samples and spit them out in a way where I could detect sound and silence,
+preferably in a line-by-line format, so I could feed it into whatever text processing
+script or whatever I could manage to come up with.
+Now I could have gone probably straight to raw audio, but since I went to wave, because
+I was familiar with it, I think figured it would probably be useful to remove the wave
+header.
+So first I needed to know how long that was, an easy way to do that is just to generate
+an empty wave file.
+So I broke out SOX again and went with SOX-T raw for the input type, dash B16 for 16-bit
+samples, dash R44100 for 44,100 Hertz sample rate, dash C1 for single channel audio,
+mono, and dash E signed hyphen integer to get the appropriate encoding, slash dev slash
+null as my source file of type raw, and empty dot wave as my output file.
+Now running that command just spits out a single 44-bit file, which is just the wave
+header.
+So now I had the information that I needed to be able to skip over the wave header in
+hpr1216.wave.
+Next step is to get it into some kind of usable text format.
+Now you're thinking of converting binary data into text, the first few things that come
+to mind are maybe base64 or hexadecimal encoding.
+I opted for the latter, since I wouldn't have to worry about variable length, numbers
+would all be very easy to work with.
+So I broke out one of my favorite tools, hex dump, and the command line I used for this
+was hex dump, hyphen S44 to skip the first 44 bytes, hyphen V for verbose that is not
+to drop repeated sequences, for example long runs of zeros, and then format strings, hyphen
+E single code 220 slash 2.
+So that is 220 repetitions of 2 bytes each, double quote %04 lowercase x double quote.
+So that is going to take an output for hex digits for the sample that's being encoded.
+So again, that's taking a 16-bit signed integer and outputting it as 4 hex digits.
+And a single quote to close that format string, hyphen E for an additional format string,
+single quote, double quote, back slash lowercase n, double quote, single quote.
+And so that's going to output a line ending after each run of those 220 samples, hpr1216.wave,
+greater than sign, hpr1216.hex.
+So what that's going to do is take 220 samples, output it on a single line, repeat this for
+the whole file, and spit it out into my output file.
+Now I tried this with an even 441 samples, which would have been 10 milliseconds of audio
+per line, but I had too much overlap at such a high resolution between sound and silence,
+and the eventual result I got was just too garble to work with.
+So the next thing I'm going to do is to find all the currencies of silence and replace
+them with something that's a little easier to detect visual.
+For this I used said, and the command said hyphen E, single quote, s slash 0, 0, 0 dot slash
+space, space, space, space slash g, single quote, hyphen E, single quote, s slash ff dot
+slash space, space, space, space slash g, single quote.
+So what that's going to do is it's going to take all the currents of either 0, 0, 0 followed
+by a single character, and fff followed by a single character, and globally replace those
+with four spaces.
+Since we're working with signed integers, that means not only is values near 0 close to
+silence, but also values near negative 1, which is ffff.
+So taking my hex file, I use that said command, hpr1216.hex, greater than sign hpr1216.space.
+So now this gives me a file full of essentially random hex digits separated by long runs of
+lines filled only with the space character.
+So if you open that with the less command and use hyphen capital S to not wrap lines,
+you can actually scroll through the file and visually see the dots and dashes as short
+runs of non-white space lines, followed by long runs of non-white space lines.
+This I thought would be a good enough format that I could run it through a text processing
+tool and actually get dits and does respectively.
+So my favorite programming language for this kind of operation, and really just any quick
+one off prototype program, is AUK.
+And since this is really text processing, this is really where AUK shines.
+So my AUK program basically had to do this.
+It had to find lines that were full of just spaces, interpreting those as silence, and
+then keep track of how many of those occurred in a row and how many non-white space lines
+in a row.
+So essentially I structured the program as a simple state machine.
+It has four rules.
+The first is basically to check to see whether the current line is all white space.
+So the regular expression I used for that is slash, carrot, space, star, dollar sign slash.
+So that's just saying find me runs of zero or more spaces that stretch all the way from
+the beginning of the current line to the end of the current line.
+I match that against the current line and store that result in a variable.
+So essentially just a one or a zero of whether or not the line was silenced.
+This first row also has to store the state of the previous line since we need to be able
+to detect transitions between silence and non-silence.
+So that rule looks like last equals this.
+This equals dollar sign zero for the variable holding the entire line, tilde for regular
+expression max, match, and the regular expression I previously mentioned.
+The next rule checks to see where last is equal to this, i.e. we haven't changed state.
+And if that's the case, increments the duration variable.
+So this just allows us to keep track of how long we've been in the current state.
+The last rule checks for not last that is the last line was not silence and this, i.e.
+this line is silence, so transitions from sound to silence, which is going to tell us that
+we just finished a run of some amount of sound.
+So in that rule, I check if duration greater than 10 and duration less than 20 print
+F period, which is the sign that Morse uses for a DIT.
+Else if duration greater than 30 and duration less than 40 print F hyphen or the DAH character.
+So whether those got matched or not, reset the duration to zero since we just changed states.
+The last rule checks for the opposite state transition.
+So going from silence to sound and the match criteria for that is last, i.e. the last
+line was silence and not this, i.e. this current line is not silence.
+This rule looks very similar to the last except the duration ranges are slightly different.
+Here I check if duration greater than 30 and duration less than 40 print F backslash
+N. That is to output a single line break to mark the end of a letter.
+Else if duration greater than 80 print F backslash N backslash N.
+So two blank, i.e. two line endings or one blank line to act as a word separator.
+And again reset the duration to zero.
+Next you take and run your dot space output, which again is those lines of hex characters
+and lines of white space through this awk script using awk hyphen F, hpr.awk, hpr1216.space,
+greater than hpr1216.dot.
+So that gives you a file that contains a long series of periods and hyphens separated
+by blank lines representing the actual Morse code in ASCII text.
+This is suitable to run through the Morse program with the hyphen D or decode flag and
+actually output something resembling human readable English text.
+Obviously there are a few typos but really this was far better than I expected this to work.
+All that was needed was to run it through a spell to correct some of the typos and the
+text was easily recognizable as a portion of the Wikipedia page for Morse code.
+So there you have it by being a little clever than you probably ought to be and doing things
+that are a complete waste of time.
+You can be lazy and teacher or computer to do something that you don't feel like taking
+the time to do.
+Thank you and see you next episode.
+You have been listening to Hacker Public Radio at Hacker Public Radio.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by a hpr listener like yourself.
+If you ever consider recording a podcast, then visit our website to find out how easy
+it really is.
+Hacker Public Radio was founded by the digital dog pound and the economic and the computer
+club.
+We are funded by the binary revolution at binref.com, all binref projects are proudly sponsored
+by LUNA pages.
+From shared hosting to custom private clouds, go to LUNA pages.com for all your hosting
+needs.
+Unless otherwise stasis, today's show is released under a creative commons, attribution, share
+a life, lead us our lives.

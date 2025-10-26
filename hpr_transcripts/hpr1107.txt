@@ -1,0 +1,120 @@
+Episode: 1107
+Title: HPR1107: Compilers Part 3
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1107/hpr1107.mp3
+Transcribed: 2025-10-17 19:03:52
+
+---
+
+music
+music
+music
+music
+music
+music
+I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do
+to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know what to do, I don't know
+is what lexical analysis does. It generates tokens based on its input stream.
+The input stream to lexical analyzer is typically raw bytes from a source code file.
+From that comes things like keyword tokens, string tokens, integer tokens,
+flooding quick tokens, operator tokens, and so on.
+The mechanism that implements lexical analyzer is called a finite state machine.
+But as a conceptual machine, that only can be in one state at a time.
+Its current state is changed by the roles of the machine versus the input stream.
+As it transitions from one state to another, it eventually settles on a state
+that outputs a token indicating that a token was found.
+Let's take searching for the keyword break, for instance.
+The same that the input stream is BJ-BR-E-A-K.
+Once the B flows by the stream, we might transition from our initial state to one where they are.
+The state is adjacent. We find that's a J flows by the stream and we go back to the initial state.
+Once again, we find that a B flows by and we transition to the B state.
+Then in our flows by, we transition to the R states and so on until we reach the K state,
+at which point we output a token.
+Typically, we don't build these machines directly, rather they're built by a generator,
+which takes it into a description of each token.
+One of the more popular lexical analyzer generators is called Lex.
+Let's review.
+Our source flows through a lexical analyzer,
+which matches its input stream with token descriptions using a finite state machine generator.
+Then outputs tokens to a parser, which then uses ship-reduced parsing to build parse trees
+and tell us significant match occurs in the global parse tree.
+It performs actions to stitch together a syntax tree at each of these match points
+and continues until the entire global parse tree is matched.
+The theoretical machine that implements a parser is a pushdown finite automata,
+which is just a finite state machine with a stack attached to it to handle the inherent stacking procedure of building trees.
+Like a lexical analysis, we typically don't build these machines directly, rather they're generated.
+In the case of parsing, one of the more common generators is called Yak.
+Yak takes the language grammar and automatically generates a parser for us,
+which is damn convenient.
+So we have a syntax tree, what next?
+Well, semantic analysis.
+We've already validated input stream against context-free grammar.
+Now we've validated against a context-aware grammar called a natural-beaded grammar.
+What we're going to be doing in semantic analysis is validating that the symbols are declared before they are used.
+At the same time, we're going to generate a symbol table and then we'll perform type checking.
+There are any number of semantic checks you can do based on the nature of your language,
+but we're just going to focus on these two as they're applicable to most languages,
+and actually are two major classes.
+In the process of validating semantics of a syntax tree, two things are generated,
+an attributed syntax tree and a symbol table.
+These two things are used in the next step of a compiler code generation.
+There are two primary types of attribute grammar.
+I'll attribute a grammar and that's attribute grammar.
+I'll attribute a grammar table with carries information from parent to child,
+whereas as attribute a grammar carries information from child to parent.
+These two directions produce, on a syntax tree, what are called inherited and synthesized attributes.
+I'll attribute a grammar being associated with inherited attributes and as attribute a grammar being associated with synthesized attributes.
+The production of synthesized attributes is what type checking will do.
+And the production of inherited attributes is what checking to see if a symbol is declared before it's used.
+We'll call this scope checking, we'll do.
+An attribute a grammar, it's just a grammar with attributes associated with it.
+Typically this is something like the name, value rules for generating these things.
+All right, blah, blah, blah, blah, blah, blah, blah, blah, blah.
+Whatever, attribute a grammar is so our convenient way to tell us what to do with each step.
+So let's do scope checking.
+First, we use a data structure called a symbol table.
+A symbol table is a map of symbol entries within a hierarchical scope or the basic scope model of your language,
+which is typically hierarchical.
+We start scope checking.
+We're going down top-down in the syntax tree, so naturally we're going to start the global scope.
+When a symbol is declared, we save it in a symbol table within the current scope.
+It's already declared within the current scope we throw in error.
+We encounter a function or something else that has a nested scope to make this our current scope.
+Now whenever we encounter a symbol being used, we walk up the symbol table scope hierarchy in search of its declaration.
+This will tell us if it's been declared, if it hasn't, we'll throw an error.
+And also tell us what scope the symbol tables used in.
+A part of the table entry is being used at each use of a symbol would make a fine, a fine contribution to the attributed syntax tree.
+See what I'm getting at here? See what I'm saying?
+Other information might trickle down the syntax tree like function return type, for instance.
+And everything else in your L attribute is grammar.
+That's enough of that.
+Now let's talk synthesized attributes.
+So we have a context-free grammar, e produces e times e, or e plus e, or id.
+Let's take the following source code, 3 times 2 plus 5.
+Imagine the tree that this produces, e on the top branching to e plus e on the left branching to e times e and so on.
+Now let's take the s attribute grammar, e value equals e one value times e two value, whereas e produces e times e.
+We do the same thing for e plus e, but we add values together.
+And finally, we have e value equals id value, where e produces id.
+First thing we do is check our frontier for syntax tree, which is id times e, id plus id.
+We expand on that using e value equals id value, and we find that e value 3 times e value 2 plus e value 5.
+We expand e value equals e one value times e two value, and find that e value equals 6 plus e value equals 5.
+Finally, we expand on e value equals e one value plus e two value, and we find that at the very top e value equals 11.
+We usually throw a type checker if the left node type of a parent operator does not match the right type.
+That isn't always the case, of course.
+Depending on your language, there might be room to add another node in the tree or type conversion between parent and child, for instance.
+The funny thing about synthesized attributes is we can actually compute them at the same time as we do parsing, since we're building the syntax tree bottom up.
+Just thought I'd throw that in there.
+There's a logical separation between parsing and semantic analysis, and that's important to conceptualize, but practice the lines may be blurred just a little bit.
+The goal of everything we talk about so far is to verify that source code matches our language description.
+Almost as a byproduct of this verification, we generate attribute syntax tree and symbol tables.
+Everything we've done so far is what's called front end of the compiler.
+In the next episode, we're going to start talking about the backend of a compiler.
+So, that's it. Thanks for listening to this episode, and I look forward to talking with you a bit later about the backend of a compiler.
+Take care. Bye-bye.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by a HBR listener by yourself.
+If you ever consider recording a podcast, then visit our website to find out how easy it really is.
+Hacker Public Radio was founded by the Digital.Pound and the Infonomicom Computer Club.
+HBR is funded by the binary revolution at binref.com. All binref projects are crowd-responsive by linear pages.
+From shared hosting to custom private clouds, go to lunarpages.com for all your hosting needs.
+Unless otherwise stasis, today's show is released under a creative comments,
+attribution, share a like, feed us our license.

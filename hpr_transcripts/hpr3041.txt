@@ -1,0 +1,1092 @@
+Episode: 3041
+Title: HPR3041: How to use GNU Autotools
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3041/hpr3041.mp3
+Transcribed: 2025-10-24 15:36:49
+
+---
+
+This is Hacker Public Radio Episode 3141 for Monday 30 March 2020.
+Today's show is entitled, How to Use New Autos,
+and as part of the series, Programming 101, it is hosted by Klaatu
+and is about 39 minutes long
+and carries a clean flag. The summer is
+How to Use New Autos.
+This episode of HPR is brought to you by An Honesthost.com
+Get 15% discount on all shared hosting with the offer code
+HPR15 that's HPR15.
+Better web hosting that's Honest and Fair at An Honesthost.com
+This is the next episode in my very, very mini series on
+Gnu Autotools. The previous episode I took the time to
+sell you on the idea of using Gnu Autotools.
+Now, broadly, I was selling you on the idea that you should use a build system.
+I don't care, I don't have a horse in this race,
+I don't care what build system you use,
+but honestly, a build system is a good idea.
+It's better than no build system.
+If you want the reasons for that, then go listen to my previous
+Hacker Public Radio episode. I don't know the episode number to
+give you right now because I haven't uploaded it.
+I'm recording these in quick succession.
+We'll just jump into Gnu Autotools here.
+This is going to be a sample little project for Gnu Autotools.
+I just want to get you familiar with the process because
+it's a bit of a puzzle to put together.
+Unlike something like Git, where the first command is Git in it
+and then you're in Git. You're suddenly using Git.
+There's nothing like that for Autotools.
+It's not like you can say Autotools create.
+Then you've got a project directory.
+It's like RPM Dev has something like that too.
+There's a couple of different packaging and build systems out there
+that kind of give you a place to start.
+Whereas Gnu Autotools, it's a little bit less clear
+from Autotools itself where you begin.
+There is documentation. I would consider it complete
+documentation. I do not consider it good documentation.
+I mean that in the nicest of ways,
+because some people work very hard on the documentation.
+The documentation found on Gnu.org slash software slash Autoconf.
+It's very complete. It is very thorough.
+But it doesn't really step back ever that I could find
+and take you through the workflow.
+It tells you exactly what needs to be done.
+It just never tells you exactly what does that look like.
+Sit me down at a desk and show me what I'm going to do
+in order to reach that first Autotools project configuration.
+That's what I'm hoping this episode,
+that's the gap that I hope to fill with this episode.
+First of all, to get started with Gnu Autotools,
+you need Gnu Autotools.
+Strangely, Gnu Autotools isn't actually a thing.
+It's kind of confusing, I guess, but it happens.
+Gnu Autotools, when we say Autotools,
+we're talking about a collective.
+We're talking about a group of tools.
+One is Automake, the other is Autoconf,
+and the other is Make.
+You need those three things in order to say
+that you are using Gnu Autotools.
+Your Linux distribution most certainly includes those
+but what they call them is kind of up to the distribution.
+You may have to look around, poke around for what packages
+consist of Gnu Autotools,
+which you might find Automake, you might find Make,
+you might find Autoconf, you might find Autoreconf.
+Who knows how it'll be split up,
+but those are the components that you will need.
+Automake, Autoconf, and Make.
+You may also need a compiler.
+Now, I say May because technically speaking,
+you don't need a compiler.
+If what you're packaging up does not require compilation.
+So, you may or may not need a compiler.
+Autotools has a pretty strict directory structure.
+It knows exactly what it wants to find
+and where those things need to be.
+Again, it would be kind of cool if there was like
+a Autotools init sort of thing
+where it would build that structure for you,
+but there isn't.
+I mean, it would be easy to script that sort of thing.
+You could do this yourself.
+But out of the box, as they say,
+there is no such thing.
+You just have to know that there's a set of expected structure.
+So, first of all, your source code should be
+in a sub directory called Source or rather SRC.
+That's what it expects.
+You can change it.
+There are variables or rather macros, I guess,
+that you can invoke in some of your configuration files
+to tell Autotools, oh, by the way,
+I didn't put my source in SRC.
+I put it over here instead.
+So, you can do that.
+I'm just saying that...
+Like, why would you do that?
+You may as well put it into Source.
+But there may be a good reason not to.
+So, who knows?
+I mean, it's up to you.
+Point is, it's going to want to see a source directory.
+It also wants to see four different files.
+News, all capital, N-E-W-S.
+Read me, all capitals, R-E-A-D-M-E.
+And it does need to be read me.
+So, if you've got to read me.M-D for your Git repository,
+your Git host, then you'll probably want to simlink,
+read me to readme.M-D.
+Authors, again, all capitals,
+A-U-T-H-O-R-S,
+and change log, bizarrely, not all capitals,
+but with a capital C and a capital L,
+all one string, change log.
+If you do not have those files, it will complain.
+I almost feel like it'll even say,
+that I almost feel like it won't even build.
+I could be misremembering that,
+but I kind of want to say that it won't build without those files.
+So, you need those files.
+They can be empty, but they've got to be there.
+Okay, so Auto Tools, the initial configuration file
+that you're going to want to create,
+is a file called configure.ac.
+That needs to be out with all these other files,
+the change log, and the readme, and the authors, and so on.
+So, that's the project's root directory.
+Configure.ac needs to be there,
+and this is going to be a file with actual content.
+Like, this cannot be an empty file.
+This is an important file.
+The configure.ac is going to be used by Autoconf,
+which is a component of the Auto Tools Suite, shall we say.
+Specifically, it creates the configure shell script
+that users run before building your code.
+So, you know that that first famous step
+of the Auto Tools in Cantation,
+.slashconfigure, make install.
+.slashconfigure, that's what this file is going to build.
+Now, the cool thing about that is that there's a bunch of standard actions
+that .slashconfigure runs through,
+and you don't have to worry about the bulk of them.
+The ones that you need, for sure,
+are like two lines.
+There's two sort of, I think of them as variables,
+but they're not variables.
+They are M4 macros,
+and M4 is some kind of arcane programming language,
+I think, or configuration language.
+You can read all about it, again,
+at the GNU.org slash,
+software slash AutoCons manual.
+I won't go into it.
+We can call them macros, pretty safely.
+So, the first one that you absolutely need to have
+is AC underscore init,
+and those are both, it's all capitals.
+All the M4 macros, as far as I can recall,
+are all capitals.
+Actually, there's some custom things
+that you can put into something.
+Yeah, there are some custom variables
+that you can create that don't need to be all capitals.
+But, anyway, generally, the macros are going to be all capitals.
+So, AC underscore init.
+And this is kind of, well, it's an array, I guess,
+or a list, at least.
+So, you put AC underscore init and then parentheses.
+And within those parentheses,
+you need three properties.
+You need in brackets and square brackets.
+You need the name of your project.
+Let's call it penguin.
+You need the version.
+Let's call it 0.1.1.
+And you need the contact information of the maintainer.
+So, I'll class you at hackerpublicarea.org.
+So, each of those properties is in square brackets
+and they are all separated by a comma.
+So, AC underscore init parentheses,
+square bracket penguin,
+closed square bracket comma,
+square bracket 0.1.1,
+or 0.0.1, whatever we're calling it.
+A closed square bracket comma,
+square bracket,
+clat2 at hackerpublicarea.org,
+closed square bracket,
+closed parentheses.
+That's your AC init line.
+If we had a fancy auto-tools generation script,
+I could imagine that those would be the required arguments
+for such a script.
+That would make sense.
+And then it would insert that line into this file,
+configure.ac.
+The other macro that you need is
+AC underscore output.
+I don't remember what it does.
+It has to be there.
+You're going to want it there.
+Just believe.
+So, if you were to run auto-conf at this point
+and to run auto-conf,
+you simply type in AUTO,
+CONF, at your prompt,
+then a configure script would be generated
+from this configure.ac file.
+And it would actually run.
+Like the configure script
+would run and complete successfully.
+So, you've just made your...
+That's the init step.
+You've now got an auto-tools project.
+On your hands.
+It's got all those little weird required files,
+the news, and the authors,
+and the change log, and the whatever else.
+And it's got a configure.ac file.
+Now, it's still missing some things,
+but I mean, that's the beginning.
+So, if you sort of have a routine
+like that initial kind of like,
+okay, how do I start one of these again?
+This is the thing you're going to want to remember right here.
+Make some files,
+dump two lines of configuration
+into a configure.ac file,
+and you're up, up, and away.
+Okay, so the next macro
+that must be invoked
+in the configure.ac file
+are some functions to create a make file.
+And the make file is the...
+that's the second step
+of the famous auto-tools invocation.slashconfigure.
+That's step one.
+We just covered that make.
+That's what we're about to do here, basically.
+So, the macro for that,
+and again, this goes into configure.ac,
+is am underscore init underscore auto-make.
+It doesn't require any arguments.
+You just put it into the file,
+and auto-conf knows now
+to run a routine called am init auto-make.
+And it'll make a bunch of stuff happen.
+AC underscore config underscore files
+is another thing that you need
+in the configure.ac file
+that you're working in.
+And as an argument,
+it requires the thing
+that it should be looking at
+to build the project.
+And in this case,
+that's just going to be make file.
+So, ac underscore config underscore files
+parentheses square bracket make file
+with the capital im's
+closed square bracket,
+closed parentheses.
+Those two lines am init auto-make
+and ac config files
+with the make file as the argument
+sets this up for
+yes, we're running auto-make
+after configure is complete.
+So, generally speaking,
+your configure ac will contain
+those two lines quite
+probably exactly like that.
+Am init auto-make doesn't take an argument.
+You can't give it an argument.
+ac config files takes the argument
+and it's very, very standard
+that the argument is make file.
+Because that's sort of just the standard
+make that's what make is looking for.
+When you run make by default,
+it's looking for make file
+with a capital m.
+You could name it anything you want,
+but that would be silly.
+So, don't do that.
+Just use the normal conventions
+you call it make file.
+Okay, so,
+after that you may or may not need
+another macro,
+which you may or may not need
+to look up yourself.
+The macro that I'm possibly
+advising, including here,
+is something to tell your make
+process, your auto-confir,
+whether to know that
+to need a compiler.
+So, for instance,
+if you've written a project
+in c++, then you would use
+the macro ac underscore prog,
+a underscore cxx.
+If you'd written something in c,
+then it would be ac underscore prog,
+underscore cc.
+And I'm pretty sure there are
+a couple of different ones
+in addition to that.
+And those are listed, again,
+on the very complete
+documentation for auto-conf,
+or rather auto-make, sorry.
+So, that's gnu.org slash
+software slash auto-make.
+And you're looking for the section 8,
+the chapter 8 building programs
+and libraries.
+And it will tell you the
+different ac underscore prog
+options that are available.
+Things for Java with gcj,
+which I don't even know if that's
+around anymore.
+I think that's been deprecated,
+if I'm remembering correctly.
+Vala, I don't know,
+assembly, objective c++.
+I didn't know that was a thing
+objective c.
+All kinds of different ones.
+They're there.
+You just need to know that
+they're there and you need
+to know that you need them.
+And you may not need them.
+If you happen to know that
+the thing you're packaging
+doesn't have ccode,
+or c++ code, or Java code
+that needs compiling,
+then don't use that line at all.
+You can omit it.
+And all the real work will be
+done by the make file.
+And that's not a problem.
+I've got many projects
+too.
+I will have, when I'm finished
+converting all my projects
+to auto tools,
+I will have many projects
+that do not require
+C or C++ or Java
+compilers.
+So don't feel like it's
+necessary.
+It is not required.
+That's what I'm trying to say.
+Okay.
+Next.
+Let's actually move on
+to the make file.
+So the make file,
+you might think,
+certainly if you were kind of
+hacking things together
+the way I was,
+you might think,
+as I did,
+that make files are not that hard
+to create.
+You can make them yourself.
+It's not that tough.
+Why would you use
+a program like auto tools
+to make your make file for you?
+Well, it turns out
+that make files are
+kind of easy to make.
+They're kind of fun to make
+sometimes.
+You get to learn weird new
+syntax and you get to do
+some cool tricks.
+But the ones that you make
+yourself aren't very complex.
+I mean, I've seen some
+complex home-written
+make files for sure.
+But generally speaking,
+they cover the things
+that you're thinking
+need to be covered.
+And it's not necessarily
+everything that actually
+needs to be taken care of.
+So letting auto tools
+do that for you is very smart.
+It's one of the benefits
+covered in the previous
+auto tools episode.
+Go listen to it,
+I guess, if you really need
+more convincing.
+But trust me,
+make files can be
+a lot more complex than
+the way that you're
+writing them right now.
+So let auto tools
+do that for you.
+Okay.
+So the thing, the template,
+I guess we could call it,
+that serves as the origin
+for your make file
+that doesn't exist yet
+and won't exist.
+You're not going to write
+a make file.
+So it won't exist
+when you're finished
+this process.
+It is what gets generated
+by .slashconfigure.
+So the template that
+you do create in order to
+sort of give auto tools
+some guidance is called
+makefile.am.
+That's a capital M,
+makefile,
+and then .am.
+That's am as in auto make.
+And this is used
+by .slashconfigure
+and then it is actually
+invoked by the make command,
+by the user
+or whoever's building the thing.
+Okay. So the syntax
+of this is a little bit
+little bit weird,
+little bit different
+and it's a fairly
+flexible file
+because it is essentially
+your opportunity
+to override
+what auto tools
+thinks it should
+typically do.
+You may not have a whole lot
+too override here
+and that is okay.
+But it is the place
+where you're going to specify
+some very specific
+elements about your project
+that you want to be
+or you want to have
+taken into account.
+So for instance,
+there are some variables
+that you can set in makefile.am.
+There's one,
+well, I should say,
+the variables
+are denoted
+by their endings.
+So I feel like
+that's a little bit
+unusual.
+But for instance,
+let's say that you
+want to make sure
+that from the
+bin directory,
+a program
+is included in the build process.
+So to do that,
+you would create a variable
+called bin,
+all lowercase,
+underscore,
+and then all capitals,
+programs,
+equals,
+what do we say
+the project was named
+Penguin?
+And then
+to further elaborate
+on what you mean
+by bin,
+underscore,
+programs,
+equals,
+Penguin,
+that's kind of the,
+if you've ever made an RPM,
+that's kind of the
+provides line.
+You know,
+it's kind of telling you,
+hey, when you're finished
+running this,
+or when you're finished
+building this,
+you're going to have a
+command called Penguin
+in your binary folder.
+So to further elaborate
+on how Penguin
+is going to come
+into being,
+you make a new variable
+called Penguin
+underscore,
+sources,
+with sources,
+all capitals,
+equals,
+Penguin.cpp.
+So let's unpack
+everything here.
+So bin underscore
+programs,
+that tells automake
+that it needs to structure,
+it's make file,
+such that whatever
+you've just listed
+in bin underscore programs,
+needs to end up
+in the bin
+der,
+that's the,
+the sort of the
+configuration variable,
+bin der,
+which is usually a combination
+of what is it,
+exec and bin path,
+or something like that,
+exec and bin.
+So the bin der,
+whatever that is defined
+as in the dot-slash
+configure,
+whether it was
+defined by dot-slash
+configure automatically,
+or whether it was
+overridden by the user,
+because they know
+that their bin der
+is slash user,
+slash,
+well, local
+slash bin,
+but actually I think
+that is the default.
+Well, they know
+that their,
+that their bin der
+is slash opt,
+for instance,
+or slash opt bin,
+whatever,
+wherever they have it,
+I don't know
+in this imaginary scenario,
+a point being,
+a user might have
+some other plans.
+So bin underscore programs
+is a variable
+that defines,
+essentially what's
+going to be installed
+at the end of this process,
+the target,
+the payload,
+and then,
+because these are all
+variables, you get
+to make them up
+yourselves,
+but you append them
+with these weird,
+sort of underscore,
+underscore something,
+sort of tags,
+to identify them
+as variables associated
+with this other thing.
+So penguin underscore sources
+simply tells automake
+that, well, we have this payload,
+and the parts,
+it doesn't,
+it doesn't exist yet,
+the payload doesn't exist,
+so in order to get
+that payload,
+called penguin,
+we need to look at
+penguin sources,
+and penguin sources
+is penguin.cpp.
+Now, you notice
+that you're not telling
+it where to find
+penguin.cpp,
+and remember I said
+there were a couple of
+directories
+that were required
+by auto tools,
+and one of them
+was,
+actually the only one
+I think that I said
+was required,
+was SRC.
+So penguin.cpp
+would need to exist
+in the SRC directory
+of your project.
+So, because it's a default folder,
+which is SRC,
+you do not have to tell
+the program,
+the automake program,
+where to find the source.
+It knows where to find the sources.
+It's in SRC.
+Now, if you had changed that
+or gotten clever
+and named it something different,
+then you would have to,
+you would have to chain,
+you would have to override
+the defaults,
+and I'm not going to go
+into that,
+because that's, like I said,
+don't do that.
+There are defaults here
+to make your life easier.
+So, if that's all you're doing,
+you're just building
+some source code,
+and you expect auto-make
+to do that for you,
+and install everything
+where it needs to go.
+You're basically done.
+You've told it
+what the payload is,
+you've told it
+where to find the source code
+for that payload.
+You're done,
+sort of.
+I mean, if you have a
+man page,
+you're going to want to,
+you're going to want to highlight that as well.
+So, for, for man pages,
+you do dist underscore,
+man underscore,
+man's,
+all capitals,
+M-A-N-S,
+equals,
+and then, like,
+man slash,
+example,
+or penguin dot eight,
+or penguin dot one,
+or whatever,
+category of man page,
+your application
+would fit into.
+And that's assuming
+that you have a man page.
+But I'm,
+assuming you're kind of
+getting the feel for,
+for the very,
+the structure of the
+make file dot A-M,
+and again,
+you would look all the specifics up
+in the documentation
+to kind of find out
+what your,
+what tools are available
+to you,
+or what variables
+you can create,
+what classification
+of, of variables
+you can create.
+But that's kind of what
+you're doing here.
+You're, you're telling auto-make
+what you're handing it.
+And this is,
+to my mind,
+when thinking of
+RPM packaging,
+and when thinking of
+Slackware,
+Slack builds packaging,
+to my mind,
+this is kind of that part
+in the RPM spec file,
+where you're telling the RPM,
+when you have finished
+building an RPM,
+these are the exact files
+you should find
+in the RPM.
+If there is extra stuff
+in there,
+throw an error
+and tell me
+what that is,
+so that I can audit it.
+And I guess
+there's no analogy
+for Slack builds,
+so never mind about that.
+But anyway,
+so some of the other
+options that I,
+I feel like
+are, they're
+worth mentioning
+would be auto-make options.
+That's all
+capitals within underscore,
+auto-make,
+underscore options.
+The salient one
+that I'm going to mention
+here is the one
+that I use a lot.
+But again,
+look at the documentation
+for other options.
+But the one
+that I use is
+foreign subder objects.
+So that's foreign space.
+Subder-objects.
+And what that does is
+it tells auto-make
+that it's okay
+that we are,
+it's okay
+for it
+to look outside
+of its standard directory structure.
+So it's,
+it's okaying
+for auto-make
+that there are files
+potentially outside
+of SRC
+that it's going to have to deal with.
+Those are the foreign sub-directories.
+So for instance,
+if you did have,
+let's say you
+had a shell script
+that you wanted to install.
+It didn't need to be compiled.
+Maybe it's a launcher
+for your compiled application.
+Maybe it's,
+I don't know,
+a configuration helper
+for the user.
+Or maybe it's a dot desktop file.
+Who knows?
+Then those,
+that could be defined
+as dist underscore,
+bin underscore scripts equals
+and then for instance,
+bin slash
+penguin dot sh.
+So dist underscore bin is telling it,
+when I'm building this for distribution,
+I want you to include
+this script.
+And the script is found in bin slash,
+or it's found in the local bin directory
+and it's called penguin dot sh.
+Of course,
+if I had it somewhere else,
+I wouldn't tell it was,
+I wouldn't say
+that it was located in bin
+if I had, I don't know,
+a script's directory
+or something,
+then I would tell it,
+you may find this one
+in scripts slash
+penguin dot sh or whatever.
+You can include all kinds of things.
+You don't have to just,
+it doesn't have to be shell scripts
+and man pages
+and compiled programs.
+You can just do extra underscore dist,
+all capitals,
+extra underscore dist equals
+and then list the files,
+space-delimited list
+of the files that you want
+to throw into
+the distribution of this,
+of the software.
+The only other major change
+that I can think of
+to make
+would be a,
+a better clean rule.
+I don't find that the automake clean rule
+is all that great.
+I don't know that mine is that great,
+either to be honest,
+but it does kind of work for me.
+I call it nuke,
+so I do a make nuke,
+and it deletes a bunch of stuff.
+So I remove things like
+config.status,
+configure, config.log,
+the make file,
+autoimm4te.cash,
+aclocal.imm4,
+compile, install-sh,
+missing, make file.in,
+config.gasconfig.sub.
+None of those are included
+in the make clean directive
+in the default make file for some reason.
+Definitely the make file wouldn't
+probably include a rule
+to remove itself.
+So that kind of makes sense,
+but when I do a make nuke,
+I really just kind of want to reset
+the whole project back to
+having to run auto-conf again,
+really is what I want.
+Whether that's maybe overkill
+is up to you,
+it depends,
+but just know that
+when you start building things
+with auto tools,
+a lot of files are going to be generated,
+and you may feel like
+you want to get rid of some of them.
+So just kind of be aware of that.
+Okay, so that was the make file.am,
+rather,
+and that's the configure.ac file
+we've got that going.
+Really you're ready to go,
+to be honest.
+The way that this is all generated
+for the user is going to be
+just the dot-slash-configure-make
+pseudo-make install.
+But you're not just a user.
+You're someone who is building
+your bootstrapping
+and auto tools project
+from scratch.
+So in order to hand
+something over to your users,
+that they can do
+the mythical dot-slash-configure-make
+install,
+you need to create support files.
+And the way that you do that
+is auto-reconf-a-u-t-o-r-e-c-o-n-f,
+space-dash-install.
+You'll need that option
+for it to generate some missing files.
+So auto-reconf-space-dash-install
+creates a couple of new files
+and sets everything up
+for distribution, really.
+So when you do a make-dist,
+that's the command
+that auto tools gives you for free.
+It's just there in your make-file.
+When you do a make-dist,
+then it creates
+a tar ball
+with a copy of your project in it,
+with everything that sort of needs to be...
+Everything's generated.
+Everything's there
+that a user needs
+to be able to just unzip
+or rather untar
+and then do a dot-slash-configure-make-install.
+So generally speaking
+as the developer,
+you're going to do a make-dist.
+More often than you're going to do,
+for instance, dot-slash-configure-make-install.
+You'll do a make-dist.
+That will package everything up nicely
+into a tar ball
+for your users.
+If it's not for the users,
+then it's probably for the packages.
+And they'll appreciate that as well.
+They'll be able to download this release.
+The DIST is kind of your release.
+They'll be able to download that,
+point their RPM build system to it
+or take it into their Slack build tree
+or their ports tree
+or whatever,
+and kind of write some kind of script
+or a spec file or whatever they do.
+They'll point it at that DIST file
+that you've provided for them.
+The DIST tar ball.
+And their automated system
+will unarchive it,
+change directory into it,
+and run dot-slash-configure-make,
+and then probably desk-dure equals
+some temporary file location,
+or yeah, pseudo-make-install.
+And it will just magically work.
+Now, if you're building it for your own,
+you know, for testing and stuff,
+then you'll probably act more like a user,
+and you'll manually do a dot-slash-configure,
+and then you'll do a make.
+And then you probably won't do a make-install.
+Maybe you will, I don't know what your setups like,
+but you might run something out of the build directory
+or you might maybe install it somewhere locally
+or maybe you install it into a virtual machine,
+who knows,
+and then you can run it and test it and so on.
+And that's it. That's auto-tools.
+That's the process.
+And as you can tell, it's not technically that hard.
+It's just sort of,
+you're just kind of on your own.
+That's the biggest drawback,
+is that you don't really exactly know
+what you need to put into the two essential files that exist.
+I'd say that even though configure.ac
+is kind of the most mysterious,
+because it uses all of these weird,
+even for macros that you've never heard of,
+and you didn't even know existed until you go searching
+through the documentation to find out what they even are
+or what are available to you.
+And there are a couple.
+I mean, there are some good ones.
+I mean, there's like,
+AC underscore canonical underscore host.
+That will probe the system that it's being run on
+for the OS, for the host OS.
+And then you can do case statements
+within your configure.ac
+and sort of detect whether one OS needs to be built
+and the other doesn't need to be built and so on.
+So it's kind of nice.
+Like, there are some really neat things that you can do.
+There are AM conditionals that you can test.
+You could say,
+okay, well, is this conditional?
+Has this been set to yes?
+Because if so,
+then we'll build this thing.
+And if not, then we'll build this other thing and so on.
+And so on.
+So there are some good macros to use.
+You just have to read up on them and see what they are
+and see why you might need to use them
+or why you might want to use them.
+MakeFile.am is a lot more flexible.
+You can make your own rules.
+In MakeFile.am, you can make your own.
+You can define different settings.
+You can create your own MakeFile snippets
+to be inserted into existing ones.
+So it's, yeah, you can do quite a bit in MakeFile
+that gets sort of parsed and translated
+and stuck into the resulting MakeFile,
+which is super, super powerful.
+But it can be a little bit overwhelming almost sometimes
+because you just think I don't even know
+what I need to do in here.
+And the typically the way that I approach it is,
+well, I start running it, I start running auto tools,
+test builds and stuff with a minimal setup.
+Here's the configure.ac with four lines in it.
+And here's the minimal MakeFile.am with the really obvious things,
+like yes, foreign subter objects.
+Yes, here's my man page.
+Here's my script or here's my source or whatever.
+Now run it and see what happens.
+And inevitably something will be missing
+and so then you realize, okay, well, what I need to do
+is I need to add this rule so that it knows to look over here
+for this thing or add this file,
+this file has a requirement to the main build rule
+or make a new rule to clean up things better and so on.
+So it's just kind of, it is iterative, I would say,
+at least that's how I approach it.
+I mean, maybe there's someone out there who knows it really well
+and doesn't have to iterate time and time again,
+but that's generally how I do it.
+I do the obvious things, run it and then clean up
+and sort of make up for what I missed the first time around.
+That's about it, I think, that's auto tools in a nutshell.
+I hope this has helped, at least,
+at the very least I hope this has demystified the process.
+It's not a difficult thing,
+it is a little bit frustrating at first to learn,
+but once you learn it, it pays off in dividends.
+Does that make sense? Is that a good thing?
+If you pay off in dividends, I feel like it is.
+It pays dividends, it gives you lots of benefits
+for all of the work that you put into it.
+It really does in many, many different ways.
+It's such an easy process,
+and every package you're on the planet will thank you
+because it just makes packaging these things so easy,
+because you just tell that you're packaging thing.
+Hey, it's a new auto tools project, so treat it this way.
+Run this command on it, and you know what you're going to get out.
+You know exactly what you're going to end up with,
+so it's super easy to package.
+It's already done for you, really.
+So give it a try if you're distributing something,
+and you want it to be easy to repeat and robust
+and predictable, try new auto tools.
+It is worth it. Thank you for listening.
+I will talk to you on the next episode,
+and who knows what that will be about.
+I don't know yet. We'll find out together.
+Bye.
+You've been listening to Heka Public Radio at HekaPublicRadio.org.
+We are a community podcast network that releases shows
+every weekday Monday through Friday.
+Today's show, like all our shows,
+was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast,
+then click on our contributing to find out how easy it really is.
+Heka Public Radio was founded by the digital dog pound
+and the Infonomicon Computer Club,
+and is part of the binary revolution at binwreff.com.
+If you have comments on today's show,
+please email the host directly,
+leave a comment on the website
+or record a follow-up episode yourself.
+Unless otherwise status,
+today's show is released on the creative comments,
+the contribution, share a light,
+3.0 license.

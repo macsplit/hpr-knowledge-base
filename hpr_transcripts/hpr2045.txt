@@ -1,0 +1,385 @@
+Episode: 2045
+Title: HPR2045: Some other Bash tips
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2045/hpr2045.mp3
+Transcribed: 2025-10-18 13:40:58
+
+---
+
+This is HPR episode 2045 entitled Summer Mash Tip and in part of the series Mash Crypting.
+It is hosted by Dave Morris and in about 56 minutes long, the Summer Inn, yet more information
+about types of expansion in mash.
+This episode of HPR is brought to you by AnanasThost.com.
+Get 15% discount on all shared hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's honest and fair, at AnanasThost.com.
+Hi, this is Ken, just a quick reminder not to forget to go and vote for HPR on the podcast awards.com website, thank you.
+Hi everyone, this is Dave Morris. Today I'm talking about Bash in a show entitled Some Other Bash Tips.
+Now in the past series of shows that I've done, this is now the sixth in the series where I've been looking at aspects of Bash.
+And I've been looking specifically at the large subject of expansion and there's quite a list of things we've been through already,
+which I've listed out in the show notes. There are three subheadings to deal with.
+I'm going to do two of them in this episode and because they're all of their own nature fairly long, I'm going to do the last one, the third remaining one in the next show.
+So the first subheading is process substitution. Now this is something that you might not have come across before.
+I came across it a few years ago, but it's not something you easily bump into, I think.
+It's a way in which data can be passed to or from a process and a process in Bash or in fact in Unix.
+Linux as a sort of subset of Unix is a bunch of commands running together.
+So it can be a script running as an independent process and that sort of thing.
+I need to look at processes in a more generic way, I guess, but I'll do that in another show in this series.
+But not all Unix systems, I'm not sure about Linux systems, I suspect.
+Not sure that applies to Linux, but Unix let's say which is there aren't many Unix systems left.
+There's BSD which is probably the main one and there's a bunch of commercial ones.
+Not all of them can implement process substitution.
+It uses a feature called named pipes or fiefos, first in first out structures.
+Or it uses special files which are called slash dev slash fd slash number.
+These are temporary storage structures which you can talk to and from processes with.
+That's not a very dramatic sentence but I hope you understand what I mean.
+So the name of the pipe that we're talking about or this slash dev slash fd slash number which I'm referring to as an interconnecting file
+is passed as an argument to the initial command in a process substitution.
+Now that's quite a hard concept to get your head round if you've only just encountered it.
+So I've tried to explain it with some examples.
+There are two sorts of process substitution.
+There's one which consists of a greater than sign.
+There's a type of redirection, we haven't covered redirection in this series I plan to,
+but just bear with me that this is a way in which you can send data from something into something else.
+So a greater than sign followed by a parenthesized list of commands.
+So the other form is a less than sign with another parenthesized list of commands.
+So the first form with the greater than receives input which has been sent to the command list via the interconnecting file and it passes it to the command list.
+The second form with the less than sign at the start generates output from the command list and passes it on to the interconnecting file which you can then read to with something else to get a result.
+So I thought I would just look at some of the stuff involved with pipes and processes and redirection and that type of thing.
+Just to set the scene hopefully.
+So I've got an example here which is a thing you could type in the command line, you could type echo.
+And then I've used the word test with the capital T, doesn't matter what you put there in fact.
+And then I pipe that, we've seen this type of thing already in other contexts, into said and said uses a minus E followed by a quoted command which is an S command.
+So it's open quote S slash circumflex dot star dollar slash square bracket ampersand close square bracket slash close quote.
+So if you've been listening to my said series you'll know that what we're doing here is simply saying select the entire line that is the beginning of the line marker all on all the characters on it up to the end of line marker.
+That makes that particular regular expression be substituted as the ampersand expression in the second half of the S command and we're simply putting it in square brackets.
+So the result that we get is the word that we echoed into said in square brackets.
+So that's pretty simple pipeline that we've seen.
+So just looking at what it's actually doing, a little bit more under the surface, it's a pipeline where the echo command generates data on its STD out channel which is passed to the said command on its STD in channel using the pipe.
+So the pipe connects those two commands together.
+The said command then modifies what it receives on its STD in and it puts the square brackets around it and then passes the result to its STD out.
+And since there's nowhere else for it to go, it's simply displayed by the shell, the bash shell.
+If we were doing this using process substitution, then we would rewrite this as echo space test.
+Then we've got a greater than open parenthesis, that same said expression we had before closed parenthesis.
+Now what we see is, as the output, we simply see the word test followed by slash dev slash fd slash 63.
+It might be a different number on your system if you experiment with this.
+Now this is not doing what we expected at all, it hasn't sent the word test to the said command at all.
+What's happening is that the interconnecting file name, this slash dev slash fd slash 63 has been created and it's been passed to the echo command with the expectation that it's going to be used to send data to the process.
+The process is the thing in parenthesis, the said said command.
+What's happened is that the echo command has simply seen this, which has been generated by the process substitution expression.
+And just echoed it, it's just printed it to stand it out.
+And the process substitution with said in it gets nothing, so it just does nothing and then dies.
+So if we change that by following test by a redirection symbol, a greater than symbol, then we did the greater than open parenthesis.
+By the way, the greater than and the open parenthesis have got to be right next to each other, no intervening spaces, then this works.
+You then get your word test in square brackets.
+So the result has been sent to the said command, which is running in a subprocess.
+So behind the scenes, bash will have changed what we typed here into something.
+It doesn't do this in a visible way, but this is a way to imagine what it's doing.
+It's changed the command line into echo space test space greater than, then slash dev slash fd slash 63, then the greater than open parenthesis said command close parenthesis.
+So it's actually connected the echo to the process substitution through this interconnecting file, this dev slash fd thing.
+So in that way, the connection has been made between the one command and the process.
+You might think from what you know of redirections and pipes, and I haven't told you a hegel about that yet, as I've already mentioned, but plan to do so.
+If instead of the greater than redirection, you used a pipe symbol.
+You'd expect that maybe that would work, it would connect the echo to the said process substitution through the pipe, but it doesn't.
+What you get back is the error command, the error line bash slash dev slash fd slash 63 permission denied.
+This is because when bash processes this command, it puts the file name, this magical dev fd thing, onto the right of the pipe symbol.
+And that's syntactically invalid because you're expected to either have a command, a script or a program name there, not the name of a file.
+So you can't pipe to a file. You can redirect to a file, which is what we did before in the working example. You can't pipe to it.
+So the next thing I've shown you is the corresponding version of this thing, except that we put it the other way around.
+We start off with the said command and then we connect that to a process which generates the word test by using echo.
+So this is the other sort of process substitution, which is a less than sign open parenthesis echo test close parenthesis.
+That's on the right hand side of the said command.
+So the said command is fires up and it wants to connect to the to something where they expect data from somewhere other.
+And what it will get is data on it, standard in from this process substitution and that actually works.
+So here the interconnecting file name is being provided to the said command.
+And you can actually visualize this if you modify the said script is actually a said command capital F, which I haven't, at the time of doing this, I haven't actually covered this in my said series.
+I plan to do it in episode five actually, which is not out yet.
+The F command is a GNU extension capital F that is which reports the name of the input file followed by a new line.
+So if you change the said command to said space minus e space, quote capital F, let me call on S slash blah blah blah.
+The rest of that S command we had before closed quote space less than open parenthesis echo test close parenthesis.
+Then you get two lines back.
+The first one is slash dev slash FD slash 63 which is the name of the input file and you follow that with test in square brackets.
+So that's pretty it's all quite weird. It's actually quite useful though, even though you might be wondering what on earth anybody would ever want to use this for hope to demonstrate this to a little bit anyway.
+So it's worth just looking at what the bash man page says about the whole business of process substitution in the context of expansion.
+What it says is when available process substitution is performed simultaneously with parameter and variable expansion command substitution and arithmetic expansion.
+So we now know where this particular topic fits in the context of all the other things. That's really the key. That's the reason I added that in.
+So let's look at some process substitution examples. So the first form where we're echoing something into something else.
+We have echo space open double quotes hacker public radio with capital on each word space greater than sign.
+So that's that redirection thing we saw before space greater than sign open parenthesis.
+We've got said space minus any space quote S slash now I'm not sure it's going to be all that helpful to for me to read out the said command.
+I'll just say what it's intended to do. It's simply a thing that takes each word and it changes the capitals into lowercase and the lowercase into capital.
+And it does that across the entire string that it's been fed. So the answer we get out is hacker public radio with the lowercase H and a capitals uppercase ACKER etc etc.
+It just reverses the case of the words fed to it. So it's not very exciting, but it's a more complete example.
+Taking the second form of process substitution where we're we're receiving data from it.
+Then I've got an example using said where I use said space n minus n e space quote one till the five p close quote.
+Remember if you've been listening to the said series that means on line one and every fifth line thereafter of the file print that line is pretty pretty simple.
+But the process that we're feeding it is this is this is one which starts with a less than sign open parenthesis.
+We're using the nl command which I've talked about in my said series nl space minus w2 minus ba minus s quote colon space quote.
+What that's doing is to the w2 says to put out a number line number for each line which is to be two digits wide.
+And the minus ba says to print a number for every line regardless of whether it's blank or not.
+And the minus s thing says the delimiter between the number and the start of the line is to be a colon in a space.
+And the file I'm using is the one I've been using quite a lot in the said series said underscore demo one dot txt.
+I'm assuming you have a copy of that to hand so you could you could you could test this out for yourself if you wanted to.
+So the result I get back is one colon hack up public radio brackets hpr as an internet radio show etc.
+Then we get line six which is blank then we get line 11 which is not blank it's got some text I won't read.
+So this is an example we used in the introduction to said series and it's instead of using a pipe where in that in examples in that series we've used nl on a file.
+And we've piped it to said what we're doing here is we're using said to receive data from a process substitution doesn't really make sense to do this in this way.
+But it's a demonstration of how it could be done you can have a command running in the process substitution feeding stuff to a command that precedes it.
+If nothing else if you ever see one of these you'll you'll be able to know ah yeah it's one of those process substitution things and then run away probably.
+So I've got another example of the second form where you're receiving data from process substitution and this one is quite a bit more complex.
+It's using the join command and join takes two files or can take two files or two data sources as I've written the notes which contains two data sources or file contain lines with identical join fields.
+So one way of doing this is to have a line with a number on the front of it where you use the same number in the two files and join joins them together on the basis of that number.
+So what I'm doing here is I am using two process substitution expressions so it's the one with the less than sign open parenthesis.
+We just look at one of these because they're both the same. We will there are three commands in this expression that process in the process I guess you'd say.
+The first one is a shuff command SHUF. I've talked about this in other shows I've done. It simply takes a file and pulls random lines out of it.
+And I use slash usr slash share slash dick to slash words which is a dictionary that most unique systems most Linux systems anyway has available.
+And I've given it the option minus n5 in front of the name of the file which says get me five lines out of the file and it speaks up five random lines.
+I pipe that into said and I do this because a lot of the words in this dictionary are possessive they have a apostrophe S on the end of them.
+And I don't really understand the logic of that but anyway the what I do is to strip out the apostrophe and anything that follows it in each word just so it keeps the word simple.
+I won't explain what I did because I've done this in other other bits of said stuff that I've talked about.
+And then I pipe the result of that into NL. We simply generate a line number. So there are two processes doing this.
+So the two processes will generate different random selections from the words file and it will apply the same sort of said processing and then it will number them.
+But it will number each list has one to five. So what joins sees is two data streams with words in it and each word is preceded by a line number.
+So then it will merge the two of them together and output the result. So the result that I got when I ran this you'll get if you ever want if you want to try doing this yourself and you would get different results.
+But I got lines that look like one space brine, B-R-I-N-E, space rationed and so on and so forth. And there's five of these.
+So it's again fairly useless type of. So you're trying to make strange passwords or something like that X, K, C, D example.
+I've seen people do that actually. I'm not sure how strong the passwords are, but it's a good demonstration of what can be done.
+So I've got a final example which is also quite convoluted but again gives you some sort of idea of the sort of thing that can be done with this process substitution.
+I have a database. It's a SQL light database and in it I keep information about talks that I'm planning to do I have done for HBR.
+I know it's sad but there you go. It's better way of organizing and keeping on bits of paper or whatever. And I quite like playing with databases.
+So in this database I grabbed a copy of all of the series names from HBR. So what I'm doing here is I am fishing out names of series and I'm processing them in a bash loop.
+So if I read to you the bit of code that I've put together, this would be something which you would put into a script in a file ideally.
+But I haven't written it out as if it is a full blown script. I'm just giving you a sort of subset of the commands.
+So the first line is count equals zero. So I'm setting up a variable called count which is being initialized to zero.
+Then I've got a while loop and we haven't talked about these in this series. I do intend to do this. I'm coming at all of these subjects sort of backwards unfortunately.
+But just sort of picking off things that I think might you might not know might be interested in.
+So the while loop in bash is simply a thing that consists of the word while followed by some expression which returns a value true or false.
+And the while loop will continue looping until the result of this expression is false.
+So what I'm using as the expression in this case is a read command and read command is a way of putting values into variables and the two variables that I'm reading into are called ID and name.
+Where am I getting the data from where we'll get to that in a minute.
+The next line is the continuation of the while which is do so it's while expression do you can't actually put the do on the same line you have to put semi colon after the expression before the do.
+So in the body of the loop I have a print f command and I have mentioned these before in other other shows print f is a way of printing variables.
+And you get a bit more control over the way they're represented than you would do if you used echo in particularly you can lay them out in particular formats.
+So print f consists of a format string followed by a list of variable names.
+So in this case I've got as my format string a percent zero to D what that means is there will be a decimal number as an argument to the print f command and I want you to print it in a two I want to print as two digits with leading zero if that's appropriate.
+So next in the format statement is a space and I want to put an actual quote double quote in the in there as well.
+And because I'm using double quotes as the delimiter of the format I have to put a backslash in front of it.
+Then after the backslash double quote I've got percent s percent s is simply a way of saying write the argument out as a string of arbitrary length.
+And I've got another backslash double quote in a backslash n which means print out a new line because print f does not generate new lines automatically like echo does in the closing double quotes.
+And the arguments to print f are dollar ID that variable we read into and dollar name except that I put dollar name in double quotes because it's going to be a variable containing spaces.
+There is something to be said for always in loading closing all the arguments in double quotes when you do this.
+I just I was lazy here and didn't do it for both because I knew that ID is always going to be numeric but really is good practice to quote every time.
+Next line is an arithmetic substitution which is an arithmetic expression actually to be more accurate which is open parenthesis open parenthesis count plus plus closed parenthesis closed parenthesis.
+Now we've seen that sort of expression in this particular series where we've been fiddling around with variables and incrementing and decrementing.
+This is an example of post decrement not that it really matters but basically it just says add one to count.
+There are other ways of expressing this but I've chosen this one.
+The next line is the done do any line which closes the while loop.
+Now one of the conventions for driving a while loop is that you follow done with a bit of redirection where you nominate a file or something of that sort or indeed a pipeline if you want to.
+So I am using a process substitution here so it's one of these process substitution expressions that generates data so it's less than open parenthesis.
+Then I've got an echo with a string and the string contains a piece of SQL structured query language which is the way you talk to databases.
+I won't read it out because you might not be that obeyed with SQL but the essence of it is that I'm asking the database to return me the identity number and the name each of the series in the HPR database has got an ID number.
+It has a name and I want it to be returned from the series table in my copy of the database and I want it to be returned to me in alphabetical order using the lower case version of the name as the sort criterion.
+So that echo is sent to a pipe. There's a pipe symbol after the closing quote and it goes to the command sqlite3 which is the command that invokes the database.
+So that receives on its standard in that SQL command and the name of the database follows which in this particular case is HPR underscore torques.db, close parenthesis.
+So that's an example of me feeding a command to the sqlite3 command to make it query the database and return stuff.
+So it will then come back with a whole stream of lines which contain what I've asked for which will then be fed to the while loop.
+The two values will be dropped into variables, bash variables called ID and name and they'll be printed out.
+And the last line of this group of commands, this example is an echo where I simply use the value of count to report how many series were found.
+So it's open, double quotes, found, space, dollar count, space, series, close quote.
+I say open and close but there's no difference but you think you know what I mean.
+So the thing I get back and I've only shown a few lines of what actually comes back is 51 space quotes, 10 buck review quotes, 80, 51, 50 shades of beer quote, 38 quote, a little bit of python quote and so on.
+At the end of that I get back found 82 series. So at the time of writing this there were 82 series in the list.
+Probably still is the case but we're working on adding more in fact.
+So the whole point of this was to demonstrate that there is a process substitution which is being used to feed data to a while loop for whatever purpose.
+In this case just to print out, print the stuff out and to count it and it's coming from a process substitution expression where the process is something that you might just have typed on the command line yourself and you then get back the format that the SQ light tool decides is best.
+Again this is slightly empty sort of example but it demonstrates the sort of thing that you can do.
+So I digress in my notes here to say that there are other ways in which you could do this. You can actually make a pipeline a simple simpler sort of pipeline without any process substitution where you echo that SQL command into SQ light three and the output of that is piped into the while and you get you get the while loop looping round to doing stuff.
+There's a problem with this and I won't read this example out in detail but it's essentially the same as the one we had before except that the data is not coming by the redirection after the done part of the loop.
+It's being fed to the while loop through a pipeline.
+Now when you run this, the answer you get back is found zero series and here my neighbor's dog has just been let out.
+So I have a dog that can't just like a blooming mornadry around here. Anyway, you get the answer of zero coming back and this is puzzling.
+I'm digressing here into an area that we really need to look at in a bit more detail and I've said in the notes here.
+These are the sort of things that can catch you out in bash and you can puzzle and scratch your head over them for ages.
+And I'm just mentioning this one here but I do intend to do some sort of list of bash gotchas in the future.
+But the reason you get back the answer of zero is because the while loop runs in its own process in this particular example.
+So count is set to zero outside the while. The while merely adds one to something called count internally and then after the loop is done, we look at the count we originally set to zero and it's still zero.
+That's because the count which is being incremented in the while loop is a different variable because it's in a separate process and bash doesn't share these things between processes.
+Unlike if you used to other languages then doing something akin to this would be perfectly valid because it would be the same scope but a bash is not a programming language even though it looks quite like it.
+It's a scripting language and it has its own foibles.
+Okay, so that's a lot of waffle. The subject you may not be interested in. I hope it wasn't too boring.
+So I'm going to go on to another bit of waffle probably about the final subject here in this episode which is word splitting.
+So I've said in the notes it's important to understand this because it's a quite important component of how bash works.
+And if you don't fully get this or at least you don't know that there are pitfalls, potential pitfalls here then you can sometimes trip over yourself when you're writing things in bash.
+So I thought I'd start off with looking at how words splitting actually affects what you do in bash and in a very simplistic way bash looks at what's being presented to it and will split words using spaces.
+So as a demonstration of this I've suggested that we use a little function. Again we haven't talked about functions in bash.
+I will do this at some point but it's a fairly simple capability of bash where you can define a command or series of commands as a group which you can invoke with a name.
+And the way you do this is you normally would do this in a script rather than typing it on the command load. You can put it in on the command load if you want to.
+Function space count args is the thing to count the number of arguments. It needs to be followed by an open and a closed parenthesis then a curly open curly bracket.
+And then its body consists of echo dollar hash close curly bracket. The hash variable is one of bash's special variables that contains the argument count.
+That's either to a script or to a function. So in this case it's we're using it in a function obviously.
+So once you've declared one of these things and by the way you don't actually have to put the word function on the front of it in bash but I've been using function here because it's just generally more readable and more obvious it's optional.
+So you call it just by typing count args one word of course. If you call it with no arguments then the answer you get back is simply zero but there's no arguments to it.
+However if you give it a string so I put an example here of count args followed by open double quote Mary had a little lamb closed double quote and the answer comes back one.
+If you call count args with Mary had a little lamb enclosed in single quotes you get back the answer one. So okay that's fine.
+So a string a thing enclosed in quotes is of either thought you can use single quotes or double quote then it's regarded as a single word in the sense of bash's sense it's a single entity.
+You also get the same count of one if you simply type count args space open double quote close double quote there's an argument there but it's got nothing in it.
+However if you do it do stuff without quotes then things get a little more complex and one of the cases that you can trip over and I've sort of religion to this already is when you're using variable substitution.
+So the next example is setting a variable called SDR short for string in my mind anyway equals open double quotes fish fingers encusted close double quotes.
+Yeah I know doctor who count args space dollar SDR the answer comes back not one but four and that's because the variable SDR string has been expanded and count args has been presented with the words fish fingers and custard on its as it's as it's argument so there are four words there.
+The reason this happened and it wasn't treated as one entity is because word splitting has been applied to it. Word splitting does not apply when it's quoted but it does on variable when they're not quoted.
+So if you wanted to pass a string like this to a function then you would type count args space double quote dollar SDR double quote you get back the answer one.
+Why double quotes well I have mentioned this before but not in any formal way double quotes are sometimes referred to as weak quotes that is if you put variable variable substitution within double quotes the substitution takes effect if you put dollar SDR in single quotes then bash ignores the fact that there's dollar SDR just treat it as the characters dollar SDR doesn't
+apply any substitution to it so I thought it might be useful if I wrote another function to to mess around with in this context and I've called this one print args and what this one does it prints the arguments you've given to it like the other one count args did except
+and it puts a it prints out each argument one at a time and it puts the account on the front of each argument so I've written it out in the notes here function space print args open parenthesis close parenthesis open curly brace up bracket and then first line of the function is i equals one I'm sending a variable i to one then I've got a for loop uses for arg semicolon space do
+and this is a special version of a bash for loop normally a bash for loop just to digress is written as for f o r space variable name in word in space and then a list semicolon do and then there's the body of the loop which I've written this out for you to look at hash do things I've put in there so there would be other stuff in the loop and the loop ends with with the word done normally that what that does
+is it sets the variable which I've shown here is var to each element in the list and the list can be a list of words it can be the result of some command or it can be some sort of expansion type of thing
+however going back to the function if you simply have four variable names semicolon do well that means is set this variable to each of the arguments to this function in turn you can use the same in a script where it sets it to the to the arguments of the script so it's a nice neat short-hand way of processing the arguments of a function in this case
+so within the for loop I've got an echo echo dollar I remember we set a variable I to one so echo in double quotes dollar I space dollar arg arg close double quotes so that will print out the number I is in variable I followed by the contents of arg then the next line in the for loop is two open parentheses I plus plus two close parentheses so that's one of these arithmetic in the first
+expressions which is incrementing the value of I and then we have done which is the end of the loop and that's followed by a line with the close curly bracket in it so when you run print args and give it arguments it will print them out one
+line each with the argument number on the front if you know a bit about bash you will know that there is a zero argument in some context but not in the context of a function I do plan to look at four loops and while loops and so on as I've mentioned already in a later version of this series so going back to our dollar STR our variable STR if you type print args space dollar STR
+then you will get back one space fish two space fingers and so on and so forth so there are four four words as we already discovered using count args but it's printed them out with the number on the front of each one if you on the other
+hand you type print args space double quotes dollar STR double quote then we just get one argument back which is number one and it contains fish fingers and custard okay so that was really just me making it very plain or giving you a way of
+examining how arguments work and so on and so forth I haven't put copies of these functions in as downloadable stuff with it within the notes because it's pretty easy just to cut and paste them out of the notes I think
+so that's how word splitting works but it's a bit more to it than that it normally the words split on spaces the spaces of word is the word
+limiter it's where putting it but there's a thing called the internal field separator which is a special bash variable called IFS which stands for that thing internal
+field separator normally when you create a bash shell you you get an if's IFS variable which contains three characters contains a space a tab and a new line and as an
+aside if you ever mangle your IFS variable then I've just put some information about how to regenerate it and so forth if it's unset it's
+treated as if it holds these three characters but if it's null then you switch off splitting totally it's important to understand the difference between a variable being unset and a
+variable being null and particularly in the context of this variable if a bash variable is unset it's not defined at all so good chance you won't have a variable called X Y Z so it's
+regarded as being unset you can actually force a variable to be unset in other words you delete it with the command unset so unset space capital IFS
+got to say it was I capital IFS by the way in case you're not reading these notes along with me capital IFS anyway if you do unset space capital IFS then it
+elites it but your splitting still works as if it was there and containing a space a tab and a new line to make a variable null then it is defined but with no value so you would you would achieve that if you wanted to it by typing capital I capital F capital S equals and then nothing
+else on that line so it's being set to a null value you could also put open quote close quote I think and it achieves the same thing now here's the thing if you are fiddling around with this sort of stuff and you have changed the the IFS variable and the
+effects of doing so start to to be annoying and you want to set it back again how do you do it well you can simply type capital I capital F capital S equals and then in quotes a space a tab and a new line but
+typing space is no problem how do you type a tab if you hit the tab character it doesn't save a tab character in the in the string it is intercepted by bash and doesn't have the effect of saving that value in the string so I can give you the answer to how you do that you actually type
+control V and then you do control I but I tend not to want to do that there's a better way or I think it's a better way of doing it so one way anyway of doing it is to use the print F command print F command has got a feature we haven't
+mentioned when talking about it before I think it has a minus V option minus V is followed by the name of a variable and then that is followed by a format string as we discussed
+earlier in this this episode and arguments or whatever is appropriate so if you do print F space minus V space capital I capital F capital S space open double
+quote space backslash t backslash n close double quotes then print F will generate the sequence space tab new line and we'll store it into the variable IFS so that's
+quite an easy way to generate that string without having to remember control V's and other strange things so if you're writing scripts we are manipulating the IFS variable then simple thing to do is to
+save its current value somewhere else so I've demonstrated this with a couple of lines old IFS equals open double quotes dollar capital IFS close quotes so you've saved the value of IFS into old IFS and do it in quotes because otherwise it will get split on that space
+well they're all they're all delimitors so all the delimitors will be used for splitting so you won't get what you expect then you would set to IFS to whatever else you want to set it to we'll come on to that in a minute when you finish doing the things you want to do
+with the different value of IFS then you simply set it back to the saved version of it so how do you know what's in the IFS variable you do simply echo it then the default characters are invisible
+you don't see them so one way of doing it is using the cat command the cat command has got an option minus capital A which is a shorthand for one option which has a shorthand version of other options
+and it's the shorthand version of minus V lowercase V minus capital T minus capital E so I've listed out their effects
+option minus cap with a lowercase V displays non printing characters except for tab don't know why there you go
+option minus capital T displays character tab characters as up arrow or circumflex capital I because a tab character is a control I character
+option minus capital E displays a dollar character at the end of each line so echoing dollar IFS into cat minus capital A
+I've demonstrated it in the next section you get back a space a circumflex I a dollar then on the next line another dollar
+so the space is obviously there the circumflex I is the tab that's followed by a dollar sign because there's a new line in there so that's the end of the first line
+because a lot of new lines a line to limit and when you print it out and then the next line contains a dollar so that's the end of the whole thing
+another digression here really but just in case you find that cat thing confusing I've given an alternative there's a command called OD which stands for octal dump
+goes way back to the early days of of Unix where everything was octal and it's meant for dumping files in binary formats but it's been enhanced
+a fair bit since the early days and I've chosen to use the minus a option located which generates character names or numonix
+and minus located C which shows characters as backslash escape or appropriate so if you echo dollar IFS into OD
+I'll read out the whole command echo space minus N this causes echo not to print a new line at the end of its output which is useful in this context
+double quote dollar capital I capital F capital S double quote space pipe symbol space OD space minus lowercase a lowercase C
+and the thing you get back is a seven digit number 0 0 0 0 it's such a lost count
+followed by some spaces sp spaces ht spaces NL
+sp is the mnemonic for space ht is horizontal tab which is another way of expressing the tab NL is a mnemonic for new line
+on the next line you've got simply some spaces under the sp as that's where it spaces and then under the ht you've got backslash team
+which is the representation of a tab and under NL you've got backslash N which is a way of representing a new line
+and then you've got another line beginning which begins with lots of zeros three and that's because it's really a sort of dumping tool
+you're seeing that you've got three characters in the dump I just find this a more appealing way of doing it
+but that's largely because I was originally taught to be an assembly language programmer not a very good one
+but it's just if you're thinking in terms of bytes and characters as bytes and strings of invisible stuff or binary stuff then
+are dumping tools quite useful way of doing it so those numbers are offsets in the file or the string that's being fed to OD
+anyway that was a lot of preamble just to talk about the default state of the IFS variable
+so why's it got three characters in it? well because they're all potential delimiters
+and I've prepared a string as an example which is the two lines from a poem
+children's poem Wink and Blinken and Nord one night sailed off in a wooden shoe
+and it's got a new line in it and I've also added some leading and trailing spaces
+when you type this sort of thing out you open double quotes and I've done here
+and you types and stuff and then you press new line
+bash will come back with a prompt which you can actually control but believe that
+the default is a greater than character so the second line contains that character which means
+I'm expecting you to type some more stuff and you haven't closed your quotes yet
+so that's where you type the rest of it and then you close the quotes
+so if we use print args on that do print args space dollar STR
+we're using STR again just because it's convenient we're doing it
+then we get back each word on a separate line and there are 12 words
+we don't see any of the leading spaces we don't see any of the trailing spaces
+and the new line is vanished as well and that's because the spaces could
+second spaces don't make a separate arguments they're just all removed
+leading and trailing spaces are removed and the new line is one of the accepted
+delimiters if we put a tab in there as well we've got the same effect
+so I thought it would be useful if by demonstration what happens if you quote
+the variable STR but because you've got leading and trailing spaces on it
+I put square brackets around it in the in the string and you see that there's
+one argument past a print args and it consists of a open square bracket
+some spaces the first half of the string a new line the second half of the
+string some trailing spaces and a closed square bracket so it's all there
+in the in the string but it was stripped off as part of the word splitting process
+so why am I talking about this variable at all?
+well hopefully you guessed that you can change the word delimitor
+so I've got some commands here where I create a new version of this
+STR variable where I'm using the string all dressed up hyphen and nowhere
+to go and I then save the IFS variable and then I set the IFS variable
+to an underscore so the string delimitor is now an underscore the word
+limiter I should say is now an underscore so if I then type print arg
+space dollar STR then I get back all dressed up and nowhere to go as one
+argument there are no splitable delimiters in that string anymore
+because we've changed it from its default included spaces to underscore
+and there are no underscores in there however and I thought I would use this
+technique to refer back to show number 1648 bash parameter manipulation
+where I discussed pattern substitution where you can take a variable
+and you can change bits of it in an expression in bash
+so I've got print args space dollar open curly bracket
+STR slash slash space slash underscore close curly bracket
+and hopefully you remember that that is a way in which you can say
+in this variable called STR find every space
+the double slash means do it repeatedly and replace that space
+with an underscore if we feed that expression to print args
+print args then gets a whole list of separate words because the word splitting
+has happened on the result using the underscore as the separator
+a delimiter and we get back eight words including the hyphen
+and delimited is a word in this context it's got delimiters either side of it
+we get eight fields eight elements come back eight arguments I guess you'd say
+however if we change the IFS variable again and we make it contain
+underscore and hyphen we get a different result so it's exactly the same
+command of the print args and the parameters substitution thing
+this time we get nine arguments arguments four and five are empty
+and now and that's because the hyphen is now a delimiter
+so I thought oh that's hard to visualize so I included a demonstration using
+echo to show what is produced when you use this parameter substitution
+I enclosed it in double quotes because otherwise since the string
+would contain the field separator this delimiter character it would just get split
+up and you wouldn't see what it happened to it so what you see is all
+underscore dressed underscore up and then you get underscore hyphen
+underscore and so on and so forth so there are three delimiters in sequence
+there which are interpreted as two null words so words four and five are
+the two null words and that's because when you have a sequence of
+delimiters then the gaps between or then the how would you say this there aren't gaps
+between them it's all but because you got three delimiters the bits
+between the delimiters are regarded as null, null words so it's all because
+the reason I'm making a meal of this is because if you have multiple spaces
+in a string it's treated differently so when you if you look at the
+man page which I've included in the notes talking about this space word splitting
+business it makes a point of using the term white space so the way it treats
+spacey things like space and tab a new line is different from the way it treats
+other delimiters I think that's what what the point of that is so it's
+it's it's a convoluted business in the vast majority of cases you don't want
+to do this it's rare that you would want to do this there are sometimes
+when you have a piece of a string or a piece of text or something which you
+want to split up and you could feed it through said and split up that way
+but sometimes switching the IFS variable into to to contain a different
+delimiter like a colon or something is a useful way of getting all the bits to
+be split out for you so the final thing I've said in the notes here is don't
+forget to put your IFS variable back the way it was otherwise you'll find that
+things don't behave in the way you expect because your word splitting is all
+broken or at least it's not behaving the way you normally expect it to behave
+okay that's it then for this one I hope it we are in the in the weeds a
+little bit here I know but I hope there are some useful pointers there for you
+next episode I'm going to cover the last part of all of this and the last part of
+expansion is path name expansion and that definitely does impinge on everybody
+because it's all about referring to files and using star at asterisk and question
+marks and stuff in in file names and all of that good stuff so we do need a
+whole episode to cover that one I think okay that's it then bye
+you've been listening to hecka public radio at hecka public radio dot org
+we are a community podcast network that releases shows every weekday Monday
+through Friday today's show like all our shows was contributed by an HPR listener
+like yourself if you ever thought of recording a podcast and click on our
+contributing to find out how easy it really is hecka public radio was found by the
+digital dog pound and the infonomicon computer club and it's part of the binary
+revolution at binrev.com if you have comments on today's show please email the host
+directly leave a comment on the website or record a follow up episode yourself
+unless otherwise stated today's show is released on the creative comments
+attribution share a light 3.0 license

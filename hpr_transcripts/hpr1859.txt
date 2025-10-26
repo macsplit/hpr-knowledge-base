@@ -1,0 +1,339 @@
+Episode: 1859
+Title: HPR1859: A Mouse in a Maze on the Raspberry PI
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1859/hpr1859.mp3
+Transcribed: 2025-10-18 10:17:40
+
+---
+
+This in HBR episode 1859 entitled A Mouse in a Mame on the Raspberry Pi and in part of the series,
+programming 101, it is hosted by Gabrielle Evenfire and in about 40 minutes long.
+The summary is, this podcast describes a little game that I learned in my first programming class.
+This episode of HBR is brought to you by Ananasthost.com.
+Get 15% discount on all shared hosting with the offer code HBR15, that's HBR15.
+Better web hosting that's honest and fair at Ananasthost.com.
+Hello hacker public radio, this is Gabrielle Evenfire.
+And I'm recording another podcast in our series on bare metal programming for the Raspberry Pi.
+It's been a while since my last podcast and truthfully the material for this podcast was done
+last fall, but I hadn't gotten a chance to get around to recording a podcast about it.
+It was meant to just be a little quicky as something fun to do before I delve into some other topics,
+like the sound driver or the floating point co-processor or the graphics driver, something like that.
+But I haven't taken the time to learn those yet, it's been a busy year so instead this is just
+something fun that I threw together on the side. What I created was a little game that was a
+project I was given way back when I was in my very first programming class.
+And the notion of this game is to create a little maze and have a mouse run through the maze
+trying to find a piece of cheese within it. The idea would be for the maze to be randomly
+generated and the mouse's starting position and the cheese to be also randomly selected.
+So you have to give the mouse some sort of intelligence to be able to eventually find the
+cheese or it can go on for quite some time. The way that one approaches this game on the Raspberry
+Pi without any sort of graphics or sound is to treat the VT100 terminal that one can connect to
+the Raspberry Pi over the serial console as your graphics terminal, as your graphical display
+for this little game. So it ends up being a little text-based game instead of something
+more significant or fancy. In order to run my version of this game, you will need to
+have the latest copy of my Raspberry Pi libraries which include an application named mouse zero in it.
+I won't rehash in this podcast all of the steps to getting that up and running, but I will
+put them in the show notes for reference. Essentially, if you haven't done this before,
+you can go back to the previous podcasts to see how to set up this bare metal programming environment.
+You'll need an ARM compiler and you'll need a Raspberry Pi and you'll need a serial to TTL cable.
+And once you have those up and running and use the loader program that we developed
+in the earlier series to load programs without having to reflash them to our SD card every time,
+then you open up the loader and tell it to receive a file via X modem and then you point it
+to the file mouse zero dot bin which one generates in the apps slash mouse zero directory just by
+typing make. And when you give it that file over the X modem protocol and it downloads and you
+tell it to run by pressing the S key for start, then you will what you will see is a little 20 by 40
+maze pop up drawn in hashes and a little mouse that is in this maze and he starts running through
+the maze and dropping bread crumbs behind him as he searches for a piece of cheese. The mouse is a
+percent symbol and the cheese is a v for a sort of like a wedge of Swiss cheese something like that.
+And you'll see he goes in a particular pattern if you watch him trying to avoid places that he's
+already been to at least in my version of the game which is the simplest version that I developed
+based on the algorithm the search algorithm that I first was provided with when I learned to
+program osu many years ago. And so this mouse keeps wandering around, keeps dropping bread crumbs,
+more and more bread crumbs trying to find his way through the maze and if he gets the cheese,
+then you'll see him become a very happy mouse and the game stops. You'll also see I added another
+element that wasn't in the original program idea my the original project idea that I was given
+where it has a little down counter the mouse has a certain amount of energy and if he doesn't
+find the cheese within a certain number of moves then the counter reaches zero and he starves to death.
+And then after this program has reached a point where the mouse has either found the cheese or
+starved to death it will let you press any key to generate a new maze new mouse and start off running
+again. So that's that's what you can expect when you run this little mouse and a maze program.
+So I want to talk about a couple of things in this podcast. First what the the general
+framework of the game is and how I implemented it on the pie. And second of all why I think this is a
+really great little game for novice programmers starting with the the implementation.
+This program uses the libraries for bare metal programming that I've walked through the creation
+of in the previous three episodes including my embedded libraries that I've been working on for
+many more years the cat libraries which I got to work with the aforementioned Raspberry Pi libraries.
+And that was in episode three that we that I discussed how to actually get those libraries
+working in there. The game essentially is going to is going to use very very little from those
+cat libraries maybe a little string manipulation. Most of it most of the logic for this is actually
+in the game itself. I think the whole program is less than 300 lines. It uses VT100 command control
+sequences to move the cursor to different positions in the VT100 terminal. And I look these up on
+Google and you can find them embedded in the code and you can and I'll also put links to where you can
+find VT100 escape sequences. But the only ones I really use essentially are the command to clear the
+screen and the command sequences to go to a particular XY position or row column position depending
+on how you want to think of it in the terminal. That's basically all you need to do as far as
+all you need to expect out of the terminal for a very basic version of this game.
+So when I go to draw say the mouse and and move him to a new position then I will issue the go to
+sequence of commands that is I will send a certain sequence of characters over the serial line
+that the VT100 terminal will say oh that's not a character you want me to draw you want me to
+change the position of the cursor and it will read that command and move the cursor to that position.
+And then I will draw the character for the mouse. I think I misspoke earlier when I said the mouse
+was a percent I think it's actually an at. So the mouse has a little tail that circles around it I
+suppose. Okay so moving on. So that's how we actually take a text-based terminal, a simple
+dumb text-based terminal and well not quite so dumb and turn it into a platform that we can draw
+things on. Of course all we can draw are characters you know regular text characters but yeah that's
+good enough for a little mouse and a maze. Okay as far as what the Raspberry Pi itself is providing it's
+really just the the compute the computation the running of the game and the serial IO to and from
+the terminal. So we already talked in earlier episodes about how to use the serial interface
+to send and receive characters and those same routines that were discussed in first and second
+episodes are are used here. Okay so now let's talk about the algorithm for the game itself.
+I decided I would assume from my purposes that we were working with in a sort of a standard
+VT 100 environment which has you know 80 columns by 25-ish rows. So I decided okay I'll make my
+maze 20 cells top to bottom by 40 cells left to right and then I'll have a little status line
+that'll take up the the 21st row of characters that will say print out the current amount of energy
+that the mouse has left and its current x and y position and that sort of thing. In order to do
+this we just have a simple static array of characters to contain the maze and and it's got again
+20 rows by by 40 columns it's just a it's just a simple 20 by 40 matrix of of characters okay and
+we initialize it with all spaces so it's it's completely empty so to speak there is no maze.
+So then the next thing that we do is we first put our border around the maze we want the
+outer most walls to be impregnable so the mouse can't say run off the top of the screen
+or the left of the screen in this case so we make the left most column the right most column
+the top most row and the bottom most row of this maze be walls and I again selected the hash symbol
+or the pound symbol as the designator for the wall so okay now we have a big empty room
+for the mouse to be in. Now we have to actually generate the maze itself so for this part I wanted
+this maze to be randomly generated because that was the original specification that I was given
+way way back when so I needed a random number generator and to do this what I did was I went in
+to my catlib embedded libraries and I dug out the incredibly simple RC4 encryption algorithm
+RC4 you can you can write the entire thing in about 20 lines of code which is one of the reasons
+I'm sure that it's so widely used and it keeps a state of about if I remember correctly 256
+bytes of state for its own internal processing so all I did was I grabbed from the Raspberry Pi
+the current system time and used that as a seed we'll say a key for the RC4 stream cipher
+and then I just started using that RC4 cipher to generate a stream of random bytes because the
+way RC4 works being a stream cipher it just generates random bytes that you are then supposed to
+XOR with your plain text stream in order to produce the cipher text stream I'm not actually
+interested in producing a cipher streamer encrypting anything I just want the the pseudo random
+data that the stream will produce okay so from this so essentially every time I want to get a
+random integer I just have the RC4 cipher generate the next four random bytes and put it into
+an unsigned integer 32 bit integer and that's my random integer and if I need it to be within a
+certain range of course I do the old trick of taking that number modulo the the width of the
+range and adding the base of the range okay now the point is that I I want to start putting
+walls at random positions within my big empty room so I'm going to be calling this random function
+over and over again to get an x and a y coordinate for a new wall and then what I do is I get that
+x and a y coordinate or row and column again depending on how you want to look at it and I check
+to see is there already a wall there if there is then I try again and then I try again until I find
+an empty space where I can drop a new wall now how many walls we put down becomes a little bit of an
+interesting issue because if you put too many down you can actually have a maze that nobody can
+get out of it'll have entire large sections of it blocked off and there's no way to get through
+it if you have too few then you don't have much of a maze at all you just have a big empty room
+with a bunch of say pillars in it that you just have to walk around so I made a compile time parameter
+to the program saying okay what percentage of the empty spaces will have walls and let's I think
+I said it to 20 or 30 something like that but I played around with it it was the point and then
+that's how many walls I ended up dropping into the maze at random before I said okay this is my maze
+so okay so now we have a an array of a big matrix of characters where we have walls down the left
+right top and bottom of this big array of characters and a smattering of wall blocks throughout the
+middle and the rest is still empty spaces okay so next step is you select a random
+xy position for your mouse okay and that's where you're gonna put your mouse and again you follow
+the same sort of technique where you generate a random xy you see it make sure there's no wall there
+and you keep doing that until you find a spot that has that is empty and that's where you drop
+the mouse and then the same thing with the cheese you find a random spot and drop the cheese in there
+okay that's how we initialize the the maze now we actually have to get to the how does
+how do we play the game how do we get to the the the main loop of playing the game
+uh what we're gonna do is we're gonna have the game move in ticks it's gonna enter a loop where
+it checks to see okay has the mouse found the cheese or is it out of energy and if it's not then we
+will execute one more tick of the game where a tick is defined as something as as a bunch of things
+happen and the bunch of things happening are gonna be the mouse will drop a breadcrumb for the space
+that it's currently in so that it knows not to it knows to try to avoid that space in the future
+and then it's going to pick the next space that it can move into and then it's going to move into
+that space and then we're going to check to make sure to check to see whether we have found the
+cheese or not and if we haven't found the cheese we we decrement the mouse's energy by one
+and then after that we want the game to sleep for a little bit we want it not to do anything
+for a little bit because you see this raspberry pie will go execute this mouse running through
+this maze far far far faster than would be interesting to watch it'll probably be bottlenecked at
+waiting to draw the mouse by the VT 100 terminal by the serial connection I mean the serial
+connection can only run at you know 112 kilobits a second and so it'll probably be spending it's
+you know if you let it run flat out that it'll be limited by that communication with your over
+your serial line the point is it's still not fun to watch the whole thing will be over before it
+before it even starts so you actually want then the system to quote unquote sleep for a certain
+amount of time before executing the next tick in the game or the way I handle that in the raspberry
+is actually before I start the tick I grab the current system time and then I add a certain
+amount of delay which is the number of system time ticks I want to elapse between game time ticks
+so in other words I say okay I want there to be I don't know a thousand cycles between every
+game tick a thousand arm cycles between every game tick okay I don't remember the the value I
+used offhand I it was something I had to play I played around with trying to find something that
+looked pleasing to me when I was running the game you know adjusted it up and down a little trial
+and error here and there until I found something that looked good I I started off by you know just
+using the fact that the arm is running it's what 7800 megahertz and how many of these do I want to
+how many game ticks do I want per second maybe one every half second one every fifth of a second
+and that gives you a good ballpark to start at but anyways so that that's that's the point is after
+you execute the code to carry out the mouse movement you just sit in a tight loop spinning and
+watching the arms system clock until that system clock gets to the the next system time at which
+point you want to start the next tick so if let's say I'm I think a thousand is probably low but
+let's just say I said okay I want a thousand cycles of delay between each tick between each game
+tick so I grab the system time and then I wait for the system time to be greater than the previous
+system time plus a thousand okay and we just do this forever in a in a nice little tight loop
+because you see again we're in bare metal programming mode we don't have a nice little sleep
+function that that you would find in a traditional operating system the concept of sleep is actually
+meaningless right when we when we send our programs to sleep in a unique environment what we're
+really saying is okay I want you to signal me after a certain amount of time but put my process
+to sleep and let some other program run well when you're bare metal programming there is no other
+program to run there's nothing else to swap out and do so instead you do what most
+instructors will tell you in your first programming course is a terrible idea
+and and you just pull you just pull over and over and over again on the timer until it's time to
+start the next the next iteration okay so we have now we have our game loop explained right our
+game loop is is going to again until the game the current game is finished meaning the mouse has
+starved or the mouse has found the cheese we drop our breadcrumbs we figure out where the mouse
+is going to move next we draw the changes in the maze meaning we erase the mouse from the current
+position replace it with the breadcrumb and then draw the mouse at its new position and then we
+go to sleep until the next time to to run a game tick and I say we go to sleep meaning actually
+what we do is we spin again in a tight loop until that time arrives okay so that explains the
+the game loop itself now let's talk about how does the mouse actually find the cheese
+and I taught I've been talking a bit about breadcrumbs okay the wave the out the search algorithm
+I would say and I would recommend is sort of your first iteration your first order search algorithm
+for finding your way through the maze should look something like this okay the mouse will tend to
+you will tend to go up and the first and if it can't go up it will go left and if it can't go
+left it will go down and if it can't go down it will go right okay now if you just follow this
+just as I said it you'll your mouse will find its way up into a corner somewhere up into the left
+of it and and we'll sit there forever eventually or just bounce around in that corner once it gets
+up gets up near there so that the mouse is going to follow a very systematic pattern preferring
+up and then left and then down and then right as far as its movements go but it's going to try to
+avoid spaces that it has seen before to do this as I as I indicated you know offhand before
+it's dropping breadcrumbs and what do I mean by that it means that I have the array that represents
+the maze and then the array of characters and then I have another array that represents account
+of the number of breadcrumbs in each space in the maze okay so when the mouse
+goes to decide which direction it's going to go the first thing it does is it looks at all the breadcrumbs
+for the spaces around it and it only picks from spaces that have the least amount of breadcrumbs
+so initially of course there are going to be zero breadcrumbs throughout the maze in any given
+space but eventually after it's run around for a while it will have left breadcrumbs on all sorts
+of spaces so essentially it's going to first say okay how many breadcrumbs are above me to the
+left of me below me and to the right and whichever of those spaces has the least amount of breadcrumbs
+that's the space that's the direction I'm going to go that's the space I'm going to move into
+okay oh and by the way I'm going to drop a breadcrum in the space I'm in before I move
+so if there's a tie between a couple of spaces say both up and down have less breadcrumbs
+than left and right but they have the same number of breadcrumbs compared to each other
+then it will prefer up over down as I said it will prefer up first and then
+left next and then down and then right okay
+okay so our kind of exhaustive search algorithm really looks like this first find out which
+direction has the least breadcrumbs and then of those directions the ones of the ones that have
+the least breadcrumbs pick up first and if up isn't available then left and left isn't available
+then down and if down isn't available then right now of course the logic has to be a little
+bit more sophisticated than that because it also has to know that you can't move up into a wall
+right so it can't just be looking at breadcrumbs it also has to say well can I move into a wall
+so the way I did this in my version of the game was again so I have this hidden array
+that is the same size and dimensions as the maze that contains the number of breadcrumbs
+in every space and every time the mouse moves again it drop it it you could say every
+every element of this array is just an array of of account of the number of breadcrumbs every
+element in this array initially starts at zero except all of the spaces that have walls I treat
+the walls from the mouse's perspective is a huge mound of breadcrumbs an infinite amount of
+breadcrumbs so the maximum integer value is placed in each of the spaces that also has a wall
+okay and I populate this you can say breadcrumb matrix
+what with these infinite counts of breadcrumbs while I'm generating the maze and dropping
+the wall into the wall down to create the maze okay so now any time the mouse is selecting a
+direction to move a wall will just seem like an enormous amount of breadcrumbs and therefore
+will never pick that direction and it will just keep moving and moving and moving around the walls
+and picking other spaces even if they have 10, 20, 100 breadcrumbs in them that is actually
+the essential algorithm for the basic outline of the game just to briefly make the game a little
+more visually interesting I added a little bit of a twist on the mouse moving when I want the mouse
+to move if you weren't dropping breadcrumbs the way you would move the mouse on the VT100 display
+would be you know the mouse's current position you go to that position using the VT100 go to
+character sequence to set the cursor there and then you draw a space to indicate that now it's
+an empty space and then you you go to the mouse's new position and you write a mouse character
+because now the mouse is there okay that that's how that's how you move the mouse one of the things
+that I added just to make it more interesting and give you an idea of what the mouse is thinking was
+that I started drawing the breadcrumbs in the maze so initially the maze consisted of all empty
+spaces walls mouse and cheese but what I started doing is as the mouse whenever a mouse the mouse
+left the space a current space to move into a new one I would check to see how many breadcrumbs
+were there and instead of just drawing an empty space in where the place that the mouse was leaving
+I would draw a character representing the breadcrumbs and so I started with a period if there were
+only a few breadcrumbs say one two or three to indicate there's just that he's been there but not
+not very much and then if there were four or five or six breadcrumbs I instead drew a plus
+and then seven eight or nine I think I I drew an X and eventually once it got beyond a certain point
+it drew these these zeros meaning you know there are mounds and mounds of breadcrumbs in these spots
+it helps you see as the mouse is going through the maze where it has visited and why it is going to
+to go in certain directions instead of other directions this is easy enough to remove you can
+in the game and and instead just overwrite that position with an empty space and then the mouse
+you'll see it moving through what looks like a systematic pattern but you won't exactly understand
+why it's going where it's going that is our our mouse and amaze game in a nutshell this is more or
+less the original form that was described to us and and we were told to to program in my very
+first programming course it was rather fun I think the I think the dropping the breadcrumbs
+uh or printing out the the the different breadcrumbs was a little bit different I don't I don't think
+that part was there and I think the mouse dying of starvation was something else we added
+and that that brings me to what I really like about this game as a concept for intro programmers
+there are there are tons of variations that one can then take this program after you've gotten
+the basics of it running and tons of variations you can make on it to make it more interesting
+so just wanted to to share some thoughts on on what those can be first of all of course you have
+the mouse is fairly dumb right it is just working in a systematic pattern winding its way
+through the maze and ultimately hopefully finding the cheese so you can try to create a much more
+interesting search algorithm maybe the mouse is able to find the cheese if he's if he's within
+a few squares of it and he can get right to it um maybe the mouse is able to look uh more than
+one space oh up down left right from where he currently is maybe he is uh maybe he's able to
+two or three spaces outside of that range and and pick what is the you know what is sort of a more
+optimal path based not only what's immediately around him but also um what is perhaps a little bit
+further out maybe there's a bunch of empty space further around maybe that the mouse has this
+interesting sense of smell and and he kind of knows where the the cheese generally is and so he
+aims for it um in other words he he tends to prefer heading toward the direction of the cheese
+um instead of just going at random okay so as you can see there you know there are lots of
+of ways that you can you know change how the mouse goes the mouse moves around um another
+thing that you can change is the structure of the maze itself right I just drew it with a bunch
+of hashtags but you could imagine that you could instead of just drawing a bunch of blocks
+if if you had a bunch of walls that happened to line up vertically maybe you in straw instead of
+drawing them as hashtags you draw them as vertical bars and if they're if they if you have
+some walls that are attached um diagonally um maybe you you represent them with a with a forward
+slash or a backslash depending on the direction of the diagonal or an X if there are two diagonals
+that that come to meet or a V or a carrot you know the just you can make your maze a little bit more
+sophisticated and interesting in terms of how it gets drawn you could have the game
+run on and keep going once the mouse finds the cheese then maybe it gets a boost to its energy
+and from there it has to search out a new piece of cheese that you then randomly drop into place
+or maybe you start by putting several cheeses into the maze and the mouse has to try and find
+them all uh before it croaks that that would be another possibility but again it gets that
+boost of energy every time it it receives them before before it dies maybe you could put a cat
+or two in the maze and these cats might move around in random directions and if they if they
+can spot the mouse they start giving chase and and we'll eat it if they catch it
+maybe instead of having the mouse move randomly you you put the cats in and the cats move
+but maybe instead of having the mouse move randomly maybe you have the mouse move uh based on
+input of direct of um input from the keyboard so you're constantly checking for key presses and if
+you see a key press then that then the mouse will respond and and move in in that direction
+so you know you could use the standard WASD or you could use or you could use the arrow keys
+you look up the arrow key representation that you get for a a vt100 terminal and if you see
+that arrow key then use that but point is maybe you respond to input maybe uh if you were doing
+something like that uh whenever somebody tried to make an illegal move say bumping into a wall you
+you echo the character for a beep so that the the thing beeps and says nope nope boom boom you can't
+you can't go into that wall you can have the mouse itself have a a different symbol based on
+what direction it's moving in uh just to make it look a little more interesting uh so it becomes
+instead of just a static sprite it becomes sort of a changing sprite as it moves around in the maze
+it's a it's a it's a wonderful introductory program it's more than you know a basekeller world
+program and it's more than say a 20 or 30 line little program that you'd give for you know
+somebody who who barely understands ifs and loops but once somebody understands ifs and loops
+and derays if you give them the basic algorithm it's something that they can code up and then let
+their imaginations really really run with and i so i really loved that and the people in
+in my class and my programming class when we took this we we created all sorts of different ideas
+and variations and then we we post them and swap them and you know and oh i like that idea i'm
+gonna try this and oh i want to try oh i want to oh that's a great idea i've got to do better than
+that so you know you it's it's just a very very good little exercise in that so it was it was a fun
+thing to code up over a Thanksgiving break which is exactly what happened i was just i was visiting
+in-laws and you know spent a few hours and drew it back up probably most of that time spent
+looking up the vt 100 terminal characters at the time but you know so it's a fun little exercise
+but it was and it was enjoyable and it was a great trip down memory lane but i you know i
+still leave in coming back i've done many seen many introductory introduction to programming
+through gaming sorts of exercises and i can't i have to say and maybe it's maybe i'm biased
+just because of the nostalgia factor but i have to say this one in particular this idea
+seems to be among the best there's nothing that really ties this to the raspberry pie or
+or a text-based implementation the the only difference for say when one's programming this
+in java script or one's programming this in java or or on a gt in gtk or wx windows or whatever
+the the only thing that changes is is is how you display the maze how you draw the maze and how
+you and how you move the mouse this this just shows you again that that's sometimes the simple
+things in programming are the are the most enjoyable so to wrap up i i hope you have
+found this a little bit interesting you know the raspberry pie has much more powerful capabilities than
+drawing mice in text-based little games but you know when your bare metal programming sometimes just
+creating little simple little things like this our earth is fun and so i invite you to use
+your imagination think of what else you can you can do in this kind of very very constrained bare
+bones environment what what can what can you dig up with your imagination what can you create
+and uh you know i'd be very interested too if you're want to comment on this no to just or
+or email me to to you know describe some of the the interesting games that you or the games or
+projects that are exercises that you were given you know as or you have learned as a programmer
+that really open up your imagination and invite you to to experiment and play and hack so with that
+note this is Gabriel even fire signing off you've been listening to hecka public radio at hecka
+public radio dot org we are a community podcast network that releases shows every weekday Monday through
+Friday today's show like all our shows was contributed by an hbr listener like yourself if
+you ever thought of recording a podcast and click on our contributing to find out how easy it
+really is hecka public radio was founded by the digital dog pound and the infonomicon computer club
+and it's part of the binary revolution at binrev.com if you have comments on today's show please email
+the host directly leave a comment on the website or record a follow-up episode yourself unless otherwise
+stated today's show is released on the creative comments attribution share a light 3.0 license

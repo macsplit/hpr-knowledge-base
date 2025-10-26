@@ -1,0 +1,248 @@
+Episode: 489
+Title: HPR0489: SSL Attack
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0489/hpr0489.mp3
+Transcribed: 2025-10-07 21:37:48
+
+---
+
+.
+Good evening gentlemen. I wasn't going to say ladies in gentlemen but I think it's only just
+been kidding us. My name is Aaron Finnan and I'm going to be talking to you about
+maximum all-on-spikes and all-prefax attack when using defeating SSL. Ever since I
+first kind of heard about this attack I've been particularly fascinated by it. I was
+also very lucky enough to interview this security researcher who did this attack. The torque
+should outline and you should hope by the end to know these following things. What a
+normal prefix attack is and how it's used in defeating SSL. What are SSL implementations?
+What is an online domain validation? What is a universal wildcard cert and how we defeat
+OCSP? I show introduction. My name is Aaron Finnan. I'm an ethical hacker of security
+podcaster. I interviewed the researcher of this attack. I want to talk to you about this
+attack because it's mind-blowingly simple and just the knock-on effects are massive.
+It's an implementation vulnerability in a secure protocol. I think every ethical hacker
+in the room will be going, wow, it's really nice to see one of those. There's a lot of
+content available online if you want to find out more information.
+Tonight's aim is just basically to be a crush course in this particular attack and vulnerability
+that it exploits. It's only supposed to wet your appetite. I will give you a couple of
+web addresses and suggestions at the end if you want to find out more information. It's
+going to be a little bit of a tight squeeze to get it all into 10 minutes but I should
+just about do it. If I could ask, if you have any questions, if you could just keep them
+towards the end for me and that will give me a chance to get through this.
+In short, tonight's talk is focusing on the implementation vulnerability in a secure
+protocol, SSLTLS, which was left on patched in some operating systems for well over
+10 weeks. At its heart, the null prefix attack enables an attacker to read usernames and
+passwords of otherwise encrypted web traffic such as ebay, Facebook, PayPal, you name it,
+without the user or the owner of those sites ever knowing. This attack basically broke
+browsers as HTTPS padlocks. It basically enabled an attacker to conduct a man in the middle
+attack and to steal information which we shouldn't be able to do. SSL and HTTPS, we should
+be able to rely on. However, it's not just broken in browsers. It's broken in a vast
+array of different programs and lots of SSLTLS implementations are vulnerable to this particular
+attack. Although this has been predominantly patched, it's not my job to imply to you
+that there isn't a real world threat from it. It will get smaller as time goes by. The
+reason that I say this is, if we take in October 2009, nearly 2% of Firefox users were running
+a vulnerable version of Firefox, which may not sound so much, but when you look at Firefox
+there's 47% market share for that same month that number starts to become bigger. Also,
+when you look at Microsoft for half of that month, all of Microsoft's products range was
+vulnerable to this attack as well. So, it gives you a rough idea that this is only just
+starting to get fixed. So, in lane of groundwork, I want to just very quickly touch on what
+TLS is and it's predecessor SSL. And where it's in common use today, however, it's not
+my aim for this to be a definitive guide. If you decide that you want to find out more
+information about SSL, TLS, there's plenty of content available on the internet. But
+long story short, TLS transport layer security and secure socket layer or SSL are cryptographical
+protocols whose aim is to provide security for communication over networks such as the
+internet. The protocols are in widespread use and applications, such as web browser's
+email, instant messaging, VoIP and some virtual private networks. TLS is based on the earlier
+SSL specifications for our Netscape Corp. TLS allows a client server program to communicate
+over networks and a method that makes use-dropping data tampering a message forgery very
+hard to accomplish. And a typical deployment such as web browser, TLS authentication is
+what's known as unilateral, which is that the server is authenticated, but the client
+isn't. So, the client knows the server, but the server doesn't know the client. So, a simple
+TLS handshake wouldn't, where the server is authenticated by certificate, would look
+as follows. We'll start off with an negotiation phase with a client where the client would send
+a client hello. In this message, the client would inform server of the TLS protocol versions
+it supports. It will give it a random number and a list to prefer to say for sweets and
+compression methods. The server then responds with a server hello message, and within that
+message it will choose the TLS version. It will also supply a random number and it will
+also say which site for sweet compression method that they'll go on with. The server then
+sends a certificate followed by a server hello done, indicating that the negotiation
+phase of the handshake is over with. The client then responds with a client key exchange
+message which contains a pre-master secret and a public key. Both the client and the server
+use the random numbers generated from the negotiation phase and the pre-master secret to compute
+a common master secret. Key data for the connections will be derived from the master secret and the
+random numbers generated which have been passed through carefully designed pseudo-random
+functions. The client then will send a change of site for spec record and form a server
+that the communications will be authenticated. The client will then follow up with an authenticated
+encrypted finish message which contains the hash of the previous handshake message. It's
+a server fails to verify that hash then the handshake will be considered fail and the
+connection will be torn down. The server will follow this up by sending its own change of
+site for spec to the client informing the client that everything it now passes will be authenticated
+and encrypted and the finish message will also be encrypted and hashed and the client needs
+to verify it. I know it sounds pretty complicated but it's not really. It's just a basic handshake.
+The certificates that are in general use in this process are a type of certificate called the X509 type.
+I'm not expecting anyone just to go oh I know what that is but it's a pretty predominant standard
+used in certificates. I mean in fact the X509 is also known as a like a public key infrastructure or
+PKI, PKI for sure. It also has standard formats for public key certificates and certificates
+revocation lists. The X509 was initially issued out on July 3rd 1988 and was associated with the
+X509 standard and it assumed a strict hierarchy system so that it was able, you know this
+directory tree could be built where we were able to see you know all the bits of the certificate
+had a meaning and we could find out where they came from and so on and so forth. It didn't work out
+as long story short there. However in our case in web server and communicating from client to
+server what's actually only ever really checked in the X509 certificate is the common name in
+the subject field. I'll talk about that very short. However browser such as
+Internet Explorer, NetScape, ArtPros far have come with Roops certificates pre-installed so in
+essence it's really developers that are choosing who Roops EA's of your standard browser
+trust and verifies. Also as I said early on X509 holds this certificate revocation list standard.
+In the same breath the ITF have an approved way of checking if a certificate is valid online
+using the online certificate status program called OCSP. Firefox 3 comes with that by default.
+Defeating OCSP is a very important part of this attack I will talk about it but not just right now.
+If we look at an X509 structure for a certificate it's very bland to be honest with you,
+nothing very exciting. It has lots of information in there that you would be interested in but
+as far as the web browser is interested then they're only interested in the information in the
+subject and more to the point the common name field within that subject. Oops it doesn't look good.
+We're back. Now for an SSL TLS protocol it's the common name field and subject field that's
+verified and especially when proving the identity of a particular server so if eBay were to
+get a certificate they would lessen the common name field www.eba.com if PayPal were to do the same
+they would less www.paypal.com and if I was to do the same www.finix.co.uk
+When we request a certificate when we do a certificate signing request to a certificate authority
+which will be I'll refer to as a CA throughout this the request is validated by establishing the
+proof of owner of the actual domain and this can be as simple as checking the who is database
+for the root domain checking the technical email address and emailing them to say
+have you requested to get a certificate signed only the root domain is checked in this process
+nothing else is checked so we could have whatever we want is that subdomain I mean www.is
+essentially subdomain we can have whatever we want in there we could have phubar.finix.co.uk
+we could have certificate authority sock.finix.co.uk we could even have this subdomain doesn't
+exist.co.uk but the bottom line is the root domain is the only thing that's being checked no one's
+being offended no one's seeing that end part and it's at that point that really this attack starts
+to take place so I'm sorry I have bored you with all the technical side of it but it was just
+important for me to get that out of the way the x509 certificates come a format in what's
+known as ACN1 notation which supports lots of different string types however all of them are
+represented in some variation of Pascal when they're in memory Pascal represent strings
+by series of bytes specifying the length of the string and the string data one character per byte
+it's very very important to pay attention to that particular point that I'm saying now because
+that's very very different to how c reads strings c has basically one character per byte until it
+comes to a null character and then the string is terminated it's important also to remember that
+a null character means absolutely nothing in Pascal it has no special meaning whatsoever at all
+so in essence what we could do is we could register an x509 certificate from a certificate authority
+for www.paypal.com back with slash 0.finix.co.uk the null character has absolutely no meaning
+the the CA only checks the root domain well we open the root domain that's finix.co.uk if they
+send me a request I am the owner of that domain as I've discussed earlier and I've pointed
+earlier on that the root is the only important part and this is how this attack works how the most
+modern SSL TLS implementations will view data from x509 certificates as ordinary c strings
+and anyone who's a favorite programming will start to see where I'm going with this
+so it uses a standard functions to seeing it comparing it to manipulating it one of the consequences
+of that is that we take our issued CA cert that we got from their assigned or whoever for the x509
+certificate that says www.paypal.com null character.finix.co.uk isn't anyone guess what the brows
+of c's the brows of c's it is the brows that terminates it it sees a c string and it terminates
+at paypal.com so all the tests that it uses to verify that it is in fact seeing a certificate
+from a site that it's being told it's being seen it's been beat we've defeated it it really is as
+simple as that if we set up a man in the middle attack we can present that certificate say we
+get a certificate for paypal we can set up a man in the middle attack on a man and sniff
+all data that's going to paypal.com without any worries and it's true to say that the authenticity
+the authenticity of SSL TLS has been defeated here however the story really doesn't end here
+as I mentioned previously we have the online certificate status protocol
+or OCSP as I will now be calling it because it's a bit of a mouthful. It's a pretty effective way
+of defeating us and how OCSP was designed it was designed to be this lightweight protocol
+that when it sees a certificate for the first time or it hasn't seen it recently it will contact
+the it will contact the CA to say is this certificate with this serial number valid
+which wouldn't mean which means it wouldn't take long for certificate authorities to defeat
+our null prefix so it's a bit of a problem we need to watch out for this however lucky enough
+the researcher of this attack marks the defeated OCSP with less effort than he did to defeat
+the null prefix as I said earlier on it's a lightweight protocol the idea is it's real-time
+certificate revocation the old way of doing it was pretty bad so I'm by default and this should
+kill the null prefix attack however after however marks the after studying the response codes had
+noticed that the response code three try later and didn't generate any negative indicators
+of the browser level it didn't stop what it was doing it didn't finish anything it just try
+again later it doesn't sound like there's going to be a problem later on it just you know
+oh the busy come back later on it doesn't if you look at the other ones you know successful would
+be nice you know but we really wouldn't want to send one but the said mouth forms request I think
+that kind of might give the game away or certainly unauthorized as well but after some
+enumeration what he'd found out was that some of the response data the response status
+isn't signed by the by the authority by the authority back it doesn't cover that it actually
+only covers the optional response data so what he'd found out is he could sit on a line we're
+already doing the man-in-middle attack to listen for any request that has OCSP and then what we
+can do is we can block that and supply our own one that says three it doesn't require any signatures
+it doesn't mean that we have to forge anything so the online certificate status protocol was
+defeated today for you by the number three and it literally is as simple as that this is this
+lightweight protocol that was specifically designed for this particular so there's a
+particular situation and it really no forging no anything I mean just literally the ASCII
+three and that defeats OCSP I'm going to pick on Firefox for a little here because this is
+my favorite subject about this attack and it really kind of demonstrates this as a platform
+I have to say from the outset that Firefox responded the Mozilla team responded in a fast
+appropriate manner and patched this incredibly quickly when they look at their other peers
+well there was only one other peer that could have done something which was Microsoft
+and I said they took about ten weeks but that was only when a PayPal was out in the wild
+that they got around to patching it and when I talk about that as well it's worth remembering that
+if you are not Firefox on a Windows system you will still have been vulnerable
+opera safari were all vulnerable on a Windows system to us
+so there is two kind of key vulnerabilities that kind of came across here how
+in certificates you can request a almost a universe a wildcard cert and it's not like organizations
+like Google ebay and lots of commerce that lots of subdomains so rather than ebay having a
+Google having to get an SSL cert and an X509 cert for mail and docs and so on and so forth
+they have this wildcard certificate which is a star basically dot wherever the domain name is
+going to be well it turns out that an SS which is the library used in Firefox checked them very
+strange to say the least and what he was able to register was a domain a certificate for star
+dot non-character dot thought crime dot org and when any site that Firefox went to that required
+a certificate it would say yes we're here and it was termed a universal wildcard cert because
+you would only need one certificate and you would just constantly reissue them there's another
+similar attack that uses base constraints but you had to get root CA and science certificates on
+the fly this one you just keep on giving it's it's almost better than a CA so a root cert to be
+honest with you which it's very interesting and then as to say Firefox is very quick and patching
+it and this is patched all the way through the three series of Firefox version two is not so
+lucky so if you know anyone anyone running version two I would break their arm to to get it upgraded
+which kind of nicely leads on to this salute that this is being the most scariest part of it all
+is that this attack being used as a platform to deliver payloads okay think of the piece of software
+on your system that contacts a server out on the internet and waits for that server to tell it to
+I to to download and run an unsigned data block or as we like to call it Firefox auto updates
+now bearing in mind this is all authenticated over TLS SSL well we've already cracked that
+we've already we can be any certificate that we want to be so how about we intercept
+all the auto updates and we send it an update so we could in in theory not have had time to
+to make it work we could in theory find a vulnerable version of Firefox on a corporate network
+update all of those machines to a non vulnerable version of Firefox which we would have ever so
+nicely put in our own root CA and embed that in the trusted list maybe we could bind some other
+nasty little toys like root and boot kits and you know and maybe we can do something really crazy
+like you know deploy woobie.xc and really kind of get all the windows users convert
+as I thought was a particularly interesting part of this attack
+now and we've talked to you about a piece of software because in the moment I've just
+talked to you all about things that can happen but there is actually a piece of software that does
+all of that for you and it's released under the gpl version three is designed by a guy called
+Monksy Marl and Spike who I've mentioned god knows how many times through this but this guy is a
+very very interesting guy he uh this is not just one of that this is not just the first protocol
+level sort of vulnerability he's found he's found quite a bit in his time um as to self sniff
+has ocsp denial Firefox auto update and hijacking
+supports no prefix and wildcard certs and it's available for you to be able to download
+I played around with it uh I did modern play around with it I've spent probably god knows how many
+hours ago wow this is really cool and when I should have actually been doing slides maybe about
+some screenshots for you as I said earlier on I do have the uh I do have a virtual appliance
+you have six hundred and eight to make spare on your usb pen you're more than happy to take away
+with you and have a play with it um really is you you run us ourselves and if with these command
+options you can choose any command options it's quite well documented if not if you go to like
+remote exploit forum they have a an SSL sniff page funny enough
+so this is me on a test account using iE6
+but about a week after the the black Tuesday of patches for Microsoft when they have 13 of them
+um as you can see i'm padlocked i'm on HTTPS in fact if i go and check the certificate
+the certificate will tell me that i'm on paper there is absolutely no way for the end user to be
+able to tell because the mechanism that's telling them is also vulnerable to the no prefix
+um this is my favorite part um being told that the certificate was okay because the next slide
+will make even more sense because this is me taking the username and password and you can't see
+it so well for yeah the login details i'm the password um for a certificate that i'm being told
+it's fine i'm not throwing up any hours no warnings you have to take my word for it or you can play
+with the uh with the virtual machine that i've set up so in conclusion i hit you all say yes
+um i hope that we've covered basically what the no prefix attack is what a wildcard certificate is
+how ocsp is defeated how we can get a browser to run unsigned data blobs and have lots of fun
+there and a software that can be used for and that's me finished as i say only one of it to be a
+short introduction is there any questions i surely i have not answered everything so quickly
+does anyone heard about this the type before can you tell us from the yellow subroom
+you can do it all from the yellow subroom depending if it's got virtual machines
+i can do anything with the virtual machine you know much about the uh remote x plane
+it leads to an SS through the way that it handles the certificates
+yeah i don't know a lot about it but it's a very interesting point that someone is obviously
+watched Marx's talk actually how nss verified certificates actually led them up to having a
+buffer which you could just about squeeze a shell code then so you could present them with this
+certificate with basically a shell code and uh the way that if you ever look at the checking
+mechanism for an ss going visit Marx's site his talk is up and about on defconn and being
+does an excellent example of basically you look at this line of code it's got old all declarations
+in it it's big long and messy and he just unfocuses the slide and says you know don't don't look
+and focus your eyes back in and you can just tell by looking at a piece of code like this that
+there's going to be problems and he doesn't get halfway through it before he basically finds
+a buffer overflow and which is you know buffer overflow via certificate certificate i mean that's
+pretty awesome uh any other questions
+thank you for listening to hacker public radio hpr responses by caro.net so head on over to
+c frr.co.c clouds but

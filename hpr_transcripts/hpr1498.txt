@@ -1,0 +1,399 @@
+Episode: 1498
+Title: HPR1498: Personal OpenVPN
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1498/hpr1498.mp3
+Transcribed: 2025-10-18 04:16:06
+
+---
+
+If you've learned anything from us, please consider supporting us.
+Hello and welcome to another exciting edition of Hacker Public Radio.
+My name is John Duarte and I will be talking about creating your own personal VPN.
+So I'm a first time contributor to Hacker Public Radio and I'm excited to talk about
+the subject with you.
+There is a wonderful existing Hacker Public Radio episode that goes through the details
+of OpenVPN and all of its various settings.
+I would reference you to HPR episode 297, which does a fantastic job of doing that.
+But I noticed on the Hacker Public Radio website that there's still some demand for
+creating your own personal VPN server, a couple of different reasons for wanting to
+have one of these.
+So the classic example that is often cited for using a VPN for personal use is for information
+security when you're on public networks.
+In a, for example, when you're in your local coffee shop and you don't want someone
+to be sniffing the traffic that is going through the air.
+And if you are mostly going through HTTPS services, there can be unencrypted traffic that
+you would rather not be exposed.
+So having your own VPN allows you to tunnel that traffic and make sure that that information
+is secure.
+There's also a provide security when you're staying in hotels to make sure that the traffic
+that is either going through Wi-Fi over your hotel or if you have a wireless connection,
+there's really no good way to know what's being done with that information if it isn't
+securely encrypted on route.
+And although a personal VPN can provide security in both of those contexts and any other
+public network context, there's another benefit of having your own VPN that I actually find
+more compelling.
+And that gives you the ability to publish your own personal web services, personal network
+services.
+You know, given the fact in the last year that we've all been living with the Snowden
+revelations and we know that we live in a world where every bit of your data is being
+captured and analyzed for a variety of reasons.
+It would be nice to be able to publish your own services without being on the public
+internet at large.
+And your own personal VPN service allows you to do this.
+Sir, yeah, there are certainly public services that you might want to create if you wanted
+to set up your own virtual private server and manage that on the public internet.
+And they're perfectly legitimate uses for that, such as things that you want the world
+at large have access to, such as blogs that you want to publish or you want to set up
+your own status net server.
+But I think there are also services that you may want to publish in a private context.
+So for myself or for my family or a small group of friends with a VPN, your own personal
+VPN server, you can publish these in a variety context and just share them out to the people
+that you're interested in.
+So I personally do this for myself with a variety of services, an asterisk telephony server
+that then allows all of the devices on my VPN to have their own extension number.
+So using something like Linnphone for as a SIP client that, in an address book, book
+that's deployed throughout the network that anybody can contact anybody else on the network
+with just a short extension number.
+I also have a mumble server that allows us to have chat rooms for people on the network.
+You know, I can get together with another person in my family and have a conversation
+and then that's open for anybody else to join in.
+I also do a jabber server.
+You can use off the record encryption when you're using IAM software.
+There are instances where you can't do that, so Gmail doesn't offer that.
+There are certainly jabber services where you can do off the record, but I just find it
+pretty convenient to have my own jabber network where, you know, I can reach out to one of
+my children and make sure that all the conversation is encrypted.
+You're regardless as to whether they remember to turn the off the record encryption on.
+And then there are more just fun things.
+So I want access to my media library to be able to play my own music.
+I don't subscribe to online services such as iTunes and those sorts of things.
+I tried Pandora for a while, but I was mostly wonderful listening to music that I already
+own anyway, so it just made sense that I would just publish that audio to myself and
+consume it as I see fit.
+So these are the types of things that you can do with your own OpenVPN.
+I wanted to take a little bit of time and sort of walk you through the process.
+I know that OpenVPN has kind of a reputation for being fairly complex to set up.
+And it really is not all that difficult.
+So there's a couple of interesting facets of it that, you know, you just have to know
+how to deal with the keys and be able to wrangle some of the files into place.
+But when you boil it down to just a setting up a simple OpenVPN service, it is not really
+all that difficult.
+So my primary environment that I have the server set up on is a devian-based environment.
+And as I walk through the instructions, these have been exercised on a devian system.
+I will also be giving additional instructions for if you have a rail-based system.
+These have been tried on CentOS X, but just in a sort of proof of concept way, I haven't
+really exercised the VPN too much on the CentOS X side.
+The clients, you know, as you expand, expand your network to include family members that
+may not be running Linux, they may be running Mac OS or they may be running Windows.
+OpenVPN has clients for all of these and they will easily be able to dovetail into
+your working Linux OpenVPN server.
+So on devian, for devian 7, the command to install OpenVPN is just the standard appget install
+OpenVPN.
+If you're running on a rail-based system for CentOS X, OpenVPN is not available in the
+standard repositories, so you're going to need to add the Apple for the Fedora project
+in there, and then you can do a yum install OpenVPN after that, and I'll include details
+to that RPM location in the show notes.
+So once OpenVPN is installed, it's going to install obviously a variety of directories
+and files.
+And of course, most of these are going to want to be working with or in the Etsy directory.
+So the core of this is going to be an Etsy OpenVPN, and then the tooling that's going
+to be used to create the keys and manage them comes as a package within OpenVPN on both
+devian and CentOS called Easy-RSA.
+And these are a set of helper utilities that just allow you to create the keys, manage
+the keys, you can revoke the keys, and deal with them that way.
+So once you have OpenVPN installed, you can go ahead and take the example Easy-RSA 2.0
+utilities and copy them into your OpenVPN directory under an Easy-RSA sub directory.
+So on devian, these files reside in user slash share slash docs slash OpenVPN slash examples,
+slash Easy-RSA slash 2.0.
+And on CentOS, they will reside in user slash share slash OpenVPN slash Easy-RSA slash 2.0.
+So again, you copy that all the contents of that directory into an Easy-RSA directory
+in Etsy OpenVPN.
+And then for convenience, we'll assume that you cd into that directory.
+First thing you're going to want to do is set up the environmental variables that are
+prudent to your installation.
+So there's a file called VarsVARS that contains all of the environmental variables that will
+be used by the Easy-RSA utilities.
+So if you go and edit that in the editor of your choice, you'll go ahead and set your
+country, your state of province, your city, your organization, your email, your CN, your
+name, your OU.
+So once you've set those to your liking for the values that make sense to you, then you
+can go ahead and save that file, and then you'll want to source that file either with
+source, space, dot slash, B-A-R-S, or dot, space, dot slash, B-A-R-S.
+So this will then export those environmental variables into the shell environment that
+you're in, and those will be available to the various scripting utilities for Easy-RSA
+as you execute them.
+So the first thing that shows up when I do that on my system is that it lets me know that
+if I execute a clean all, that it is going to vaporize all keys.
+And since we're starting out with a brand new installation, that's exactly what we want
+to do.
+Go ahead and execute dot slash clean all, and then that will respond with nothing that
+will make sure that all any existing keys of which there were none, but if you've been
+playing around before, you can easily just wipe out all of the keys that way.
+The next command we're going to execute is build-ca, so execute dot slash build-ca, and
+that will go ahead and create the certificate authority private key.
+So that will write ACA dot key file, and you'll be asked to enter any information that
+wasn't supplied in the environmental variables if you didn't fill that out.
+So that's going to go ahead and confirm the various stuff for the certificate authority.
+So if you've ever created a key for a NSSL key for a web server, these will look familiar.
+So you're just going to all of those previous environmental variables that I enumerated
+before, you'll be asked to confirm those or change those to values that are more applicable
+to the CA key that you're creating.
+The next command is dot slash build-dh, and that will create a Diffie homing key that
+depending on the hardware that you're using will take quite a long time.
+So it will turn away and create that key once that's done, then you can create a key server.
+So you will execute the command dot slash build-key-server, and the name of the server.
+Once that is executed, so that will generate the private key for the server, and it'll
+write that to file that is named the name of the server dot key.
+The server key also has extra attributes that will be sent, so you can add a challenge
+password.
+Since we are creating a server key, the most convenient way is to not add a challenge
+password that way, there won't be an interactive handshake for there, you'll just exchange
+the two keys, and that will do the authentication, and then that will use OpenSSL to check
+that the request matches the signature, and then it will echo out the environmental
+variables that are associated with the key.
+It will ask you if you would like to sign that key after it has printed out all of the
+values there.
+I believe the default lifetime of that key is 10 years, so you can answer yes to signing
+the certificate, and you'll be asked to confirm whether you want to commit that to the database,
+and you'll answer yes, and then that will add that key to the database.
+Once the server key is created, then you can build any number of client keys.
+The previous one, the previous command was build-key-server, and now we're just going to build
+key.
+This command is dot slash build-key, and then the name of the client that you would like
+to build the key for.
+These can either be human names, or machine names, or just generic names.
+Client 01, client 02, and then you'll have to remember who they get issued to.
+But whatever schema works for you, you just create a couple of client keys to try out
+with your clients.
+This will be a similar process.
+Once you execute that command, it will generate an RSA private key.
+It will write that key to the keys folder, and then you'll be asked to confirm, again,
+information about that client before it writes out the public key.
+Again, if you can add a challenge password if you so choose, I would not recommend that,
+and then at the end of the, once the key is generated, you can sign it, and then confirm
+that it should be added to the database.
+And then the client key will be added to the database as well.
+So now that you have your server key, and a couple of client keys, one or more client
+keys, you're ready to set up the server itself.
+You can grab an example configuration out of the docs for the open VPN package that came
+with either devian or sent us, but I'll give you a very terse server configuration setup.
+This file will be saved in Etsy slash open VPN slash server dot c o n f, and I'll walk
+you through each one of these settings.
+The first setting is the port number that will be used to access the VPN server.
+The second setting is the protocol.
+This is proto space UDP.
+Next is the device that should be used.
+So in order to make this compatible across all types of systems, we use the tunnel device.
+This is DEV space TUN.
+Next four parameters will be the keys for kicking off the server.
+So the first is the CA.
+So that parameter is CA space.
+And then the path to the CA dot CRT that was created during our key creation phase.
+So in this case, that is slash Etsy slash open VPN slash easy dash RSA slash keys slash
+CA dot CRT.
+So I'll read through the rest of these key parameters and all of them are are prefixed
+and reside in the same keys directory.
+So the next one is the cert, the server certificate.
+So that parameter is C-E-R-T space followed by the path to the server dot CRT file.
+Next is the key, the private key, K-E-Y space, and then the path to server dot K-E-Y or
+the name of it.
+And both of these cases for the cert and the key server should be replaced by whatever
+you called your server when you created the server key.
+The fourth key parameter is the Diffie-Hulman.
+So that's DH space and then the path to the DH file in your keys folder.
+So in my case, I created a 2048 bit Diffie-Hulman key.
+So that file is DH2048 dot PEM.
+So next we'll identify the IP range for the server or the IP space and that mask.
+This parameter is server space 10.10.42.0 and then the appropriate name mask for that.
+If config dash pool, dash persist, space ipp.text.
+So this is a file in the Etsy slash open VPN directory.
+It's to maintain a record of client to virtual IP addresses.
+If open VPN goes down or is restarted, reconnecting clients can be assigned the same virtual
+IPs from the pool that was previously assigned.
+Format of this file is the name of the client key, followed by a comma, followed by the desired
+IP address for the VPN network.
+So the next parameter is client-config-durr space ccd.
+And that allows you to create files in a ccd directory that then articulate the mapping
+for the IPs that you should get.
+So the combination of those two allows you to push out a specific IP address and a specific
+route for your network to any particular client.
+The next parameter is route, again, just with the network IP space and the appropriate
+name mask for that space.
+The next parameter is client-to-client.
+Client-to-client allows all the clients to see each other on the network.
+So without that particular directive, the clients could only see the OpenVPN server.
+So this is a security, you want to take in mind what your particular infrastructure is
+and the security that you want to have around that as to whether your OpenVPN server lives
+on a device that contains everything that you want to have access, or if you want clients
+to be able to see each other and to be able to access each other for services that you
+want to publish.
+The next parameter is keep alive space 10, space 120.
+Causes ping-like messages to be sent back and forth over the link so that each side
+knows when the other side has gone down.
+So the 10, 120 pangs every 10 seconds and assumes that the remote pure is down if no
+ping is received during 120 second time period.
+The next parameter is cipher space, AES-256-CBC, which is the AES encryption cipher suite.
+Which is what we'll be using to encrypt the traffic.
+The next parameter is comp-LZO enables compression on the VPN link.
+And then we have user and group that the service should be running as so user space nobody
+and group space no group and adjust those accordingly for your system depending on who the
+non-privileged user and group are on for your particular infrastructure.
+Next there's the persist-key and the persist-tun.
+We'll try and avoid accessing certain resources on restart that may no longer be accessible
+because of privilege downgrade.
+The next parameter is status, which is where we will log the clients that are logged in.
+So we can quickly see who is actually accessing the VPN.
+So that is, in my case, status, space, open VPN-status.log.
+And then the final parameter is the velocity of that log.
+So that is verb, v-e-r-b, space, three.
+So once you have that configuration file written out and saved, then you can simply restart
+the VPN service to start out with.
+I would recommend doing this manually because if there are any errors in the process of starting
+up the VPN service, it will be a lot easier to see if you're just executing the command
+directly and then those will echo out to your terminal.
+So if that fails to start, go ahead and do the service restart.
+And then do an IF config and you should see a ton device that has the IP address that
+you had specified for the server.
+If you don't see that, that means that the open VPN failed to start up.
+And then you can take a look at what the actual errors are by executing it manually with
+the command, open VPN, space server.conf, or the path to the server.conf file.
+So that will spool out meaningful errors, actually, I found the open VPN errors to be quite
+specific and they should allow you to troubleshoot fairly quickly what the misconfiguration in
+your server configuration file is.
+So once that has been corrected, you can kill the server and then use the service command
+to restart that.
+So at that point in time, you have a functioning open VPN server.
+So I'll move on to the client side now.
+To install open VPN on a client, if you're running on a Linux system, you would use the
+same commands as you did for installing the server.
+It's the same package.
+The only thing that differs between a server and a client installation is the config file.
+So where we started out by saying server, declaring the server, and IP in the server file
+will actually be declaring a client when we set up the client configuration file.
+For Windows, the open VPN installer is available from the open VPN community download section,
+and I'll have a link to that in the show notes.
+So a special caveat for Windows, the user account control UAC must be turned off in order
+to allow the open VPN to execute the necessary network commands to bring up the VPN.
+So under Windows 7, that's under the start menu, you go to the control panel, and then
+there's a section called user accounts and family safety, and you go to user accounts,
+and then change user account control settings and set that to never notify.
+You click OK on that and reboot the machine, and then you can go ahead with the open VPN
+installation.
+On Linux, the configuration is going to go in the exact same location, going to be an
+Etsy open VPN.
+On Windows, I'll leave that up to your explicit investigations.
+But for the Windows 7 system that I was testing on, it was under SQL and backslash program
+files, Perenn x86 slash open VPN slash convert slash config.
+And on Windows, the config file has to have a dot ovpn suffix.
+And then that is how Windows discerns what the open VPN configuration is.
+So I'll walk through the configuration parameters for the client.
+The first one is client, which simply says that we have a client configuration.
+So most of these will be very similar to what we saw before in the server configuration.
+The next one is the device.
+We will, again, these have to match the server.
+So this is DEV space TUN to use the tunnel device.
+The next one is the protocol.
+We'll use Proto space UDP to match the server.
+The next parameter is remote, where we tell it the server and the IP, or I'm sorry, the
+port number that we use to connect to the VPN server.
+In my case, that's remote spacemyvpn.example.org space 1194.
+The next parameter is the is resolved dash retry that's R E S O L V dash R E T R Y space
+and the word infinite, which says never stop trying to connect.
+The next parameter is no bind N O B I N D. The next two are the user and group that should
+be used for the non-proved user to run the client service.
+On Windows, these aren't used, so you can still have them in there and they won't have
+any negative impact on the Windows client.
+So in my case, that's user space nobody and group space no group.
+So again, we're going to, for the next two, we're going to mirror the server.
+So the next two are persistent dash key and persistent dash ton.
+And then we get to the keys.
+So the CA will be the same.
+So this is CA space and then the path to the CA dot CRT file on the client.
+This will be copied from the server.
+On Windows, the format for the path is a double backslash notation in quotation marks.
+So on my Windows test system, that looks like CA space, double quote, C colon, backslash,
+program files, parent X86, backslash, backslash, open VPN, backslash, backslash, config,
+backslash, backslash, CA dot CRT, double quotations.
+And that will give the full path name for Windows to find the CA file.
+Depending on the Windows version, you may need to change the suffix of the CA file from
+CRT to CER.
+This is not been consistent for me, but on one of the test systems that I was using,
+if it didn't have the CER suffix, then Windows complain that it could not find the file.
+Because it didn't interpret it to be a certificate file.
+But in case that happens to you, you can check the logs on your Windows system.
+There is a log directory directly under the open VPN directory in the installation path.
+So on my system, that was program files, parent X86, backslash, open VPN, backslash, log.
+All right, so that was a long-winded explanation of the CA on the client.
+So next we need the certificate and the key for the client that is using these.
+So those can go into the keys folder on your system.
+That is the client01.crt for the cert and client01.cey for the key.
+Then the next parameter is ns-cert-type and the value is server.
+So space server.
+And then the cipher is going to match the one that we had on the server.
+So that one is cipher-space-as-256-cbc.
+Then the next parameter is comp-lzo, wouldn't know value.
+And then the last one is vrb-3, or the level 3 verbosity.
+All right, so with that configuration file in place, as you saw, we referenced two,
+or I'm sorry, three key files that need to be copied over from the server and put on the client.
+So whatever method makes sense for you to deploy those to your client,
+you will take the ca.crt file, which is associated with the server ca that will be used on all clients.
+And then specifically for the one client that you are installing,
+you will want the clientname.crt and the clientname.cey file that were generated
+when you created the key pair for that client.
+And you will copy those into the locations that you specified in the configuration file.
+On my clients, I go ahead and I add a resolution to the hostname VPN into my host file.
+So I simply add the IP address of my VPN server and the hostname VPN into the host file
+on whatever client I'm using.
+That way it becomes easy to ping the VPN without having to remember what it's called.
+So the next step in the process is to set up for the static IP addresses.
+So I talked a little bit before about the IPP and the CCD.
+So we create the CCD file or directory in Etsy open VPN slash CCD.
+And for each device, we add a file with the CNName of the key.
+And in that file, we indicate the static address to be used and the server IP.
+And for Linux, the server IP will be the VPN address of your VPN server.
+Windows, the VPN client will set up a local tap interface that must be used as the server IP.
+So there's more information about sort of that interesting arrangement on the window
+side where it has this layer of indirection and creates a local tap interface that the
+ton actually connects to.
+There's lots of interesting documentation on the open VPN website.
+One of the side effects of that is that you can't just assign any old IP address on the
+window side.
+So I will have a link on the show notes to that particular set of documentation and
+it actually articulates for any IP space what the allowable IP addresses are that you can
+assign to it because it needs one sort of behind the scenes assigns one to the tap interface.
+And then you have access to a different one for the tunnel.
+So you have to push two different addresses if you're using a Windows client.
+So I'll have some examples of those in the show notes.
+Once that's set up, you are ready to go.
+So that is how you set up an open VPN server for your own personal use using machines
+that are completely under your control.
+The only other thing that you need to do is to allow public access to the port that
+you set up for your server.
+So you can do that via dynamic DNS and just open up that port on your router and have
+your router point to the device that is running your open VPN server.
+And then you are all set.
+So external clients external to your physical premises can then access that dynamic DNS
+will take care of refreshing the IP address and nobody knows anything different.
+So I have this working out well for people in my family.
+I use it to communicate with my father.
+So we chat over mumble every week and I use it to have Java I am conversations with my
+daughter who lives across the country for me and all works out really very well.
+So I will try and add additional shows that sort of articulate how to publish these services
+that you can then use in the context of your new open VPN.
+But I hope that this was helpful and informative and inspires you to create your own open VPN
+and start publishing your own private servers and if nothing else gives you a wrapper of security
+for when you are hanging out at your local coffee shop.
+So thank you very much.
+Please contribute to hacker public radio and take care.
+You have been listening to Hacker Public Radio at Hacker Public Radio.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by a HBR listener like yourself.
+If you ever consider recording a podcast then visit our website to find out how easy
+it really is.
+Hacker Public Radio was founded by the Digital Dog Pound and the Infonomicum Computer
+Club.
+We are as funded by the Binary Revolution at binref.com, all binref projects are proudly sponsored
+by Lina Pages.
+From shared hosting to custom private clouds, go to LinaPages.com for all your hosting
+needs.
+Unless otherwise stasis, today's show is released under a creative comments, attribution,
+share a line, free dose of license.

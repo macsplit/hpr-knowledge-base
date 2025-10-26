@@ -1,0 +1,229 @@
+Episode: 948
+Title: HPR0948: Exchanging Data Podcast 2
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0948/hpr0948.mp3
+Transcribed: 2025-10-08 05:22:24
+
+---
+
+This is Dan Fry and you are listening to episode 2 of my exchanging data podcast series.
+In this episode I'm going to talk about building the web services that will allow us to share
+our restaurant data with other websites and mobile applications.
+We'll start out by reviewing what I discussed in episode 1, then I will talk about a couple
+types of web services. Lastly I will go over the restaurant application. Please remember you
+can find all the code I'm discussing in this podcast series on github.com slash dmfry slash
+exchanging data presentation. In the previous episode I covered a couple of data formats that
+can be used for sharing data over web services. They included XML and JSON. I've
+briefly covered JSONP for interacting with web services that do not originate from your domain.
+And finally I outlined the data model for the restaurant application. I'm going to compare two
+types of web services and I'm going to classify them as heavyweight and lightweight. First let's talk
+about the heavyweight web services. These types of services must conform to simple object access
+protocol or soap. Soap is simply an XML envelope that surrounds your incoming requests and outbound
+payloads. The contents of these envelopes is also XML but they conform to the application's
+specification. The soap protocol defines the architecture and message formats that your web
+services consume and produce. Soap web services are published onto the internet through a strict
+specification called the web services description language or whistle for short. This specification
+is another XML document that describes the syntax of the web service. It is not mandatory to
+produce a whistle document but every soap web service I have come across has one. Since the
+whistle contains the syntax of the web service it is often used to generate client factories
+for you to use within your application when you want to invoke a web service. As an example if
+I were to expose the restaurant web service as a soap web service it would run on a URL like
+HTTP colon slash slash local host slash restaurant slash restaurant service. The corresponding
+whistle document would then have to be accessible at HTTP colon slash slash local host slash restaurant
+slash restaurant service question mark whistle. Now I'm going to talk about why this is a heavyweight
+service. First these web services need to adhere to a formal contract. This can be defined in the
+whistle document. It also needs to define the web service location. Any bindings that are required
+in the details of the messages and operations it provides. The architecture needs to possibly
+handle transaction management security establishing a trust relationship and among other things.
+All the previous mentioned items make this a heavyweight web service but only as it applies
+to deploying the web service on the server. If I want to call these soap web services I not only
+need to conform to the to the application contract. I also need to conform to the soap specification
+generating all this data and pushing it into requests could be very time consuming. Also you have
+to unwrap the response to get access to the data when it is returned. If your client is let's say
+another application running on a server it's not as big a deal to do this work but if you want to do
+this in a website that is very JavaScript heavy it becomes almost unusable as the constant building
+and tearing down of the soap envelope and parsing the XML will provide a poor user experience.
+Since I developed mostly web applications now I have moved away from producing and consuming
+soap based web services which brings me to lightweight web services. Representation state transfer
+or rest web services are well suited to basic ad hoc integration needs. They integrate better
+with HTTP and do not require soap message wrappers or whistle documentation. It is often cheaper to
+produce web services that use well-known technologies such as HTTP, URI, MIME, XML and JSON.
+Access to these existing technologies also makes them easier to adopt.
+Producing your web services as restful web services is especially beneficial under the following
+circumstances. Number one, interactions are completely stateless. This means that they do not require
+their state to be persisted between restarts of the application server. Number two, a caching
+infrastructure can be leveraged to increase performance. This would allow less round tripping
+to the database to load data. Number three, the producer of the web servers and the consumer of
+the web servers have a mutual understanding of the data. To aid the consumer, you can easily use
+a command line tool called CURL, the debugger inside a Firefox called Firebug, or the simple
+rest client inside a Google Chrome to easily interact with these web services to better understand
+the results you receive when calling a restful web service. Number four, restful web services work
+extremely well in bandwidth-restricted environments such as consuming data on a mobile phone.
+No soap wrapper means less data descend over the wire or through the air. Number five,
+restful web services allow for easy integration via asynchronous protocols. Think of something
+like Google Read or Gmail where the page updates on its own with no interaction from you.
+Now that I've covered the types of web services, I'm going to talk about building the restaurant
+web application. When we talk about building web services, it is not so much as the underlying
+application of what it is built with, but more the application programming interface or API we
+are planning to expose. We are more concerned with things like when I do an HTTP get to some URL
+with this ID, what do I expect to be returned? Will it be JSON or XML or will it be an HTML page?
+These are the types of decisions you must make when planning out your API. The API for our
+restaurant application starts out with our root context. The application is a restaurant menu
+application so it's conceivable that the root context is called forward slash restaurant.
+I could access this URL as HTTP colon slash local host colon 8080 forward slash restaurant.
+Now what does this return? If I plug this URL into my browser, I will see a form that lets me
+manage my restaurants. Ideally, this type of functionality would be hidden behind some security
+measure. What happens when I drop down to the command line and plug the same URL into
+C URL and change my content type, header mind type, to be application forward slash JSON.
+When I press enter, I should expect to see the data for all my restaurants formatted as JSON.
+Change the content type header to application forward slash XML and what do you see? If you
+guess restaurant data format is XML, you're catching on. Now let's say we are getting back
+our restaurant data, but I only want to see the data for the second restaurant in the list.
+If you were to implement this in a traditional form, you would probably expose a URL
+such as HTTP colon slash slash local host colon 8080 forward slash restaurant question mark restaurant
+ID equals two, where you would pass into as the identifier to the query string portion of the URL,
+which is everything after the question mark. Think now if you wanted to access just one menu from
+menu data, you would need query string parameters that would pretty much cover every object in
+our model just to produce enough data so that you could produce your search logic to drill down to
+the appropriate object and retrieve it. Rest provides us with much more flexible option by allowing
+URL itself to become parameterized so that when you build your controller logic to handle such
+requests, it automatically drills down to that specific object. It is for this reason that I can
+now access restaurant two by going to HTTP colon slash slash local host colon 8080 forward slash
+restaurant forward slash two. Now let's say you want to see all the menus available for restaurant
+two, just tack on a forward slash menus that URL would look like HTTP colon slash slash local host
+colon 8080 forward slash restaurant forward slash two forward slash menus. Likewise,
+we now just want to see the breakfast menu, which happens to be menu one in the list. Just go to
+HTTP colon slash slash local host colon 8080 forward slash restaurant forward slash two forward slash menus
+forward slash one. Where I'm plugging in the IDs of the restaurant in menu, I'm actually
+populating a URL path value that is not set until it's actually invoked. I haven't actually hard
+coded specific URLs for restaurant two in the application. Now think back to our restaurant model.
+I have restaurants which have menus, each menu can have many sections, each section can have many
+menu items. Let's define the whole API right now. For brevity, these will be starting from
+our root context of forward slash restaurant. Also, they will always go from right to left,
+plural, to singular. So, forward slash restaurant will return all of our restaurants, forward slash
+restaurant, forward slash restaurant ID will return just one restaurant. Forward slash restaurant,
+forward slash restaurant ID. Forward slash menus will return all the menus like breakfast, lunch,
+and dinner. Forward slash restaurant aid. Forward slash menus, forward slash menu ID return just one
+menu like the dinner menu. Forward slash restaurant, forward slash restaurant ID, forward slash menus,
+forward slash menu ID, forward slash sections, we'll return all the sections for a particular menu,
+for a restaurant. These are things like your appetizer, soups and salads, sides,
+entrees, etc. Forward slash restaurant, forward slash restaurant ID, forward slash menus,
+forward slash menu ID, forward slash section, forward slash section ID, we'll return just one section
+like the entre section or the salad section or something like that. Forward slash restaurant,
+restaurant ID, forward slash menus, forward slash menu ID, forward slash sections, forward slash
+section ID, forward slash menu items will get all of the menu items in the section. And lastly,
+forward slash restaurant, forward slash restaurant ID, forward slash menus, forward slash menu ID,
+forward slash sections, forward slash section ID, forward slash menu items, forward slash menu ID will
+get just one menu item from that menu. This API shows you how you can get data tied to each end point.
+However, by utilizing the various HTTP request methods, each endpoint can fulfill multiple
+purposes.
+HTTP defines four main methods of interaction.
+They are get post put in delete.
+There are a few more, but they're not relevant here.
+Get is used just as I described, but how would I add a new menu to restaurant to?
+A typical form submission on a web page will specify post as the form submission method.
+So when I post a form to HTTP colon slash us local host colon 8080, forward slash restaurant,
+forward slash two forward slash menus, I'm expecting that a new menu will get added to
+the list of menus for restaurant to.
+Now I fall into update the details for restaurant to.
+I would first do an HTTP get for the restaurant by going to HTTP colon slash slash local host
+colon 8080, forward slash restaurant, forward slash two.
+Then I would submit my changes as an HTTP put to signify that I want to update the data
+instead of making a whole new restaurant.
+I'm assuming you can figure out what an HTTP delete will do.
+There's a very simplified API for demonstration purposes, but my question to you is, does this
+look familiar at all?
+If you go to facebook.com slash dmfry or enter your own name, likewise go to twitter.com slash
+dmfry or again enter your own twitter handle.
+Both Facebook and Twitter did not have someone create you a specific URL, let alone every
+user of the application.
+It is all handled by the path variables you set up when you were constructing your own
+API.
+Hopefully you're still with me and you're interested in knowing the little how I built
+this application, but I want to first say that it doesn't really matter what language
+I wrote the service in.
+So long as you have the ability to construct URL path variables like in our restaurant API,
+you can write the web service in any language you like.
+Personally, I'm a Java developer, so I wrote the restaurant application using Java and
+version 3.1 of my preferred Java framework called the spring framework.
+You can find out more about the spring framework at springframework.org.
+It is an open source Java framework for constructing Java enterprise applications.
+If you are familiar with Java, this has nothing to do with enterprise Java beans, and that's
+all I will say about them.
+It is, in my opinion, the best framework for developing Java applications, especially
+web applications.
+I do want to reiterate, even though I wrote this in Java, it could just as easily been
+Ruby Python, PHP, or any other web framework that supports what I have described in this
+podcast.
+If you're interested in seeing the code, please feel free to grab a copy.
+From the GitHub repository, I set up for the series.
+All of my code related to this series is located there.
+If you decide you want to give it a look, take notice that in the Java directory, you will
+find the restaurant application.
+In that directory, it will be a source folder for all the source code and a target folder,
+which will contain a deployable war file.
+You can drop this war file into the web apps directory of any Tomcat installation.
+If you are running Linux, you should be able to find Tomcat in most distribution repositories.
+If you're running Windows or Mac OS, you can go to tomcat.appatchy.org and download
+the latest server.
+Follow the simple instructions to set up and run Tomcat, then drop the war file into
+the web apps directory, and it will deploy.
+When complete, you should be able to access the application in your browser at HTTP colon,
+slash local host colon 8080, forward slash restaurant.
+This address should sound familiar, since I used it specifically in this podcast.
+When the application deploys, it will generate an in-memory database so that you can play
+around with the functionality of the website.
+It does contain considerable test data for you to play with as well.
+When you bring up the web page, you will see a link in the header called API.
+It defines the entire API as we described in this podcast.
+If you would like to look a little deeper into this exercise, again, please grab the source
+code from the GitHub repository.
+You should be able to look at the code in any text editor.
+Or if you want more control, you can import this project directly into any recent version
+of Eclipse.
+Eclipse is a general purpose integrated development environment or IDE for short.
+Personally, I forgot vanilla Eclipse and used one specifically tailored by the architects
+of the spring framework called the spring source tool suite.
+You can find this version at springsource.com, note that's different than springsource.org,
+like I mentioned earlier.
+If you're looking for vanilla Eclipse, you can find it at eclipse.org.
+Once imported into Eclipse or STS, it will build automatically using a tool called Maven,
+which will go out and fetch all the required libraries for you.
+If you're using spring source tool suite, it already has Tomcat set up and configured
+to run.
+Right-click the server at the bottom left corner of the screen, click add or remove programs.
+When the pop-up appears, select restaurant and click OK.
+Then press the green play button right above the server, name you just right-clicked on.
+When the server starts up, you can go to local host call on 8080 forward slash restaurant
+to play around with the site.
+In either case, when you go to the site when launched, you can click on the API link in
+the header.
+This page not only defines the API, but also shows you how you can interact with just
+the data by using CURL or a couple of browser tools that plug into Firefox and Chrome.
+That is all for this episode.
+If you have any questions, please feel free to contact me at any of the places mentioned
+at the end of this podcast.
+In the next episode, I will go over how you can interact with the data from another website,
+as well as describe how to access the data in a native app running on an Android phone.
+Thank you for listening.
+My name is Dan Frey, and I'm the Senior Web Architect at Nolan Corporate.
+I co-host the MythTV Cast Podcast, and I'm a regular co-host on the Linux link tech
+show.
+The MythTV Cast Podcast can be found at MythTVcast.com.
+The Linux link tech show can be found at TLLTS.org and streams live every Wednesday night at 8.30
+PM Eastern Standard Time.
+I can be reached on Google Plus, at Plus Daniel Frey, on Twitter, and Identica at DM Frey,
+and on Facebook at Facebook.com slash DM Frey.
+The projects in this presentation can be found on github under github.com slash DM Frey,
+slash exchanging data presentation.
+You have been listening to Hacker Public Radio, or Hacker Public Radio does our.
+We are a community podcast network that releases shows every weekday and Monday through Friday.
+Today's show, like all our shows, was contributed by a HBR listener by yourself.
+If you ever consider recording a podcast, then visit our website to find out how easy
+it really is.
+Hacker Public Radio was founded by the digital.com and the economical and computer club.
+HBR is funded by the binary revolution at binref.com.
+All binref projects are crowd-responsive by linear pages.
+From shared hosting to custom private clouds, go to lunarpages.com for all your hosting
+needs.
+Unless otherwise stasis, today's show is released under creative comments,
+attribution, share alike, lead us our license.

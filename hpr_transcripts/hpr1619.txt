@@ -1,0 +1,433 @@
+Episode: 1619
+Title: HPR1619: Bare Metal Programming on the Raspberry Pi (Part 1)
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1619/hpr1619.mp3
+Transcribed: 2025-10-18 05:56:41
+
+---
+
+It's first May 16th on October 2014, this is an HBR episode 1619 entitled Bear Metal
+Programming on the Raspberry Pi Part 1, and is part of the series, Programming 101.
+It is hosted by Gabrielle Evenfire, and is about 62 minutes long.
+Feedback can be sent to Evenfire at SDF.org, or by leaving a comment on this episode.
+The summary is, this show is about how to program a Raspberry Pi with no operating system,
+and no libraries.
+This episode of HBR is brought to you by An Honesthost.com.
+Get 15% discount on all shared hosting with the offer code HBR15, that's HBR15.
+Better web hosting that's Honest and Fair, at An Honesthost.com.
+Hello Hacker Public Radio, this is Gabrielle Evenfire.
+Thought about time to record my second submission to HBR, and like last time I want to talk
+about a little project I've been fiddling with.
+This is going to be an episode about Bear Metal Programming on the Raspberry Pi.
+Actually, it's not just going to be one episode.
+I started recording this, and I realized that I had quite a bit more material than I
+had thought, so it will probably stretch out to two or three episodes.
+By Bear Metal Programming, what I mean is that the software that I'm writing is the
+only software that the Raspberry Pi is running.
+As soon as the Raspberry Pi powers up, the first line of code it should see is my code.
+I'm not going to use any standard libraries at all, and there will certainly be no operating
+system present.
+Now, most of this work has been sort of laid out and planned out by people who have
+been much more interested in the workings of the Raspberry Pi than I have, or at least
+given a much more attention.
+So all credits should be where credit is due.
+A lot of the ideas here come from a co-worker of mine who has a GitHub page under the name
+D Welch 67, I'll put a link in the show notes.
+I got into this basically over a summer vacation with the family.
+I always take some sort of a project with me on the summer vacation, and I usually work
+on it after everybody else is going to sleep.
+This year I decided, okay, well, let's fiddle around with the Raspberry Pi without an
+operating system.
+In particular, one of the goals that I wanted to try to achieve was to use the libraries
+that I've been working on for the past 10 or 15 years, which were designed to be used
+in embedded systems, and make them run cleanly on the Raspberry Pi.
+Those libraries also underpin my other project that I've discussed, the Onyx.
+Okay, so what am I going to cover in this series?
+Well, at the very least, I'm planning on talking about how one builds software and sets
+up some bare metal programming examples on the Raspberry Pi.
+This will include getting a very basic serial driver working.
+After that, I'll discuss using the same framework to then build an interrupt driven serial
+driver.
+From there, I'll talk about how one can leverage that into creating a loader to make loading
+new software onto the bare metal system much easier.
+After that, I'll probably discuss a little bit about what it took for me to get my C-libraries
+ported to run on the bare metal system, and then at the very least, I'll also talk about
+the initialization of the memory management unit and turning on caching.
+If by that time people are really interested in this topic, maybe I'll move on to some
+others, some things I haven't quite got to, but our sort of on my radar would be writing
+an Ethernet driver for this environment, writing a floating point library, maybe poking
+around at the graphics or the audio, maybe writing a thin multi-threaded operating system
+on top of the basic framework.
+But we'll see where we get to.
+For now, it's just been fun to get the basic operations up and moving and see that I
+can actually have a basis of software to work from that I can build other software on
+in the future.
+So why would somebody want to do any bare metal programming?
+Well, I'm somewhat of a do-it-yourself or as a rule, I don't feel like I understand a
+topic unless I have played with it myself.
+And that includes even basic libraries.
+I want to be able to know how each and every one of them is working in complete detail.
+And since the only software that is running in this environment is the stuff I write,
+it makes me painfully aware of the common libraries that one might otherwise be missing.
+And then, correspondingly, once I've implemented them, some of the nuances that might be involved
+in implementing them.
+I think bare metal programming also helps you understand the inner workings of your processor
+and of operating systems and of your build tool chain.
+And I think it's also a great way to create a platform for testing generic code for improvements
+and performance because when you are running in such an isolated environment, it's easier
+to measure the difference in performance without worrying about externalities interfering with
+your tests.
+Ultimately, I admit that there's a certain amount of just a self-reliance streak in me
+as far as programming goes.
+I don't want to have to depend on anybody else's code.
+And so the idea that if I need to, I could rebuild the entire software stack just appeals to me.
+Okay.
+So now that I've made my elevator pitch for why we would want to do this, let's talk
+about what you need to follow along with this kind of work.
+Well, obviously you need your Raspberry Pi.
+You need a SD card.
+It doesn't have to be a big one minus two gig.
+And you will want to load it with some sort of a Linux distribution.
+I just picked a random Raspberry and distribution.
+I'm not going to use just basically anything for it.
+It was just the quickest path for me to get a properly formatted file system on the SD
+card for loading my software.
+You'll also need a USB to TTL serial cable.
+You can get these on Adafruit for, say, ten bucks.
+And you will also finally need your development system, which I'm assuming will be a Linux
+system, but could well be some VSD system or haven't forbid some other operating system.
+And it needs a USB port.
+For this exercise, again, I'm going to just be assuming a Linux system for development
+and for interfacing with the serial port.
+Okay.
+So what do you need to do before you can start writing code?
+Well, as I mentioned already, you need to image your SD card with Raspberry and probably
+a good idea to boot your Raspberry Pi up and see that Raspberry is actually loading, if
+you can.
+You also need the ARM tool chain for building software on your machine.
+Now I say the ARM tool chain.
+You could actually have at least several ARM tool chains.
+The one I used was the GNU compiler collection tool chain.
+But some people prefer to use clang.
+There's nothing wrong with that.
+Again, my examples will just use GCC.
+You'll need to download and install, however, the cross-compiler environment for the ARM
+on your build machine.
+Now I will put a link in the show notes to a script that one can use to install an
+appropriate ARM tool chain on your Linux distribution and put it under the opt directory.
+This is, again, courtesy of D Welch 67s and get repositories.
+Really all this script will amount to is Wget of the appropriate files followed by
+untar, followed by make, followed by make install sort of thing.
+It took quite a while to actually perform the full installation on my laptop, which
+isn't a particularly beefy laptop, but just be aware it takes a while to actually build
+everything.
+Finally, you have to make sure that you also go and download the ARM architecture reference
+manual, the technical reference manual, the Raspberry Pi, peripherals manual, probably
+the schematics.
+There are a whole bunch of technical references that one is going to need in order to really
+understand what's going on under the hood in this environment, so I'll put some links
+to those as well in the show notes so that you can obtain those PDFs.
+But now let's talk about what happens when you boot up a Raspberry Pi.
+According to my admittedly shaky understanding, as I've only been poking at this for a
+couple of months, most of the actual boot strap of the system actually occurs in the GPU
+out of sight of the user and out of our ability to modify for that matter.
+And after it has finished its basic bring-up of the ARM chip and the rest of the peripherals
+or at least the basic peripherals, what it does is it looks for the SD card and if it
+finds it, it tries to mount the first file system, assuming it's a fat file system.
+And it looks for a file in there named kernel.img and it assumes that that is the first bit
+of software that needs to be run and that that will take care of all the rest of the operating
+system and so forth.
+So the bootloader will read that file in and load it into main memory starting at hex
+address 32,768 or hex 0x800 and then it will set the program counter to that address
+and tell the ARM to start running.
+So the ARM essentially, as it first starts up, will start executing at address hex 8000
+and whatever is there, it will just run until it has to stop for some reason where stop
+would be executing some sort of illegal instruction or some other condition that it can't handle.
+So in order to get our Raspberry Pi running, our software in a bare metal environment, what
+we need to do is compile our code into an image that will be loaded at hex 8000 and overwrite
+the kernel.img on our SD card that would have normally booted the Linux kernel, we're
+just going to overwrite that with the software that we want to run instead.
+And again, that SD card will otherwise remain unused, at least for my examples.
+So now we have an idea of how we're going to get the software to run.
+Now let's talk about how we actually build the software.
+Okay, so now to build the software, we're going to use some pretty standard tools in the
+normal build process for an application and then a few that you probably don't typically
+touch.
+Now again, I'm assuming that for the purposes of this podcast that we are using the GCC
+compiler tool chain and binutils, and so all of these commands will start with the
+prefix arm-nun-e-b-i-, and then the command name.
+And so that will be where you find the arm version of this command.
+So instead of running GCC, for example, to compile C code, you run arm-nun-e-b-i-gcc.
+And it will behave more or less like your typical compiler for say x86, but it will generate
+arm-code instead.
+Okay, so what does the compile process look like?
+Well you either use the assembler or the C compiler to generate object files, then you
+use a linker to bundle them up into one binary, so far nothing there is terribly different
+from what you normally do for a build.
+But then the next step after that is that you use the object copy command to extract
+the instruction section of the code from the resulting L file and put it in a raw binary
+file.
+Then at that point you can move the raw binary file to the file kernel.image on a flash
+drive and you can run it.
+So let's go in just a little bit more detail.
+If you have an assembly file that you want to, an assembly language program that you
+want to use, you simply invoke arm-nun-e-b-i-as to invoke the assembler and you give it the
+name of the assembly language file and then you give it a dash o and the output name for
+the object file, simple enough.
+If you want to compile a C, a bit of C code to run in the arm, it's a little bit trickier,
+but not too bad, you use arm-nun-e-b-i-gcc and you need to make sure you include with
+the flags, dash n-o-s-t-d-l-i-b, that is for no standard lib, meaning there will be no
+standard libraries linked in with this code and also dash no start files, no spaces or
+underscores between those words, and dash f-free standing.
+And then of course as I said, whatever other C flags you might want, like dash w-all to
+turn on all warnings or include has or such, okay.
+So you invoke arm-nun-e-b-i-gcc, you get pass it those flags and then you pass it dash
+c and then a space and the C file that you want to build and then dash o and then the object
+file that you want to create with it, okay.
+So you do that for a set of assembly language code and a set of C code and now you have
+set of object files that you want to link together.
+So now you invoke the linker and the name of the linker is arm-nun-e-b-i-lv, then you
+pass to it the list of object files you want to link together and then you want to pass
+it dash t followed by a space and a file name for a memory map script that the linker will
+use to lay out the code in memory and I'll talk about what that looks like in a second
+and then you pass it dash o and the name of the elf file that you want to produce and
+maybe some additional linker flags if you want to link in other files or libraries that
+you may have compiled.
+Now once you have done that you will have an elf file that is ready to be loaded onto
+a machine that actually has a loader that parses elf but we don't have that.
+We have a Raspberry Pi that has no loader and is immediately going to start executing
+the very first bytes that it sees as if they are instructions.
+So instead we want to copy out all the instructions in this elf file in one big binary blob.
+The way you do that is you invoke the obj-copy object copy utility.
+So it's arm-nun-e-b-i-obj-copy, then the name of the elf file, then dash capital O, then
+the word binary, the space between the O and the binary, and then the output file name.
+And that finally will produce the binary that you can copy over a kernel.image.
+So a little brief discussion now of the memory map file.
+The memory map file is a very simple short script.
+It tells it things like okay which sections are there in the elf file and what order do
+they get laid out in.
+And really we're just going to use a very minimal script to do this.
+The script that I have just starts with the word memory in all caps and then an open brace
+on a separate line.
+And then on the next line it says in lowercase ram colon and then it says the word origin
+equals hex 0, that is 0x800 comma length equals 0x10000.
+So basically I've told it okay, the memory that you can load these object files into starts
+at address 32768 and goes for one make.
+And then there's a close brace after that.
+And then after that directive there's a sections directive and the sections directive.
+So it's all capital sections then an open brace and then I tell them we're going to direct
+it to say what are the sections and where do they live.
+So you have the next line has dot text and then space and a colon and an open brace and
+then a star left parenthesis dot text star right parenthesis close brace and then a greater
+then and then ram telling it okay put this in the ram memory.
+And then after that it has dot bss colon open brace star left print dot bss star right
+parenthesis close brace greater than ram okay.
+And then finally there's a close brace online by itself for the end of the sections section
+of the script.
+And so again very simple script you're just telling it okay this code is going to live at this
+address have this length and I want you to lay out the sections first with the text segment
+and then the bss segment and the bss segment for those of you who don't know is the part
+of your program that just under normal circumstances would get initialized to all zeros because
+no specific initialization was provided for the data structures that are stored in that
+section.
+Now when we actually go to run this code this is something important to understand.
+When we actually go to run this code there is still no loader because there is no loader
+and because we're not going to copy out a big pile of zeros for the bss section or initialized
+data for the initialized data section in order to keep this binary small this means that
+the code has to actually itself perform all the initialization of all the variables.
+Now of course you have to do this when you declare automatic variables that is local variables
+within a function but be aware that for this programming environment you have to do likewise
+you have to have some piece of code actually initialize your global variables you can't rely
+on the c programming language rule that those variables will always be initialized.
+So now I'm going to talk a little bit about what sort of code you actually need to have
+in order to start actually doing stuff on the Raspberry Pi.
+I have a repository, I give repository containing all of the code that I created in this little
+experiment and it's divided you can say into two sections there's the reusable code and
+then there are specific applications built on the reusable code.
+Now in the reusable code which you will find under the source and include directories there
+you will find that there is a file core.s and that core.s is an assembly language file
+that contains both the very first instructions that all my programs execute as well as
+some helper routines which I really use quite regularly in the remainder of the code.
+So just for the record you can find my Git repository for this code at https colon slash
+slash getorious dot org slash cat RPI.
+All right now we've gotten that out of the way and of course that will be in the show notes.
+Let's talk about this assembly language core set of routines.
+It starts off with the start label and this is exactly what will land at x 8 0 0 0
+and you'll see a series of eight LDR PC comma some label instructions.
+So eight instructions each one of them loading the PC and this in essence is actually not only the start for the program
+but also the exception vector and by exception vector what I mean is that the raspberry pi no I'm sorry.
+The ARM processor in general when it encounters an exception it immediately saves some of its current working state
+and then starts executing at instruction 0 plus some offset depending on the type of exception
+and that offset is essentially an offset between 0 and 28 so there are 32 there are eight possible exceptions.
+And what these eight instructions essentially do in those eight locations is to just load the program counter with an exception handler.
+That is since the program counter says which instruction gets executed next it jumps to an exception handler.
+So the very very first instruction gets executed in this code is to branch to the reset handler because reset is exception 0.
+Immediately following those eight load instruction load PC with the appropriate exception handler instructions you'll find eight more words.
+And those eight words actually hold the pointers to the exception handlers.
+And the whole point of this is so that the the assembler can generate position independent code.
+When you actually assemble this file and you look at the result of the assembly you'll find that that for example the very first instruction LDR PC comma reset handler gets translated into
+OK load the program counter with the current program counter plus some offset and that offset lands you at the reset handler label.
+And that reset handler label is just a word of data that contains the address of the reset exception handler.
+So it loads the PC with the data that is at the current memory location plus an offset and that data happens to have the address of the exception handler.
+And you can find a similar convention used for the IRQ handler and the fi and the fast interrupt handler.
+And you'll notice that the rest of the exceptions have the address of a hang function which all it does is spin indefinitely.
+Now I can't take credit for this structure this again came from my co-workers excellent tutorial in terms of the overall structure.
+But it's a it's a handy way of building a relocatable code exception handling vector.
+So again what will happen is immediately upon starting the program will load the program counter with the value in the reset handler word,
+which contains the address of the exception handler code, which you'll find EXH underscore reset a little further down.
+And this essentially is the main sort of set up routine for just the very basics of what need to be initialized in assembly language itself.
+And the first six instructions what they do is they actually copy that exception handler table above meaning the eight LDRPC instructions for load register PC followed by the eight words that contain the addresses of the exception handler.
+They copy it from the original starting point which is again hex eight zero zero zero to address zero, which is where the exception handler actually must be in order to process the exceptions.
+Then after that we have a few blocks of assembly where what they do is they are setting up the stack pointers for different modes of operation so that when we switch to a different mode of operation it instantly switches to the new stack pointer.
+And that way when in one of these exceptions happens it doesn't clobber the stack of the other one.
+Okay, so the first one sets the stack for system mode the second block sets the stack for IRQ mode for handling interrupts the third one sets the stack for fast IRQ mode.
+And the fourth one sets the stack for supervisor mode and in this case supervisor mode is where I'm going to leave most of the code to run on in these bare metal programs at least for the time being.
+And once we've set up those stack pointers then you'll see a BL main which means branching link to main means jump into the function named main and save the return address so that we can return from there.
+But you'll see that it falls through if if main should actually ever return it falls through to this hang function which all it does is branched to itself indefinitely.
+In other words it's been moves so if main ever returns the arm will just freeze.
+So that in a nutshell is the initialization what happens we set up an exception vector we set up a few stacks and then we immediately branch into main and then main gets to do the rest.
+Now before I go on I want to mention a few other assembly language functions in this that I find that are indispensable.
+The first is peak 32 and immediately following it is poke 32.
+Now I have great memories of my Commodore 64 and the instruction for reading and writing raw memory in Commodore 64 was peak and poke respectively.
+So I kind of thought that it would be good to name these accordingly.
+You find these sorts of routines in many operating systems and almost all bare metal programming examples.
+And the point is just to create a routine that will no matter what read from or write to a specific address given by numeral.
+So the compiler will not optimize it out the compiler will not try to do anything funny with it.
+What will happen is no more and no less than the read or the write operation of the 32 bit word you are talking about.
+Now what you will find in a lot of the code in these bare metal programming examples is that these routines are invoked to read and write control status registers in the arm or its peripherals.
+So for those of you who haven't done much systems programming what you need to understand is that in the address space of the processor certain addresses are set aside so that they don't actually refer to memory in the system but instead refer to registers control registers in the system.
+Sometimes they even refer to IO ports or memory in some peripheral unit like a graphics card.
+If I want to go set up the configuration of the UART or the GPIO pins or the timers those are available to the programmer by reading and writing to specific memory addresses.
+Now those memory addresses you can find in your peripheral reference manual.
+The one thing you have to watch out for is the base address that they give where those control status registers are located is incorrect.
+I believe they say that for example you could find a register at hex 7 f 0 1 something something something if you ever see that you have to know that instead that register is at 2 0 0 1 something something something.
+So whenever you see that 7 f in the first byte of the address where you're supposed to read the control status register you actually have to substitute the byte 32 or hex 2 0 in that byte in order to reach the control status register in the Raspberry Pi.
+Now from there I want to talk about some actual code that uses this.
+In the source rpi dot c file you will find a body of code that is available for doing all sorts of configurations of the arm and the Raspberry Pi.
+And I'm going to start with some of the functions to initialize the serial port.
+And this is because when I was playing with this at the beach on vacation I decided the very first program I wanted to write was an application that again echoed that would print hello world over the serial port and then whatever you typed into the serial port would get echoed back to you.
+That was the simple hello world example.
+So to get to it there are four routines for manipulating the serial port.
+I should note by the way that there are actually two serial ports in the Raspberry Pi.
+I both use the GPIO pins. There's a full UART and a mini UART.
+I decided to start with the full UART instead of the mini UART which is a little simpler.
+I wanted to go straight for the full UART because I really wanted to write an interrupt based UART driver so that I could play with the Raspberry Pi's interrupts.
+Nevertheless my first example does not have the interrupts enabled but still uses the full UART.
+Now if you look in RPI.C. at the RPI UART init now we're going to see some code that is actually doing some interesting configuration work on the Raspberry Pi.
+The first instruction is a POKE 32 which as we just saw from the assembly is just writing a 32 bit word in the Raspberry Pi's address space.
+The first argument is the address POKE and the second argument is the value to POKE.
+Well the first argument UART underscore CR you can find that value in include RPI.H.
+And it's basically the address of the memory map address of the control register for the UART.
+And the value UART disable CR disable is the value that I gleaned from the data book that disables the UART.
+Basically it zeroes out the RX and TX and enable bits in the UART so that the UART is doing anything.
+Okay so we first disable the UART just in case it was still up.
+Then the next few lines what they're doing is making sure that the GPIO pins that this UART is going to be connected through are not pulled up or pulled down.
+Remember these are GPIO pins they could have been forcibly pulled high or pulled low.
+So we want to make sure that pulled in any direction.
+We just want those GPIO pins to be controlled entirely by the UART itself.
+So the first thing we do is we peak the GPIO function select one register.
+And what this is doing essentially is saying reading a configuration register that actually says which subsystem gets to control some of the GPIO pins.
+And we're interested in pins 14 and 15 GPIO pins 14 and 15 which by the way do not translate to numerically counting pins 14 and 15 on the main header pins on the Raspberry Pi but we'll get to that later.
+So for 14 and 15 you'll see now I read the current function selection for the GPIO for function select one.
+And I clear out the bits for ports 14 and 15 and then I set port 14 to use function old zero and port 15 to use old zero.
+And these values again are values that one has to glean from your peripheral reference manual.
+And I put a reference to the area of the reference manual to where I got these values from.
+And then I poke the function select with the new value that is I write back the new values.
+So now I've selected the UART to work on these GPIO pins.
+Now I've got the GPIO pins selected but I still haven't disabled any previous pull ups or pull downs on those pins.
+And it's necessary to do so because according to the reference manual it tells you that those pull up or pull down configuration settings will actually survive a reboot a power cycle.
+So proper procedure for turning them off so they're neither high nor low is to write the value off into the GPIO pull up pull down register.
+Then wait 150 cycles for that control register settle and I would say we're waiting more than 150 cycles because we have a for loop there that's invoking a pass routine which all that does is nothing.
+But the point is between tests and increments were definitely more than 150 cycles there to wait for that to settle.
+Then we have to write to the clock register to tell it which of the GPIO pins we want to turn off.
+So in the clock register we write bits one left shifted 14 one left shifting 15 to save ports 14 and 15 are the ones that we're going to be turning off the pull up pull down state.
+Then we wait for another 150 cycles and then we clear the clock register say okay now we're not configuring any more of the GPIO pulls.
+So all of that is again detailed reference manual and these are the things you have to go find.
+Okay so now now that the GPIO pins are owned by the UART now we can start actually setting up the UART itself.
+And the next three folks try to accomplish that they clear existing interrupts that may have been delivered for the UART.
+They then set the ball rate to 115,200 bits per second.
+And the math on that is a little funny you'll just have to look at the code and look at the manuals to see why it is the way but I've encapsulated all of that in some macros to calculate the appropriate divisor clock divisor in order to get that broad rate.
+And then you'll see that the code actually has an if def use or UART use IRQ.
+So one section of the code is used if this routine is being called and interrupts are going to be used to control the UART.
+And the other section of the code is if there's not going to be any use of the interrupts with this UART.
+So for this first example the first example I did I did not enable the interrupts so you should go down to the else clause where the non interrupt path is.
+And you'll see there we're poking another register that says okay we're going to be doing eight bit bytes no parity one stop it.
+And then finally after all of that in order to enable the UART to make it ready for use we poke the control register again we write to the control register again and we set the enable bits the transmit enable bit and the receive enable bit.
+After calling this RPI UART in it the RP the UART on the Raspberry Pi would be ready to actually transmit and receive.
+Now the other two functions that one should be aware of are RPI UART send and RPI UART receive and send does what you would expect it sends a block of data and receive receives a block of data.
+Now let me just explain how those operations are performed.
+Send every time you want to send a character and when interrupts aren't enabled in the Raspberry Pi.
+First you peak the frame register UART on the square floor and you check to see if the FIFO the transmit FIFO is full and if it is full then you better not send.
+And in my code if it is full it just spins until it is not full.
+After that you know that there is room in that FIFO for at least one more character to transmit so you write to the data register UART on the square DR is what I named it symbolically with the character you are going to write.
+So all that RPI UART send does when interrupts are disabled is call that in the loop check to see if the FIFO is full or wait until the FIFO is not full I should say and write the next character wait until the FIFO is not full send the next character over and over and over.
+Receive is similar except that it doesn't quite loop in the same way.
+Instead what it does is it saves off a copy of the current receive status just in case you want to check for errors in a global variable.
+And then what it does is it checks to see whether the current FIFO is empty and if it is it returns zero meaning it hasn't read any data from the FIFO.
+And otherwise it reads the data register and returns one to indicate yes it did in fact read a character now you've got the next character coming from receive.
+That's again for the non interrupt version for the interrupt enabled versions data that is getting read from the FIFO will actually automatically go in the interrupt handler it will be copied into a receive buffer so that it can be copied out in whole.
+And similarly data that you are sending you put into a send buffer and it will drain it as the space becomes available on the FIFO.
+But we'll get to that example later so for the existing non interrupt example it's very simple.
+You check for fullness or emptiness in the FIFOs and you immediately when there is space in either direction then you either read or write the next value.
+Okay those are routines now that we can call in any of our bare metal examples and use them as the basis for our IO with the Raspberry Pi.
+So from there let's talk about a simple example that uses that code to just do the echo server that I mentioned before.
+You'll find that code that application under apps slash serial zero slash serial zero dot C.
+You'll see it just has a main you know it looks almost like a regular C code except that the main function has the prototype void main parentheses void and parentheses instead of passing an argument vector and its length for the initial parameters.
+And then all this function does is it calls RPI UART in it and it calls RPI UART send to send a string of hello world and then enters an infinite loop where it continuously receives one character at a time using RPI UART receive and whatever character receive it immediately sends it back using RPI UART send.
+And if it happens to receive a carriage return it also echoes a new line back so that it makes it nice for minicom or your terminal emulator so that it properly moves the cursor down line.
+So this code like is a pretty short pretty simple and building it should also be very simple if you have put the tool chain into your path as I mentioned earlier all you should have to do in here in this directory is type make.
+And it will assemble the core dot as file I just mentioned and it will compile the RPI dot C file that we looked at just a second ago and compile the serial dot serial zero dot C which contains the main function and it will link them together and then it will extract a binary from that code and save that in serial zero dot bin.
+So again in order to actually make that run now that serial zero dot bin will need to go in the kernel dot IMG so now I'm going to talk about how we actually how you go around about getting this to run and I've you know I've mentioned steps in general but now I'm going to be a little more specific.
+Okay the way I would do it is as follows. Okay first step is to again build the serial zero dot bin.
+The second step is to insert the SD card which we have already loaded with Raspbian or some other distribution into a SD card reader that is attached to your development machine and mount the file system if it doesn't auto mount next copy serial zero dot bin over the kernel dot image file on your SD card.
+Okay once you have if you want I suppose you can save the old kernel dot IMG file if you want to be able to reboot your Linux distribution but I don't care about it.
+Okay after that unmount your SD card and plug it into your Raspberry Pi.
+Now the next step is to connect up most of the wires for your serial your serial cable to the Raspberry Pi and I'm going to assume for the second for the moment that you are using the USB to TTL cable that I used but you may have a slightly different one in which case you'll have to look this up a little bit for your own specifics.
+So for this cable what you need to know is that the red wire contains power the black wire is for ground the white wire is for RX into the USB port and the green wire is for TX out of the USB port.
+The way now if you are looking at the Raspberry Pi so that the GPIO pins are in the bottom right hand corner of the board.
+So you're holding it up so that the those pins are at the bottom of the board and sort of their horizontally laid out.
+Okay then the bottom row of pins are numbered 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, counting from right to left.
+So 2 is the bottom right most pin.
+And you can go look at your Raspberry Pi schematics and you can see how these header pins actually map to the GPIO pins in the Raspberry Pi.
+Now for the GPIO pins that I selected 14 and 15 those map to pins 8 and 10 of the GPIO header pins.
+And I'm probably butchering the terminology here so for those who actually know what they're talking about please pardon me if I'm using slightly wrong terminology.
+But okay the way you want to hook these up is you want to connect the ground wire the black wire first to pin 6 which is the third pin from the from the right.
+Okay next you want the white wire the RX into USB port to go to the fourth pin from the right and the green port TX out of the USB port to go to the fifth pin from the right.
+Okay now once you have set that up and by the way you can find this in detailed in the in the text file serial dash TTL dot text in my repository.
+And your next step is to plug the USB cable into a USB port on your development machine.
+Next you want to run minicom on your development machine so that it will be able to talk to the serial port.
+And the command I used to invoke that is minicom space slash dev slash TTY capital USB 0 so that's dev slash lowercase TTY capital USB 0.
+Normally you would have to run this as root you could change the permissions of the TTY USB driver or you could add a non privileged user a developer to the appropriate group to have access to the TTY USB serial which is what I ended up doing myself.
+Once you are running minicom you should make sure that its board rate is set to 115,200 that it's set with 8 bit bytes with no parity and one stop bit.
+I would get rid of any and all initialization strings that it might send any reset strings you don't want it to do any of that kind of garbage.
+If you are ever running minicom and you need some help control AZ is the sequence that you need to type in order to get the help in the menu.
+Once you have started up minicom you should be ready to run your program so again at this point you should have three of the four serial wires connected to the GPIO header pins.
+You should have your SD card plugged into the Raspberry Pi and of course it should have the appropriate binary renamed over kernel.img and now all you have to do is use the USB power pin to actually power the entire Raspberry Pi.
+So to do that all you do is you plug that red wire into the right bottom right corner most pin that's pin 2 of the header pins and that will power the Raspberry Pi.
+You don't have to if you don't want to do that you can supply the Raspberry Pi with power by some other means using the mini USB to give it power via a plug whatever you want.
+Since you already have the serial cable it provides power if you need it. When you do that on minicom you should after a brief pause and as the LEDs light up on the Raspberry Pi you should see all of a sudden hello world appear on your screen.
+And the way you can now tell if it is properly echoing your keystrokes is if you type them and you see them appear on your screen.
+If it weren't echoing your keystrokes then every time you type you would see nothing on the screen.
+But as long as the program is working then you will see them echoed back.
+Okay so that is the very first and most basic serial example.
+I think that is where I'm going to wrap up this first episode and then I'll pick up with the next one with how interrupt vectors work and the version of this serial driver that actually uses those interrupts.
+And then once we have that working I'll take it a step further and create a small loader that uses the X modem protocol to load code onto the Raspberry Pi so we don't have to keep copying files onto the SD card in order to write bare metal programs on our Raspberry Pi.
+So that will be the next but I think this is a good stopping point I've certainly talked on long enough.
+Hopefully you all find this interesting and links to all of the manuals and scripts and code you will find in the show notes and I'll try to add more documentation as I go.
+Just many thanks to the people who have come before me who have had to fight their way through all of these lessons and issues with bring up and so forth and have documented it that certainly makes this a much less painful experience.
+As I've been doing these I've really been trying to get a feel for what the code looks like in general but then when I go and want to write it I try to write it from the manuals first.
+Only if I hit a serious or annoying stumbling block try to go back and look at the examples that others have done so that now I want to give myself a good shot and only if it gets really frustrating to go and consult other code examples.
+I would encourage you if you want to follow in something like this and you're following my examples or D Welch 67's examples or anybody else is out there.
+You know to do the same because it gets you the deepest learning experience.
+Certainly certain things like for example the fact that you have to clear the pull-up pull-down pins for example those aren't those do not jump out at you as necessary or obvious or the fact that you have to do function selection on the GPIO pins.
+So you know learning that in general and then going back and checking the manuals to see how that's a good thing.
+But I'm just saying you know I find I've been finding as I've been going through this that I enjoy it the most when I manage to glean the information from the actual technical manuals because you know the people who are first bringing up these chips that's all they have to work with.
+Again it's part of that do it yourself for attitude. So again thank you to all the four bears who have also provided a reference for those of us who don't want to spend days and days and days on say why won't it even print out hello world if it's actually for actually stuck on something like that.
+I hope all of you will get involved with this it's relatively inexpensive and it's just a great way to deepen your programming knowledge.
+Well I hope this show has been of interest. If you'd like to reach me you can email me at even fire at sdf.org.
+I'd love to hear your own experiences doing interesting fair metal programming projects whether on the Raspberry Pi or on any other platform.
+This is Gabriel even fire signing out.
+You've been listening to hecka public radio at hecka public radio dot org. We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show like all our shows was contributed by an HBR listener like yourself. If you ever thought of recording a podcast then click on our contributing to find out how easy it really is.
+Hecka public radio was founded by the digital dog pound and the infonomicon computer club and it's part of the binary revolution at binrev.com.
+If you have comments on today's show please email the host directly leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise status today's show is released on the creative comments, attribution, share a like, 3.0 license.

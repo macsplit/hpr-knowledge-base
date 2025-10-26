@@ -1,0 +1,405 @@
+Episode: 2095
+Title: HPR2095: 23 - SSL Certificates - How They Work
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2095/hpr2095.mp3
+Transcribed: 2025-10-18 14:16:23
+
+---
+
+This episode of HBR is brought to you by AnanasThost.com, get 15% discount on all shared
+hosting with the offer code HBR15. That's HBR15. Better web hosting that's
+honest and fair at AnanasThost.com.
+Hello, this is Ahuka, welcoming you to Hacker Public Radio in another exciting episode. This
+particular one comes from a talk that I gave at our local Linux users group. It was kind
+of a long talk, so I've split it up into two episodes here on HBR. This all has to do with SSL
+certificates. So in the first of the two talks, I'm going to get into just the basic details about how
+SSL certificates work so that we understand the basic technology. And then in the second one,
+I'm going to get into some of the problems and potentially some of the solutions to those problems.
+Now this was done very simply with a Sansa Clip Plus that I just started recording. I had a clip to
+my shirt. That is real easy to do, so if you're ever looking to record a show for Hacker Public
+Radio, give it a try. Now the one thing that it doesn't do very well is pick up other people in
+the room. So I had to edit the files a little bit. There are some long-winded questions that
+would have just been a long period of silence. So I took those out. That may occasionally make
+things just slightly jumpy. I seem to go from one thing to another because I cut out two minutes
+of silence in the middle. But I think it should be enjoyable and offer it up for your enjoyment.
+Thank you so much. Bye bye. So the first thing is I've done a few previous presentations about
+encryption and the technology involved. And one of the things that I think is important to stress
+is that the same technology gets used over and over. And that's why, like last year, I did encryption
+basics at Ohio Linux Fest that just covered essentially what are asymmetric and symmetric algorithms
+and how does all of that stuff work. And it's like, well, once you understand that and you understand
+how to encrypt your email, you understand how SSL certs work, you understand how secure login
+SSH works. It's all the same technology essentially. So start with something like digital signatures.
+All right. Now most people encounter that with email. So you sign an email. It's encrypted using
+your private key. Now remember that the designation private key and public key is somewhat arbitrary.
+What happens when you do key generation is you generate a key pair. And essentially what happens
+with a key pair is that each key can decrypt something encrypted with the other key. But no key
+can decrypt something itself has encrypted. And so that's important. So the public one that's
+out there can be used in several different ways. So if you do a digital signature, what's happening?
+Well, your private key is used to encrypt the message. And it puts that encrypted thing at the
+bottom as part of your signature. And then someone who has your public key can basically decrypt
+and say, well, essentially, is that the same as the text that I'm already looking at?
+So it's not secrecy. What it is, it is authentication. All right. Non-deniability. Now there's some very
+interesting stuff that is I'm now seeing talked about in the security area about, well, you know,
+maybe sometimes deniability is a good thing. You know, you might want to have something where you
+could say, you can't prove I wrote that. But the idea of the email signature originally was
+it was proof that the message was genuine, had not been tampered with since I attached that.
+All right. So it proves. You're the one who sent it. You can do the comparisons
+and see that that's the thing. Now digital, yep. Most of the most of your email clients that have
+the encryption plug-in or whatever, I mean, that's all handled in the background anyway. You don't
+need to actually manually go through doing it. But what would happen would be if someone, you know,
+man in the middle, got in there and put the word not in front of your statement. You know,
+when it showed up with the recipient, they should get a warning that says,
+then tampered with. This is not authentic. Don't trust it.
+Right.
+So the technology can be used for secrecy or it can be used for authentication and non-deniability.
+Now, with digital certificates, you have the same technology. All right. With the digital
+certificate, what is being distributed out of this for each cert, a public key is generated.
+So there's a key pair, again, arbitrary, which is public and which is private.
+But the certificate is signed using the private key and the public key is distributed.
+So when you get the certificate, you can use the public key and say,
+okay, yeah, genuine certificate. And again, that would matter if you went to a site that you
+had been to and, you know, you'd already recorded. This is the public key and, you know, I know
+what to expect and you get a tampered certificate that's trying to do something funny. You get a
+warning and say, oh, something's wrong here. So it's validation. There has to be something.
+And, you know, we'll get into some of the issues around this. But right now, this is just
+what are the mechanics of this process look like? So you're using, you know, that the public key is
+out there. It might, you know, if you want to talk to Mike about how he does his SSH login
+procedure, he's got these keys on each computer and so you can securely tell whether or not that's
+the right person logging in. Now, with SSL, what we're talking about is secure sockets layer.
+This is created by Netscape as so many web technologies were, really.
+It is unfortunately not secure and there was a thing called Poodle and if you want to read about it,
+there's a URL. You could look that up. But basically, what is happening is that various browsers are
+starting to say we will not accept SSL at all. Not even SSL 3.0. It is just too insecure.
+So that's the case. What we're doing is we're moving to something called TLS, transport layer security.
+And the only vulnerability that I am aware of, and I emphasize that, you know, at the risk of
+quoting Donald Rumsfeld, there's, you know, the known unknowns and the unknown unknowns and,
+you know, all of that kind of stuff. The thing in security, you can only just talk about what you know.
+So I could open up my browser tomorrow and read the headlines and see that they've just
+discovered a brand new vulnerability in TLS. But the one that I know of
+is by inducing a downgrade. So generally speaking, when you're communicating with a site, you have
+a list of different technologies that you're aware of for encryption. And the server has its
+list of technologies and you do a negotiation that ideally would result in the highest possible
+level of security. However, it is possible in some circumstances for someone to do something to
+the server that is going to force a downgrade that they can then use to insert something on your
+computer. So that's one of the reasons why they're now saying we've just got to get rid of SSL
+entirely because we don't want this downgrade attack to be successful.
+That means TLS is the thing. Red Hat's got a nice article on how you can go onto your server and say,
+oh, by the way, we're not going to do any SSL anymore. And if you come here and your browser says,
+well, SSL is all I know. What just won't let you connect?
+Certainly, all of the major browsers are quite ready to communicate using TLS. There's no reason
+for SSL. Now, what may happen is that you could run into some applications that haven't,
+but that's changing rapidly. So, how does this technology work? You start with a browser
+making a request for a connection. Now, if we're talking certificates, we're talking HTTPS.
+Let's secure a search. I believe they did, but at the same time, I think they want to just get rid of
+SSL altogether. There's no reason for it anymore. So, yes, they did put through a patch to
+put a band-aid on the problem immediately, but it is an example of something you want to get
+away from. No, no, it's not that wrong. I don't think.
+Yeah, it's been a few years. Yeah, you've all got computers. Why are you asking me?
+So, HTTPS is a secure connection. There are a couple of different ways that this might happen.
+You can request a secure connection. You can do it manually by typing HTTPS into your browser.
+You can configure your browser to always request an HTTPS connection. They have plugins that will do
+that now. Or the server could say, those are the only kinds of connections we allow.
+Okay, so, any of those things are conceivable.
+These are not for a server. So, they could default to that and then downgrade to an
+secure connection, or they could simply refuse the connection. Depends on what it is.
+Basically, no for 80. Right.
+You're redirected. Right. It depends on the site. Now, let's say I've got my browser and I do.
+I've got the plugin, HTTPS, anywhere, which comes from the EFF,
+or HTTPS everywhere. Sorry. You've even got the URL up there.
+You know, if I go to Mike's blog and it downgrades me to HTTP, do I really give it in?
+It's not just blog, right? But if I go to my bank and they don't accept an HTTPS connection,
+I've got a serious issue. I also want to see the little surf from the level
+and the guarantee on their surf. Right.
+Now, one of the things that is promoting this, Google has said, well,
+we're going to take this into account in compiling our search results.
+You know, if you want to show up on page one, and you want to show up on page one, right?
+You'd like to be as close to the top as possible on a search. You're saying, well, you know,
+if you're not offering secure connections, that ain't going to happen anymore.
+So that's a good way of doing that. And you can read, that's two years ago,
+a year and a half ago that they were doing that.
+So the key exchange, the public key is distributed by the server.
+And that's the public key that goes along with the private key that was used to encrypt the
+certificate. This is sent to the client. Then what happens?
+Diffie-Helmond-Murkel-Keex-Change or an RSA-Keex-Change, those are two slightly different
+methodologies. They don't use exactly the same encryption, I believe. Diffie-Helmond uses
+RSA and RSA uses RSA. Now, this is a way of getting the symmetric key across.
+The reason you do that, so you know, you got a public key and a private key. Why do you need
+another key? Because there's a computing overhead involved in public private key.
+It is more computationally intensive. Now, that's one of the reasons that gives it a high degree of
+security, harder to crack and all of that. But if you're going to do a lot of back and forth stuff,
+and I don't know if you've measured lately just how much crap gets transmitted by most websites.
+But, you know, 510 meg per page now is not uncommon.
+Well, you can stop all of it, but at a certain point it's like, well, why bother?
+I'm just wondering how many times the 50 states that the two letter posts from the 50 states have been
+transmitted over internet connection? So, the fact is that the symmetric key is used to do the
+majority of the work. Now, earlier than we talked about email, we made the same distinction,
+because what actually happens if you encrypt an email is that the key pair is used to encrypt
+the symmetric key that will be used to actually carry on the conversation, and the same thing
+again with SSH. So, man in the middle, which in a pretty high proportion of cases, if you're worried
+about security, you're worried about man in the middle attacks. That's the vast majority of the
+scenarios that you worry about. And, you know, a man in the middle attack ideally would be,
+you know, Mike tries to initiate a secure connection with a server. I get there and say,
+no, interesting, then I connect to the server and get something that I can in turn pass along to
+him, but I get to watch it and, you know, I'm the man in the middle if that happens.
+Well, if that happens, and by the way, this is exactly what most companies do.
+If you work for any kind of large organization, I work in Dearborn.
+What they typically will do, and they are completely within their rights legally because you're
+using their computers and their network, they can control everything that happens. So,
+if I decide to visit my bank at the office, I think I'm connecting securely to my bank.
+No, I'm not. I am connecting to my corporate email server,
+which is more than happy to create a TLS connection between me and that server.
+And then, my corporate web server will then create a TLS connection to my bank.
+And then, when my bank sends something back, they say, okay, fine, they decrypt it,
+then encrypt it with the search that they have with me.
+So, it all happens very fast.
+So, what happens if you examine the security information related to the page that you're
+linking up to in your bank?
+You would see that the certificate was not in the name of the bank. It was in the name of your company.
+Would immediate, the browser will immediately tell you these days then?
+Generally, yes, which you'll get as a message saying the name on this search does not match the
+domain you could have an issue here.
+Well, okay. What they will do, typically, is that they will have a certificate that is valid.
+There's a difference between an invalid certificate and one that does not match the domain.
+That's not quite the same thing. And what will happen is this example of a self-signed search.
+They just create it.
+And it's their computer. So, they can insert the key and the certificate onto the hard drive and
+just say, all your communications have to go through this. This is the search you want.
+So, I'm just saying this is what is in effect happening.
+Now, if you work for a mom and pop outfit that has four employees, they're probably not bothering.
+But the thing is, it's not just your company that could do it, your ISP or anybody that you
+are stuck in those two?
+And that's where we get back to what Dennis was talking about. If this is important,
+you would want to actually take a look at the certificate and see who signed it.
+What is the chain of authenticity?
+And your browser will tip the chain.
+Right.
+We're actually going to talk about some of this stuff.
+I mean, I got OCSP stapling in here. I'm pretty sure.
+So, signing certificates.
+All right. How do you get a cert?
+You go to a certificate authority. This is the traditional way for a fee.
+They will sign your certificate to attest to its validity.
+Now, what they are attesting to is nothing more than this certificate matches this domain.
+And it depends on the level of cert.
+Right. There are some certs where they will get...
+Extended validity.
+Yep.
+Which banks typically get?
+Those are way more expensive.
+Yes.
+I think, you know, your typical three-year run on one of those is like a thousand or a thousand
+pre-year or something.
+The banks also want to take dial cards so they can be...
+Because they don't want to buy one for each and every server they've got one.
+Yeah.
+I was the last thing I've seen for the certificate authority.
+They didn't do that.
+Yeah. That's basically, they're not charging a fee.
+That's the big difference.
+Is the certificate something out of different than their certificate?
+No. It's no better, no worse than just the Garden Variety Certificate.
+Remember, all it's attesting to is we have reason to think that, you know,
+the person who got this certificate legitimately operates this particular domain.
+All right.
+So...
+Well, so, yeah, the...
+So what happens with signing a cert, the CA, which is certificate authority,
+sign your certificate with their own private key.
+So, you can look up their public key and say, okay, I will now verify whether this really
+was attested to by a legitimate authority.
+You can do this.
+And the second one that the serial number on that cert is still valid.
+Right.
+So, who are they?
+Semantic...
+Semantic is, hello Jeff.
+Semantic is now the largest it bought out vericine.
+GoDaddy does a lot.
+If you want to know where Ubuntu comes from originally, it was this business.
+Mark Shaw the Worth ran a company called FOT and that was in the business.
+So, bear in mind, he made enough money to basically fund the company out of his pocket plus
+go into space and everything else.
+It's a lucrative business, in other words.
+Okay, one of the things you might run into when you're looking at this is something called
+X509, which is a standard and establish the role of certificate authorities.
+Now, interestingly enough, for historical reasons, all of this is governed by the International
+Telegraphic Union.
+You know, they were handling international communication stuff and they just sort of
+adapt it.
+Yeah.
+But these things, they're now antsy.
+Right.
+So, who's in real charge of this?
+Yeah.
+So, you know, that standard in 1988 established certificate authorities and set a standard format
+for the certs.
+So, your certificates are going to be in, you know, X.509 format.
+Now, this follows a hierarchical model and that's a little bit different.
+I remember that any time we're talking about encryption, the biggest problem is,
+how do I know who I'm dealing with?
+How do I establish that?
+So, you know, if I get an email that says it's from Carl, it's encrypted.
+What the hell am I supposed to do?
+Carl says, no problem.
+I'll give you my public key.
+Is that Carl?
+How do I know?
+So, with email, we typically get around that through what is called the web of trust.
+So, I might meet Carl physically at a key signing party.
+And it's like, oh, that's Carl.
+I know Carl.
+Or maybe I don't know Carl, but he shows up to the key signing party and he's got documents.
+You know, he's got a driver's license of passport.
+What have you that convinced me?
+Yeah, this probably is Carl Miller.
+And then I will accept his public key and add that to my key store, put on my key ring.
+And that's how we do that.
+Or, you know, another way that that's sometimes that's why we call it the web of trust.
+Is, you know, I say, well, I don't know if this is Carl, but Mike knows Carl.
+Is that right to Mike?
+Is this, does this look like Carl's public key to you?
+And Mike's, oh yeah, yeah, I know Carl.
+If it's definitely.
+My paranoid and I like Mike and somebody else to also verify it before.
+Right.
+But, you know, there's no higher authority in email.
+It's simply, you know, who do you trust to say something?
+So that's the web of trust.
+Now, with SSL certs, everything starts with root authorities and there's a chain.
+So, semantic, go daddy.
+You know, these root authorities.
+Issues, now one of the promises, way too many of those, we'll talk about that.
+But, yeah, if you ever look at your branch of that list, it is.
+So, you know, a root authority is, there is no higher authority to appeal to, you know,
+they're at the root.
+So, basically, what happens is your browser comes with a list of these authorities,
+along with their public key.
+And it's all installed.
+Very large list.
+And that has to be, you know, you've got to start somewhere.
+So, any certificate that is signed by semantic, my browser is already configured to say,
+well, semantics are root authority.
+So, if this has a matching, if it was encrypted using the match to the public key
+that I already have, this is good.
+It will be trusted.
+Then, the root authorities can sign certificates for intermediate authorities.
+So, you know, I might be getting my SSL cert from corner store somewhere for all I know,
+you know, that, but I would say, well, you know, who's validating you?
+Well, no, produce a certificate that validates them.
+And I should be able to trace it all the way back to a root authority.
+So, that establishes that chain.
+And that chain can be 3, 4, 5 levels deep before it gets the actual cert that you're holding
+in your hot little hands metaphorically because it's all ones and zeros and electrons.
+So, you know, if you didn't have a root certificate installed,
+you would have a whole process of, well, okay, now what?
+And now we're back to why, you know, why do you trust it?
+All right, if this is some root authority I've never heard of before,
+or what do I go to their website and say, hey, could I have your public cert, your public key?
+And there have been problems with these root authorities.
+Anyway, X509 format, what is it?
+So, here just some of the things you would see, if you want to look this up,
+you know, Wikipedia is really good on all of this stuff.
+So, you know, make use of it.
+There's the, my experience has been technical information on Wikipedia is almost always very accurate.
+You know, political stuff that's another thing entirely.
+But political stuff isn't accurate anywhere.
+Right.
+If there's no controversy, you know, if you're talking about a periodic table or...
+Yeah, there's no controversy.
+Right.
+Yeah, I don't think any of Trump's people are trying to voliciously change the X509 standard.
+It just, I'm going to make a wild guess on that one.
+Anyway, so, you know, what are you going to have on a certificate format in the X509,
+the version serial number, what algorithm they're using?
+There are a number of different encryption algorithms.
+And so, we've talked about that before.
+There are the RSA algorithm, Revest Shemeer Edelman.
+And there's an elliptic key and an elliptic curve.
+El Gamal is a number of them that are out there.
+So, basically, it's got to say, this is the encryption algorithm I'm using.
+Who issued it?
+And, you know, what kind of validity is it supposed to have?
+And then, what's the public key?
+So, all of those things are part of an X.509.
+So, the negotiation starts, the certificate is presented.
+And you're going to start by looking at the version, the serial number, and the algorithm
+to do what you need to do to set up a connection.
+And you negotiate on that basis for the encryption protocol.
+Now, trust is the search self-signed or is it attested to by a certificate authority of some kind?
+Validity is the search still valid.
+Certificates have a date range, for instance.
+There are times you very much want to be able to revoke a certificate.
+You can add all the browsers to it, but you can always revoke a certificate.
+Well, you can, the question is, will the browser honor that?
+Some of the browsers do, some of them don't.
+And famously, Google won't.
+But, you know, even, you know, rejection is, you know, you can cancel a certificate, you can
+revoke it. Your browser may or may not pay any attention to it.
+But, you know, if you've got a drop dead date that says, you know, this thing expires, you know,
+June 30th.
+And now, it's a little extra layer of security.
+Now, the other thing, of course, means that if you are the owner of this certificate,
+you're going to have to pony up some more money at the end of this period to get a new one.
+You know, if this doesn't add up, if there's something wrong, your browser should pop up a warning.
+Now, typically, what will happen is, they'll say, I encountered this problem, do you still want to connect?
+Do you understand the security problems that still issue it?
+Well, sometimes I do, you know, that's, it's not a stupid question.
+I mean, what are we going to look at here?
+Right.
+So, I have no choice because the website I'm talking to won't pony up again.
+Now, I don't know if anyone else, I love to listen to the security now podcast with Steve Gibson.
+And very famously, about a year ago, as an oversight, the certificate for his own website lapsed.
+And it was about 12 hours before he was able to get it back up again.
+I'm just going to say, yeah, I bet he got her last role in the final.
+Alright, well, yeah, okay.
+So, the public key on the certificate is obviously what you need in order to establish the connection.
+Remember, with the public key and that you have and the private key on the server,
+you're able to then do a Diffie home and Merkel key exchange and get a symmetric key
+that you're going to actually use to do the work.
+So, the handshake process, you send the server a message asking to create a connection.
+If you have this, and if you don't, I'd say this is worth getting from EFF, the HTTPS everywhere,
+you should always request a secure connection or manually type HTTPS.
+Google is now doing it for default and then it's up to the server.
+If you don't request a secure connection, the server has the option of requesting it.
+Anything involving money, the server better be setting a secure connection.
+And clearly, we're moving to a world where this is going to be the default.
+I mean, you take a look at a couple of markers along the road here.
+One of them was Google saying, we're going to start downgrading you in the search results.
+If you don't have a secure connection.
+And fortunately, at the same time, the Let's Encrypt group is now offering free
+certificates to everyone. So, I think we're moving to the point where you take those two things,
+mix in a little Ed Snowden and pretty soon, it's like, yeah, let's have encrypted connections
+everywhere. So, in the negotiation, the server and your browser compare notes on what protocols
+they each support, and the idea is to choose the most secure protocol
+than a secret symmetric key is generated, which can be done in a few ways, but
+it exchanged through the public key connection. So, you generate this agreed symmetric key,
+it is then encrypted using the private key on the server, sent to you, you can decrypt it
+with the public key, and now you've each got this symmetric key that you can use to handle the
+rest of the traffic. So, yeah, if you were a top security person, you might say,
+well, wait a minute, I can see some potential ways to cause mischief, but I'm not going to get
+into that. If you want to, I thought this was a pretty good article about all of this stuff.
+I found that the Purdue University site, and then a session ID is established,
+and the session ID allows an interrupted session to be resumed, and sessions can be interrupted
+for any number of reasons. Your web connection, Wi-Fi could go down for a moment or something,
+if you've got that session ID, you can just keep going.
+Now, certificates can be used for more than just the web, so in other words, X.509 certs
+are used for a number of things. For instance, UEFI and Secure Boot use X.509 certificates,
+and in this case, they are issued by Microsoft as the certificate authority,
+and that's one of the reasons why when all of this was happening, it was, well, you know,
+how are we going to put Linux on computers if you do this, and basically what we've come up with
+is you can turn off Secure Boot. In fact, I just turned off UEFI because I found I could not
+install the door until I had turned it off entirely. Or, you know, I think some places have
+negotiated to say, well, you know, we want to be included and have worked with Microsoft to
+Ubuntu did that.
+Sang Bootloader that then looks rough. Right. It gets around to the whole issue.
+So, you know, basically, I'm just saying, oh, by the way, this is the same technology.
+Well, that was our part one. I hope you really enjoyed it, and look for part two to show up in
+your feed fairly soon. So this is a hookah for Hacker Public Radio, as always encouraging you to
+support free software. Bye-bye.
+You've been listening to Hacker Public Radio at HackerPublicRadio.org. We are a community podcast
+network that releases shows every weekday Monday through Friday. Today's show, like all our shows,
+was contributed by an HBR listener like yourself. If you ever thought of recording a podcast,
+then click on our contributing to find out how easy it really is. Hacker Public Radio was found
+by the digital dog pound and the infonomican computer club, and it's part of the binary revolution
+at binrev.com. If you have comments on today's show, please email the host directly, leave a comment
+on the website or record a follow-up episode yourself. Unless otherwise stated, today's show is
+released on the Creative Commons Attribution ShareLight 3.0 license.

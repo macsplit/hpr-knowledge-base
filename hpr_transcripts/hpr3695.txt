@@ -1,0 +1,140 @@
+Episode: 3695
+Title: HPR3695: How I watch youtube with newsboat
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3695/hpr3695.mp3
+Transcribed: 2025-10-25 04:11:39
+
+---
+
+This is Hacker Public Radio Episode 3,695 for Friday the 30th of September 2022.
+Today's show is entitled, How I Watch You Two with Newsboat.
+It is hosted by BINARC and is about 11 minutes long.
+It carries an explicit flag.
+This show is about how I watch YouTube videos using the Newsboat RSS Reader program on Linux
+and Unix.
+So getting into it, I think, personally, I think the YouTube web UI is distracting and
+typically when I go on YouTube, I only want to watch one or two videos about something
+specific or by a specific person.
+I think the sidebar with recommendations, there's a lot of bright colors and distracting
+thumbnails and comments from the peanut gallery.
+It makes it difficult to stay focused.
+So I decided I want to consume videos the same way I consume everything else, via RSS.
+RSS is my favorite way of aggregating things that other people have made because it allows
+me to view the content in the ways that I want to view the content.
+Sort of a style agnostic presentation of the content or I guess a style agnostic distribution
+of the content and then the users depending on their client get to choose what to do with
+this content.
+So if you want to follow these instructions, the only dependencies you need on a standard
+Linux or Unix system, the Newsboat command and a video player, I'm using MPV in this
+example.
+I really like MPV.
+And for my video player, the program I am using is called MPV.
+I like MPV quite a lot.
+If you supply a Web URL that points to a page that contains some media as an argument
+to MPV, it will just play that media.
+It's quite handy.
+Additionally, I am using a program called YT-DLP.
+This is a program that downloads videos from YouTube and optionally can extract audio.
+This is really useful if you want to save something for later.
+So the first step to get an RSS feed is to find where to find the RSS feeds on YouTube.
+So currently YouTube provides RSS feeds for channels.
+I'm not sure how long they're going to be.
+I continue to support this, but when they stop providing RSS feeds, they'll have to
+start scraping their website.
+So the first thing you need to know to get a YouTube feed or an RSS feed for a YouTube
+channel is you have to find the YouTube channel ID.
+Recently, I've noticed a lot of YouTube channels have started being referenced by like
+a vanity ID, display name instead of a channel ID points to the channel.
+This is a little bit frustrating, but we can use a little bit of command line magic to
+find a channel ID for any given channel.
+Because all of the channel IDs start with the string UC, capital U capital C.
+So in my example, I am curling a YouTube channel, a link to a YouTube channel with
+a vanity URL, and then piping that through Grap dash dash color, and then the Grap argument
+is quote Href equals backslash quote HETPS colon slash slash www.youtube.com slash channel slash
+U capital C double quote, and then it prints out a lot of nonsense, but with the Grap dash
+dash color option, you can find the link.
+So the full link would be HETPS colon slash slash www.youtube.com slash channel slash UC, and
+then the rest of the string that points to the channel.
+In order to turn this channel ID into something useful, we create the following URL.
+So instead of YouTube.com slash channel, followed by the ID, the RSS feed how you get to
+it is YouTube.com slash feeds slash videos dot XML question mark channel underscore ID equals
+and then the channel string.
+This can be kind of tedious to do if you have a lot of YouTube subscriptions in your existing
+YouTube account, so you can use Google takeout, I have a link for Google takeout, Google
+takeout lets you export data from the various Google sites, and the most useful one, at
+least for me in writing this, and you know, using newsboat over the last couple months
+to watch YouTube is exporting YouTube subscriptions, so I don't have to manually do this for every
+channel I'm subscribed to, Google takeout can be a bit confusing to use, really deselect
+everything except for YouTube subscriptions because there's a lot of data in there.
+The export format is a CSV, it contains channel IDs for the subscriptions, so the CSV looks
+something like column one, channel ID, column two, URL, column three, channel title, you can
+edit this in a program like Libra Office.
+I just use them because CSV editing in them is a little bit faster, and the search and
+replace functions are more robust.
+So building a URL list for newsboat, newsboat reads the list of URLs from tillthoslash.config slash
+newsboat slash URL, so every URL we add to this list is automatically fetched by newsboat
+and you can make separate URL lists for like videos or standard text feeds or even audio,
+and then when you launch newsboat, if you pass the dash, I think it's dash U, the dash U flag,
+and then specify a path to a different URL list and load that instead of the default list.
+So it's kind of robust, you can aliass it, for example, I typically don't do that though.
+Once we have our subscription CSV exported, we have to modify it so a newsboat will accept
+the list of URLs, so I delete.
+The first row, the first column, and the comma, and then replace the comma between the URL
+and the channel name with a tab character, and then I run a said command to replace the
+component of the link that directs to the web version of the channel and replace that
+with the link to the RSS feed of the channel.
+We can use search in a place to do this, but I just use said, I don't think I even have
+a labor office installed, so most of this was all done with them and said, another interesting
+thing about newsboat, newsboat only reads the first field of every row, not CSV, it has
+to be white space delimited or delimited with the internal field separator, but what this
+means is if we put a white space between the URL that points to the RSS feed and the channel
+name, it makes it a lot easier to manage subscriptions, or at least the YouTube channels
+that we are pulling into our RSS reader, which is a newsboat.
+The last thing to do is to configure a newsboat, add some macros.
+So the newsboat configuration file is at tilde.config slash newsboat slash config.
+My newsboat configuration file looks something like auto dash reload, yes.
+This means that every time I start newsboat it automatically refreshes the feeds, there's
+a bunch of stuff for them key bindings, and then the most important part for watching
+videos is the macros set up.
+So the macros set up looks something like browser, link handler, macro, comma, open
+and browser.
+So the prefix key for our macro is going to be the comma character on our keyboard.
+To launch the video, or launch the video player for that video, I have the v macro set,
+so the syntax on the configuration file for that is macro v set browser quote set sid-fmpv
+closed quote semicolon open and browser semicolon s I also have a macro to download the
+video using yt-dlp.
+This rule looks something like macro d set browser quote yt-dlp closed quote semicolon
+open-in-browser closed quote set browser link handler.
+And then I have another macro with the a key that downloads the audio only, that's the
+same as the last macro except within the quotes the command is yt-dlp-dash embed-metadada-xic-fbest
+audio slash best.
+All of these configurations, it's a short configuration file, but it's in the show notes, so it's
+easier to copy and paste.
+And then the last thing I have is a video demonstration of using newsboat to watch videos
+in order to execute the macros you type the comma key and then the v key or whatever letter
+you set it to, similar to how in vim you execute a macro you have to type the act character
+and then the letter of the macro it's not it's not like a key combination it's a prefix
+key and then no key press and then the argument for the macro.
+I tried to encode this video as a gif but it was like 500 megabytes so it's a web m instead
+better compression.
+And the last thing I leave you with is a list of URLs that you can put in your newsboat
+URL file.
+If you haven't caught on by now this is almost a roundabout way of giving some YouTube
+recommendations of channels I obviously thought were good enough to go out of my way to get
+an RSS link for and then put it in my RSS reader newsboat.
+So yeah, some recommendations, I'm not going to go through them all, you can go through
+them on your own and decide if it's something you want to keep based on your own taste
+in videos and content.
+But all of these are computer related or technology adjacent at least I sort of filtered
+through and found technology adjacent ones because after all this is hacker public radio.
+Thanks for listening to hacker public radio hopefully this has been useful for you or at
+least it may be it'll be interesting you know now you know that YouTube has your RSS YouTube
+has RSS feeds and you can use an RSS reader to watch these videos and even a command line
+RSS reader to launch a video player using some sort of script ability.
+Again hopefully it's helpful if nothing else it's kind of cool thanks for listening.
+You have been listening to hacker public radio at hacker public radio does work today
+show was contributed by a hbr listener like yourself if you ever thought of recording
+or cast and click on our contribute link to find out how easy it really is.
+Hosting for hbr has been kindly provided by an honesthost.com, the internet archive
+and our sync.net.
+On this otherwise stated today's show is released on our creative comments attribution 4.0
+international license.

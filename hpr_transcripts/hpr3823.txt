@@ -1,0 +1,193 @@
+Episode: 3823
+Title: HPR3823: Gitlab Pages for website hosting
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3823/hpr3823.mp3
+Transcribed: 2025-10-25 05:59:17
+
+---
+
+This is Hacker Public Radio Episode 3823 for Wednesday the 29th of March 2023.
+Today's show is entitled Get Lab Pages for Website Hosting.
+It is hosted by Norrist and is about 26 minutes long.
+It carries a clean flag.
+The summary is three examples of using Get Labs, CICD, to generate a website.
+Alright, I'm going to talk about using Get Lab to host a static website.
+It might not make sense at first.
+It doesn't sound right to use Get Lab, which is a place where you keep your, you know, your code you've been working on.
+It's a place for projects to host themselves.
+But one of the features of Get Lab is it's got CICD, which stands for Continuous Integration and Continuous Deployment.
+And really what that means is whenever you check in a code, it can run a job on that code or to that code.
+And a lot of times the jobs in CICD are things like automated testing or code-linting or maybe you have a build step.
+So you have a project that you can check in and it will build binaries or compile or whatever.
+And then you can set those up for deployment later.
+But another option in Get Lab is that you can use the CICD process to build a website out of static web content.
+So a little bit about how it works. I'll have a link to the documentation page and the show notes.
+But sort of a quick excerpt from that page.
+Get Lab always deploys your website from a specific folder called Public in your repository.
+To deploy your site, Get Lab uses its built-in tool called Get Lab CICD to build your site and publish it to the Get Lab Pages server.
+The sequence of scripts that Get Lab CICD runs to accomplish this task is created from a file named Get Lab CI-YML which you can create and modify.
+A specific job called Pages in the configuration file makes Get Lab aware that you are deploying a Get Lab Pages website.
+So I'll kind of summarize the documentation page and provide some really simplified examples of creating a static website using Get Lab Pages.
+And part of the reason I'm going to summarize it simply is that the documentation is very thorough but it's not necessarily easy to digest.
+And it took me a few tries to kind of get this process right.
+So you've got some code, you have a project, you want to check it in and you want to make a website out of it.
+There's a few things that are kind of requirements.
+One is that there needs to be a directory named Public and that directory needs to contain the website contents.
+Now you can either check in to the Get Lab project, a folder full of HTML and CSS and images and put those in a folder called Public and check all that stuff in.
+Or if you're using something like a website generator or something like that, you can have a script or some jobs that run that builds your site 60 output of the build power process into a folder called Public and that will work too.
+So you need a folder called Public with stuff in it.
+You can either check in the stuff or you can have the CI CD build the stuff.
+And then there has to be a pages declaration in the Get Lab CI YAML file.
+So I'll have some examples in the show notes, three examples in the show notes of a Get Lab CI YAML file.
+But part of that, the important part is somewhere in the YAML file, there's sort of a YAML paragraph that says these are going to be Get Lab pages.
+And this is where you need to look for the pages.
+So the first demo I'll kind of talk about is the simplest thing I can think of, which is a single file with Hello World in it.
+A single file called, you know, an index.html with a, so what we're going to do is we're going to create, go to Get Lab, create a new repo, clone that repo down to your workstation, create a folder called Public in the folder called Public Create a File index.html.
+And you put whatever you want. I just put Hello World in it. You can put anything you want in it.
+And then get, write a commit message and then push it back up to Get Lab.
+And then you'll need to create the Get Lab CI YAML file, add it to the repo and push it to Get Lab.
+So I'm not going to read off the whole YAML, but I will talk about what's in it.
+And the YAML in the show notes you can look at.
+So there's, in the YAML, like I said, there's always going to be a declaration called pages.
+That tells, that's what triggers the Get Lab CI CD to look for this folder and deploy it in such a way that you can access it over the internet.
+So we've got an YAML declaration called pages.
+The CI CD process has something called Stages. I won't go too deep into Stages, but Stages is just how you control the build process.
+So if you need to do it in order, you can use those specific stages to do the Get Lab CI CD.
+So there's under pages, there's a section called the stage.
+Then there's another section called Script.
+Out like I said earlier, if you need Get Lab CI CD to do something to create the content in the public directory, this is where it's going to be.
+It's going to be in the Script section.
+In this simple example, there's nothing to run because everything, everything we're going to deploy is already in the public directory.
+But I couldn't, in my testing, I couldn't just leave out the script function in the YAML.
+It had to be there, so I just put in an echo statement just to run the bash command echo, which doesn't do anything.
+Finally, there's an artifact section.
+So there's three sections under pages. There's stage, script, and artifacts.
+Artifacts tells the Get Lab CI CD where to get the files that are going to be served up via Get Lab pages.
+In every example I've ever seen and everything I've always done, the artifact path is public.
+So after you get the folder called public with something in it and you get the Get Lab YAML, you get those checked in and pushed.
+Up to Get Lab, you can check your project on Get Lab and you should see a CI CD section in the left-hand menu and you can see where your jobs are running.
+And it will provide some output, basically, well, it will provide some output, kind of what it's doing.
+If you've ever used Jenkins or something like that, some of the build processes will look really familiar.
+So once the job runs, this one should run without any errors unless you made a typo or unless I made a typo and you copy and paste it my typo.
+But since this example is pretty simple, it should run just fine.
+And the CI CD page will kind of indicate its status, past fail.
+And if you want to even drill down a little bit and see the actual output from what the jobs are doing, then once the job runs,
+you can look in the left-hand menu under the CI CD section kind of further down.
+There's a Pages section.
+The Pages section will be kind of blank until it actually runs the CI CD for the first time.
+After the CI CD runs successfully for the first time, as long as you have the YAML Pages section in their field out correctly, you should see a message on your page that says your pages are now served under.
+And it will list the URL that your page is served under.
+And it will, but it's a GitLab URL, but you can add some custom domains.
+I'll talk maybe just a little bit about custom domains on the next example.
+For the next example, we'll get a little more complicated.
+I've got a GitLab repo where I keep all of my show notes for the HPR episodes that I've done.
+And I need to qualify all. I haven't kept it up to date.
+So anything I've done in the last few years isn't in there.
+But maybe my first six or eight HPR episodes that I've shown after I did the show, I'll put all the show notes in this one repo and I'll check it in.
+So I have a process that I'll talk about in a second that kind of combines all those markdown documents into some HTML.
+And then, like I said earlier, this one is available under a custom domain.
+Again, in the custom domain stuff is totally optional.
+But to get the custom domain to work, you've got to have, obviously, you have to have control of the domain.
+And then we'll need to verify the domain with a TXT record.
+So it'll just say add a TXT record with this verification key in there.
+Once that gets done, you can point like a CNAME record to the GitLab page.
+And it will display under the GitLab domain and this custom domain that you gave it.
+So for this, for my markdown files, stick them all together and to some HTML.
+I'm going to do that with PanDoc.
+And so I need to run some jobs first.
+So the first thing, one of the things you can put in the GitLab game is an image declaration.
+And what that is, is that is a Docker image that it will run the jobs in.
+So in this specific example, for image, I've just got devian.
+So whenever this CICD job runs, it will just download the latest devian container and run everything else in the AMOLED or run inside that image.
+The next thing I've got in this example is a before script.
+So anything that needs to run prior to actually processing the jobs that are later in the CICD, you can put in a before script section of the AMOLED.
+And here, in this specific example, in the before script, I've got two steps.
+An app to get update and get dash Y install PanDoc.
+So like I said, we'll use PanDoc in a second to actually put all the pages together.
+So the next little bit of the AMOLED looks a lot like the AMOLED for the previous section.
+I've got pages, I've got a script, and I've got the artifacts, I've got the artifact paths that is public.
+The big difference between this example and the previous example was I actually need to do something in the script.
+So I've got a shell script that I've got in this repo.
+So in the GitLab AMOLED, it calls the shell script.
+The shell script grabs all these marked down documents and then processes them with PanDoc.
+I don't want to bore you by reading the script.
+It'll be in the show notes, but just sort of as an outline, it finds all the marked down files.
+It gets all the titles of the marked down files and uses that to build kind of a table of contents.
+Then it cats all the marked down files into, well, cats all the marked down files, piped it all the PanDoc.
+There's some extra flags for PanDoc, so it'll make some nice looking HTML.
+Then it just spits out a single file, a single HTML file inside that public folder.
+So whenever you go to the URL, you see that one site, one big page, all the marked down, now it's HTML.
+Okay, so the final example, and honestly, the primary reason I'm making the episode is to demonstrate how I use GitLab CD to build the HPR site using the new static site generator.
+So the new HPR generator site uses the MySQL dump that's provided by the HPR admins.
+So we're going to do is we're going to pull down the SQL file, load it to MariaDB database, and then build the site using the HPR generator.
+So the first thing is we've got to do the database part.
+So in GitLab CD, you can have services.
+So besides just the build scripts, you can define a service and then use that service.
+So in the HPR example for the YAML, and again, be in the show now, so if you miss anything, you can go back and work.
+But the first thing in the YAML is a services definition that says we need MariaDB.
+And then what it's going to do, it's going to get the latest MariaDB image from Docker, spin it up, and let us connect to it.
+So part of the variables, we need to pass that to make it work right.
+So we've got to pass it a MySQL database name and a MySQL root password.
+So the first section of the YAML, it says we need a service called MariaDB, and we've got a couple variables, MySQL database and MySQL root password.
+So those together will start up a MySQL service that is going to be available to us to use later.
+Okay, the next section in the YAML is really just us checking that the MySQL service is up and running.
+So it's in a section of the YAML called Connect.
+The stage is named dot pre, which is like a pre, this stage name is defined by GitLab as something that you can put in there as a stage name and it will run early first.
+Using the image, MySQL, run the script, and the script's in the show notes, but it's basically just select and encodes, okay, from the MySQL database, which really just means connect to the database.
+Make sure you can connect and run select.
+So now we're to the pages section in this example.
+Just like the other two examples, it's got a section in the YAML called pages, and we define the images, Debian, so we're going to run this inside a Debian Docker container.
+We've got the before script section, just like we had in the previous example, as a before script, we can run commands that need to happen prior to actually building the website.
+In this particular example in the before script, we do an apt update again, then we apt install all of the purl packages that are required for the HPR generator, then we apt install curl, MariaDB client Git, we'll need those later.
+Then we download using curl, the HPR SQL dump, the daily dump that the HPR admins make available, download that.
+And then finally, and the last thing we do in the before script is we use the MySQL clients, connect to the MySQL service that we had set up earlier.
+MariaDB, but it's, you know, mySQL.
+And then using that command, we load the HPR SQL dump into the MySQL database.
+So now we get to build the site, now that I'll appear extra done.
+So let's check out the HPR generator Git repo, and we'll see the end to it.
+Then the way the HPR generator works is there's a bunch of settings in the site.cfg, and there's different settings for different use cases.
+Some settings we need to modify are we need to tell it to use the MySQL servers that we've just set up, and we've got to change the base URL.
+So I tried a couple of different ways to do this. My first attempt was to use sad and search replace the existing site.cfg.
+That was, I didn't like when I was doing it, I was telling myself, I don't, this is not the right way to do it.
+I did it a little bit, and it worked, but it broke.
+You know, it's so fragile that any sort of any changes to the site config would break it.
+So then I realized what I could do is I could make a patch file that I could apply to the site config.
+And that should work a little better. It's definitely a better way to do it.
+So I've generated a patch that replaces a few lawns in the site.cfg to configure the static site generator to use the MySQL service.
+So after we apply that patch, I've got a step in the script in the script section of the build portion of this yaml.
+I grab a few things out of the site.cfg just to make sure that the patch applied properly.
+And so remember I said you can go back and when you can look at the output of these jobs when it runs.
+So it's part of the troubleshooting I was doing was, you know what, I'm checking to change, I'll watch it run.
+And during that, while I was watching it run, I wanted to validate that my patch was being applied correctly.
+So I would grab those few things out and make it print those things out in the cscd output just so I could double check.
+Okay, then then we run the site generator command, which in this case is just dot slash site generator dash dash all.
+And then that's just this earlier. You should really check out the site generator repo because there's a lot of different options.
+You know, if you want to, if it's something you wanted to yourself, you can read it. It's a welcome in and can pick file.
+And there's a lot of different ways you can run it. So I run it with just dash dash all because that makes everything.
+And when it runs, it creates the site in a folder called public underscore HTML.
+And so remember, we need it in public. And we also need it one directory level up because remember, we checked out the HBR generator repo and cd into it.
+So the last step of the script section is to move the folder public underscore HTML up one directory and renamed to just be public.
+And the final section of the YAML for the HBR generator cscd is the same as all the other examples where we just set the artifact path to public.
+I'll have a copy of the patch that I apply to the site config. I'll have a copy of that in the show notes. I can't imagine anything more boring than someone read the diff in a podcast. So I'm definitely not going to do that.
+So I've given you three examples of some projects I did to make static websites in the cscd with gillab. I've got a few more. I didn't put everything I've done in the show.
+I feel like we get boring. But I'm going to go to the sites that I do. It's an easy way to, if you want something simple, just up on the web.
+It's a simple way to do it, especially if it's something that gets updated, you know, maybe daily or something like that.
+There's a, I didn't say this earlier, but you can schedule the way the cscd jobs are triggered is when you check and come up, check and code.
+The cscd will run or you can also, they've got something kind of like cron in there where you can say, you know, run.
+It's pretty configurable as far as scheduled runs. So I've got a few projects that where I'll have run one today.
+Including the, my HPR example, the third example I gave you is in the HPR site generator. I have it set to trigger a cscd build daily.
+And I'll have a link to the GitLab cscd pages documentation and the show notes. And there's a lot of examples of a lot of examples of static site generators.
+So like it, if you have Hugo or Jekyll or one of, you know, hundreds of others, where you can look at the examples or they're all set up to be GitLab repos.
+You can just clone the repo and make a fork of the repo and just do your own thing with it.
+But there's a lot of examples already out there for how to use existing static site generators to make a website using GitLab pages.
+So one thing I'll omit you real quick. And this is a complaint or a pet peeve that's sort of common, not just with GitLab, but sort of any cscd project is it gets a little tedious when you're developing.
+If you're working on a project and you want to know if it works, you can't just make the change and run it on your local machine and see if it works or not.
+You got to check out the code, make the change on your local machine, push it up to Git or GitHub or GitLab or wherever you're pushing it up to.
+Wait for the job and run, watch the output, and then, you know, depending on the job and how many resources the job runner has, it may take a few minutes.
+And then it works great. If it doesn't work, you know, you kind of scratch your head a little bit and figure out, oh, I missed a single quote or something like that or I forgot a bracket.
+It's something real simple and you make that change and you check it in and 10 minutes later, you see if it works or not.
+So nothing against GitLab pages or anything else. It's just sort of a common complaint.
+Common complaint happens to me all the time at work, personal projects. It's just a little frustration when working on projects where you depend on an external service to run.
+I think that's it. Hopefully you guys found this interesting. Maybe there's a page or something you want to put up on the internet and you didn't have any idea how to do it for basically no money.
+This is a good way to do it. Like I said, you know, about a fault to use the GitLab URLs, but if you have a custom domain, it's possible to set it up using a custom domain.
+It's also possible to use HTTPS. They can generate certificates using an admin protocol just all around as long as it's kind of a simple site that doesn't have too many assets and can be generated using some subscripts that GitLab pages is a pretty, pretty okay way to host a website.
+I think that's it. I'll see you guys next time.

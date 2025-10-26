@@ -1,0 +1,337 @@
+Episode: 862
+Title: HPR0862: Breaking Down TFTP
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0862/hpr0862.mp3
+Transcribed: 2025-10-08 03:43:45
+
+---
+
+Hi, this is Kevin Grenade with the first installment of my series Breaking Down Protocols.
+I was inspired to do this by Steve Gibson's How the Internet Work Series on Security
+Now and Klatu's Networking Basic Series here on HPR.
+Not so much inspired that it could be done, but that it could be interesting.
+So what I'll be trying to do is describe different protocols and pretty much all the nitty-gritty
+detail except I'll at the same time be trying to describe why they do the different things
+they do with the trade-offs they make, etc. to the best of my ability.
+So even though this is going to be very technical, I'm hoping that it'll be pretty accessible
+to everyone.
+In this episode, I'll be describing TFTP trivial file transfer protocol.
+Before getting to the technical details, I think the most important things are why would
+you want to use it.
+Well, obviously for a file transfer protocol, you need to transfer files, but why use TFTP
+instead of some other file transfer protocol.
+Well, it's that first word trivial.
+It's very simple.
+It's very simple to implement.
+It takes up a very small memory footprint, etc.
+What it doesn't do is provide a lot of robustness, a lot of features, or a lot of speed.
+TFTP derives much of its simplicity from its assumptions about the underlying transport
+protocols, or rather the lack of assumptions about the underlying transport protocols.
+All it requires are machine-level addressing, application-level addressing, and fixed-length
+packets.
+It was originally designed on top of UDP-IP, which provide these, but it can be implemented
+on top of any other protocol that provides these features.
+Two protocols I'm aware of that make use of TFTP are PXC and A-Rink 615A.
+PXC, sometimes called Pixie Boot, is a protocol that is used to bootstrap a computer off
+of the network.
+So you embed PXC, which includes TFTP and DHCP and UDP and IP, into the networking
+card itself, and it will query for a Pixie Boot server, give the network card an address,
+and then download files from the Pixie server over TFTP in order to bootstrap the system.
+So with the Linux system, it will download usually a kernel and a initial RAM disk file,
+and then it will bootstrap off those.
+TFTP is a really good match for this scenario because it's very simple and it only relies
+on UDP.
+DHCP also relies on UDP, so that has a synergy going where you don't have to implement
+one transport layer for one protocol and a different transport layer protocol for the
+other.
+Not to mention UDP is very simple in the first place compared to, for example, TCP.
+A-Rink 615A also uses TFTP to provide file transfer services.
+It's not a bootstrap protocol like PXC, it instead is used more for generic file transfer,
+it can be used to upload new firmware for remote targets, and it can also be used to retrieve
+configuration and log data from those targets.
+In this case, the various targets are actually avionics modules, and they generally have
+a very small embedded system on them, and in this case, the simple implementation of TFTP
+is crucial because the resources on these systems are so constrained.
+The common thread between these two applications is that the resources available are very constrained,
+and they're also secondary functions of the hardware that they're implemented on.
+In the case of PXC, the primary function is a network card, and the PXC booting system
+is an add-on feature, I mean, it's just a bullet point, in most cases.
+In the case of A-Rink 615A, it also doesn't have anything to do with what the module is actually
+supposed to be doing.
+Some of these are monitoring landing gear, some of them are monitoring fuel tanks, things
+like that, and the ability to upgrade them and retrieve data from them is really a secondary
+function, so you don't want to spend a lot of time on it.
+It's not their core competency, to say.
+The simplicity of TFTP and the simplicity of its requirements really shines here.
+A side note is that A-Rink 615A is an example of a TFTP implementation that is not built
+on top of IPUDP.
+There's actually a special protocol called AFDX that is used on aircraft, and it fulfills
+all of the same requirements that UDP does.
+But due to the way that TFTP was designed, you can actually move it on top of another
+protocol.
+Now that I've talked a bit about what TFTP is good for, let's dive into how it's actually
+implemented.
+The first thing that you want to do is to open a connection to a TFTP server.
+So the client will format a packet that requests a particular file, I'll go over the format
+of the packet later, and it will open a port locally with a random port number.
+It actually doesn't matter what it is.
+And it will then send that packet to port 69 of the target machine.
+This is what's called a well-known port.
+There's actually a registry, a global registry of well-known port numbers that are used
+and different protocols reserve certain ports, mostly in the 0 to 1000 range, for their
+sold use.
+HTTP, for example, has port 80 reserved, it also has other ports reserved for secure communications
+etc.
+But anyway, TFTP uses port 69.
+So you get your packet, you open a local port, and then you send your packet to port 69
+on the remote machine.
+And it receives that packet, if everything's okay, it will then open its own random
+port and respond back to the port that you sent your packet from.
+So just for example, you open up port 1027 and send a packet to port 69, and then they
+will open port 1024 and send it back to port 1027 on your computer.
+So from then on, every message that gets sent back and forth will be addressed to that
+IP port pair.
+So on your computer, you're going to use your IP address and port 1027, and on the server
+they're going to use their IP and whatever port I just said, I actually forgot what it
+was.
+But anyway, so that's how you know which packets arriving at the computer are intended
+for that TFTP conversation.
+An important point about this setup is that you can have one process running as the server
+on your computer listening to port 69.
+And what happens is every time it receives a request, it will actually spawn a new process
+that will finish the conversation.
+And what that means is that server will then be free to start more TFTP transactions
+by continuing to listen to port 69.
+So your server doesn't get bogged down with trying to start new sessions and handle
+those sessions at the same time.
+Now that we know how to start a TFTP file transfer, we can take a closer look at the layout
+of the packets.
+The first two bytes of each packet is a number that says what type of packet it is.
+And actually there's only five different packet types in normal TFTP.
+There's actually an additional one, but we'll be getting to that at the very end.
+The packet types are read request, write request, data, act, and error.
+The read request and write request packets are almost exactly the same.
+That is that initial message that you send from the client to port 69 on the server.
+If it's a read request, which means the opcode is one, you want to download a file from
+the server.
+It's a write request, which has an opcode of two.
+It means you want to upload a file to the server.
+The rest of the message is just made of two strings.
+The first of which is the name of the file that the client wants to transfer, either as
+a read or a write.
+The second string indicates the transfer mode of the request.
+There are three default options for this, but one of them is not even used anymore.
+That ASCII indicates that the sender should transmit bytes as defined by the document USASIX3.4-1968 and RFC764.
+I'm not going to get into the details here, but it's a standard for data interchange between
+different CPU architectures.
+The most commonly used mode is octet.
+This indicates that the sender should transmit bytes in its native representation.
+This is less portable, but faster since no translation has to happen.
+It's up to the client to know whether it's safe to use octet mode.
+Mail mode was part of the original specification as a forwarding method for email, but email
+ended up being forwarded over more advanced protocols, and it's deprecated for TFTP.
+Nobody does this.
+Custom servers are also allowed to implement any additional modes that they want.
+For example, they could have a UTF-8 mode, but there is no guarantee that other TFTP clients
+or servers will support these additional modes, so that's basically only going to be used
+within some kind of a closed system where the implementer is in control of both the client
+and the server, and then they can do whatever they want.
+The rest of the packets are just as simple.
+A data packet has an opcode of 3, a 2-byte block number, and up to 512 bytes of payload.
+I'll explain what this means later.
+An app packet has an opcode of 4, and a 2-byte block number, which matches the 2-byte block
+number in the data packet, and then the last message is an error packet.
+It has an opcode of 5, a 2-byte error code, and optionally a null-terminated string that
+should be a human-readable indication of what went wrong.
+TFTP defines seven error codes to cover the most common errors, such as found, not found,
+access, violation, and disk full, and provides a catch-all error code for use when none
+of the common errors apply.
+The catch-all error code should be supplemented with an ASCII string indicating the cause
+of the error.
+That string isn't necessary for the other errors.
+That's it for the packets themselves, what you might call the syntax of the protocol.
+Now I'll move on to what is called the control-flow of the protocol, which is a set of rules
+for how these messages are used, and what they mean.
+I've covered some of this already, for example, that a write or read request message is used
+to start a transfer.
+TFTP is what's called a lockstep protocol.
+This means that one side sends a message, then listens for a reply before sending the
+next message.
+This makes it very simple, but it has some drawbacks.
+Since only one packet is in flight on the network at a time, it's quite difficult to get
+very high through put out of TFTP, and this only gets worse at the latency of the connection
+is high.
+In normal operation, each message has one other message that can be used to reply to it.
+A client starts a read by sending a read request, which is replied to with a data packet,
+which is in turn replied to with an AC.
+Then the client and server alternate sending data and AC packets until the transfer is done.
+You can think of a ping pong game or a pendulum of a clock swinging back and forth, it just
+alternates.
+To write a file, the client first sends a write request, which is replied to with an AC,
+which is replied to with a data packet, and so on.
+The exception to this rigid back and forth is the error packet, which can be used to reply
+to anything.
+This principle goes a long way towards making the implementation of the TFTP client or
+server simple, since there's only one message that they have to expect during the bulk
+of the transfer.
+Since TFTP is layered on top of UDP, which provides no delivery guarantees, TFTP has
+to handle retransmission itself.
+As you would expect, it does so in the simplest way possible.
+After sending a message, the center starts a timeout and rescinds the message if the timeout
+expires.
+Since retransmission is happening, the packets have to be marked so the client and server
+can tell them apart.
+This is done with block counters.
+Each data and AC packet has a block counter field.
+The first data packet has a field with the value of 1.
+Each subsequent data packet has a field 1 higher, and each AC has the same value as the
+data packet it is acknowledging.
+The exception is the AC of a right request, which has a value of 0.
+There are three ways for a transfer to terminate, completing successfully, explicitly airing
+out, and timing out.
+The successful end of the transfer is signaled by a short data packet.
+All data packets except for the last one have a 512 byte payload.
+The last data packet has either whatever is left of the data, or if the data was a multiple
+of 512 bytes, an empty data packet is sent.
+This lets the receiver know the transmission is done, but to let the sender know it was
+received, the receiver sends one last AC.
+If either side encounters an error that renders them unable to complete the transaction, they
+can halt the transfer.
+They should send an error packet to let the other side know why.
+Reasons can include user intervention, no disk space, access violation, illegal operation,
+unknown TID, this one's special, and file exists.
+Systems are also always coming up with new and exciting ways to make an operation fail,
+like printer on fire.
+Regardless of the reason, if the side encountering the error is feeling nice, they can send an
+error so the other side isn't left hanging.
+This leads to the third failure mode timeout.
+If the side encountering an error isn't feeling nice, or if the network connection is interrupted
+or a powers cut or if there are too many sunspots, one side will just stop responding and the
+other side should probably give up eventually, or at least ask the user what to do.
+All RFC 1350 says about this is timeouts must also be used to detect errors.
+Thanks guys.
+A TFTP implementation will also retransmit the latest packet if it receives a duplicate
+of the latest packet received.
+So for example, if it receives an AC of block 5, it will send a data packet containing
+block 6.
+If it later receives another AC with a block counter 5, it assumes block 6 was lost and
+rescinds it.
+This can be faster than waiting for the sender's timeout to expire.
+This actually leads to a serious problem called the Sorcerer's Apprentice Syndrome.
+Imagine what will happen if a TFTP packet is delayed instead of lost.
+The sender will timeout and rescind, and the receiver will get the same message twice.
+The receiver will reply to both messages, and then the original sender will get both
+replies and in term reply to both of them.
+This can continue indefinitely doubling the bandwidth used by the transfer.
+But even worse, it can happen again and again.
+Which is the reason for calling the bug the Sorcerer's Apprentice Syndrome.
+The simple TFTP automaton just keeps mindlessly cloning itself which could possibly bring
+down a network.
+The fix for this bug is simple, break the chain of retransmitts.
+TFTP is required to not reply to duplicate AC messages.
+In other words, it replies to the first AC with a given block counter number, but ignores
+any subsequent ACs with the same block counter number.
+This bug was originally addressed by RFC1123 and later the main TFTP RFC was updated to
+contain the fix.
+That's the TFTP protocol as defined in RFC1350.
+It works, but there are a few shortcomings to the protocol which have been addressed
+by later IFCs.
+First, the block size of 512 bytes keeps throughput quite low.
+Second, the receiver of a file can't determine if it has room for the file and can't give
+feedback to the user about progress since it doesn't know how big the file is.
+Third, there is no standard timeout period or any way to adjust it.
+The means used to address these shortcomings is called the TFTP option extension.
+During initialization, the client specifies options in its reader write request and the
+server replies with a new message, the OAC, or option acknowledgment which echoes the
+options back to the client.
+The transaction then continues as usual, but possibly modified by the options used.
+The format of the option extension is simple.
+Each option used adds two strings to the end of a reader write request.
+The first string identifies the type of option being requested.
+The second string provides a value associated with the option.
+An important point is that the extension method is backwards compatible with vanilla TFTP.
+A TFTP server that doesn't recognize options will just ignore the extra data at the end
+of the reader write request.
+And by replying with a data or ACC instead of an OACC packet, we'll signal to the client
+that it cannot or will not use options and the transfer can proceed as usual.
+In order to be backwards compatible with servers that may only allocate a 512 byte buffer
+for receiving messages, read and write requests are limited to 512 bytes.
+The OAC packet contains just the opcode identifying it as an OAC, which is 6, and any options
+being acknowledged.
+Depending on the particular option, the value associated with that option may be different
+in the OAC than in the reader write request.
+One last adjustment to the protocol is the addition of a new error code that is used
+to indicate that a transfer should be terminated due to option negotiation.
+For example, if the server indicates that it cannot support an option and the client does
+not wish to continue the transmission unless the option is used.
+The block size option spelled BLKSIZE allows the client to request that the file being transferred
+be broken into chunks that aren't 512 bytes in length.
+The valid range that can be requested is between 8 and 65,464 bytes inclusive.
+While it allows the client to request a block size smaller than 512 bytes, the usual goal
+of the block size option is to request a larger block size.
+Ideally the block size will result in the largest packet that will not be fragmented by intervening
+routers, but selecting the block size to make this happen is left as an exercise for the
+implementer.
+A common choice is 1,428 since this matches the M2U of Ethernet after accounting for
+the various packet headers, but it may be desirable to adjust this based on system design or
+even local network conditions.
+The server may echo a smaller value in its OAC, for example if it has statically sized
+buffers or special knowledge about the M2U.
+The timeout option allows the client to request a particular timeout duration before the server
+retransments TFTP packets.
+The valid range is between 1 and 255 seconds inclusive.
+If the server is willing to accept this option, it must reply with an OAC containing a matching
+timeout value.
+Generally, the timeout duration should be slightly higher than the round trip time for a packet
+reaching its destination and the reply returning to the sender.
+Increasing the value is important if the link being used has a very high latency, and
+decreasing the value can be helpful when the link being used is somewhat unreliable since
+retries will be attempted more quickly.
+The transfer size option, spelled TSIZE, allows the client to provide or request the size
+of the file being transferred.
+In a write request, the client sets the transfer size option value to the link to the file
+in octets, which is echoed back by the server in an OAC.
+In a read request, the client sets the transfer size option value to 0, and the server sets
+the transfer size option in the OAC to the size of the requested file.
+This is primarily intended to allow the client or server to terminate the operation early
+if the file is too large, but it can also be used by the client to provide progress information
+to the user.
+There is one other issue related to the block counter, which is roll over.
+The block counter is a two-byte unsigned integer, meaning the largest number it can represent
+is 65,536.
+The problem is that the TFTP protocol doesn't specify what should happen if the block
+counter value exceeds this number.
+It is very likely that most implementations will represent the block counter internally
+as a 16-bit unsigned integer, and only modify this integer by incrementing it.
+If so, the counter will reset to 0 after reaching its maximum value, and everything will
+work smoothly.
+However, if either implementation uses a different representation of the counter, they may disagree
+on what the current value for the block counter should be, and therefore be unable to transfer
+files with a size exceeding 65,536 blocks.
+That comes out to just a bit under 32 megabytes, so if you don't support roll over that's
+compatible with the other end, that's the size of the file you'll be limited to.
+A short note indicating that the block counter should roll over to 0 upon reaching its maximum
+size would have prevented this problem and allowed the TFTP implementations to confidently
+transfer files of completely arbitrary sizes.
+But since 32 megabytes was seen as big enough when TFTP was originally written, this wasn't
+considered a problem.
+This is an example of how underspecifying a protocol can lead to problems in the future
+when unanticipated situations can arise.
+And there you have it, the TFTP protocol as I know it, while I was doing research for
+this podcast, I actually discovered an additional TFTPRFC290 for TFTP multicast option.
+I am not familiar with it, and it looks somewhat complicated, so I'm going to be skipping
+that one.
+I'd like to take this opportunity to thank everyone involved in producing HPR for providing
+this forum for audio casts.
+And with that, this is Kevin Grenade signing off, and hoping to hear from you.
+You have been listening to Hacker Public Radio, or Hacker Public Radio does our.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever consider recording a podcast, then visit our website to find out how easy
+it really is.
+Hacker Public Radio was founded by the Digital.Pound and the Infonomicom Computer Club.
+HPR is funded by the binary revolution at binref.com.
+All binref projects are crowd-responsive by linear pages.
+From shared hosting to custom private clouds, go to lunarpages.com for all your hosting
+needs.
+Oneless otherwise stasis, today's show is released under a creative commons, attribution,
+share alike, lead us our license.

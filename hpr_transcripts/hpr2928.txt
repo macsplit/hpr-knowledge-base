@@ -1,0 +1,238 @@
+Episode: 2928
+Title: HPR2928: Building markov chains with Haskell
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2928/hpr2928.mp3
+Transcribed: 2025-10-24 13:26:05
+
+---
+
+This is HPR episode 2928 entitled Building Mark on Chain with Hackel, and in part on the
+series, Hackel, it is hosted by Tuku Toroto, and in about 30 minutes long, and Karima
+Clean Flag.
+The summary is how to build Mark on Chain with Hackel.
+This episode of HPR is brought to you by an honesthost.com.
+At 15% discount on all shared hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's honest and fair, at An honesthost.com.
+Hello, you're listening to the Hackel topic radio, and this is two-twitter, this time I'm
+going to talk about Mark of Chain.
+Last time we build a rated list, so we have a list with items, and we can randomly
+pick one of them and each of those items have a specific change of being picked, and
+like I said, this time we are going to use that to build Mark of Chain.
+And the Wikipedia states that the Mark of Chain is a stochastic model describing a sequence
+of possible events in which the probability of each event depends only on the state attained
+in the previous event, and its name after Russian mathematician Andrej Markov.
+So what this means is that you can build a chain of events, and each event depends only
+on the previous event, nothing else.
+One example would be throwing coins, maybe, that's not a particular good example.
+For example, you could be moving forward, and then there's a random chance of you
+leading to the left or to the right, and the chance of leading to the left or to the right
+and doesn't depend on anything else, but if you're currently leading to the left or
+to the right or moving forward, that might be a better example.
+So we are after fairly generic system, so we are going to use parametrized data pipes.
+And if you have a look at the show notes where running this in more detail, you might
+notice that some of those pipes have been pre-pand with the exclamation mark.
+That only means that when that record is created, all those fields marked with exclamation
+mark are first, immediately, they are computed immediately, instead of leaving that compression
+for the third time, or later time.
+So we have two items that we have, or data, that we are going to work with.
+First is a config A. That's the record of two fields, config starts, which is list of
+item A, and config continuations, which is a map A list item A.
+So config starts is a list of items that are parametrized with the A, so if you have
+a, for example, indexes in our configuration, this will be item index, if you have some
+more complex thing, then it will be item that more complex thing.
+And config continuations, it is a map A list item A, meaning that it's a map or dictionary
+or has table or as a third of array, there's many names for this structure, where the key
+is a type of A, and the value is list of item A.
+So this, if the config starts, there's all the possible starts of the chain, then the
+continuations is a map where you can look with a current, current event key, value, whatever,
+and find the list of next possible items.
+And that's the config, and then the next data type is item A, that has a single value
+constructor item frequency, maybe A. And frequency is that what we used in our way,
+is a list. So item is a frequency where the pipe is a, maybe A. So when we have a,
+what item we know that it could be a, for example, it could be a index, and it has a specific
+chance of being picked from the list. And it is maybe a, because we also want to have
+our change to end at some point. In, well, at least some change we want to end at some
+point. Of course, you could have an infinite chain. But if you reach a nothing as an
+next element, this, it means that the end of the chain. In the speaking of choose items
+are in the previous episode, we wrote that choose function that is used to choose a random
+item from the weighted list. I renamed that to choose M. Otherwise, so if I'm talking
+in this episode about choose M, you can, you, you will remember, I think that it's the
+choose that we talking in the previous episode. Building the configuration, this is them,
+this was the actually the tricky part. It depends on the case. You can hand-code it if you
+have a small, small configuration. Or you can, what I usually do is you can feed a lot
+of examples to a function that analyzes those examples in some way and kills a configuration
+from them. Essentially, you need to take a, if you have a, you, you basically need a example
+of change. So you separate the chain into the elements and then you, from that list, you
+pick up all the starting elements and then you add all the elements in the middle, keeping
+track of which element can leave to which one, with frequency and then you also have to
+add the ending elements of elements that don't lead into anything anymore. And all these
+while keeping track of the weights or frequencies, how often do this get picked up. But in this
+episode, we are just going to assume that there's a suitable config all, at all, at all
+disposal. So let's start with the building the chain. Now, we have a one function, chain
+that has a signature of org a random chain g, that arrow config a, arrow, random g list
+of a. So a has to be orderable, you have to be able to order them because we are using
+not. And that's a, I seem to remember that that's a some sort of binary three and that
+requires that orgs instance. And g is our trust different random chain that we used
+to for picking random values. So for chain n, we give a config of that a and we get that
+random g list of a. So we get attack a computation that we can run together a list of a's.
+That is our chain. And for the implementation, it might be a good idea to look at the show
+notes. I'll try to explain this instead of reading this. So first, we need a how it's
+starting element. So that is starter, left arrow choose n, open parent item to free dollar
+diamond config starts config close time. So what we are doing is we are taking our from
+our configuration, we are taking our possible start items, turning them into the frequencies
+and using the choose and to pick one of them. For me, can we present that we have a
+syllables as a how our element. So this will pick the first syllable. And then we have a case.
+Usually you will usually you, you probably will need this in practice, but I like to keep
+this just in case somebody feeds in our config that doesn't have any starter elements. So we
+don't want to crash our system in this case. So we have a case. So we have a case where we take
+that starter that we got. And if it's nothing, then we should return an empty list because
+we don't have a starting, starting elements, we're going to do anything. We return an empty
+list, we got a chain of zero items. If you get an element, we call it age as a head. Then
+we do that. We say that the T, let's say tail, left are a tail of chain config age. So we
+call a function called tail of chain to provide that our config that we are using and give it to
+our single element. And from there, we get a list back. And then we just do age, colon,
+the meaning that we take our starter element and put that in front and build a list where we have
+that tail with a starter element in the front. And that's basically, well, that is what the chain
+em is doing. So now we have to figure out how to do the tail. And that looks almost identical to
+chain em function, but we just need to instead of choosing the using the starter, we are using the
+we are using the supplied value. And for the supply value, we have to find out what
+are possible next values. So we start with that, we have a function candidate that has
+a word A, sataro config A, arrow A, arrow list of frequency may be A. So given our configuration
+and the element, we find all the elements or as a frequencies that could come after the element.
+And here we are, we are saying that the items are move up X.
+X is the name of the item that we are looking at the next element. So move up X, config,
+continuous and config. So we are taking all the continuations we have in the configuration and
+finding the ones that can as a list that can come after the element of X. And because we are using
+that, we get that as maybe list. And then we again turn them into the frequencies.
+And because we have multiples, multiple may be here, then we are going to do F map,
+both F map, item two for items. So this, we might have a, so look up returns a maybe a list,
+make this day. And that look up might not find anything and then might not be anything to
+continue. Like we, we might have a end of the chain, then we are doing the F map to the F map
+because that turns. Only in the case, we actually found a list of items and only in the case that
+those items are actually contained next element. We are turning them into the, to the frequencies.
+And then we are using Conquad because we, at this point, we have a maybe list A.
+We might have that list or we might not have, might not have that list. So we call Conquad. And
+that's the answer that maybe list of A into the list of A. If we don't have, if we have nothing,
+we don't have a list of A. We get an empty list. This is, and this could have been written in a,
+it's long away. I could have written case, F map, F map, item two, items of, and then the case started
+nothing, a RO empty list, just X ROX. So this would turn nothing to the empty list and just
+list into the list. But Conquad is a, show the, show the more compact way of writing this. And
+this, this is the thing that Haskell is pretty, well not tricky, but a lot of things is about
+just remembering or knowing that there is a suitable tool. So you, so that you don't repeat the
+same piece of code multiple times and you don't re-implement code that is already available in
+the standard library. So I, I tend to use tool called Fugel that is a search, search a tool where
+you can, you can, you can put a signature of a function that you are after. And then it
+says that these, these functions do the similar things. And then you can look, look through,
+through that list and try to see if there's anything that is useful. And that helps me because
+then I don't have to remember everything. And also I, I, I hadn't realized that you could use
+Conquad to do such a thing. But now I know that because I did the search and realized that you
+can do it like this. So Haskell functions really are like a Lego bricks. They have slots for
+incremental data and text for outgoing data and then you just clip them together and build bigger,
+bigger pieces out of the, out of them and then you can, and those tend those bigger pieces again
+have slots for incoming data and text for outgoing data. You can snap them to together and make
+complete programs. And sometimes you need a small adapter to make things fit. Then you have to write
+that small function by yourself and put that between two bigger, bigger pieces to build even bigger
+pieces. So Haskell is actually relatively simple language when you get over the initial learning
+hump and don't wait into deep end of the mathematics. Because you have one has to remember that it's
+an academic, it is used as an academic search language. So there's a lot of mafia theory
+out there. That is, that it is interesting but that is not required for you to understand what
+you are doing and you don't need that stuff to be productive with Haskell. It's enough that you know
+some details, some basic things and then you can start building the programs. And while you
+building it, you learn a lot of things and I have been learning a lot of things, writing these
+and talking about them in the Hacker Public Radio because every time I talk about these things,
+I have to really understand what I am talking about code through the code and often at that point
+I find that hey there's this part that would be writing nothing in a different or more clean way.
+But anyway, so candidate is a function that given a config a and item and config a and a returns
+a list of frequency maybe is, meaning that this is a list of items that can follow the items
+that you gave them. So now that we have that, we can finish our tail of chain. Tail of chain
+is a function with a signal signal of hort a random chain g, set arrow config a, arrow a,
+arrow run g is of a. So given a configuration and starting item, it returns a computation
+that gives you a list of items. That's a chain. And that's a almost identical to the chain m
+except that instead of choosing from the starters, you are choosing from the candidates.
+So item, left arrow, choose and candidates, config see. So given this, candidates,
+be one. And if that something is nothing, we get an empty list, we have it an empty list.
+So it is the end of the chain. And it could be nothing for two reasons. They might not be
+continuation after the item or the continuation after the item that we picked might be nothing
+signifying the data. There could be a, now a certain, certain elements could have a
+25 present chance of being the left element of the chain, depending on the configuration.
+But if we find the element, then it's just called xs, left arrow, tail of chain, config x.
+So x is what we found. Then we call tail of chain with our configuration and x. So
+given this item, we found compute the tail of, tail of the chain. And then we return the x colon
+xs. So we take this one item that we, that we were handed that this is the, this is the starting item.
+And be stuck that in front of list that we computed under it and that.
+Okay, so in the end, we sort of have a list that first item is h. Next item is choose m,
+candidate, config h. Then it's choose m, candidate, config h prime, choose m, candidate,
+config h prime prime. And so on, ending to the empty list, which is the, how the end of the list.
+So the h prime and h prime prime are just meaning that this is the, based on the previous
+element. So we are, we are just freely computing the whole list and the tail of the list
+on always depends on the current element. And that's how, that's how we can build
+mark of change that are of genetic type and depend on the configuration. We could, for example,
+have a, okay, a really simple one, full beef actually flicking a coin. There's a,
+there's always a 50, 50 chance on the, on the head or tails. And then you will get the long list
+of heads and tails. But that's not particular interesting. I'm going to, a later on,
+going to show what you, what, what it, what it is that I'm hiding this for and what, what I usually
+use this for. So a couple of extra things still. So for convenience, we don't, we sometimes,
+we don't have that run GA at hand. And all we want to work with generators directly.
+So for that, we define an auto function change that has a signature, signature of
+a random chain G, sat arrow, John, config a arrow, G, config. Ah, sorry, let me do it again.
+Ah, it has a signature of or a random chain G, sat arrow, config a arrow, G arrow,
+tuple of this a G, meaning that given a config and a random chain,
+we return a tuple value, the first element is a list of a our chain. And the next element is a,
+the second element is a new random chain operator, new state of the random chain operator.
+And this is just a implemented as a chain config G equals roomrand open parent chain M
+config, close parent G. So we are, we are constructing that computation with chain N. And then
+we are calling roomrand G that will a room, our random generator, our computation with supply
+generator. Sometimes, another thing, sometimes we would like to have an infinite amount of change at hand.
+All right, for example, we would want to have, we would want to, for example, have five change
+and we want to filter those change based on some criteria. So easy, easy, easy thing to do,
+to do that is to just build infinite list of change, then filter that infinite list of change
+and pick five, five search ones. Of course, when you are building an infinite list, you are not
+actually building that infinite list. You are just making that. This is a computation that you can,
+that will compute your infinite chain. And then you can just run that computation.
+As much, as long as you need so that you get the amount of items that you want. And then rest of the
+list, really, it isn't really there, but if you look, it's there. So it really is from your point
+of view, it's an infinite chain. Just don't try to, for example, count the amount of items in that
+because that doesn't work. So that infinite amount of change is a function changed with a
+second signal, or a random change, that arrow, conflict A, arrow G, arrow list of list A. So instead of
+list of A, which is a chain, we get a list of list of change. And this is our defined asset,
+change, conflict G equals C, colon, change, conflict, G, prime. So there, C, comma, G,
+prime equals chain, conflict, G, that's it. So we are making a list with a colon, colon is a
+colon is a function whether or in fixed, in fixed function, whether on the left side is the head
+of the list and the right side is tail of the list. So left side is a single item, right side is
+a list. So we are taking a list and putting up one element in front of it. So we are making a
+list where the first element is a chain that we made with a chain conflict G. And the rest of the
+list is a change, conflict, G, prime. So we are using a, we are recursively, recursively calling
+change. We are giving it the same configuration and we are giving it a new random generator state
+that we got from the, back from the chain. And that one, of course, will make a list where the
+first item is again chain until the first item is something that you got by calling a chain
+and the rest of the list is something that you get by calling change. So it's a recursive
+recursive function that never, never ever terminate, but because Haskell is a non-strict language,
+meaning that it doesn't, it's, it's kind of like a lazy language in this sense. I don't quite
+grasp all the, all the finer points here, but one thing that it's a lazy language where the
+values aren't computed until you, until they are needed. Or if they have, if there's a
+that exclamation mark in front of the type, then it's computed immediately. So if, okay, so
+so this, this works because Haskell is non-strictly, it, that tail of the list is waiting there
+to be computed. So we have a list of C colon, C prime, colon, C prime, colon, C prime, prime,
+until, until the, well, infinital. And that's, that's, I think that's about it. I'm going to talk about
+Markov change. So even a configuration, we can build a single chain where each, each item depends
+only on the previous item. And those chains can be finite or infinite, infinite. And we can
+build one chain or we can build infinite list of chains. And what we do about those chains,
+I'm going to look next time. So the hardest part for me here was to actually be building the
+configuration. Like, configuring the configuration because it depends on the case. Sometimes, sometimes
+it's easy to, hand code it, hard code it by hand. Sometimes you need to have lots of examples
+that you analyze and build, build configuration from there. And then I have code for, for,
+for example, for thing that you have a chain and then you add a new item. And sorry, I have a
+configuration. And then you say that this item is followed by this item. And that is, it's, it's a,
+it's a pretty, well, not complex, but there's a lot of code. And that's, that's the amount of code
+that will be fun to listen, listen to me read aloud. So that's why I'm skipping it.
+So, well, in the meantime, if you have any questions, comments or feedback, there are always,
+always welcome. Tested to reach me is by email or in 35, then to do that, master on the
+social, or even, even better if you, is that if you record your own hacopotic radio episode.
+Catch you later.
+You've been listening to HecopovicRadio at HecopovicRadio.org. We are a community podcast network
+that releases shows every weekday Monday through Friday. Today's show, like all our shows,
+was contributed by an HPR listener like yourself. If you ever thought of recording a podcast,
+then click on our contribute link to find out how easy it really is. HecopovicRadio was found
+by the digital dog pound and the infonomicon computer club. And it's part of the binary revolution
+at binrev.com. If you have comments on today's show, please email the host directly, leave a
+comment on the website or record a follow-up episode yourself. Unless otherwise status, today's show
+is released on the creative comments, attribution, share a like, 3.0 license.

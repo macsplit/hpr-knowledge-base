@@ -1,0 +1,446 @@
+Episode: 1350
+Title: HPR1350: The Origin of ONICS (My Intro)
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1350/hpr1350.mp3
+Transcribed: 2025-10-17 23:59:42
+
+---
+
+One.
+Hello, hacker public radio.
+This is Gabriel Evenfire, a long time HPR listener, and I thought at about time that I submit
+my own show to the community. Why? Well, I think everybody knows the answer to that. There's
+all the fame, the glory, the money. Well, mostly the narcissism, I suppose in my case.
+I just have this project that I've been working on on my own time at home, and I love to
+gush about it. I talk about it all the time to my family, to my friends, to my co-workers,
+and apparently I'm willing to babble on about it to random strangers in the internet. Hopefully,
+if the little project isn't of interest to you, at least the tale of how it came about
+might be. If not, well, there's always tomorrow on HPR. You never know what you'll see next.
+My project is called ONIX, ONICES, which stands for Open Network Inspection Command Suite.
+The idea behind the project is to create a suite of tools that one runs on the command
+line to manipulate network packets, in the same way that your traditional UNIX tools,
+like said and awk and grep and TR and so forth, manipulate lines of text. There have been
+various command line networking tools over the years. There was a suite called SPAC, way
+way back 10 years ago for generating packets on the command line. There's the venerable netcat.
+There is HPing, but none of these I thought really provided the flexibility and power that
+we tend to see again in the usual UNIX command suite. So I thought I'd give it a shot.
+Once upon a time and a older job about nine years ago, I did a attempt to create a few of
+these tools and I was trying at the time just to create some framework for us to create test
+cases for a larger project that we were working on. And when I was done with them, our customer said,
+hey, you know, it would be a really good idea. If you guys open sourced those tools because they're
+probably not worth money, but you know, it would get us a lot of attention in the community,
+people would probably like it. And the company I was working for said, open what now? Why would
+we give away our software for free? Oh, I was less than pleased about that. And I thought for a
+while to try to get them to see the light and they never did. A few years later, I left the
+company. I have no idea what became of that code base. And quite frankly, it was done in all the
+wrong ways. But it still gave me the hope that creating a tool suite as I was envisioning was
+at least possible. So what's the idea? How would it work? The general idea is that you would start
+with set of files like PCAP files, traces of network packets. And you would pass them through these tools.
+And you would manipulate them. You would get to fold spindle, mangle, and mutilate them. You could
+extract them. You could split them into separate files. I was pretty much hoping that I could find or
+create an equivalent tool for each of the following programs. Cat, Grip, Said, Ock, Sort, Diff, Head,
+Tail, WC, Word Count, TR, T, and Paste. And of course, I'm sure there are many others that came to mind at
+the time too. Unfortunately, as I was looking at how to create these replacement tools, I kept getting
+hung up on one important thing, the PCAP format. Quite frankly, it's terrible for this kind of an
+application. Every PCAP file has a fixed set of fields. It's not very extensible. Every PCAP file has
+a file header on the front that defines attributes for the entire packet trace. So for example,
+you can only have one data link type in a packet trace. So if you have packets that were captured
+some from Ethernet and some from PPP, you're out of luck. They can't go in the same PCAP file.
+Furthermore, the fact that you have that header in front of all of the packets means you can't
+just cat two of these files together because then you have an extra header stuck in the middle
+that the tools can't parse. It also makes it a pain to split because every time you want to
+say, take a packet out of one file and say, shove it into another. You have to remember, oh,
+by the way, what was that stupid header? Now I have to slap that in front of it.
+So the more I fought with this poor file format, the more I realized I just had to replace it,
+at least for my tools. So I created a packet capture format or an external representation for
+packets that I call XPacket. So the first two utilities that I ended up creating were utilities
+to take in PCAP files and translate them to and from the XPacket format.
+I thought this was a great idea because since the PCAP library is able to read and write packets
+from the network itself, then these utilities would also be able to read XPackets right off the
+network and write XPackets right to the network. After I had these programs done, the next thing I
+started working on were some libraries to actually parse protocol headers and I had a goal in mind.
+I wanted to not have to rewrite the protocol parsing for every one of these tools. So I was trying
+to create a set of libraries that would let one interact with the fields and the packet headers
+in a network packet without actually having to know how they were put together so that
+those same parsing and manipulation routines could be called in every single tool I created.
+So I came up with a library based around the abstraction that each header would be parsed to a set
+of offsets into the packet buffer. The idea would be that you could have offsets that would just
+be marked invalid for certain fields that might be optional within the packet and if you had variable
+length fields within a packet, you could use two offsets to denote their start and end.
+Why do this? It seems extra complicated when all you could just do is say it starts here and you
+give it a length dynamically as you parse the packets. Well, one of the things I definitely wanted to
+be able to do in the tools was insert or remove bytes from the middle of the packet.
+And whenever one did this, one would have to adjust all of the starting offsets and possibly the
+lengths in every single packet parse. So by instead modeling the parsed information as a set of
+offsets, the insertion and removal routines actually could just shift those up or down as needed
+without having to know what they referred to. After I wrote that library, I also wrote another
+library that would allow one to refer to the fields within a protocol by name and this library would
+provide all of the information on how to extract or how to write to these different fields,
+just given the name of the field that you were looking for. Now, any tool, if provided a name
+by on the command line, would know exactly how to extract that field from the packet and how to
+embed that field back into the packet if you wanted to change it. Once I'd written that, the next
+part were some basic packet buffering libraries, which appear in just about every networking project
+in the world. And then I was ready now to create utilities to dump out packets that I had in
+X packet format so that it was in a nice human readable form. In other words, I wanted to be able to
+do TCP dump. So the next thing I decided was that instead of having this little TCP dump utility
+look like traditional TCP dump, I was going to have it output the packets in an annotated
+hex dump format that was similar to hex dumps that are used in traditional Unix command line tools.
+That is, there would be comments, comment lines that would contain information about the packet
+fields, like they would tell you that a set of bytes referred to IP address 1.2.3.4.
+And then below that would be the actual hex dump of the packet that contained that data.
+The idea would be that one could, if you wanted, go and manipulate the hex by hand with your
+favorite text editor if you wanted to change the packets. And one could use traditional hex
+manipulation tools to convert that hex data right back into packets if you wanted.
+So you could bring regular Unix tools to bear onto the packets in some small way.
+So I wrote the routine to dump the packet into that hex format. And then another one,
+just for good measure, that would dump from the hex format back into the packet format.
+Great. That worked. That was all well and good.
+The next thing I wanted to do was to be able to multiplex and demultiplex packets.
+I wanted to be able to, ultimately, if I wanted to, write a router out of some of these tools.
+So that would mean that if a packet came into the system and I had a script that did a route look
+up and it said it had to go out this interface instead of, you know, eth0, for example,
+instead of eth1, that there would be a tool that along the way would say, ah, okay, to get to
+eth0, I follow this path and to get to eth1, I follow this path. And again, I wanted this on the
+command line. So what one would be doing is multiplexing and demultiplexing on named pipes in the system.
+So that's where the next two tools came along, packet mocks and packet demux.
+And now it was time for our favorite, everybody's favorite Unix tools, the ones that you
+learned to love and hate at the same time, but once you know them, love, love, and love. And that's
+your regular expression matching tools, like GREP or SED, or for that matter AWK.
+So I wanted to be able to match patterns on packets and then carry out some sort of actions
+when those patterns were matched. At first, my approach to this was to create a little stack-based
+virtual machine. The idea was to be similar to the Berkeley packet filter virtual machine. I
+wanted it to be completely verifiable so that one could write a program in it and it would be so
+safe that you could even embed it inside the kernel. But I wanted it to be able to do more than
+just match. And so as I was working on the instruction set, I kept fact the control store was
+non-rightable, just like the BPF engine, but I ended up with something that looked nothing like BPF.
+I ended up with a virtual machine that had a segmented memory model, a non-rightable control
+store, a verifiable instruction set for a subset of the instructions so that the virtual machine
+could run in a verifiable and non-verifiable mode. I also added features that is instructions
+in the VM that are a bit higher level, like the ability to pull bytes out of the packet based
+on indexes into the packet parses that my other parsing libraries would generate. Also, I had
+added a regular expression engine for matching in the packets, which was another side project from
+years before. It's my own reg X engine. It's not very sophisticated, but it does work. And also
+the ability to do bulk copies in and out of packets and bulk string comparisons and mask string
+comparisons. Okay, so now I had a virtual machine that the virtual machine itself didn't understand
+anything about TCP or IP, but it received a library that could parse TCP and IP and so and IPv6
+and ICMP and so forth. And if the program running under it knew how to ask it in the right way,
+it could nevertheless extract fields from the TCP header or the IP header or the IPv6 header
+or modify fields in said headers. So the virtual machine itself knew nothing about the protocol
+parsing, but the programs could. And at this point, as I was testing this virtual machine, I'd
+basically been hand coding all of the assembler in my test programs. And then one of my co-workers,
+I saw had written this quick and dirty assembler and I thought, well, if he can write a quick and
+dirty assembler, why in the heck can't I? I can just do this and knock it out in a weekend. So,
+what did I do? Well, we were visiting my in-laws that weekend and any moment where we weren't
+socializing or having fun, I went back to my laptop and I tried to grind out a quick and dirty
+assembler. And then while I was at it, I also added a disassembler so I could verify that the
+assembler was doing what it was supposed to be doing. And then after that, I realized, well,
+assembling and disassembling is nice and all, but I also need some sort of a file format similar to
+ELF or something so that I can actually save the assembled instructions into a into a format that
+can be read in and executed. And I need a runtime that has the net VM in it to be able to run on
+packets. Okay, so it took a little bit more effort than I thought, but ultimately, within a week,
+I had an assembler or runtime file format and an interpreter that could read that file format,
+pass packets through it and run these little net VM programs on every packet.
+And so I thought, great, cool, now I can manipulate packets in a programmable way in the sort of
+form that I had wanted with set an awk where you could have, you know, a pattern that was matched
+and then based on that pattern, it could carry out operations or it could just run code on every
+single packet. And just like awk also has begin and end segments, you could also just write code that
+ran at the beginning of the program before packets came in or after the program finished after all
+the packets had been read in. But even as I finished this off and was padding myself on the back,
+it occurred to me that this really wasn't as high level as said or awk. I mean, come on,
+who is going to write assembly on the command line? Okay, so I really needed a higher level
+language and I decided that it was high time to create it. So I settled on creating the language
+PML. I call it PML for packet manipulation language or more colorfully, packet mangling language.
+Again, the idea was that this language would be an awk like language. So it would be higher level,
+it would be touring complete. But the structure of the program would look like a pattern action
+format. Originally, I used a Lex and Yak to write the lexical analyzer and the parser generator.
+But I really, really didn't like Yak that much because its parsers were single threaded on most
+platforms and just rub me the wrong way. And then while I was listening to the BSD talk podcast,
+I heard about the lemon parser generator. And the lemon parser generator, you probably haven't
+heard of, but it's actually a parser generator embedded in every distribution of SQL Lite because
+it actually compiles the compiler for the SQL language in SQL Lite. And this parser generator
+was released public domain. So one is perfectly free to take it and embed it in any project
+regardless of the license. I thought this was pretty cool. So I ripped out my Yak grammar and I
+replaced it with a lemon grammar. And success, well, I hadn't really finished the grammar yet,
+but I was getting somewhere. The grammar was coming along, it was parsing, and I had the feeling at
+this point I'm almost done. Once I get this awkward language, that's sort of the crown jewel.
+Everything else will just fall out from that. As we'll see, I was half right.
+So now I was really grinding away at this tool. I was working late at night after the kids and
+my wife were asleep. I was coding on weekends. I was coding during my daughter's basketball practice.
+I was just really hammering on this because it seemed like the end was in sight and I really,
+really wanted to build this tool. My family in this time was becoming less and less pleased with my
+obsession. But finally the parser was done and then I started on the code generation and I thought
+that would be simple and boy was I wrong about that. The code generation took as long as the parser
+and the lexer. But I did grind through it and understand that the idea was I was compiling
+programs to the net VM virtual machine. When I had my first hello world in PML working,
+that was really fun. I was really happy about that. But what really got me to do an engineer's
+victory dance was that only a few hours later I managed to get a program compiled that would
+go through and compute the internet checksum on an IP packet and verify whether it was correct or
+not. So that involves loops, it involves in direction in the program as well as printing and
+control flow and all of that was working. So I was doing something right. So I was really pleased.
+PML was coming along and I realized as I was doing this however that there were a lot of cases to
+cover and at this point I decided I had to do something to manage the complexity and I did what
+I really should have been doing all along and that was to start writing unit tests. Lots and lots
+of unit tests, unit tests for the lexical analyzer, unit tests for the parser generator, unit tests
+that would check to see whenever the net VM instructions that the compiler generated differed
+from a previous version in the exact same program. Then of course I started testing to make sure
+that the programs actually worked and did what they were intending to do and for each one of these
+I built a regression test suite. The good news for me was now that every time I added a feature I could
+just type make in the test directory and it would run a whole battery of tests and make sure that
+everything worked exactly the way it had before and it gave me a lot more confidence. The most
+programmers don't really think or think about or like doing testing. I through this process just
+came to love tests because it made my life so much better in the long run at least for this project.
+Okay so I kept grinding away at this. PML was functional. I thought now is the time to start
+open sourcing this. So I made an account on Gatorius for it that it was about this time that I
+decided on the name Onyx. I thought there are so many good programming languages that are named
+after gems like Ruby or Pearl. So Onyx seemed like a nice one. Plus since it was a Unixi command suite
+I thought Onyx sounded like a nice Unixi name. I started showing this off to my friends and co-workers
+and unfortunately this was a reality check for me because the more I showed it off to them the more
+they thought it was pretty cool but I realized just how rough it was around the edges.
+So I started grinding through and doing some more tests and some more tests and I started
+working in particular on an entire section of the code that I had written but never tested and
+that was packet generation. You see I wanted to be able to create a set of PML programs or at
+least scripts that ran PML that would let you build up a packet a little at a time. The idea
+would be that you could cat some data through and pipe it to a RAP TCP program that would put a
+TCP header around the data and then pass that to a RAP IP program which would put an IP header
+around that and then a RAP Ethernet program which would put an Ethernet header around that and each
+one of those programs would let you manipulate the fields to customize them as you needed. So for
+example like setting the Ethernet MAC address or setting the IP time to live or whatever.
+And then finally you could even pipe it after that you I mean you could redirect it straight
+out to a file if you wanted to save your work or you could pipe it right to the PCAP out program
+to send it on the network so you could even generate a packet onto the network straight from the
+command line. As I started creating these tools and these scripts which are really just thin
+wrappers around PML I found lots and lots of bugs in that untested portion of the code and a bit more
+grinding later and a more unit test later and now they were done and now I was thinking okay now
+really I'm about done right. At this point I even went one step further and I created a little
+script called TCPcess for TCP session and this script would let you give a list of files
+on the command line and it would generate a complete TCP connection starting with the
+connection establishment with the SIN, SINAC and ACK packets followed by the data in the files
+that were given on the command line broken up into appropriately sized TCP segments
+and responded to by the receiver with acknowledgement packets until all of the data was sent in both
+directions and the command line flags would specify what order those files were to be played in
+each direction and then finally finishing with a shutdown handshake of the FIN ACK, FIN ACK
+nature and I thought that was really cool it was another engineering victory dance when I ran
+this program and then I piped the output of this program to my pcap out file to turn it into a
+pcap file and then I piped that into TCP dump to read it back and TCP dump looked at it and said oh
+yeah this looks like a perfectly well-formed TCP stream that was pretty cool oh so okay good
+now I really had some flexible tools they could do some really neat things and I thought surely
+I'm I'm almost done but I realized that I still had some things that I wanted to take care of
+I am obviously as you can tell a bit of it do it yourself or when it comes to programming
+I like to have written everything myself it's just one of my hangups if I can help it I want to
+do it myself and so I didn't like the fact that my programs depended on the Lexiop library and the
+lidpcap library I didn't mind so much about lemon because lemon I could distribute with the code
+itself so while I didn't write it myself and I have some aspirations in the future of writing
+my own parser generator for now it was okay at least if somebody wanted to download and compile
+my tools they didn't need to download the parser generator but they did have to have Lex and they
+did have to have a lidpcap and I didn't like that I wanted the whole thing self-contained I hate
+autoconf I hate doing dot slash configure I want the thing to be able to compile right on the
+command line the first time in every environment that supports C if at all possible so what I did was
+I wrote my own pcap parsing library to be able to parse pcap files or write pcap files and then
+I went and I basically rewrote the lecture by hand as a C program well more of C library okay good
+so now the system could be self-contained right just to make sure that I could capture packets off
+the network live and inject them onto the network and not depend on libpcap I then took the extra
+step of going and finding the Linux and BSD ways of capturing and injecting packets and then I created
+versions of the pcap in pcap out program that would capture packets from the network or send packets
+to the network but I created a separate version for each of those OSs and then the build would select
+which one to compile based on some big detection of your environment and in any case the pcap specific
+programs and these OS specific programs were optional builds and so if the build system couldn't
+figure out whether you had libpcap and if it couldn't figure out that you were trying to compile for
+Linux it would just create dummy versions of those programs that would error out immediately and say
+sorry that's not supported on this platform you could still run all of the other tools in the
+tool suite so again I was trying to make it as platform independent as possible by isolating
+the platform specific parts from the rest of the code base and now I was thinking great great
+now I really should be done and you know what all this time in the back of my mind I've been
+thinking there is one killer app that does not exist anywhere in the networking world that I've
+ever seen and that's the equivalent of diff for packets if you don't know the diff program takes two
+files and it finds the minimum set of transformations to convert one file into the other file so it shows
+you how to edit the first file to produce the second file in other words it shows you the
+difference between the two files and I thought and I knew that this would be really really cool
+to have for packets back when we had done the older version of this of this suite back in nine years
+ago somebody had come along and taken the tools we had and they wrote their own diff utility
+and it was pretty cool it was neat it relied on however the packets having an embedded sequence
+number so that the program could tell when packets had been dropped or when they had been inserted
+so I thought well I could rewrite something like that so I wrote a bunch of scripts that would
+attempt to embed sequence numbers into a packet stream in various spare bits and fields within the
+packet and then extract them at some point later but the more I thought about it the real
+I the more I thought this is kluji and really finding the edit distance is a simple programming problem
+at least it is when you study it in school but it's a little trickier with packets because
+modifications to the packet stream can happen at least three layers of abstraction entire packets
+can be dropped or inserted or reordered that's one layer also headers can be pushed on or popped
+off for example when a packet enters a tunnel or leaves a tunnel and third individual fields
+within a packet header can be inserted or removed and of course individual fields within a packet
+can also be changed for an example of fields that get inserted or removed from a packet consider
+IP options or IPv6 extension headers so in other words to find the minimum amount of editing
+that was needed to change one stream of packets into another I had to figure out whether it was
+cheaper to drop a packet outright or change a few of its fields to make it match a different packet
+in the stream and this all seemed very daunting so I kind of stalled and put it off for a while
+and on the side I decided you know what let's take a break let's go and learn javascript
+I know many programming languages that one was not in my repertoire I'm partial to lots of
+scripting languages but I'm not much of a web programmer myself so javascript just never I didn't
+have a good reason to to learn it so I learned javascript and while I was doing it I thought you
+know what why don't I dust off my memory and my algorithm to textbook and pull out our typical
+domero levinstein edit distance algorithm and code that up in javascript and I did and I realized
+you know what this algorithm isn't really that tricky come on let's just buckle down and do
+diff for packets so I did I started in earnest and I had a little bit of a time trying to engineer
+the the cost functions to be able to determine again whether it was cheaper to make one type of
+edit versus another but I did settle on one that I thought was sensible that the cost would be
+proportional to the number of bits inserted or removed relative to the size of the packet
+and with that and with these multiple layers of running the same domero levinstein distance
+algorithm I had a really cool diff program I could put in a stream of packets and I could pass
+it through a pml program and the pml program might say okay drop the fifth packet duplicate the
+eighth packet and on the tenth packet change the ttl to five and when I ran that I would you
+know I had an infile it would go through my little script and then I would have my output file
+and then I'd run both files through pdiff and I would see exactly that it would say oh here
+in drop the fifth packet and look here insert this packet after the eighth packet which looked
+exactly like the the eighth packet oh and by the way in this what's now the eleventh packet
+the ttl was changed to five so cool this was really great and I was thinking this this is something
+I don't even see anywhere else in the networking world this is going to be awesome really I should be
+done now this is this is cool and so as I'm wrapping up and documenting different pieces of my
+code in in particular documenting the pml language I was thinking about hey by the way how would I
+write ping in this tool suite and as I thought about that it occurred to me that the pml language
+and another my tools really had any sense of of time-based events they were all run to completion
+that is a packet comes in you do stuff on it until you're done and then it goes out
+it's time me for a little bit but then I thought hey I have actions in pml that occur when the
+program starts in the begin pattern and then I have bits of code in the pml program that runs
+when the packets when all the packets are finished going through the system that's in the end block
+of the pml program so why don't I just create a new type of block a tick block and this will execute
+code every so often let's say once a millisecond and then as long as your events have to happen no
+at no finer granularity than a millisecond you can have any sort of time-based events and this
+actually turned out to be a relatively easy mod so I put it in and great now I had a really cool
+new feature and at this point I was thinking I really was thinking this is you know all that I
+wanted to get done for my basic functionality I should be wrapping up now and about this time
+it was time for our family vacation to the beach so I was ready to relax and chill and although
+in previous summers I had been working on these tool suites I thought I'm probably not going
+to be doing much this time but my daughter she had been my eldest daughter to be specific she had
+been saving up her money to buy her own first laptop and she wanted to get a Google Chromebook
+and she did and I was very curious about this little box so I was wondering what sort of
+network traffic I'd see from it in the background so while we are at the beach house I'm on the
+wireless network and I break out my tools and I'm scanning the packets looking to see you you know
+who's who's chattering with whom and how often and I realized you know it was getting a little tedious
+to be looking at these packets on a packet by packet basis it would be nice if I had a program
+that would look at the stream of packets and just create a summary of the connections that we're
+going through you know oh look this TCP connection started oh and now it's ended oh this TCP
+connection started oh it's still going and it's transferred this much data oh it's still going
+and it's transferred this much data oh and now it's done things like that and also wouldn't it be
+cool if I could tag the packets that we're going through with information about which connection
+they were on so that other tools could operate on that specific information I had a nice
+extensible metadata format to do that so why not do it okay well you can guess what happened
+late nights at the beach house spare moments between lunch and and heading down to the pool
+whatever it was I worked on yet another tool called this one NFT for network flow tracker
+and within a day and a half I had it done and working exactly the way I want I was pretty happy
+about that and I started looking again at the traffic and I was noticing some cool interesting
+patterns I was pretty happy about this and then as I'm watching the packets I'm realizing oh
+you know it's always one more thing my ICMP and ICMP V6 parsing really were very very basic and
+wouldn't it be nice if instead of having to decode these packets by hand it actually went the
+extra mile and decoded them based on their type in code appropriately okay so another day or so
+was spent going through the RFCs looking at all the relevant type codes and making sure I was
+parsing them all correctly and augmenting my protocol parsers to handle that okay and that worked
+and now I was thinking this is great everything is solid and polished and I can't think of any real
+other must-haves that I have to add for this tool suite awesome so really I should be done I'm done
+now right the next week I'm in the office and I'm talking with one of my co-workers and we
+were talking about markup languages for our documentation at work and he was talking about you know
+even enroph is a nice serviceable language and I thought to myself yeah it is you know I had to
+do my thesis in t-roph because it gave me great control over the text layout and let me
+fulfill the university's text layout requirements and then as I thought about this I thought you
+know it really wasn't that hard to write that I really should have man pages for all of these tools
+sigh all right fine before I go on bragging more I I'm going to create man pages for all of them
+okay so I broke down this was about labor day weekend this year and I decided to start grinding
+through the weekend and getting all the man pages written at this point I had about 28 tools and
+scripts 10 10 scripts 18 tools so I I ground through it and I got all the man pages and I really wanted
+these to be useful man pages so I put examples and all of them and I tested to make sure the examples
+worked and as probably many of you have had this experience as I started to document it I realized
+that there were some more rough corners in the tools and their options and and things of that
+nature and so I went back and and I ended up giving a lot of the tools a little bit of a not an
+overhaul just a makeover to again stand out some more rough edges so it turned out I really wasn't
+done even then finally I said okay now it's time to do a podcast on these tools and I sat down and
+outlined this podcast and after I was done I don't know what made me think of it but I realized
+there was another key command line tool for text that I had no equivalent for in Onyx and that was
+sort I couldn't sort packets I just didn't have any capability for it so all right I will knock out
+sort I already have sort routines written from my younger days and so all I have to do is
+figure out what I'm sorting on and I'm done so I wrote a P sort utility for packet sort
+and at the time it would only sort on packet metadata but that was okay because the metadata
+was extensible I thought you know you could if you really wanted to just extract fields from
+the packet put it in the metadata and sort on that and so I thought that's good enough I'm done
+and then the next day I thought now I should at least have a bash script that automated that process
+so I wrote up a quick bash script that would take a set of fields that you wanted to sort on
+and embed it in the metadata and pass it to the sort routine and then delete it from the metadata
+so it wasn't lingering around and that led to polishing up some of the metadata manipulation
+in the virtual machine in the net VM and also in the PML language and then I realized you know what
+that was still clunky the P sort program itself really needed to be able to understand the keys
+or rather take the keys directly and then I realized even that was clunky really the P sort
+utility itself should be able to directly take the fields that you wanted to sort at and build the key
+so okay I went through I figured out a way to using those same protocol parsing libraries extract
+the key from command line arguments and you know what it worked it worked exactly as I had hoped
+it didn't actually take more than a day to get this utility up and running
+then I deleted the extra script that I had as it was very superfluous at this point
+so now I had P sort great I should be done now really done now well there was I will admit one
+little bit further of hackery that I had to perform before I finished this podcast and that was
+I had never really done a podcast and I needed to figure out how to make the audio quality for
+this decent and by the way I hope it is decent but I can tell you one thing regardless
+of how it sounds to you it was a hundred times worse when I made the first recordings
+terrible terrible I tried different mics that I had one on a headset one that is the mic
+on my laptop itself one on my tablet and then one with this old gaming mic that I had
+that's on an arm and all of them sounded pretty bad so I thought well let me just use the mic
+that seems to be the least objectionable that is this this little gaming boom mic and at least
+maybe audacity can make up for the rest perhaps I can just filter out the background noise and so
+I was having problems with especially spikes that would clip whenever I accidentally breathed
+into the mic so I tried holding the mic off to the side and talking with it that way and
+it was better but then my voice was very soft and it really wasn't great so my last bit of
+hackery was I got a piece of Terry cloth from our drawer full of rags I got some electrical wire
+some industrial electrical wire that I'd been using for outdoor wiring which is nice and stiff
+I got the screw top to some jars that my wife uses to jar vegetables for Christmas gifts and so
+forth and what I did was this is you know the screw top of course has a hole in the middle so I
+wrapped the Terry cloth around that fastened it with rubber bands and then attached that using this
+nice stiff electrical wire to the mic itself so I thought this would keep my breath from making
+these spikes and then I could speak close to the mic and the noise reduction would be better
+and like I said it worked I'll put a picture of this in the show notes it's quite a little ugly
+job but it definitely helped I hope this audio quality isn't too objectionable to you but like I
+said whatever it sounds like to you it really was much worse so I was kind of proud of that little
+hack job as well all right so I've come to the end of this long description here and am I really
+really done with this project have I got it in a state where there's not too much to add
+well I have to confess no I thought about adding random number generation to the PML language I
+thought about adding backing store for the packets I thought about extending the language with the
+associative arrays I thought about adding DNS resolution into the tool suite I thought about
+ways that I could improve the connection tracking I have plans to improve the packet ordering
+or reordering detection in PDF I have ways already in mind for how to improve the performance
+I have visions of embedding my little net VM inside the Linux kernel or on an embedded platform
+and say my Raspberry Pi that I got for my birthday I have more protocol parsing that I can add
+I can improve the multiplexing and demultiplexing I can improve the string formatting
+I just know that this project is is not going to end anytime soon and I think my wife and
+kids will be less pleased with this I think at the end of the day I've had a lot of fun with this
+project anyways it's a genuine hacking project it was I created it to scratch and itch it has
+led me on all sorts of tangents that I never imagined in the first place it has definitely led me
+on some emotional roller coasters sometimes feeling like I'm the most brilliant person in the world
+and sometimes feeling like this is just idiotic and dumb and nobody's going to want this
+it's kind of taken on a life of its own but at the end of the day I look at this project like I
+look at all hacking projects and that's through the lens of the advice of my advisor who said
+when you're picking a project to work on just pick something that you yourself would want to use
+and think would be really cool because if you build it then you've already won if other people
+like it then that's just icing on the cake so I can definitely say that this project is in a state
+where I'm using it and I'm having fun with it so if you out there are interested in playing around
+with it you can find onyx at getorious.org slash onyx oh and I see us there's a wiki page in there
+that gives you some information for how to get started I'll just give you right now the quick
+version of how you build it and how you install first you type get clone get at getorious.org
+colon catlib slash catlib.get and this will clone my sea libraries that I've been hacking on
+for longer than this onyx project those libraries are fundamental to the use fundamentals of the
+operation of the onyx programs themselves the next step clones the onyx repository get space clone
+space get at getorious.org colon onyx slash onyx.get so now you'll have two new directories
+in the directory that you perform these commands in one will be onyx and one will be catlib.
+first cd space catlib slash src then type make and that builds the catlib then cd space dot dot slash
+dot dot slash onyx then run make and this will build all of the onyx programs and it will also run
+all of the regression tests if test 42 43 something like that fails don't worry about it that one
+is timing based and I've had a devil of a time making it always always work just run make again
+and it'll probably pass if you're really brave and you or if you find the tools intensely useful
+you can also then say type pseudo space make space install to install the program in user local
+bin and user local man and then you can have it in your path and use it to your heart's content
+I hope you found this story interesting I hope the audio quality comes out decent and in general
+thank you to the hbr community for years of enjoyable content I hope this is received as enjoyable
+content as well and all of you guys out there keep on hacking this is gabriel even fire if you
+would like to reach me you can reach me through the guitarias dot org site for onyx or you can email
+me at even fire eve and f i r e at sdf dot org thanks a lot guys bye
+you have been listening to hiker public radio or hiker public radio does our we are a community
+podcast network that releases shows every weekday on day three friday today's show like all our
+shows was contributed by a hbr listener like yourself if you ever consider recording a podcast
+then visit our website to find out how easy it really is hiker public radio was founded by the
+digital dog pound and the infonomicum computer club hbr is funded by the binary revolution
+at binwreff.com all binwreff projects are proudly sponsored by luna pages from shared hosting
+to custom private clouds go to luna pages.com for all your hosting needs unless otherwise stasis
+today's show is released under a creative commons attribution share a line lead us our lives

@@ -1,0 +1,338 @@
+Episode: 1121
+Title: HPR1121: Klaatu continues his Networking Basics series with a SAMBA howto.
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1121/hpr1121.mp3
+Transcribed: 2025-10-17 19:22:03
+
+---
+
+You're listening to Hacker Public Radio. Hi everyone, my name is Klaatu and this is an
+entry in my age-old networking basics series. If you've been around for a while with
+Hacker Public Radio, then you might remember the first couple of episodes I did on networking
+basics. Those were numbered in the episode like 400 range, though it was quite a while
+ago now. And I talked during those episodes about really specific protocols about how networking
+really worked, like packet transmission and why one packet looked at all different from
+another packet to different routers and switches and how they get sent around to different
+broadcast ranges and subnet masks and things like that. So covered a lot of that back
+in the episode range of 400, maybe some 500s. Took a break from it, popped myself some
+new stuff. Came back around episode 800 or so, I think it was 793 or something like that
+with some conceptual stuff about the server client relationship, which just to review. I
+mentioned that servers don't have to be anything fancy. They don't have to be those big
+rack unit computers that slide into those four post racks, like you see in all the data
+center pictures that you've seen. A server is simply a computer that has some kind of
+service running on it and that you plug into a network. And then everything on that network,
+I mean, as long as it can ping that computer. So as long as it's either on the same subnet
+or your subnet mask is open enough so that those subnets can talk to each other, everything
+on that network can send a request to that server. I should say anything on that network
+can send a request to that computer and ask for some kind of service. And in that particular
+episode, we set up a DHCP server and made that the service that was running on a particular
+box. But I like to remind people that doesn't necessarily need to be a dedicated box. I mean,
+for DHCP server, you'd probably want it to be something dedicated, something you're
+not going to unplug and walk away with from the network, like your laptop. But in terms
+of the conceptually, servers don't need to be anything special. They can be an old computer
+that was lying around that you just want to do something with. They can be a big fancy
+rack unit server that you bought for thousands of dollars. It could be anything. It could
+even be an embedded little server in your router, which is quite common. So that was episode
+790-something. I think in 802 or so I did a Mara DNS episode, which was how to set up
+a DNS server on your network, sort of a local caching, it was actually 807, sorry, I just
+verified it. 807, a local caching DNS server. And then finally in 820, episode 820, we
+talked about setting up a proper web server and a MySQL server and kind of establishing
+that. So that's where we kind of left off. And now I want to get back into networking
+basics a little bit just for two episodes and talk about sharing files over a network.
+So if you've ever been to, you know, if you've ever worked like in an office environment,
+or a development environment where there's a lot of people collaborating on some singular
+project, or even a school, if you've been to a school where there are homework assignments
+or quizzes or whatever posted on a server that you then have to go and download, or heck,
+even if you've downloaded a Linux distro, an ISO, then the concept is still kind of the
+same. You've probably seen this environment where there is a common shared folder, sometimes
+they call it a file share or a shared folder, things like that, network volume. There's
+different sort of slang for it. But the point is that it's some directory or set of
+directories on some computer. And a lot of times it's just kind of, you don't know where
+it is. It's just out there in the office or in the school somewhere because it's in whatever
+server room or data center that they have. And you log into this thing or you connect
+to this shared folder, maybe you log in with some kind of credentials. And then suddenly
+you've got all these files that are available to you and you can drag them over your desktop
+and change them. Or maybe you have right permission so you might download something, change
+it, and then drop it back in so that everyone else can see your changes. Maybe you have
+a drop box for your homework assignments. You need to post things into a specific folder
+so your teacher can get your homework assignment, whatever. I think you probably kind of get
+the idea. There are, I don't know, about that I can think of like the really popular file
+sharing services that are used right now in this kind of either corporate or educational
+environment, although I mean certainly you could use it in your home too. It would be
+NFS, SMB, and in my world AFP. So NFS is the Sun Microsystems Network File System Protocol
+or System that's redundant. And it does that. It enables you to log into a, onto a computer
+that has some kind of directory that is being shared and you can look and change and modify
+files and stuff like that. And it's very popular and I've never used it. SMB is something
+that really was popularized. I don't think it was actually literally invented by but it
+was certainly popularized and kind of they took it and ran with it by Microsoft. So SMB
+started out as a server message block. What SMB stands for, it really doesn't matter
+because it's actually sort of changed now into something called SIFS Common Internet
+File System. Either way, you'll kind of hear it used interchangeably SIFS or SMB. And
+it is really just that. It's an alternative or a competitor to something like NFS where
+you set this SMB or CIFS directory on a server and you start the service and people can
+log into that server. Look at a directory with a bunch of files and if that you want them
+to have access to and they can download it and change it, possibly upload it if you
+give them permissions to do that. The free implementation of that is called Samba S-A-M-B-A,
+which is something that Jeremy Allison and a bunch of programmers worked very hard
+as basically a re-implementation of SMB and CIF. And I believe there is a fairly nasty
+court case to make that possible because Microsoft is involved. The third that I know of
+and the second that I'll talk about, like I say, I've never used NFS, so I'm not going
+to be doing an episode on it. Although if anyone wants to do an episode on NFS and how
+to set it up and stuff and include it in this mini-series networking basics, then feel
+free to do that. That would be fantastic. But the other one that I'm aware of and certainly
+the one that I use just as much as SMB in the real world professionally is AFP, which
+many of you may have never encountered. I hope you haven't. It's the Apple filing protocol.
+So it used to be Apple Talk. It is no longer Apple Talk. Apple Talk has been deprecated
+for quite a while and it is no longer supported by recent OS 10 installs at all. It's just
+not even there's no support for it whatsoever. So Apple file protocol is something that as far
+as I know, there's no client really to be able to use it at least in a very user-friendly
+manner on any other OS. I could be wrong. There might be some third party things out there.
+I'm sure that there's a line command on Linux that you could use to do some of it. I honestly
+don't use that. I just SSH into the box from Linux and do what I need to do via SSH. But for
+the users, at least on Mac OS, it's the default system of file sharing. I mean, that's how it's
+done. So that's AFP. And I'll talk about that not in this episode, but in the next episode.
+In this episode, we're going to talk about SMB, Samba. So setting up Samba is actually not
+that hard on a Linux box. Setting up a Samba server so that other computers can log in. Look
+at files and take them and put them back and change them and all this other stuff. It's quite easy.
+It's just as easy as setting up DHCP or DNS or anything like that web server. It's just literally
+installing the application, the service, the application that drives the service,
+turning it on, and obviously a little bit of configuration. But that's all you do. I mean,
+if there's nothing, once the thing is networked, it's just going to be sitting there on your network,
+sort of broadcasting or waiting for requests for a computer to be able to log in and look at the
+files. So I think you'll be pleased to how simple it is. The way that I'm doing it at my current
+job is on Red Hat and Fedora Boxing. So that's what this will be based on, which won't be any
+different really than the Debian version or the Slackware version or probably Arch or anything
+like that, except with the possible thing that the path of the configuration files might be a
+slightly different. So don't freak out if you're looking for a slash Etsy slash Samba and it's
+not there. It's in slash Etsy slash default slash SMB.com for something like that. Just be
+adaptive, be flexible. It should work out. And obviously the command to start the actual service
+will be different as well. But we'll go over that in a minute. So yum install Samba. That would do
+it for you or aptitude install Samba. Pretty simple. That'll install Samba and that's about it.
+You're done. Well, okay, you're not done, but but at least you've got Samba installed now.
+This is on a Linux box that is on the network. So you've got Samba installed. Now you need to
+configure how Samba is going to look at look to your users on the network. This is all done
+in the SMB.conf file, which you probably will find in slash Etsy slash Samba slash SMB.conf.
+So you can open that up in your favorite text editor. And you'll see that it's a pretty
+verbose file. There's a lot of comments. There's a lot of help for you as you kind of step your way
+through the file. And a lot of it is just it's all correct. It's already kind of configured
+for a normal kind of obvious setup that you could nearly just kind of use as is. But we'll change
+a couple of things. So the first thing to be aware of if you do if you are in a multi OS environment
+that you might want to configure the work group. Now in the in the actual big
+installation that I use this service for, I don't do when when bind, which or the net bios,
+whatever it's whatever the term is. I don't do all that stuff. I'm just doing everything over
+TCP IP with IP addresses. So that's how I have it set up. So the work group for me actually
+doesn't matter. But if you are in an environment where they actually do have Windows servers involved
+and there is a work group that actually matters because if you're not in that work group,
+then you won't be able to see something else or whatever. Then you might need to set your work group.
+But for me, I've never actually had to do that. But be aware that that's something. So you can
+kind of read through the rest of the configuration file and honestly until you get down to the big
+dotted line called share definitions, there's probably not a whole lot of stuff that you would
+need to really change. Mostly it's all set up to go. You don't really have to change anything.
+Until you get down to share definitions, share definitions is sort of where you decide who is
+going to be able to see what stuff on your on your server. The format is quite simple. They give
+you an example. You can copy it and kind of mimic it pretty easily. You have the option because
+this is Samba, S-A-M-B-A and not something else, S-N-B-SIFS or whatever. This is running on Linux. So it
+can be totally aware of all the Unix, built-in Unix file permissions and user permissions, which is nice.
+So if you're configuring this for just one little office or something, one group of people who
+need to kind of collaborate on something via this file share, then you can create users for
+those people on that computer, on that server and give them each a home directory. And they can
+actually have home directories that they're able to use on the server to stash, I don't know,
+backups or something like that. So they can have kind of their own private little corner on the server
+via S-N-B or Samba, whatever. So that's something that you have the option to do and I believe that's
+a default option in Samba. And you can make it browsable by setting that to yes and whenever they
+try to log into the server, they'll be given the option in the list of available shared
+directories, their own home folder. I do use that and it's been kind of handy because in that way,
+people who are working like reporters and people, journalists, you know, who are working on
+something, that's important to them. They want it to be backed up and they want to see that it's
+backed up and they kind of want the ability to go back really easily to an older version. They
+can just throw it on their own home directory on the server. And then if they screw up their old
+version or something, then they can grab their backup copy really easily, which I mean, since the
+backup script only runs once a day, that wouldn't be very useful to them. So it's kind of a nice useful
+way for people to be able to manually manage some of their own data, which is kind of nice.
+So that's something that I do use. Now, by default, the home directories are served as read-only.
+So you need to change the flag of read-only to equal no. And again, that's very, very
+well commented. You can't miss it. It's quite well explained in the comments of the config file.
+There's also file creation masks. So by default, it's set to 0700, meaning that the
+user, the owner, is going to see that as readable, writeable, and executable, and then any group
+or anyone else will not have any permissions to it whatsoever. That's fine, but this is a work group.
+There are other people in the office, so I actually set the create mask to 0755 and the directory
+mask as well. That actually confused me initially because when I think of a mask,
+I think of giving a configuration file the inverse of what I want to have created. So a creation
+mask of 0755 to me doesn't make sense. It should be 022 in my mind. Apparently, that's not how
+this works. I don't know why, but that's what you do. You give it exactly the permissions that you
+want the file or the directory that you're creating to be in terms of permissions. There's a really
+nice breakdown of all the different options and even how they kind of relate to DOS and Windows
+over on O'Reilly.com. If you go to O'Reilly.com, slash OpenBook, slash Samba, slash Book, a slash
+CH05 underscore 03.html, all kinds of information about the file permissions and attributes
+and how they kind of relate to one another between the Windows users and the Linux users. That's
+really it for homes. So that's kind of a variable. It's not going to come up as home. It's obviously
+going to be the home of whatever user name is logging in. And the user name, I just use the same
+user name as the Unix user name on that system. Although we can talk about doing sort of separate
+Samba users in a little while. Right now you've only got a homes directory basically. So if a user
+logs in, we're saying yes, show them that they can log into their own little private home directory
+on this server and put stuff into it. And that's fine, but that's probably not really what you're
+doing a Samba share for. You're probably wanting something where everyone can see a bunch of
+important files for their sort of little office group or whatever group that you're working with.
+This would just be, you generate this, you create it yourself. So let's just call it, I don't know,
+office folder. So in brackets, and again, you can just copy the examples from the config file,
+but I'll just do it from scratch here. So square bracket office folder, close square bracket,
+and then give it a comment just for good measure comment will be, you know, important office
+files. Browseable, you would set that to yes. And the path you would want to give it the Unix
+path to the folder that you are now deciding, hey, I'm going to share this with everyone. You can
+work that really any way you want, right? You could put it in slash var, you could put it in slash
+home, you could put it in slash, well, I don't know where else you'd put it really, but you could
+put it anywhere. So I put it, I just made, I make like a user called office and give them a home,
+a directory in the home folder, and I make that the shareable directory. I don't know why I do it
+that way. It's something that I think I accidentally did the first time I was ever configuring some,
+but, and now I just keep doing it that way. Don't know if that's the best way to do it really,
+but I just find that kind of convenient for myself. I would imagine slash var would probably make a
+lot more sense, but we won't get into a philosophical debate of where this data really exists. Point
+is you want to point the path to wherever you have that directory that everyone is going to be
+sharing. So in my case, I've got it set to slash home slash office. Is it read only? No, so I set
+that flag to no. The create mask I'm going to create to 0775 in this case, because I actually want
+the user to have all the permissions, and I want the group to have all of the permissions, and that's
+just again kind of how I organize things, and there might be a better way or a different way to do
+that, but that's how I do that. And then I go ahead and give read and execute permission to the
+others, to anyone else, because of the way that this group works, that I have this set up for,
+but I could imagine you putting that to 0 just as easily. The directory mask I have at 0775,
+I force the group to the group of people who are using this. So, I don't know, in this case,
+it's literally reporter is the group, because it's a journalism department, and there's lots of
+people who need to have access to files that someone else may have created. So there's a group
+that I created for them. By default, the users that are permitted to sign on to this
+Samba share that you've, that you're creating right now, is any user that can sign into the Samba
+server. So it would be any Unix existing, existing Unix user on, on that server would, would be
+able to log in via Samba to see those files. Even so, I explicitly define the users who are permitted
+to view the Samba share. I don't know why exactly they do this. I just feel better about it.
+It's a small group so I can do this. It would be an extra step for me if someone else got hired
+into that group, and then I had to add them to the server. But it is a small group, and I don't
+mind having to do that. In a larger install, you probably wouldn't want to do that. And in a larger
+install, you might need to tweak how you're authenticating anyway. So this is one of those things
+that could be, I mean, it's very flexible, so there's a lot of different ways to do it. But the
+way that I'm doing it is just, I'm just going kind of along with the built-in system. I mean,
+it's Samba, so it was re-implemented by a bunch of Linux users. So it can inherit everything from
+from the Unix system, which it does. So I create users on that server for the people that need access
+to the Samba share in addition to anything else on that server. You can define which of those
+users get in to Samba by using the valid space user's equals flag or value. So I have valid
+user's equals, and then I list the Unix user names of each person who should be able to sign in.
+In other words, if I am clad to on this server, and I don't list myself as a valid user, then I could
+go in to Samba and not get onto the server, whereas I could then go in via SSH and get onto the
+server fine. So that's the use of valid users. That's what that flag would do. So I'd explicitly
+define valid users if you do not explicitly define them than anyone who can get access to the
+Samba server to that box can get in via SMB, which may be a good thing, may not be what you want,
+it just depends. I'll go ahead and use it. I don't know if that's more secure. I don't think it's
+less secure, but it might be an extra step that you don't actually have to take. But I take it anyway.
+Another cool thing about Samba is that it can actually share an optical drive across the network,
+which I thought was kind of nifty. At first I thought it was kind of weird because it was like,
+okay, well, who's going to actually use that? And then suddenly we start getting all these
+computers in without any optical drives. And if you think about it, that's not such an unusual
+thing anymore. I mean, netbooks all over the place haven't had optical drives for years. So being
+able to share one optical drive in an office so that when you need to do something like install
+some kind of weird print, you know, a PPD file or a print driver that got shipped with the printer
+or whatever it might be, then you can pop the CD or the DVD into the optical driver of the server
+and have everyone log in via Samba to grab the file off of the disk. It's kind of cool.
+Again, I believe that they include an example for this. So they do it like again, square bracket,
+CD-ROM, square bracket, or you could call it optical, you know, whatever you want to call it.
+The comment I called it a shared CD read-only. Yes, it is read-only, of course.
+Path equals media slash or slash media slash CD-ROM zero. Guest okay. No.
+So that's really all you need in the config file unless you're doing
+print serving over Samba. And there's a lot of options for that as well, which I've never done.
+I use Cups for printing. I've never used a Samba box as a print server or a print share,
+so I really know nothing about that. But it would obviously be done in the same kind of area of
+share definitions. And that's something that you can look into if you need it. And that's really
+it for the Samba.conf file. There's not a whole lot to it. It's really well commented.
+And it kind of makes sense once you sort of look at the logic and see kind of what the intended
+use of that file of the file and the structure of the shared directories. So there you go.
+And it'll even make more sense once you start logging in because you'll actually see those
+little square bracket names that you created. They will come up as places you can go
+while you're connecting to the box via Samba. Okay, so there's another file that you should probably
+fill out. It's called Samba Users or I should say SNB users. And again, on Red Hat slash
+Fedora, that is an Etsy slash Etsy slash Samba. And then you'll find that file. It might be
+somewhere else on another system. I don't know. But it's SNB users. And this is a place where you
+can define the role of a specific user. So it's UnixName equals the Samba name. So in other words,
+for the root user, ROOT, that would equal on the Samba side would be called Administrator and
+Admin. So literally the line would be Root Space Equal Space Administrator Space Admin. So that's
+the UnixName equaling SNB name 1, SNB name 2. Nobody on Unix would equal maybe Guest, PC Guest,
+SMB Guest. Class 2 would equal Administrator Admin. So again, look at the examples included in
+your install of Samba and you'll get the idea. But I just use SMB users to define really who the
+Admin users of Samba are, who gets administrative privileges when they sign in. Now you think you'd
+be done, but actually you're not. There's one more command that I almost always forget. I mean,
+just all the time. I'm forgetting this one. And it is SMBPasswd. So it's just like the Password
+command in Unix. You know, when you're setting, you create a user and then you want to give them a
+password to get into the computer. You, P-A-S-S-W-D space, user name, and then it asks you to create a
+password. You hit Return and to ask you to confirm it. You hit Return and then the password is set.
+This is exactly like that, but it's obviously a specific Samba password. And if you don't set
+this, you will not be able to log in. And I have spent an hour adding a user to Samba,
+putting their name in the configuration file. I'll desperately give them admin privileges in
+SMB users. You know, all kinds of stupid things. And then I finally remember that I have to issue SMB
+P-A-S-S-W-D. Do that. So once you've done all the config files, SMB.conf is done, SMB users is done.
+Now you type in as you'll probably need to be root on the server. So you type in SMB P-A-S-S-W-D-A.
+If this is the first time you've set a password for this user, the dash A adds the user's name to
+the password file. Now if you're just changing someone's password, you don't have to use the dash A
+switch. But this is the first time you're setting a password for this Samba user. You need to use the
+dash A switch to add that user to the password file. And then the user name of the user that you're
+trying to set this Samba password for, you hit return and then you enter their password. Now you're
+ready. If it's not already on, and even if it is, you should probably do it anyway. You can restart
+Samba just to make sure all the changes are kicking in. So on Red Hat or Fedora, it would just be
+Service Samba Restart on some other system. It might be you slash at C slash RC dot D slash RC dot
+Samba Space Restart or whatever, just depending on however your your your Linux system does a
+service restart at C slash init dot D slash Samba restart something like that. Whatever it is,
+find out how to restart a service on your server if you don't know how to and do that. And that
+way you're sure that all the config files will be read as they have changed. And now you are done.
+You should be able to go to any computer on your network. And as long as you can ping that Samba
+server, then you should be able to log into it via Samba. I don't know how to do this on
+Windows on Mac. You simply go to the go menu in the finder and connect or click go to server or
+connect to server or something like that. And then you can manually enter the prefix. So by
+default, it'll want to use AFP. You can manually say something like or type in something like SMB
+colon slash slash. And then the IP address or the server name if you're doing it that way and
+click OK. And it will bring up a selection box of the different shares that you are able to connect
+to within that that Samba box. Similar on GNOME or KDE. If you like on GNOME, if you go to go locations
+or go to location, I think it is a month in front of a GNOME box. And then you can type in SMB,
+colon slash slash name of the server or the IP address. And you'll connect to the Samba share again.
+On KDE, you can go into dolphin and click the URL editor button on the top of dolphin, type in
+SMB, the name of the server, the IP address, and log in and you're on Samba again. Very, very simple
+to do on the operating systems that I'm familiar with. Probably pretty simple to do on Windows as
+well. I imagine you just go to like control panel and add a network place or maybe you have to
+map the drive. I don't know, however you do it, that's how you would, however you do normal stuff
+on Windows, that's how you do Samba on Windows. And it's pretty native all across the board. I mean,
+on Linux, it's fairly native because like I say, kind of that group, I mean Jeremy Allison certainly
+is a huge Linux user and supporter. So I mean, it's kind of, it's got a lot of nice integration
+there. Mac has taken a number of steps to make it seem fairly integrated on that side. And then
+it is basically, I mean, it's a Windows protocol. I mean, it's very, very much a Microsoft domain.
+So it's pretty natural to all of the different OSs. It acts pretty much the same all across the
+board. So I had good luck with it, such as it is. Okay, so what happens if you've set it up,
+everything seems to be correctly configured and yet you still can't get to the login prompt
+for your Samba share? Well, what's probably happening is that you're running Red Hat or
+Scientific Linux or Fedora or something. And you've got either a firewall, well, or I mean,
+on any distribution, you could have a firewall set up that you're not letting Samba traffic through
+or if it's Red Hat or Scientific Linux or Fedora, then SE Linux might be standing in your way.
+So the first thing I would do, regardless of distributions, is take a look at your IP tables,
+make sure that that's not interfering with anything. If you have to and it's safe to do so,
+stop IP tables, see if you can log in. And if you can, then yeah, it's an IP table rule that is
+not letting Samba traffic through. So add that. And then remember to put your IP tables back up
+with your modification. And then if it's SE Linux, then check the server, check your SE Linux log,
+and you should receive an error in the SE Linux troubleshooter telling you that, yes, something
+has tried to contact you, but it has raised some kind of SE Linux flag. And if you think that
+it's okay for that to usually occur, then all you need to do is run this command to change your
+SE Linux rules. So run that command that the SE Linux troubleshooter gives you. It will open up,
+you know, it will change the SE Linux rule, if I'm forgetting the term that they use, but you know,
+it changes the SE Linux role and of that service and permits Samba to function normally. So it's not
+a big deal. Just check logs, see what kind of errors you're getting. I can almost guarantee that if
+at this stage, Samba is not working, then it's either IP tables, but even more likely if it's on a
+red hat based server, then it's SE Linux is just kind of standing in your way. I wouldn't disable it. I
+would simply change the role of Samba so that the computer sees it as something normal is happening
+rather than something to try to stop. And that's how you set up a Samba share. I do hope this has
+been informative. Thank you very much for listening to Hacker Public Radio. If you have any questions,
+you can leave them in the comments or you can email me, clap to at HackerPublicRadio.org. And thank you
+very much for listening. And remember, if you want to do an NFS episode, go for it because I've never
+used it. Couldn't tell you how to set it up or how to implement it on any other operating system.
+Samba, as I've said, it's good for that sort of cross-platform compatibility. That's kind of the
+reason I use it. I don't have a whole lot to say about it beyond that. I know that it does fairly well
+for what I need it for. So use it if you got it. And you probably got it.
+You have been listening to Hacker Public Radio. It's Hacker Public Radio, does all of it. We are a
+community podcast network that releases shows every weekday Monday through Friday. Today's show,
+like all our shows, was contributed by a HBR listener by yourself. If you ever consider
+recording a podcast, then visit our website to find out how easy it really is. Hacker Public Radio
+was founded by the digital dog pound and new phenomenal computer cloud. HBR is funded by the
+binary revolution at binref.com, or binref projects of crowd-disconsored by linear pages.
+From shared hosting to custom private clouds, go to lunar pages.com for all your hosting needs.
+Unless otherwise stasis, today's show is released on your creative commons,
+attribution, share a lot. He does our lives.

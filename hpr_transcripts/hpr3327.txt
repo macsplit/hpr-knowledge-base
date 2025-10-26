@@ -1,0 +1,142 @@
+Episode: 3327
+Title: HPR3327: Looking into Ceph storage solution
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3327/hpr3327.mp3
+Transcribed: 2025-10-24 20:51:34
+
+---
+
+This is Hacker Public Radio Episode 3327 Fortusity, the 4th of May 2021.
+Today's show is entitled, Looking into Seth's storage solution.
+It is hosted by Daniel Person and is about 14 minutes long and carries a clean flag.
+The summary is, we look into what a Seth implementation entails,
+what specific use cases it excels at.
+This episode of HBR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HBR15.
+That's HBR15.
+Better web hosting that's honest and fair at An Honesthost.com.
+Hello Hacker's and welcome to another podcast.
+My name is Daniel Passion.
+Today we're going to talk about Seth.
+And Seth is pretty much a distributed object store.
+And some of the contributors to this project is Red Hat, Suisse, Sandisk, Intel and so on.
+So pretty large contributors and it's a pretty interesting technology.
+And I'm going to just scratch the surface of this topic,
+but I have done a couple of videos on my YouTube channel on the topic,
+both on how to install it and how to use it and also how to upgrade it.
+The main focus of this project is either to have something where you can store objects.
+It has a regular object store where you push some objects into this object storage
+and it will keep that object until you ask for that key again.
+And atop of this they have also built a file storage.
+So you have some functionality where you can say that I want to have a complete file
+system and I want you to keep track on all the rights and all.
+And everything that goes into a file system functionality.
+And you can also have it as a disk storage.
+So you say here is my hard disk, keep track of it.
+So there is a lot of different ways to use it.
+But in the simplest implementation it is an object store.
+And I'm going to talk about the different parts there are in this solution.
+And the different things that you need to install.
+So the first part I'm going to talk about is the OSDs.
+And these are services that has one storage device per demon.
+So I say that this specific hard drive over here,
+I want that to be an object storage device.
+And it has one demon running on that server for that specific hard drive.
+And it will save data on that hard drive in a database.
+And it will also use a wall, a right, a head log in order to
+write to the disk in a faster manner.
+So when it says I want to write something it writes it down to the log
+and then transfer it over to the database.
+And this, if you set up correctly it will be a very efficient way to store information.
+So you set up a couple of OSD devices.
+Preferably over different hosts.
+And also you can have multiple OSDs on one host.
+Of course many hard drives on one host.
+But preferably over multiple hosts you can have it over multiple racks
+or multiple regions.
+So you can actually set up a system where you say I want you to have my data saved
+in three different regions of the world.
+And you can actually say that these regions are let's say Asia, Europe and the US.
+And you can separate it so you always have your data in three different locations.
+But in our setup where I set up it at work we had over three different servers.
+So the host was important as a failover domain.
+And I said that the data need to be on two hosts in order to be a successful write.
+And I want you to try to accomplish three hosts of
+replication in order to keep redundancy.
+So that's the object storage device.
+And these require at least one core and one processor.
+And if you're writing more than let's say 3000 operations to the hard drive
+then they recommend that you have at least one more core.
+When it comes to RAM they recommend that you have four gigs or more.
+But you can use it with two gigs but it's not recommended.
+So each object storage device needs at least one CPU core and four gigs of memory.
+And you have one object storage device per
+object storage demon per
+disk that you have in your cluster.
+Just having these devices is not enough.
+You need to have something that can keep track on where everything is in your system.
+And that's called a monitor.
+And these monitors needs at least two cores and some memory and some disk space
+in order to have some caching and some information about where is everything stored in your network.
+And I say that you need at least three of these monitors that can keep track on
+where is everything stored in your network.
+And with this setup you have an object storage solution that actually can keep track on all your
+data and you can use it as a similar object storage solution as Amazon S3.
+The only thing you need to do is add a radios service to it as well.
+And you can do that on the monitor if you like.
+And that will give you the functionality to save and the storage data using the same
+API as Amazon S3.
+But in order to keep track on what actually happens in your cluster you need managers.
+And the managers are pretty much a web GUI that can show you what is happening in your network
+and you can see when the system is doing recoveries or moving data around to be more an
+ultimate setup of your solution.
+So I have installed one manager per monitor.
+So in our system for instance we have a lot of OSDs over multiple hosts.
+We have three monitors, three managers and three radios services installed on three different hosts.
+So we have three of each of these services on different hosts in order to have a stable system
+that I can take down one of them, update it and then the other ones can do all the work.
+So now we have a solution that we can monitor and use just as an obit storage device and perhaps
+also as a hard drive if we like.
+But if we want to have a file system as well so we can mount this as a file system we need one more
+service. And this service is called an MDS and metadata service.
+So in our cluster we have different pools where we save data and when we have just an obit storage
+we have one pool for all the data. But when we add a file system we will add a metadata pool
+that we keep all the information about can I write to this file? Am I able to read the file see
+its contents? Can I list their files in this directory and so on? And in order to do operations
+like find and other things on your file system you need to cache that information in some way.
+So then you use this metadata service to keep that information in memory. So you have a
+fast cache you can actually use the file system in a very efficient manner. So that specific service
+I think you should have at least three of those as well. You could combine them with an OSD for
+instance if you have a lot of memory on that system. Otherwise I think you should have different
+hosts for that as well. And those needs at least two cores of CPU and you need two or more
+gigabytes of memory per demon. In our case we are running three different MSDs and we have 20
+gigabytes per server as cache. And that's because we have quite an extensive file system with a lot
+of files and a lot of directories in order to save all the data that we have. But it all depends
+on how large your structure is and how much data you actually are saving in your cluster. So that
+are the different services used in this system. And another thing that you can install during
+the installation of this network is a Grafana server. But that is pretty much something that
+helps the managers to show pretty graphs and so on. So it's not really an integral part of the system.
+Just something that you can add in order to have a better understanding of what happens in your
+network because you will see it in nice graphs. Other things that you need to set up in your system
+is an alarm service that can keep track on the health of the system and also send you an email
+if anything goes wrong. And we have run this for a while now in our work environment. And it actually
+came to us because we had to do an upgrade because at the specific point that we were we had one
+server that did everything because it had to do all the data manipulation and also
+display all the information to the customers. And as our customer base grew, we could not have it
+that way. And we have a lot of data that needs to be presented to our customers as images and
+other files. So we needed to expand to have more web servers. And a way to do that was install this
+safe cluster and then just mount this cluster on different hosts in order to create a larger
+web service, web server systems. So we have a lot of web servers that connect to this cluster
+and then we have a load balancer on the outside. So this was pretty much what I wanted to talk about.
+Today I hope that you found this interesting. I hope that you learned something. If you want to go
+more in depth, follow the links in the description of this episode and you can watch videos that
+talks more about Seth. If you have any other comments or suggestions leave me a comment or send
+me an email if you want and I'll try to answer it as fast as I can and try more open source software.
+You've been listening to Hecker Public Radio at Hecker Public Radio. We are a community podcast
+network that releases shows every weekday, Monday through Friday. Today's show, like all our shows,
+was contributed by an HBR listener like yourself. If you ever thought of recording a podcast,
+then click on our contribute link to find out how easy it really is. Hecker Public Radio was
+founded by the Digital Dog Pound and the Infonomicon Computer Club and is part of the binary
+revolution at binrev.com. If you have comments on today's show, please email the host directly.
+Leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released under creative comments,
+attribution, share like 3.0 license.

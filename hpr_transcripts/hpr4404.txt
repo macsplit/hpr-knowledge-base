@@ -1,0 +1,393 @@
+Episode: 4404
+Title: HPR4404: Kevie nerd snipes Ken by grepping xml
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4404/hpr4404.mp3
+Transcribed: 2025-10-26 00:18:55
+
+---
+
+This is Hacker Public Radio Episode 4404 for Thursday the 19th of June 2025.
+Today's show is entitled, Keviner's Nights Can Buy Greping XML.
+It is hosted by Ken Fallon, and is about 26 minutes long.
+It carries an explicit flag.
+The summary is, Greping XML kills kittens, so Ken uses XML Starlet to download a podcast.
+Hi everybody, my name is Ken Fallon, and you're listening to another episode of the
+radio.
+Although I should probably start this one as, hello everybody!
+Because this one was inspired by a good friend, Kevin, who did a show episode number 4398.
+So, in that episode he had, it was called Command Line Phone, downloading a podcast,
+Kevin walked us through downloading his podcast, and in fairness it was very interesting
+because he used some techniques that I'd never used before, so it's always good to see
+how people approach the problem.
+First, I want to walk through his script and what it does, and then we're going to have
+a look at a trap for young players as the blog is fond of saying.
+So let's have a look at his script.
+What he did was he used Curl, he used WGET to get a file name, URL actually, and he gets
+that URL using the back tick command, and then he first of all uses the Curl command to
+get the podcast feed for TuxJem, and then he greps it for HTTPS, some log, and then he
+takes the first entry.
+So there's four different commands that come together to save the latest file from this.
+So let's break this down, and what I like to do when I'm doing stuff like this is break
+it into steps and then save it as a file, so instead of piping it directly from Curl
+to Grep, I'll save the file, look at the file, and then you know, you have a sanity check
+in between.
+Just by the way, new listeners or people new to Linux, regardless of where you get the
+command, don't ever run Curl and pipe it into bash, ever.
+Always download the file, always have a look at it or send it to somebody else who may
+know what's going on, because it's a very, very bad habit to get into.
+That's a little rant over there, don't worry, there will be more.
+So as I said, there's four different commands that came together to give us the, say, the
+latest file from the field.
+So let's break that up.
+The first one is the Curl command to get the feed itself, which is as HTTPS called
+Forsesh Forsesh, TuxJem.
+Other side.network, Forsesh feed, Forsesh podcast, all lowercase.
+To do it ourselves, we would use Curl, and then that URL that I gave you, space dash, dash,
+output, space, TuxJem.xml, so that'll do is download an XML file for us.
+First thing I always like to do when a download an XML file is, confirm that it's a valid file.
+So not that it's just empty or anything, so that what you can do is run the XML linked
+command, which is all one word, space, dash, format, space, TuxJem.xml and pipe it into
+pipe redirect symbol, Forsesh.net, Forsesh.net, and then type echo, dollar sign, question mark,
+which will give you zero case cause the normal exit code, every program unix ends with error
+code or an exit.
+If it's zero, it's usually okay.
+If it's anything else, it's a problem.
+So what you can do is if you run that XML linked dash, format, dash, TuxJem.xml, what
+it'll do is just print the file if there is no problem.
+And if there is a problem, it'll give you a nervous.
+Okay.
+So the next thing that Kevin does is he passes this to the grip command and he used an option,
+the dash, oh, which turns for only, only matching, which says from the map page, print only
+the matched non empty parts of the matching line and each such part on a separate output
+line.
+So he uses that and then he looks for any string starting with HTTP, followed by two forward
+slashes.
+And then he does a REGEX, which is a regular expression.
+It's a way of a sort of shorthand code that many programs use for looking for patterns
+in a file.
+And this one actually had to look up.
+So the REGEX is the letters, HTTP, which is literally the, like those characters, HTTP
+and P.
+And the S, followed by the asterisk, which matches the characters literally case sensitive
+quantifier or the asterisk between zero and unlimited times as many as possible, giving
+back the needed greedy.
+So what that means is Kevin is looking for S multiple times.
+So I think he could actually get rid of that one.
+Then we have the colon and forward slash and forward slash, which are matched as literal
+characters.
+Then we have square brackets, the charat sign, which is like the, like the roof of a house
+above the six on a US keyboard, at least, then quote, close square bracket and the asterisk.
+And I'm going to read this out what this tool told me it was, match a single character
+not present in the list below where the qualifiers are asterisk between zero and unlimited
+times as many times as possible, giving back as needed greedy.
+This double quotes is a single character in the literal list, double quotes, literally
+case sensitive.
+And then after that, we have org, which matches the literal org character.
+So what he's actually looking for is start with HTTPS, end with org with a double quote
+and give me any of those.
+Now normally when you're on a grip through a file, I always say never, ever, grab XML JSON
+files for data.
+Yeah.
+We'll get to that in a minute.
+But in this case, using the dash dash, only dash matching, it actually will do quite close
+to what you wanted to do.
+I don't know if that's a good thing or a bad thing to be brutally honest with you because
+normally you're relying on the fact with rep.
+I see people using grip in XML files, relying on the fact that it's usually always neatly
+formatted, but it doesn't have to be.
+It can be in compact mode.
+So all the new lines can be gone, all the double spaces can be gone, all the indentation
+can be gone, but at least with grip with the only matching, it's able to find all these
+instances on a new line.
+However, so when we run it and I give the entries in, we do get the list of the org files.
+However, there are some strange oddities in there.
+There are two entries where there's HGTPS, colon, fore sash, fore sash, org, just buy
+themselves.
+Okay.
+And then in Kevin's script, what he does is he takes just the first line and then he
+downloads that with W, W, W, W guess it.
+So relying in grip for with structured data like XML or JSON or YAML or something like
+that can lead to problems, and then when we, if you go to the show notes for this episode,
+there's a lot of the output.
+So I'll skip over some of it.
+You'll see that if we take away the only matched part, we can see which lines they're actually
+getting and hit on.
+And yes, some of them are correct, but the ones where those org things are actually parsing
+a link to a org camp as opposed to the actual audio that you want to download.
+So there are two hits in the enclosure that reference org camp.
+Yeah.
+So I tried actually, I converted, I used XML, lint, dashesional blanks to give you a minimized
+file and then I ran that through with the only matching.
+And it was fine, was able to do it, but there was instead of that link, there was a common
+link added to the field and also the HGTPS org ones were also added to that.
+Now what you could do.
+What I see people doing here be dragons, yeah, is that you would go, oh, well, like obviously
+I want the line with enclosure in URL.
+Yeah.
+But if you do that, you're going to be chasing issues forever and the day because for the
+enclosure line in the XML, it has to have a URL, it has to have a length and it has to
+have a type.
+So these are three different attributes within that sort of on that branch, there has to be
+three other little bit, three leaves with a URL, a length and a type.
+But they can be mixed up, they're normally not, the URL, 99% of the time is normally at
+first, length is normally second and type is normally third, but it doesn't, it doesn't
+have to be that way and very often it won't be and the guaranteeing the day that it won't
+be is the day you're on vacation and everything goes to pot and you have to, you have to dial
+in to fix it, asking me how I know.
+However, all that aside, don't get me wrong, many of my scripts have started very much
+like this, a brute force attack is no harm.
+And this or for this is officially grand, but it is very likely to break if you're not
+babysitting it.
+Yeah.
+Okay.
+So, what I would recommend is that you never pass structure documents like XML, JSON or
+YAML with grip.
+What I would recommend is you use dedicated parses for XML, I'm going to be using XML Starlet,
+for JSON, you use JQ, for YAML, use YQ.
+Now of course, if you look at my code of the HPR website, this is very much a case of
+do what I say, not what I do.
+There are some fairly embarrassing uses of grip up there that are so bad that I'm actually
+proud of them.
+But general rule of thumb, never parse XML with grip.
+The only possible exception that I've used in the past, this great effect, has been
+grip space dash dash max dash count equals one with the option dash dash files dash
+with dash matches.
+By the way, I'm using the long form of all these commands or shorter forms available,
+but at least, you know, this makes it readable.
+And I think that's justified because if you've got like a 21GB XML file and you want
+to see if the thing that you're looking for is at least in the file, then at least,
+you know, of these 20 files, it's at least in these three.
+And then those three files you can take, parse them with a XML parser and then use tooling
+to identify where exactly in the files they are.
+Now the XML parser, what it needs to do is build a document object model of the file.
+And that's a bit like your file system on a Unix file system.
+So you get your rules, then you get your whole slash home slash Ken slash HBRs, etc, etc.
+So that's kind of what that is.
+Now some tips always refer to examples and the specifications, yeah.
+The locations are nothing more than just a set of rules on how the documents are formatted.
+There's a danger in looking at just the example files and not reading specifications.
+I had a situation once where a software developer raised a bug on a production system
+because they files that they provided were sending in didn't begin with Ken dash test,
+dash, and end with a UUID.
+So suffice to say that bug was rejected fairly swiftly.
+So anyway, we're talking about a podcast here.
+So podcast is a particular form of an RSS feed, a really simple syndication feed.
+And that in itself is part of an XML specification.
+Don't get too panicky here yet.
+So the RSS spec is actually very short.
+It's whereas the XML specification is not.
+So that is why people tend to use dedicated libraries to parse XML
+and using a dedicated tool like XML Starlet will allow us to pretty much ignore
+the intricacies of XML.
+So if it's badly formatted, XML Starlet's going to tell you about that.
+If the fields are not available, let's go and tell you about that.
+And it's also very, very fast.
+It is, I think the fastest XML parser on the market right now,
+at least the ones I can, I can recommend.
+So if we look at the specification for our RSS, it says that all of this is linked
+in the show notes.
+By the way, RSS is a dialect of XML.
+All RSS files must comply with the XML 1.0 specification as published by the W3
+were web consorting.
+And if we look at the first line of Kevin's file, we see it's less than question mark
+XML and version is 1.0 encoding in GFA, it was great.
+And then the specification of RSS goes on to say at the top level of RSS document
+is an element with a mandatory attribute called version that specifies the version
+of the XML document which must be 2.
+And of course, Kevin says RSS version equals 2.
+So very good.
+So what is the best tool for the job?
+Well, you wouldn't rep an XML file, would you?
+So why would you rep an XML file?
+And we could go on all day, but I want to get the idea across here that there is structure
+in a file.
+So an XML is everywhere and it is on your system.
+So you should have a tool for processing.
+And more likely than not, XML Starlet is in your distro repels and you should just install
+it.
+On first build, I have it in my Ansible file that it just installs is on all my systems
+whereas it repays everything because it's so, so useful.
+And if you look at the XML Starlet dash dash help, which you'll see in the show notes,
+it has various sub commands.
+So you can edit, which I don't use very often.
+You can select, I use that a lot, transform, validate.
+You can use the validate file list specific directories of XML.
+So the ones I use most often are select and select and use it here elements.
+So to display the elements, basically the branch of the trees, the equivalent to DIR,
+for example.
+And if you want more help on any particular sub command, it's XML Starlet, space EL, space
+dash dash help.
+We'll tell you that you can use the dash A to show the attributes.
+So within XML, you've got an element and within that there can be attributes.
+So we'll be dealing with two.
+We've already come across enclosure and that has an attribute, which is the URL.
+So and then the dash U is unique.
+So if we were to run XML Starlet, space EL, space dash U on the tux-jam, we'd see first
+line is RSS, then we have RSS forward slash channel, then we have for RSS forward slash channel
+forward slash, atom colon link, then RSS channel copyright description generator, and then
+we get into items and images, etc.
+Now the way an RSS feed is built up is that the main trunk of the tree is RSS channel.
+And then all of that each episode is its own particular branch and it can have its own
+individual things telling you when it was published, it's got its own images, it's got
+its own author, it's got its own description, it's own publishing date, it's own title, etc.
+So that's kind of how you can tell, it's like going into your home directory, slash home,
+slash can, plug out one, plug out inside of there, there's a text file called type up
+up.
+So that's how it kind of works.
+Okay.
+So now we know how X-path works, so that that's X-path is the way to refer to this structure.
+And it's very similar to Unix file tree, there is only one RSS branch and there's only
+one channel, but you can have many item branches, okay.
+Now, when Kevin said, Kevin said that he wanted to save the latest file from a feed, but his
+solution actually gave the first entry of the feed, which is correct for his feed, but
+none necessarily very safe.
+And the reason why that is, is we'll get to later on as well.
+So, but what we're going to do first is we're going to have a look and see how we can
+simply replace the Grep command with a drop-in replacement for XML starlet, yeah.
+And what we're looking for, what Kevin is looking for is, he's looking for that URL where
+he can get the podcast, okay.
+Where can I get the podcast is the question he's asking.
+We know that they're in RSS, we're in, they're in channel and they're in an item.
+And under that, they're in a enclosure second.
+So if we go to the definition on the RSS spec, it says, enclosure is an optimal sub element
+of an item.
+It's just three required attributes.
+The URL says where the enclosure is located, so that's HTTPS.
+The lens says how big it is in bytes.
+So in this case, one, two, two, one, six, three, two, zero.
+And the type says, what's the mind type it is, which is audio for slash MP.
+What we're interested in is the URL and the URL must be a HTTPS URL.
+So the location of the files must be in there for RSS, for such channels, for such items,
+for such enclosure, or it's not a podcast feed.
+If there's no enclosure, it's not a podcast.
+That's basically how it works.
+And in each enclosure, there has to be an HTML attribute called URL, which points to
+the media.
+So what we want to do then is we want to pick that location out.
+We want to select that location.
+So therefore, we're going to use the XML SEL for select command.
+And the options we're going to be using, I put all of them in there, and the health
+followers that are in the show notes.
+But the ones that we're actually going to use are dash dash text, which is to output what
+we want in text format.
+So that's the default.
+The default is XML, and we don't want that, we just want it in plain text.
+Then we're going to use what's called template.
+And the manipulation of XML is done by a thing called XPath and transformations.
+We're just going to use this template very, very simply.
+We're going to create a new one for the purpose of doing this.
+And what we're going to do is we're going to match something.
+We're going to match RSS channel item.
+Now, bear in mind, we're not matching RSS channel item enclosure.
+This is, we're going to go, it's like saying loop over every directory in this directory.
+Yeah, that's kind of what it's saying.
+So XML Starless select dash text, dash dash template, dash dash match, RSS channel item,
+and then give me dash dash value, dash of, which says give me the value of enclosure for
+RSS URL space, dash dash NL, print it on a new line, and just don't just dump it out
+to TuxChamp.
+And there we get the URLs, all the URLs, and only the URLs, all that stuff for the comments
+are gone.
+If we had a seeded a block in our description that had an RSS feed within the RSS feed,
+it can be scripted or picked that up.
+Our script isn't going to do that because it's using the built-in document object model.
+You absolutely can be 100% sure.
+These are the feed URLs and nothing else, okay?
+So that's simple enough, okay?
+So what we could do then is just replace KHS script, the WGet, backtick curl, the path,
+piping it to grip, and taking the head with curl, WGet, double quotes.
+And instead of using the backticks, what I like to use is the percent, open bracket,
+put your command in, close bracket, and double quotes, it just makes it a little bit easier
+to follow.
+You can do, you can do nesting of backticks as Dave just told me.
+He has done a show on this, which I can't fight.
+But as ever, I know it's there, that's where I learned it.
+So I find it just a neat way of describing it.
+So instead of just two backticks, you have the dollar sign and the parentheses, the two
+brackets, and you're good to go.
+So inside the curr, the regular brackets in the parentheses, we have a curl with dash
+dash silence.
+That way we don't get the output.
+That's the only change in the curl command.
+Then instead of piping it into grip, we pipe it into ExcelML, StarList, where we select
+text template, where the match is our SS channel item, with the value of enclosure URL
+and printed a new line.
+And instead of using the file name, we use the dash, which tells you, give this to me
+from standard in, because we're piping it in.
+And the output again, and we pipe it to head, and we take the first one.
+Which will guarantee to give the first entry in the field, I'm using quotes there.
+And as I said, some use of backticks, but that will replace the functionality of kebbies.
+But how about the latest feed?
+So there's nothing to stop somebody producing an RSS feed, where the latest entries are
+at the bottom.
+Absolutely fine.
+RSS supports that, XML supports that, and they might even be sorted alphabetically.
+You don't know.
+It might be put in randomly.
+I don't know.
+They're all valid use cases, and all allowed onto the specification.
+So how would we go about founding the latest podcast?
+So this could have been easier.
+If they had not used the same format as email for dates, which are in English, Sunday,
+the 19th of May, 2022, and then the date.
+If they had used RFC 3339, which is a subset of ISO-8601, where the dates are into year,
+month, day, whatever, it would be human readable, plus it would also be sorted.
+Or if they converted it to epoch, which is a number from the 1st of January 1970, I would
+make our life a lot easier.
+However, we can't do that.
+So if you did want to do that, and who would be insane enough to do that, yes, you guessed
+it.
+I did it.
+Decided that how you would need to do that is not only parsing for the URL.
+You would also need to parse for the public date.
+Now I put a link into the XML commands book, which is going to be doing a lot more of
+what XML starlet is able to do there.
+And instead of just printing out the enclosure that URL, what you can do is you can change
+that.
+And you can go value of pop date, will give you a list of all the publication dates.
+And if you wanted the pop date, a denominator, and they implore you URL, what you would type
+is XML starlet select text, template, match, RSS channel items, value of, and then concat,
+open brackets, pop date, comma, double quotes, semicolon for a denominator, double quotes,
+comma, implore you forward slash ads, appersand.
+URL, close the concat brackets, post your quote, newline, tuxjump.xml.
+And that will give you, for example, a fri, comma, two, three, may, 20, 25, 17 colon,
+five, four, colon, 17 plus zero, zero, zero, zero, zero, and then the URL.
+Now I used semicolon as a delimiter.
+So what we will need to do with that is run that command, pipe that line into some form
+of a script, where I can use the date command with the dash dash, date, dash string, which
+displays time described as a string and not now.
+So if I put in date, space, dash dash, date, and fri, day, comma, 23, may, et cetera, et
+cetera, it'll come back with the date form at it.
+And then if I put in dash dash universal or dash dash UTC, it'll give me is in Zulu
+time.
+It'll always be a say in reference.
+And then once you have that, those lines, you would have a say in date, delimiter, and
+the podcast URL, you could sort them and you're doing a dash that using the sort command,
+using the dash dash numeric dash sort, which compares according to string numerical value
+and reverse, which is reverses the result of the comparison.
+So you do that.
+You can be guaranteed that you have the latest podcast based on the publication date,
+the correct URL based on the URL, and it'll all work swimmingly.
+Yes, it is technically a one line script that if you paste in, we'll go very, very long.
+It's 18 lines long and total.
+Well, let me see.
+I can get rid of that one and that one.
+So it's 17 lines in total with some white space and some format, but it is more flexible.
+It's a lot safer.
+It's guaranteed to work with every podcast.
+And if it doesn't, then it's a podcast feed themselves.
+So that was it.
+Mass of food for Thalkebi.
+You hit me with the, you know, nerd snuck me, which episode I have no choice but to
+do this show because I come across this so much that I have a page on our internal
+wikis that says, gripping XML kills kittens in order to prevent.
+But folks, how would you have done that?
+Record a show.
+Tell us how you would have done it.
+And remember to tune in tomorrow for another exciting episode of Hacker Public.
+You have been listening to Hacker Public Radio at Hacker Public Radio does work.
+Today's show was contributed by a HBR listener like yourself.
+If you ever thought of recording a podcast, click on our contribute link to find out how easy it
+leads.
+Hosting for HBR has been kindly provided by an onsthost.com, the internet archive and our
+sims.net.
+On this advice status, today's show is released on our creative comments, attribution, 4.0
+international license.

@@ -1,0 +1,349 @@
+Episode: 2313
+Title: HPR2313: NilFS2
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2313/hpr2313.mp3
+Transcribed: 2025-10-19 01:12:44
+
+---
+
+This in HPR episode 2,313 entitled NLFS2 and is part of the series' file system.
+It is hosted by Klaatu and in about 35 minutes long and currently in a clean flag.
+The summary is Klaatu talks about NLFS2.
+This episode of HPR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15 that's HPR15.
+Bet your web hosting that's honest and fair at An Honesthost.com.
+You are the scene to hack our public radio.
+My name is Klaatu.
+Today I'm going to talk about file systems or rather a file system with a little bit of
+background for context.
+I think I've done this little demo or explanation, whatever you want to call it, on my show
+GnuWorldOrder, which you can find at GnuWorldOrder.info, and it was a while ago if I did.
+I might even be misremembering I may not have done this on that show, but either way I'm
+going to do it again just to get us all on the same page about what a file system is
+exactly, because file system like the concept for me used to be pretty mysterious.
+The programming involved in creating a file system still is, but at least I feel like
+I kind of get file systems a lot better than I used to, and I want to maybe possibly explain
+it in a way that you may not have heard before.
+So rather than explaining it with just words, I'm going to explain it with a little demo.
+So you can do this along with me at home if you like.
+Just be warned that you need some kind of drive that you're willing to completely erase.
+So I've got a little two gig thumb drive here that I got at a conference, and if I plug
+it into my computer right now and then type in LSBLK.
+So that's list block devices, LSBLK, all on string.
+If you don't use LSBLK, then you should start using it.
+It's a really nice command, actually.
+I kind of just found out about it myself this past year.
+And previously I used to do the whole D message, tail, and sort of look at what I most recently
+plugged in, that kind of thing, and that works, but you do kind of find it maybe possibly
+difficult to pass on to other people, and you're kind of like having to describe it
+to them, and it's kind of messy output.
+And yeah, it takes some parsing, visually speaking.
+So LSBLK is a really nice little layout of all the block devices plugged into your computer.
+And it's a very attractive, like if you've ever seen the tree command, like the director
+tree listing tree layout on Linux, then this is pretty similar to that in terms of layout.
+It shows you each device, and of course it gives you the name of the device, like the designation
+of the device, SDA, SDA1, SDA2, SDB, SDB1, SDC, and so on.
+But it shows it to you in a very intuitive way.
+It tells you SDB, okay, and underneath that is SDB1, so you get that, right?
+That's a partition within SDB, if that makes sense.
+And then it even tells you the size, the size of the disk, the size of the partition,
+and it tells you the mount point.
+So if I've just plugged in this little SDC drive, there is no mount point, because I haven't
+mounted it yet.
+Well, that's fine.
+If I mount it, then it tells me where it is mounted to, if I then do the LSBLK again,
+there it goes.
+Slash run, slash media, slash clattu, slash 2GB drive, easy.
+And it tells you, like I said, it tells you the size and everything, so it's really easy
+to sort of identify a specific drive, which if you've ever talked to someone who has
+accidentally raised a drive or installed their Linux distribution over their Windows
+drive, because they got confused, or whatever, people do it all the time, and this I just
+find it's so easy to read that it's very, very reassuring and comforting and hard to
+screw up, to be honest.
+That said, you should run the LSBLK command to make sure that the thumb drive that you
+may or may not be following along with is the one that you think it is.
+So I've just plugged the thing in.
+I saw that there's a 1.8GB drive with no partitions on it, that's SDC, and I feel
+pretty confident that that's the one that I want to destroy.
+So I'm going to unmount it.
+And now it's kind of cool, because what you can do in Linux, well first of all, what
+we're going to do is destroy any kind of notion of what this drive is.
+So I'm going to go into a root shell, so that I have access to that blocked device.
+And I'm going to go DD in file, IF equals slash dev slash zero, out file equals slash
+dev slash SDC, in your case it might be something else.
+So I'm going to, from here on, I'm just going to say SDX, because it's highly unlikely
+that you're going to have an SDX on your system, and so that way you won't just sort of forget
+and hear me say something and then keep typing.
+So OF equals dev SDX, and then we'll just do a count of, that's count equals, let's just
+do 496, because that typically seems to be the important bit at the front of the drive
+is usually in about the first 496 bytes.
+So I hit return, and it very quickly returns the confirmation that DD usually gives you,
+you know, tells you how many records in, how many records out.
+So that happened very fast, because we just, we only wrote like 496 bytes at the very
+front of this drive.
+So now if I detach this drive from my computer and then plug it right back in, it's probably
+something with you dev I could have done or you disk or something, but anyway I just unplug
+it and plug it back in.
+Now if there had been a partition there, there's not, because I've been screwing around with
+it, but if there had been it would no longer have a partition, you know, no longer have
+partition information, it wouldn't really know what kind of drive this was.
+It has lost all kinds of information from the start of the drive, which I warned you
+that would happen.
+So now that we have sort of a blank-ish slate, and we didn't have to do that first, you
+can, you can ruin a drive without doing that, but I just wanted to demonstrate that, that
+you can sort of, you can think a drive is dead just by killing the information that it
+knows about itself, which is kept at the front of the drive.
+So it's not always necessarily the worst thing in the world, and that's why you can sometimes
+rescue partitions.
+So what we'll do now is we will do an echo, and then the string hello, and we will
+redirect that to slash dev slash, well, actually, what I'm going to do is just make sure
+that I'm still, because I've unplugged and plugged back in.
+So LS block is still SDX, okay, perfect.
+So I'm going to echo hello, just the string hello, and I'm going to redirect that echo
+to slash dev slash SDC.
+And again, it just kind of returns nothing because it just works.
+So now what we've done is we've echoed the string hello, which is what five bytes
+onto the thumb drive that we're using.
+So essentially, we've written a file to this thumb drive, but we have not, for instance,
+copied the file there, we have not moved the file there, we've not touched the file,
+we've not really created a file, we have just echoed raw data to the drive, and you
+can actually even see this with, for instance, let's do a couple ways you can do it, but
+let's do head, head, dash, c for, I think, count, and we'll do, what do we say, it was
+five bytes.
+So we'll do count brace, that's the curly bracket, zero dot dot four, I think is what
+it should be, I think, if I'm doing that right, and then we'll do slash dev slash SDC,
+or SDX rather, no, I was wrong, it was zero dot dot five, and if you do that, then you,
+then you get the string hello returned into your terminal, and it's, it's way over on
+the left, so it'll appear before you're prompt, it's, it's echoed exactly correctly in
+no, no, no breaks, no line breaks.
+So we've just pulled the data that we wrote to the file off of the block device, the
+data that we've, that we wrote to the drive, off of the block device back into our terminal.
+So in theory, you could do that with anything, you know, you could like cat, user shared,
+docs, GCC copying, it's not there, but yeah, wherever the, you know, you could, you could,
+you could send a whole file to the thumb drive without ever actually making a file, you're
+just writing the bytes to the drive, and then if you, if you, if you do a cat on that drive
+from a certain byte to a certain byte, then you will get your, you know, file, your data
+back.
+So I think, and I'm not sure because I haven't done a whole lot of research on this, and
+I've never done it myself, but I think that's how tape drives were for a while, or maybe
+even just hard drives in general were for a while, way, way back.
+You kind of, you know, you would tar everything up into a tape archive, tar file, and then
+you would dump it onto this thing, and you kind of had to know, or something on your system
+had to know, okay, so that, that archive is stored from, let's say, you know, 0 to 255 bytes,
+it's not a very big archive.
+And, and we've got another archive, the, the rest of the backup, or the, you know, the
+next day's backup is 256 to 512, and then when you pull them off, you would just, you
+would tell it, okay, go to sector, such and such, until such and such, and, and pipe
+that whole archive back to me, and then I will, I will unarchive it, and there will be
+my files in kind of a, a minified file system within that archive.
+I could be a little bit hazy on the details, and I'm sure some HPR listener probably knows
+a lot more about this than I do, and they should probably record it, and submit that as an
+HPR episode, because that'd be really cool to hear.
+But anyway, so you could do that, and in theory, if you wanted to be very kind of obscure
+about how you store your data, you could send, you know, your shopping list to your,
+to a thumb drive without any files, and just cat the, the data to the thumb drive, and
+you would know in your head, okay, that's from 0 to 25, bytes 0 to 25 is my shopping
+list, it's a short shopping list, it's in code, and then from byte 26 to, to 42, I've got
+my, my agenda for the day, you know, my to-do list, and then, and that would work, and
+anytime you want to see your agenda, you would just cat 26 to 42, and you would get that
+back into your terminal, and you would be able to check things off your list, but now,
+if you started checking things off your list, your, your thing is, your, your data is getting
+bigger, right?
+So let's say you, you, you looked at your shopping list, and you, you got some stuff,
+so you wanted to mark that off, but you wanted to add some more stuff on, so you're changing
+it, and now instead of your data being from 0 to, whatever I said, 25, it's now maybe
+0 to 22, so you got like these sort of three random bytes before the next thing begins,
+well that's okay, but we want to add something even longer to the end of it, we don't have
+that much space, okay, what we'll do is, we'll, we'll append the rest of our shopping
+list at the end of our agenda from 43 to 40, you know, to 62, and we'll just, we'll just
+jot down on our little notebook that we keep as our journal, you know, that, that the shopping
+list starts at 0, goes to 23, then there's 3 dead blocks, and then skip to 43, and go
+to 62, those two things equal my complete shopping list, so obviously if you were to
+do this, if you were to fly without a file system, things would get very complex pretty
+quickly, I mean, especially if you're ever changing any file, and that's the advantage
+of a file system, because a file system can keep track of that stuff for you, it doesn't
+have to necessarily write everything contiguously, it might, it just depends on the file system
+design, but it can, it can figure out where files need to, to begin where they've ended,
+where the changes are stored, and it can kind of track all that stuff for you, or, or
+maybe it is part of its design to not split data up and make sure that it can, you know,
+move data around to make room for other stuff, whatever, there's lots of different file system
+types, and I'm sure we've all heard all the different pros and cons, you know, oh,
+this is journaling, this is non journaling, this is, this, this needs to be de-fragged,
+this does not need to be de-fragged, all that sort of thing. And so that's a file system,
+that's, that's how you can survive with out a file system, although that's not advisable,
+but that, that's how you can kind of think of a file system, it's, it's the thing that
+you don't have to do when you're writing data repeatedly back to a storage device. So I was
+thinking lately about different file systems, and I've been playing around with a couple of
+different ones, I mean, JFS, I've been using on my main computers for ages, that's, that's my,
+sort of, go to file system, I'm, I'm pretty happy with it, and I'm not see, I'm not seeking
+a replacement for that, but in terms of thumb drives, I've, I've, I've never really been super
+happy with, with any of the file systems necessarily that I've, that I've used on thumb drives,
+and I tend to use UDF, which is the universal disk format, which was originally developed
+actually for optical media, like it, it was going to replace, or it is replacement for ISO
+9600, so instead of ISO 9600 on DVDs, you may have UDF on Blu-ray, for instance. So UDF is nice
+because yeah, to any other system, it's, it's essentially, it thinks it's just kind of a, a
+Blu-ray, sort of, not exactly, but, but, but as long as your system can read Blu-ray, for instance,
+then, and most of them can these days, you know, they usually have that driver, then it can
+probably read a UDF device. That's not always true, I mean, it depends on the, on the computer,
+the, the OS and how the, the, the OEM, or not the OEM, but the, the programmers have, have sort of
+made the OS aware of what driver to invoke at certain times, but, but generally speaking, UDF
+has been a really good cross-platform and permissionless file system. The main problem with it is
+that it doesn't have an FSCK function at all. I tracked one down to, I think, Solaris, and it's,
+I think it would either not build, or it wasn't complete, and I, I heard rumors that NetBSD had one,
+but I'm not sure. And either way, you have to work that hard for an FSCK, you kind of lose a
+little bit of confidence in that format. So, I was kind of looking at other, other options,
+and then something happened with UFS recently that, that kind of, that's UFS, the BSD file system,
+Unix file system, whatever, that, where I hadn't had journaling turned on, and so, I don't know,
+I got to thinking about looking at other file systems, not, not to replace anything, just to,
+just to branch out. That's what I'm trying to say. So, one of the file systems that kind of
+came up a couple of times was NILFS, and NILFS, I believe I first heard from my friend DeepGeek,
+who you will probably know from previous hacker public radio episodes. He does, he did talk geek to
+me, and I'm pretty sure he did a really great episode on Beowulf Clusters, if I recall correctly.
+So, yeah, you might know him. You might not. It doesn't matter. He told me about NILFS a long time ago.
+And it kind of made me, when I, when I, when I was looking around and they kind of kept coming up,
+I thought, okay, I'm going to look into this thing. Because specifically, I thought NILFS meant,
+like NIL in American English, is a synonym for NUN. You know, like NIL is, it means zero. It means
+NUN. I don't know if it's slang or what, but that's, it means zero. So, I thought NILFS meant
+no file system, and I thought, okay, I'm going to look into this, because that sounds crazy enough
+to sort of be something that might be fun to play with. Turns out NILFS has nothing to do with zero
+values. It has, it has zero to do with zero values. It, it, it stands for new implementation
+of log-structured file system, NILFS. So, it was developed apparently by NEPON telegraph and
+telephone. So, sort of, I guess the Japanese version of AT&T maybe. And it is designed to be a
+snapshotting file system. And I've never really played around with that. But a lot of people obviously
+talk about snapshotting nowadays because of ZFS and ButterFS and I think CFFS. Lots of, lots of
+modern file systems seem to kind of be really excited about this concept of built-in snapshots.
+So, I figured I'd give it, give, give NILFS a go and try to learn how to, how to use it. And,
+it's not that hard to, um, to play around with really. It's, it's not bad at all. So, if you,
+if you install NILFS, um, you'll probably find that you already have it on, on most Linux systems
+because unless someone trimmed it down your kernel quite a bit, it should be included from what
+I understand since like 2005. I don't know what its support is like in other operating systems.
+I've not looked into that at all. But, um, you, you should find that you have it. And if you do an
+MKFS.nilFS2, NILFS2, you, you should find that it exists on your system. And, of course,
+the Dash H will give you the help and it's, it's a pretty simple kind of typical
+MAKFS interface. So, it's MKFS.nilFS2-capitalL for the label. So, I'll just call this, um,
+um, NIL, NIL. And, uh, let's see, I think that's about all I need. Really. SlashDev-sdx.
+Now, you're noticing possibly that I'm not bothering to put a partition on this device.
+And I don't know if NILFS has once a partition or if it needs a partition. Well, I know it doesn't
+need a partition because it works. But, um, I don't know if it wants a partition. I don't know
+what the advice of the NILFS people is about partitioning, but I just, I'm not going to bother right
+now. Um, and it never has complained. It just, it just creates a file system. So, at this point,
+if I, um, eject NILFS, the device, rather, and then pop it back in and by eject, I'm in an
+attach or detach. So, there I've got NIL, NIL. And if I click on it, it should open up in the file
+manager and there it goes. So, it's an empty, a very empty drive. It doesn't even have that
+lost and found folder that the EXT file systems drop in. So, it's, it's almost unsettling how empty
+this thing is. Okay, so the, the first thing that we'll do then is, um, we'll, we'll, we'll just
+CD into slash run, slash media, slash clot 2, slash NIL, NIL, uh, and do an LS. And sure enough,
+there's nothing there. So, now if I do an LSCP, so all of the, um, not all of the, but many of the
+NILFS commands, uh, are, are appended with CP, meaning not copy, but checkpoints. So an LSCP
+is to list all the checkpoints on this drive. Now right now, there's only one checkpoint.
+And that is, uh, just a couple of seconds ago because I created a checkpoint. And this is a
+little bit over verbose, um, honestly, or at least to start with. I'm sure these are very,
+this is all very useful information. But to start with, it's, it's a little bit over verbose.
+So the only thing you really need to look at is the, um, the, the number, the checkpoint number,
+which is on the extreme left. So right now, I'm, I, I'm looking at one. It's labeled one.
+It tells you the date and the time that that checkpoint was, uh, cataloged. And then it tells you
+what it is. So the mode is, in this case, uh, a checkpoint. And as far as I know, it can be two
+modes. It can be a checkpoint, CP, or it can be a snapshot, SS. And that's really, that's the
+part that you need to sort of know really. So now if we touch a file, if we touch, um, test1.txt,
+and we can even echo, hello, uh, CP1 into our, our test file, just, just for kicks. So now if I
+do an LSCP again, because now we've created a file, we've put stuff in the file,
+it's made a new checkpoint. And that checkpoint is number two. And it is just, just seconds ago.
+And it is still a checkpoint, a CP. So that's checkpoints for you in no FS. What you can do
+is, if you want to, uh, you can do an LSCP-S to list the snapshots. That's actually a filter on
+the checkpoints. So I get nothing right now. I get just the headers, the, you know, I get no content
+of, of, of that list. And that's to be expected because we don't actually have any snapshots yet.
+But we can create snapshots. And the way that you create a snapshot is that you convert a checkpoint
+into a snapshot. So I know that we're at a pretty good state in our file system right now. We've got
+this, this test file. It says some stuff in it. Let's go ahead and do a, um, make checkpoint,
+MKCP. But we're not going to make a checkpoint. I mean, you could. That would be kind of like a
+get commit or a get, yeah, I guess it would be like a get commit if we're, yeah, let's call it a
+get commit, um, make, make checkpoint and then dash S or, or dash, dash, snap shot if you prefer
+the long form, uh, and hit return. And you've just made a snapshot of your file system. You can check
+that with LSCP. And sure enough, I've got one is a, at, at a certain, at 1554, uh, cop, uh, checkpoint.
+I got two at 1556 checkpoint. And I got number three at 1556 and 53 seconds snapshot.
+So there you go. Um, that's because I've converted the checkpoint to a snapshot. It's not because I
+did it at the same time. It's, it's on my system. It shows that being about, I don't know, eight,
+eight seconds apart. I'm not really sure what the eight seconds are for. But, um, yeah, it's
+creating the snapshot from that previous checkpoint. So three is a snapshot. So again, LSCP dash S,
+just to just show the snapshots. Now I've got, yeah, snapshot number three or item number three,
+which is the only thing on, on this line is a snapshot. And it was taken today at 1556, 53.
+So the LSCP dash S is kind of a nice way to just kind of filter out the needless information of,
+of all those checkpoints. Like it's, it's nice to know the checkpoints. But at the same time,
+it kind of doesn't matter that much because the only thing that's going to really stick
+are the snapshots. So let's just do an RM, test1.txt. It says remove regular file. Yes, remove that file.
+Okay. So now I have got an empty drive. Well, not technically. There's a hidden directory there
+about nilf s. But anyway, now I've got an empty drive. The file that I created is gone. It's
+totally gone. Okay, perfect. So I'll get out of this, uh, this place and I will now eject my drive.
+Now this is where a little bit of, um, intervention is going to be required because if I just pop
+this drive back in, then my file manager is going to want to access it in its current state.
+And it's the latest checkpoint. So if I do that and I just did, it's an empty window again. There's
+nothing, there's nothing in this, uh, on this drive. It's gone. I removed the file. I mean,
+obviously it's gone, right? Okay. So I will, I will eject this again.
+And it's safe to remove it. It says so I'm going to remove it and then I'm going to reattach it.
+But I'm not going to mount the, the hard drive via my, my desktop anymore. I'm going to instead
+do a make directory in my temp directory and I'll call it, um, nil. And now I will do a mount,
+a manual mount. So I'm going to do mount, dash, dash, type, nil, fs, two, dash, dash, read, dash,
+only, dash, dash, options. And the option that I want to invoke, which is specific to nil, fs,
+two. This wouldn't, this wouldn't make any sense to anything else, uh, is cp equals three y3.
+Well, because that's where my, uh, snapshot is. And then we'll do slash dev slash sdx.
+And we'll mount that to slash temp slash nil. So now if I launch, um, if I launch a browser,
+a window browser file manager is what they're called, uh, to slash temp slash nil.
+There's my test 1.txt. And of course it does contain hello cp1.
+So there you go. A file that I've removed still exists because I took a snapshot out of it.
+And that's pretty impressive. It's one of those features that you, once you see it in action,
+like once you really experience it, I mean, you've heard about it now, right? You've,
+you've listened in on me as I've, as I've, as I've tried it and it works.
+But I urge you to go home and try this yourself because it is immensely satisfying. I mean,
+you might be one of those people who have already switched over to butter, fs, or zfs, or something,
+but, um, for me, seeing that in action, it was pretty darned impressive.
+Um, the workflow is a little bit funny. Um, I'm not sure 100 percent,
+you know, how, how you would decide when to take a snapshot. Maybe you would take a snapshot
+every couple of hours. Maybe you'd take a snapshot at the end of every day. I don't know.
+Um, I guess it kind of depends. I'm, I, I think that my only personal, um,
+equivalent to this experience has been get and get is obviously very project oriented,
+or at least I shouldn't say obviously because it's not obvious. The way that I use get is very
+project oriented and it tends to be project oriented. Now, I know that some people
+out there use get to manage their home directory. I've heard of people doing that. And,
+yeah, that would never work for me, um, because of all the, the huge binary blobs that I would have
+lying around. And, and like, why would you commit that to get? But, um, I mean, if it's on the drive
+anyway and you're taking a snapshot, it kind of makes a lot of sense. The, I guess the,
+the question is like, again, just how do you know when to take that snapshot? You know, you,
+you take it when you just feel really good about something or, you know, like, yeah, I don't
+know, I, I feel like with git, I can, I can make commits and pushes like a snapshot I'm thinking of
+as a push, you know, like if I snapshot something, then that's been committed to, or that's been
+pushed to the remote. That is now something that is set in stone. It, it exists. Whereas if I'm,
+you know, the checkpoints, I guess would be like the commits and you don't make the checkpoints. You
+just, you know, the, the checkpoints happen as you, as you work. So that's really easy for me.
+That's, I get that. It's the question of when do I say, okay, this is a point in time that I
+might want to come back to this particular file. And, in, in that, then when do I know that,
+how do I find that file again? You know, there's no, I don't know yet at least how to annotate
+anything. So it's not like I could make a bunch of changes to something and then do a commit
+log where, where I'm saying, like, okay, I've implemented this feature. Oh, I broke this feature,
+but I fixed another one in the next, you know, in the next commit, I'll fix this feature again.
+You know, I don't, with a, with this snapshot feature, I don't, I don't really know how to
+make that happen. That said, it sure is refreshing to be able to just delete stuff and then go back
+to a snapshot. And there it is again, or, you know, screw it up and then go back to a snapshot.
+So it is, it's definitely neat. It's definitely a satisfying experience. And if you have not tried it,
+you should try it. You've just heard me do it. It is super easy to, to attempt. It is easy to
+implement. It's pretty much built in. There's no extra install. Yeah, it's, it's worth a shot. Now,
+I did all of that as root. And if you don't do it as root, then, then you will have to manage permissions
+and make sure that you're doing things, you know, as, as you would on a, on a, an external drive,
+on Linux. NILFS is conscious and aware of, of file permissions. So if you don't do something
+with the file permissions on that drive, you will run into that sort of weird, like, I have a thumb
+drive and I'm plugging it into my, my, my computer at school or at work, where my username is one
+thing. And then I come home and I'm plugging it into my home computer, where my username is some
+other thing, or I'm handing it to my friend, whose username is, you know, you have that whole thing
+happening because it's, it's a, yeah, it's a permission-aware file system, which
+great for some things, not so great for other things. So I'm not really sure how, how much I'll
+actually use NILFS on thumb drives necessarily. But it is definitely something I'm going to start
+looking into for kicks because it is kind of fun to try. And it has been around since apparently,
+like, 2005. So it's, it's been around, it's got a history, I don't know if that means it's proven
+exactly or not. But I don't know, it seems to be a pretty cool little file system to, to mess
+around with. So NILFS 2, you should try it. It's fun. Thanks for listening. I'll talk to you next time.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself. If you ever
+thought of recording a podcast, then click on our contributing to find out how easy it really is.
+HECCA Public Radio was founded by the digital dog pound and the infonomicum computer club,
+and it's part of the binary revolution at binrev.com. If you have comments on today's show,
+please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise status, today's show is released on the creative comments,
+attribution, share a light, 3.0 license.

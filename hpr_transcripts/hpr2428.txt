@@ -1,0 +1,419 @@
+Episode: 2428
+Title: HPR2428: git Blobs
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2428/hpr2428.mp3
+Transcribed: 2025-10-19 02:50:36
+
+---
+
+This in HPR episode 2428 entitled Get Long, it is hosted by Klaatu and in about 33 minutes
+long and Karimaklin flag.
+The summary is Klaatu talks about Get Media and Get Annex.
+This episode of HPR is brought to you by an honesthost.com, get 15% discount on all shared
+hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's honest and fair at An Honesthost.com.
+Talk about managing binary blobs with Get because that is famously something that people
+say rather disparagingly, oh, Get's not very good at managing large files.
+Get can't manage huge binary files that it can't parse and dip and merge and so on.
+And I'm here to tell you, dear listener, that they are absolutely unquestionably correct.
+Get is not very good at managing large files.
+And I say that with as much love as I can muster forget, which is a lot.
+Get, as I've said on probably previous episodes of this, or at least maybe my own show,
+Can New World Order at CanNewWorldOrder.info.
+Get was my first version control system.
+I had never used a version control system before, I didn't even exactly know what they
+were.
+I knew something called SV and existed and I'd probably checked something out from instructions
+on a website or something, but I had no real experience with it.
+So when I finally got introduced to a version control system, it was Get.
+And so that's what I've been using ever since and that was probably back in 2009 or so.
+So I'm pretty fond of Get, but the fact is that it's just not designed to deal with large
+media files and the reason or large binary blobs.
+And that's because Get isn't our sink, you know, I mean get in fact one of its features
+is that when you clone a repository, you're getting its entire history.
+So if someone is, say, making a 3D model of something and then sending up this huge file
+to the Get repository and they do that in January and then they tweak it a little bit progressively
+until, I don't know, even just until April, then there's probably quite a bit of data
+that you're going to have to download should you ever do a clone and you can get around
+it in a way because you could do a shallow checkout.
+But then how do you know that the thing that you're checking out has the stuff further
+back that you might also need?
+So then you'd have to like sort of cherry pick through the history to find, oh well I've
+got the updated big 3D model, but everything else was checked in way back in December of
+the previous year.
+So my checkout that sort of got everything from March on didn't get those, so now I'll
+have to do.
+I mean, I haven't tried exactly that scenario so it could go better than what I've described,
+but the point is that get starts to add up if you start committing big files and then
+modifying those files, it just gets really, really big and bloated and sometimes prohibitive
+leaf, so I was managing a server for someone who was doing exactly that they were doing
+3D models to a Get repository against my advice I might add.
+And after, you know, in about six months they emailed me and they were like, hey, look,
+we need to redo the Get repository because at this point it's something like 33 gigs
+and it is timing out before I can even down, I can form my developers can clone the repository.
+So in other words, suffice it to say that get, we're going to agree that get does not really
+deal with really large files really, really well.
+It's something that can become a problem.
+The answer to this is possibly 3-fold, well, 4-fold if you really work at it, but let's
+say 3-fold at first.
+So one is get for large files or something like that, I think it's get LFS is what it's
+called and it was put out by GitHub and it's open source and it's, well, I don't know
+if it was actually, I'm not sure if it was put out by GitHub, but it belongs to GitHub
+now anyway.
+And yeah, it's get large file storage is what it's called and you can find out more
+information about it if you want at get-lfs.github.com.
+I've never used it, I can't vouch for it.
+It was a fork of get-media.
+Now get-media and get-annex are the ones I'm going to talk about because those are the
+two that I've used.
+They're a little bit different in the way they approach the problem or the issue.
+So get-media, for instance, takes a centralized approach.
+So a repository for all of your big, common asset files, whatever they are, media, just
+big binaries, whatever, you designate a place where they live.
+And this can be a hard drive on your shelf or it can be a server or whatever, NFS share,
+wherever it may be.
+And each developer on your team then treats that location as essentially a file share and
+that's the place that they grab those files from.
+Now get-annex is distributed, it goes a little bit more distributed and it lets you and
+all, each developer on the team, each user on the team, they can create their own repository.
+So in their local file system they get a .get-slash-annex directory and that's where all the big
+files get committed to and pushed to, it just goes straight to their local file system.
+The annexes, these little get-annexes are synchronized regularly so that all of those
+assets become available to each user as needed.
+And unless configured otherwise, get-annex prefers local storage before it will resort
+to off-site storage.
+And that's from what I've read, it's meant to be a cost-control measure because it's
+kind of assuming that you might be developing on something where it actually costs money
+to transfer data to and from.
+So it prefers the local storage and then resorts to off-site if you tell it to.
+Now I've used both so I'm going to talk about both and you can decide for yourself
+which one you want to use.
+I mean you should probably just try them each but I'll just kind of briefly mention how
+each of these two solutions work.
+So get media is written in Ruby.
+Now if you don't know anything about Ruby that's fine, you don't really need to but you
+will need a somewhat respectable Ruby stack on the computer that you're using in order
+to get this thing installed.
+So you'll do a get clone of get at gethow.com, colon, alb-dev-get-media.get and then you
+change directory into that and you do a gem install bundleer which I don't know what
+that means.
+Bundle install?
+Don't know what that means.
+And then you do a gem build get-media.gem spec, don't know what that means.
+And then you do a pseudo gem install get-media-astrisk.gem and that's the install process.
+So you go through that and suddenly get media is installed on your system and again I don't
+really understand any of that.
+I'm assuming it's basically a pip type situation for Python but yeah it's pretty simple.
+So once you've installed it you have to set a couple of configuration options in get and
+you can do it globally or you can just do it for that repository.
+And the magic incantation for that is getconfig-filter.media.clean and then quote get-media-filter-clean
+close quote and then getconfig-filter.media.smudge space quote get-media-filter-smudge close quote.
+Now you have to do that on every computer that you want to use get media on.
+So if you've got, if you're one of those people who does, you know, you get your laptop
+and your workstation and you're developing on both and you'll want that you'll want
+to obviously install get media and then also create those filters manually on each computer.
+But you only have to do it once per computer.
+That's the good news.
+Now per project you have to create some filters and the way that you do this is with a .get
+attributes file and it's just line one filter, one file type per line and so what you're
+doing is you're telling get what extension, what file extensions it should consider to
+be a big binary blob or in get media terms media.
+So you can do this with, for instance, echo quote asterisk.mp4, for instance, space filter
+equals media, space-crlf, close quote greater than greater than dot get attributes.
+So you're echoing the string asterisk.mp4, space filter equals media, space-crlf, close quote,
+into a file called .get attributes within your repository obviously.
+And you could do that with lots of different file formats.
+I chose MP4 because it's fairly ubiquitous, but it could obviously be .imkv, it could
+be a .og, .flack, it can be whatever, it can be a video file, you know, whatever you're
+committing, whatever wonky big file that you're trying to put into your get repository.
+And anytime you do add such a file, if you've got a filter in place, anytime you add that
+kind of file to your, you know, when you stage it, when you do a get add foo.mp4, then that
+file gets copied to your repository in your repository directory to .get slash media.
+That's where it sits until it's pushed.
+Now assuming that you've got a server somewhere that you're going to push all of this stuff
+too, then you need to tell your get repository where those media files are actually going
+to go once you do push them, because that's the thing about get media.
+It doesn't assume, or that's one of the things about get media.
+It doesn't assume that the place where you're keeping your code is necessarily also the
+place that you're keeping your very large file assets.
+Again, it kind of, I think a lot of these make allowances for people developing on platforms
+that charge them for activity, you know, for bandwidth.
+So you can set this, the location of your stash, not your stash, that's a thing, and get.
+You can set the location of your file share, of your big file share in .get slash config.
+That's a standard file in any get repository, so you should see it already existing.
+The block of information you need to slap in there is, it's an I and I style configuration
+file.
+In square brackets, you but get dash media, so it knows where to find itself, and then
+the transport equals whatever you're using, probably a SCP, but maybe you're using get
+protocol, I don't know.
+Then auto download equals, and you can set this to either true or false.
+If you set it to true, then it pulls in assets by default.
+If you set it to false, then it does not retrieve those large assets.
+It lets you do that yourself.
+And then you want to set your SCP user, so that might be SCP user equals clatu, and then
+your SCP host, which is, let's say example.com, and then your path to the path to the get
+repository.
+SCP path equals, and then it could be, let's say, slash, home slash, get slash, foo.get.
+Now if you've got any more complex settings in that that you need to use for SSH, like
+a non-standard port for SSH or a key file that wouldn't be the default key file, then
+you can enter all that stuff, and this is what get, at least last time I checked, this
+is what get itself recommends, just put all that stuff in your .ssh slash config file.
+And I think I've actually done an episode about that on hacker public radio, so look back
+at some of my episodes, I'm pretty sure I cover the .ssh config stuff.
+So when you're working with get media, I mean now it's set up, so when you're working
+with get media, it's mostly invisible to you.
+You'll work in your get repository, you'll stage files, whether they're text files or media
+files, whatever, you just, you add them and you commit them just as usual.
+The only difference that you'll notice in your workflow is that at some point you'll
+have to sync your little stock pile of assets or media or whatever you want to call it
+to the shared repository.
+When you're ready to publish all of your assets so that everyone else on the team can actually
+see them, then you just use get space media, space sync, s-y-n-c, and then it sends any
+new really big file that you have up to the centralized server that you and your team
+have decided to use for your big files.
+And that's handy because if you're at a coffee shop or something which I used to work in
+coffee shops a lot, so I'd be on some kind of janky public network that sort of barely
+works and so you might push something up to a get repository and the last thing you'd
+want to do is send this huge five megabyte file, yes I said huge and then five megabyte.
+You know, on that connection, so you would just send all of your little tiny text files
+up there and then when you got back to the office or back home or whatever, then you
+would do get media sync and send all of your big files up.
+It's quite handy.
+Now that of course introduces a couple of other things that you might have to learn along
+the way.
+As getting started goes, that's all it takes to get started, but I mean there are some
+times where you realize, oh man, the whole point of me doing get and large files is that
+I want to update these large files and then upload the new version without creating a
+new, you know, sort of file system node as it were, you know, I don't want there to be
+a new blob and get.
+So how do I do that?
+Like, where's the part about the workflow where I can update the media that I have now
+uploaded to my centralized file share and that's pretty simple as well.
+So all you have to do is explicitly tell get to update the media, which overrides get
+media's default setting of, well, don't copy a big file to the server if it already exists.
+The way that you do that is get space update dash index, space dash dash really dash refresh.
+So that again is get update index dash dash really refresh and that forces it to copy
+a large file up to the server and and replaces the one that was already there.
+Now when other members of your team or you yourself on a different computer, when you, when
+you clone that repository, no assets are downloaded by default again because that is as long
+as you've set it to to false in your get config file, it won't download that by default.
+So again, you would just do a get media sync to copy any of the big media files that are
+on the server and that are not on your local computer.
+So in other words, the activity on the big files is always an extra step.
+It's an explicit command from you and I think that's intentional.
+I get the impression that that is very much the design of the system and I think it makes
+a lot of sense because if we're assuming that the big assets are and they usually are,
+there are usually things meant for delivery.
+There are the things that are going to get attached to a project right before it ships
+out, goes out the door.
+You don't need to work on the big file assets all the time.
+You get them done and then you upload them to the server and that's a snapshot.
+So anytime you want to update them or download them, that takes an explicit command from you.
+And that's get media.
+That's a, that's the quick start on get media.
+So now let's talk about get annex.
+Select annex, slightly different workflow, like I say a defaults to local repositories.
+I mean get media kind of does too because it stashes all of your, keep saying stash and
+that's a completely different, I mean that's a thing and get so I shouldn't use that.
+So it squirls away all of your big files into a local place, the dot get slash media.
+But then it sends it up ideally to some central repository and everyone kind of works from
+that central repository in, in theory and get annex isn't completely different from that.
+But it's, it's a little bit, the way that it expresses itself is a little bit different.
+You need get annex installed in order to use it, obviously, and you can install it probably
+from your repository.
+It's pretty well known.
+It's kind of made its way into, at least from what I've seen, it's in all the, all the
+major repositories.
+There is not really any kind of big configuration that you have to do, like the get
+media stuff where you had to sort of do the get config command and then create filters.
+That's not something that you do with get annex.
+So once you've got it installed, it's, it's installed and ready to go.
+So to use it, you just go into your repository, whatever, whatever repository you, you intend
+to use this thing with and you do a get annex init.
+That sets the current directory as, as a get annex location.
+There are no, like I said, there are no filters.
+So you just tell get annex what to check in to into its, its system.
+So it almost, it, it, it does feel a little bit like you're running a parallel version
+of get almost, you know, because you're, you'll do a get add, food.txt, but then you'll
+do a get annex add, food.mp4.
+So that takes us, maybe, maybe possibly some getting used to because it is a separate,
+it's a separate command.
+And so if you, I guess if you're sleepy and you forget that the mp4 file is 2.5 gigabytes
+and you think, oh, I would really like to add this, you, you have to remember that you
+don't just get add food.mp4, you have to do a get space annex, space add, space food.mp4.
+And that adds the, that particular mp4 to get annex.
+It records its state in get and then you'll want to commit it probably.
+So you do the, the get commit is the same as usual, which again, a little bit confusing
+because now you've done get annex add and now you're doing a get commit normal.
+So get commit dash m, space quote, I added a big file, close quote, and then you have
+to push, but you have to push to a new, an extra location.
+So annex, normal annex, that's kind of the, the workflow.
+So get push origin master, well, I guess you would have to do the dash U version because
+this is the first time you pushed.
+So you do a get push dash U, which means create this thing up on the, on the remote.
+And then origin master get dash annex.
+So what you're doing here is you are, you're pushing your current branch, which is probably
+master.
+So you're pushing that to your remote, but you're also creating a new branch called get
+dash annex.
+And I don't, I actually have not looked to see if it actually has to be called get an
+dash annex or if it's just a common name that makes sense that you should probably use
+kind of like master.
+You don't technically have to call it master, but everyone, it's just kind of convention
+and it makes sense.
+So let's just say you have to call it get dash annex.
+Now a get push, just as with get media, the normal, when you do like a get push, that
+does not copy your assets to the server.
+It just sends information about the media to your server.
+When you're ready to actually share those, the media or the assets, whatever, the big binary
+blobs with the rest of your team, then you use a annex sync command.
+And that's pretty straightforward.
+It's get space annex, space sync, dash dash content, and that actually does two things.
+It pushes anything on your drive, on your local system that is not on its destination.
+And it pulls from the destination anything that is not on your local system.
+So so far it's probably sounding a lot like get dash media.
+And it is, it is, they both do really, really similar things.
+The interesting thing about get annex is that you can't, it treats the remote file system
+not as a central location.
+It can be anything that you want it to be.
+And this can get a little bit wonky and crazy because it's really just up to you.
+But maybe you could think of it as adding like little get satellites to whatever you need
+to add get satellites to, or you could just think of them as ad hoc get repositories
+because that's kind of what it is, to be honest.
+But get get annex itself adds a a trait to any remote that you add that you can describe
+what that remote is.
+And that's one thing that I think a lot of people kind of forget about get because we
+all, not we all, but a lot of people kind of think of get, oh well it lives on a server
+somewhere.
+It's get hub, it's get lab, it's whatever, or it's my own private get server.
+It's my own host.
+But I mean get doesn't have to live on, it can just live anywhere.
+It can be just a folder on your hard drive and you could never send it anywhere.
+It could just live there.
+So it doesn't, it doesn't have to be, we don't have to be pushing to a cloud or anything
+like that or even across the room.
+It can just be, it could be on one partition to another, one drive to another.
+And that's all annex kind of actually leverages is this ability to forget to know where
+things are located based on remote definitions of what a remote is.
+So for instance, let's say that we've got a USB drive plugged in.
+So we could go to the USB drive and we could, we could clone a get repository from our actual
+hard drive.
+That would just be a standard get command, it's a difference again, would be that you're
+not doing it over SSH or get or HTTP, you're just doing a straight get clone.
+So you do a get clone slash home slash class who slash my project.
+So now that that folder exists, that get init folder, you know, the thing that you created
+and have get on, that is cloned onto your thumb drive.
+Then you can go into that into the thumb drive version of that repository and you can do
+a get annex init and you can comment for yourself what it is.
+So you might say, quote, my portable USB thumb drive, close quote.
+So now you'll know where that repository is located.
+You don't care right now about that, but you will in the future and I'll tell you why
+in a moment.
+So then you can add a remote, which would be your workstation, you know, the actual hard
+drive from which you cloned this thing.
+So you'll do a get remote add workstation, space slash home slash class who slash my project.
+Okay.
+So you've just cloned a repository.
+You've blessed it as an annex location and then you've added a remote to that clone, which
+is the hard drive from which you cloned it in the first place.
+Now you can go to your workstation, the original repository and do a reciprocal action of adding
+a remote that is your hard drive, your thumb drive, your removable thumb drive.
+So you would do a get remote add thumb drive and then slash run slash media slash thumb
+drive or wherever you keep your thumb drive mounted on your on your workstation.
+Okay.
+So those two locations are now aware of each other.
+They know each other that each other exists.
+Great.
+Right.
+Okay.
+Well, remember, you've marked that thumb drive as an annexed location and get knows that.
+So when you're doing a sync, get annexed sync, it knows what is available to it and what
+is not.
+So if you're on your workstation and you think, oh yeah, I forgot, I stashed a bunch
+of my work on my thumb drive, like my big files on that thumb drive and I should get those
+over locally onto my workstation.
+So you would do a get annex sync dash dash content and the cool thing about get annexed
+is that if it doesn't have that thumb drive installed, it will tell you that you need
+to plug it in.
+So it knows that there's media out there that is not on your workstation because get annex
+has told it, but you're syncing now.
+And so now it's looking for some food.mp4 file, can't find it.
+So it will tell you, unable to access these remotes and it tells you, it can't access
+your thumb drive.
+And it tells you exactly what that thumb drive was, it gives you the UUID of that thumb
+drive and it gives any kind of description that you've provided it.
+So if you'd said my portable thumb drive, then you'd know, oh, right, I don't have my
+thumb drive plugged in or I don't have it mounted right now.
+I should do that.
+So then you would do that.
+And then you just redo your get annex sync dash dash content and you're good to go.
+Simple.
+And you can have as many remotes as you want.
+I mean, if you've got some big files, I don't know why you would manage your life this
+way, but I mean, if you did it, you know, you'd have some big files on a server.
+You should have some big files on your USB hard drive.
+You could have some big files on an NFS share, whatever, it's up to you.
+You can have annexes wherever you want them to exist.
+And that's the idea behind get annex.
+And again, there's a couple of things.
+I mean, I've already talked about some of the stuff that is different in the workflow,
+just the fact that you have to keep invoking get annexes this and get annexed that.
+So that feels a little bit different than get media, which feels a little bit more,
+I'd say, integrated or invisible, maybe would be a better word.
+Get annexed is kind of like right there, yes, I'm using get annex.
+And there's some of that later on too, like when you want to remove files or modify files,
+you know, how do you get them to actually replace those files on your remote?
+It's not really that hard.
+It's pretty simple.
+It's just a bunch of different commands that you can look up on the get annex website.
+It does a full walk through that makes it very, very obvious and very easy.
+But you need to do in order to achieve certain results.
+And that's it.
+Those are the three ways of managing big files with get.
+And again, I said there were three, one of which I did not discuss get LFS.
+And then I also said really a sort of offhand, I said, oh, well, there's really four.
+And the fourth way is just not to not to do it at all, which is not to say commit everything
+to get.
+It's to not commit anything to get.
+And I've done this myself a couple of times and it kind of works.
+It's not as convenient.
+I don't think.
+But in terms of setup, it's basically none.
+And the way that I handled that was I created a bunch of sim links within my get repository
+pointing to a master directory, a file that contains all of the other files and the
+whole file structure of the assets that I knew that the get project technically required
+in order to work.
+And it works the charm.
+You just, you get, you do your get clone and you have a bunch of sim links.
+And then you place your, your, your big master tar file or whatever you've got all your
+big assets in and you decompress it.
+An archive it there in the folder and everything points to it and on all the paths resolve and
+it works perfectly works fine.
+So that's that's I'm working on formalizing that actually because it it works so well that
+I think there might actually be some virtue to it.
+But I haven't really sat down and I earned out all the kinks or made a friendly interface
+to it yet.
+I am getting there, but right now it's just sort of the lazy method that I do.
+It does work.
+You just have to, you know, the burden again is on you to have that master file somewhere
+and to make sure it is backed up.
+And in terms of distributing it, not really sure how easy that's going to be because if
+you've got a bunch of developers and they all need the same files, yeah, sure, you can
+send them the big file and say, well, that's where everything is.
+When an archive that in your Git repository, you'll be good to go.
+But then what if they are also adding big files and that becomes a really problem and
+a big problem and that's where you would want to start looking toward to get media or
+get annex to solve the distribution issue.
+So that's it.
+Those are the solutions to big binary blobs and Git.
+I hope this has been helpful and informative and I will talk to you probably tomorrow.
+You've been listening to Hacker Public Radio at HackerPublicRadio.org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out
+how easy it really is.
+Hacker Public Radio was founded by the digital dog pound and the Infonomicon Computer Club
+and is part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment
+on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released on the creative comments, attribution,
+share a live 3.0 license.

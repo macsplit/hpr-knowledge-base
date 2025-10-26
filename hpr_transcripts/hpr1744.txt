@@ -1,0 +1,577 @@
+Episode: 1744
+Title: HPR1744: Scale 13x Part 2 of 6
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1744/hpr1744.mp3
+Transcribed: 2025-10-18 08:41:41
+
+---
+
+This in HPR episode 1,744 entitled, Kale-13X Part 2 on 6, it is hosted by Lord Rush and
+Blood and in about 63 minutes long.
+The summer is post-GoneSQL in space, Brian Lunguke and OpenSusa build service.
+This episode of HPR is brought to you by an Honesthost.com,
+get 15% discount on all shared hosting with the offer code HPR15,
+that's HPR15.
+Better web hosting that's Honest and Fair at An Honesthost.com.
+Alright Hacker Public Radio, this is Lord Drockenblut at Scale checking in again and I have
+Josh Berkus with the PostgresSQL project and I overheard him talking about some really
+interesting things, such one of such being timing issues on the PostgresSQL databases that
+are being replicated to satellites so I thought this was something very unique and I definitely
+wanted to bring this to you guys so just kind of let him run ramps on and say what he wants to.
+Howdy, so what we were talking about was one of the issues that people who have not dealt with them
+before have difficulty mentally grappling with on distributed systems, which are replicated
+databases, a distributed system, is that clocks are not trustworthy because every system that's
+being connected is going to have a different clock, these clocks often have issues and on top
+of which it's never possible to simultaneously pull all the systems because they're separated
+by the speed of light even if they weren't separated by networks which are much slower than the
+speed of light. The extreme example of this, which is what we were talking about is there's a
+project where NASA is actually replicating a Postgres database into orbit. They have a
+geo-survey satellite that they actually replicate data from Postgres up to and this actually
+gives you sort of the extreme version of the problem because time actually runs slightly faster
+for the satellite I believe. I'm trying to remember my relativity. It runs at different
+or any way. Time, you know, it's not just a matter of malfunctioning clocks, time actually
+literally runs at a different rate on the satellite because it's an Earth orbit as opposed to
+being on a surface and so therefore if you're comparing when an observation was seen from the ground
+to the satellite you have to actually account for this time drift as a real thing and it's
+something people don't think about a lot when they're when they're doing systems but really even
+if you're not doing something exotic as a system in orbit it's actually a problem for anybody
+who needs a system that needs to synchronize you know say two servers that are widely separated.
+You know we say you have to take into account that each one of the servers has its own system clock
+those two system clocks neither one of them is perfect and they both may be receiving corrections
+at a different time and so as a result relative to each other time might look like it's running
+forwards or backwards and your software has to take that into account if you expect it to do
+seeing things between the two systems like you can't assume that because server B got a message
+before server A says that it sent it that that's necessarily an error and a lot of people make
+them state-of-riding systems where they assume that's an error and then the moment that you have a
+clock decentralization the system shuts down and that Postgres SQL database on the satellite there is
+not actually one there but you won't can you describe that set up a little more.
+I was talking about the other problem so this is by the way so this is all from a presentation
+that we had at PGcon the International Postgres SQL conference which takes place every year in Ottawa
+this year it's in June used to be in May and it's going to be in June. There's some NASA guys came
+to talk about this and the big thing they were talking about was the issue with getting data to
+and from orbit is that on Earth we have this thing that we talk about called bit flipping
+you know which is that radiation etc can cause it can obviously cause massively detectable corruption
+in data but one of the things that engineers who care about data always worry about is the
+undetectable things which are like bit flipping right so a one becomes a zero it was and that's
+not still going to be detectable because it takes the shape of valid data it's just wrong in
+terms of the real world and one of the things that causes a bit flipping is cosmic rays now on
+the Earth's surface cosmic rays are infrequent enough occurrence that this is mainly a theoretical
+thing unless you're running at the scale that say Google is but once you get up into orbit
+it's no longer a theoretical thing your memory is getting hit by a cosmic ray
+not once per decade but once per second and so as a result the NASA engineers were talking about
+this thing that they have to do where they basically have to have three copies of the database at
+all times and those three copies are constantly peering and comparing their data because bit flipping
+happens constantly and whoever loses that contest between the three copies gets overwritten
+and that has to run on a more or less constant basis in order to prevent the data from being
+completely corrupted so that's another unique situation what are some other you know unique
+issues with time or with unique locations of databases that you know people may not
+the average admin may never run into but these are interesting problems nonetheless
+yeah one of them so one of the problems actually comes when you start running systems in local
+time or systems that have to display a local time because there's this issue of changes to time
+zones so like you'll see a Postgres update comes out every two to three months and every single
+update has a set of changes to time zones legislated by legislators in various countries and states
+and cities I in terms of how they deal with daylight savings time in terms of what other time
+zone they're part of in terms of where the borders of the time zones are so imagine that you're
+actually doing a calendaring application that calendaring application you're booking things in the
+future like imagine if for example this is four bank loans where you might be booking things up
+to 30 years in the future and then you receive a change to a time zone that affects say a due date
+that is 25 years in the future so how does that due date get adjusted you have the sort of issue
+with what we call a triple time a triple time zone issue right where you have you have when you
+expected the event to be in the past when you expect the event to be now and when the event actually
+is which you can only know when the event actually takes place to follow me and and that sort of
+thing keeps keeps moving and you have to decide what you're going to do about it in your software
+or you end up making a whole ton of hand corrections and and having a panic attack every time
+you have a time zone update that affects you it's you know it's it's one of those sort of things
+that you grapple with is in and people have a very sort of absolute concept of time that time
+is monotonically increasing et cetera but from perspective of anybody has to deal with time as
+part of a software system that's a very bad assumption to make because it's not monotonically
+increasing in any system that you care about all right anything else you'd like to say to the
+hacker public radio community you know any other interesting unique problems that maybe again
+you know outside of things that they may normally see but could be interesting things for them to
+look into and learn about well one of it as long as we're on this topic Postgres killed 9.4
+came out in December and part of 9.4 is an API for building new replication systems on top of
+Postgres of which you know a couple are in progress something called BDR and another one called
+Sloan II but the reason that we created is an API is we would really there's no such thing as a
+single multi master or a single distributed database system to rule them all and so we'd really
+like to see people building stuff to suit unique use cases things like replicating the satellites
+using that API all right well what is a unique use case you've been involved in directly outside
+of that satellite if you were involved with it okay well so one of the fun fun things that we did
+years and years ago I was something that we called extremely slow replication which was actually
+developing replication system that would work over FTP today you can do this with Postgres pretty
+much out of the box but at the time this was Postgres like 7.3 we had to actually hack our own
+thing where you could actually take all of the changes you would normally replicate as part of
+the replication system and save them to a downloadable file that could be applied by
+that could be downloaded by FTP and then applied on the individual sites and and this was because
+we were distributing for basically in appliance where the users had subscriptions but they weren't
+they weren't necessarily connected to the internet all the time and one question I was asked to
+try to ask of everyone I interviewed is what is your favorite text editor I'm in terms of what I
+use the most I'm kind of split between Kate and Emacs I use Kate for when I'm doing graphical
+text editing on the on the desktop and Emacs when I'm on servers but the problem is that I also
+like Joe because it emulates a number of other text editors and it's really really small all right
+and sorry I wish I'd caught more of that talk earlier to see if I'd had any more specific questions
+perhaps we'll revisit when I you know catch a talk with you later or something oh the look I
+said the NASA talk was an Ottawa last year it's not something that was here well I just
+meant the conversation that I overheard so and what is your preferred environment you know to
+personally work on well this isn't a Ubuntu 1404 desktop and I like that okay the I'm going to have
+I have issues with Ubuntu but I have a feeling that if I was running Fedora I would have issues
+with Fedora the so I haven't haven't Julie I haven't done a comparing contrast certainly I prefer
+working on Linux and the desktop to working on Windows or Mac so all right well thank you for your
+time if anyone in the hacker public radio community you know find some of this interesting and they
+wanted to contact you what is the best way they can reach out I was able to reach out to me at
+joshdepokesql.org and also my blog is database soup so search on database soup and you can find
+it all right well thank you for your time and I'm sure you know hopefully someone from the HPR
+community will find this interesting useful and we'll see where things go with new interesting
+replication models in the future thanks a lot all right ladies and gentlemen load
+drop in blue coming from scale again and I have with me Brian one Duke formerly of Linux
+action show as many of you might know him that would be the you know one of the easier places to
+start but I guess let's start off with what brings you to scale and then we can kind of just go
+from there I am at scale being as awesome as possible over the next couple of days I'm here with
+Sousa doing a little marketing work with Sousa and I'm here just doing my usual dog and pony
+stove show stick where I kind of act like a dancing monkey in front of people for a while that's
+kind of the gist of it okay so what is your relationship with the open Zeus project
+my relationship with the open Sousa project is basically that I've been an open Sousa fan since
+I don't know like the mid to late 90s or so I've never actually been a real big part of the project
+itself I'm just kind of an open Sousa fan boy and I work for Sousa on the marketing side but I
+mostly do like enterprise marketing stuff like you know business e-crap but so I don't really
+work on the open Sousa side all that much other than to just kind of help out at the events man
+the booth and tell people why I like open Sousa now I am aware that you have released some projects
+using the open Sousa builder what were those again because I can't remember and I want to make
+sure people at least know what to look for and get the right names sure sure so it's sometime back
+I don't know what was this like two or three years ago I released a thing using Sousa studio which
+sort of a way to build basically like an open Sousa respin using a bunch of point and click tools
+on a website and I use that to make trial versions and kind of self-contained self-running
+build environments and test environments for some commercial software I used to work on
+but I don't really do much of that anymore now I just kind of play with tools and and write and go
+off a lot cool and now people who've listened to Linux action show would know some of your history
+but people on HPR may not know that history some people may not as much what is your history moving
+you know from technology from you know the closed world you came from to you know the open world
+and kind of what brings you know just that line of events leading up to now you want to know what
+my story checkered past is I used to be I worked for Microsoft for a number of years and then I
+got sick of that through my hands in the air and I became a Mac developer and I made proprietary Mac
+software for for quite a few years until I realized that that was bass backwards stupid and I kind of
+got into the open source side of things and started moving my proprietary software to open source
+basically through trial and error in a series of mishaps over the years and had some success and
+some failures with it but kind of worked towards going to the open source side of things and yeah
+now I'm just kind of a you know pure open source pure Linux guy but I don't really do much
+software development anymore I used to I used to actually be a software executive I used to work
+as like the VP of engineering for games companies and all sorts of closed source very unethical
+companies but now I just write goofy poetry and stand in front of rooms and talk sarcastically
+about open source a lot well with the hacker public radio community it's a very diverse not quite
+so pureist is a lot of the Linux so we don't need to worry about that stuff as much as you know
+if this were for a pure Linux show but then how did you get involved in
+you know new media you know podcasting and all that and what's been your history there as well
+sure so I guess I'm probably most known in that realm for starting the Linux action show probably
+back in crap wait when did I start that 2006 2006 that's the year yeah so me and two buddies of
+mine were all diehard mac users at the time and at the time at mac world Steve Jobs got on stage
+and released a version of garage ban their audio editing software with podcasting tools built in
+and the three of us looked at each other and thought we're awesome we should make podcasts so we
+made a podcast and it was terrible it was it was bad it wasn't funny the production quality was
+horrible but after about six months and many many terrible episodes we got kind of not terrible
+and decided to do it a little bit more professionally by a little better equipment and it kind of
+coincided with my transition away from being a macu windowsy guy and more being a Linux guy so
+we started a show called the Linux action show with me and a buddy and and kind of built that into
+the largest litig show on the planet over the next you know two or three years and that's kind of
+how I got going with it and then I left that kind of gave the the show and the production company
+that we built around that show to to my co-host and kind of went off and started working on other
+shows and doing my own stuff and you've recently re-entered that realm haven't you I have I have I
+started actually we put together a couple of buddies put together the Linux podcast or super
+group as we kind of felt it was myself from the Linux action show and we I pulled in we pulled
+in a John O'Bacon and Stewart language formally of lug radio which was our chief competitor
+to the Linux action show it wasn't really a competitor we like to pretend like it was a big
+competition but really we didn't care all that much and we also pulled in a guy named Jeremy Garcia
+who runs Linux questions dot org which was one of the other big podcasts and we kind of created
+this amalgamation of mildly annoying a Serbic Linux pro Linux guys and kind of created this show
+we called it bad voltage and I don't know why we called it that John O'Bacon formally of canonical
+came up with the name and we all hated it but now it's stuck so we're screwed and we have to call
+it bad voltage forever and just for anyone dealing with bad voltage issues whether it be audio or
+electrical let me just say a APC can clear those problems up for you quickly that probably isn't
+going to help us all that much I think our problems run a whole hell of a lot deeper than just some
+electrical issues so you're doing marketing now what are the things you do just for enjoyment and
+you know the what are the things that you enjoy playing with the most right now in you know some
+of the new stuff coming out in the Linux ecosystem there's actually a couple of things that I've
+got going on right now that I think are that are going on that I'm playing with lately I've been
+towing a lot with building my own like game consoles and the like so I've been trying to build a
+a Raspberry Pi based handheld game console and I started a video series where well I put my hand
+in a puppet's button a puppet actually it's pretending to make the game console out of a Raspberry
+but that's neither here nor there the focus is the Raspberry Pi with a little screen built into it
+and I've been trying to build it using off-the-shelf components without having to have like a 3D printer
+so I've been playing around with things like what can you do with a whole pile of duct tapes and
+some popsicle sticks and a Raspberry Pi like what can you build if you have absolutely no budget no
+engineering skills and no access to a 3D printer and it turns out you can build quite a lot it just
+always looks like a pipe bomb when you're done but that's kind of what I've been playing a lot with
+otherwise I've just busy running the normal slew of latest Linux distros here and there because
+I'm a glutton for punishment. I'll encounter I'll encounter that pipe bomb comment with I have
+followed concepts like building handheld consoles for a long time through Hackaday I've been
+following Hackaday for probably within a year of its actual inception and they've had a lot
+on there and you can definitely build some very good looking handhelds you know you have to spend
+a little bit more a little bit and I'm talking you know you as little as $5 or $10 sometimes to
+buy a case that is you know good quality rugged case to you know put your systems inside up.
+Yeah you totally totally can the thing is I'm an astoundingly lazy man and while I could take like
+an old gameboy and gut it and even just cut it a little bit and I could fit all the guts into it
+and have a nice little handheld I kind of I don't really want to have to use tools other than maybe
+a screwdriver and a pair of household kitchen scissors like that's my tool set that's my toolbox I
+have that in about eight different colors worth of duct tape sitting on my desk and literally
+a bunch of popsicle sticks used of course because I'm not going to go out and buy fresh plain
+popsicle sticks that is highway robbery I'm going to buy popsicles and then reuse the sticks
+because then they're stained and it looks more legit and then see what I can build and the end
+result is stuff that looks like it's just MacGyver together but really you can do quite a lot with
+it like like if you have a Raspberry Pi and you want to have a handheld game console you need a
+battery right we just go out you don't need to buy like a fancy battery and wire it up to the GPI
+old ports and all that go buy one of those little USB battery packs off of eBay for five dollars
+that you'd use to charge up your phone or something like that and duct tape that little sucker to
+the back of a Raspberry Pi boom you've got a battery powered system on the go and it looks stupid it's
+bulkier than it needs to be but you build it yourself and it didn't take any tools and that's
+I think that's some of the cool stuff that's out there right now that's what I've been tinkering with
+yeah the the watching the maker movement here over the last few years explode and I would say
+the big pivotal moment and maybe you could you know agree disagree you know give your comment
+was when make magazine came out that was a you know things had been starting to build to that point
+and it seemed like when make magazine that first issue came out things just exploded yeah yeah
+no make magazine is pimped if you don't get an issue of make magazine you're you're a bad person
+and you're not a real geek that's that's just how it is right now that in my opinion it's probably
+one of the seminal publications out there for true nerdiness and it's awesome um are you involved
+with um a hacker space at all in near you is there one near you have you tried to seek any out
+hell no I love a good hacker space I want to make sure I'm clear about that there's awesome ones
+right now I live in western Washington there's good ones in Bellingham and Seattle this place is
+all over to go and build crazy stuff with awesome tools but again I have no engineering experience
+I do not know what I'm doing but I know how to wield a pair of scissors and some duct tape so
+literally my hacker space is my kitchen and a corner of my bedroom with a table if I were to go
+to a hacker space I would be taking a valuable table space from someone who's building something
+important with actual tools and actual build quality and that just is not my uh my belloax see I'm
+gonna have to call you on that one because I've been to several different ones and you know
+there's always something someone can add and with what you're doing you know someone I've seen
+young kids you know if they're doing things if they could see the start of you know something like
+that you know they could get some ideas from you you know or turn around and go here's how you
+use a dremel you know spend $20 by yourself a dremel so you can get a little bit of a precision cut
+yeah they know that's that's actually pretty fair you know if I were to go to a hacker type
+space undoubtedly every eight-year-old in the place could show me how to do it better than I'm
+currently do I get so really I would like to learn from pre-pubescent children but I also don't
+want to feel bad about myself so I sit in a dark room and and use my duct tape and and no one
+judges me until I post videos on the internet and then everyone judges me but but I do it by myself
+and I think that's that's part of the thing for me I love the hacker space for a communal thing and
+if I was building anything that was at least slightly more ambitious than what I do I think I'd
+probably get involved but I just I just hide okay and you know I'm also where you are you know
+longtime gamer it seems like you're really into retro games as I understand it you've also
+worked for game companies what's your you know gaming history my gaming history is long and
+complicated so I've worked for a lot of game companies actually let's back up a little let's go
+what got you started in video games let's see if the console that got me started is the same one
+that maybe got you started all right first first rounds of machines would probably go back
+first game first systems I was gaming on weren't consoles they were early computers you know I
+was Commodore 64 and Apple 2 knockoff clones that was that was where I really got started and then
+from there it was Atari 2600 for me that's where I got I got going was my first console was a 2600
+with that totally bitch in numeric keypad you put an overlay on top of and play simulation I
+use air quotes to do like space simulation games and those were those were some good times I love
+my 2600 I actually don't I owned a 2600 and a dozen different types of controllers I do not
+remember the number pad one I do remember that being more on like the Odyssey and the Coleco
+vision having number pad controllers 2600 one was new to me yeah no I don't think there were many
+games that actually used it this was you know my my stepdad bought one and he couldn't quite figure it
+out I don't think and he thought it was cool but he just kind of relegated it to my bedroom very very
+quickly and I was a very young kid but it was who's awesome I may move to the Nintendo
+winner team and system and everything else after that and master system but the 2600 was my first
+actual console what would you say looking at all the games you've played throughout time what
+is the one one or two that are kind of those pivotal games for you the ones that kind of define
+your gaming experience and ones you can still go back to easy answer two games one of them is the
+worst game ever made and that would be the original computer space made by Nolan Bush and the
+reason for it is this if any of you guys have ever seen one of these it's this weird futuristic 1960s
+looking fiber plate get glass cabinet that plays this game that's a lot like Asteroids it's
+basically a simple Asteroids-ish type game but it's terrible the controls are bad it just doesn't
+play well but the neat thing about it is this there's no software in this game if you open up
+the back panel this is the first arcade game ever made and you look at the board the board the
+actual hardware is the full game is the logic for the game and Nolan Bush and all the guy they want
+on to you know create a tarry and pong and everything actually laid out the circuit board the little
+diodes on it were all in the shape of the sprites that you see on the screen so you actually see
+these little rockets in multiple angles of rotation on the board itself and when I saw that
+that made me realize that video games were badass because even crappy video games were built
+in a badass way and I thought that was awesome the second game was tank tank was awesome was made
+by key games but was which was also owned by Nolan Bush and all the time and this was the first
+video game ever that used graphics in memory it had actual sprites that were stored in memory
+and it was a nice two-player game if you ever have played the Atari 2600 combat same game except
+much much less but that was tank in the old arcade those were the two games that got me super stoked
+very cool it is very cool for me for me I'd have to say you know some of those games I come back to is
+berserk on the Atari 2600 then moving up to the NES it would have to be the game that started it
+and the game that was the clone of it and that's Castlevania and then Ninja Gaiden being a
+almost an exact clone in many ways if you lay those the two screenshots of those games
+over each other it they are almost dirt Ninja Gaiden is almost a direct ripoff but the thing is
+instead of being one of those cheap knockoffs that tried to go nowhere it innovated the platform
+or series dude hell yeah side note I still stand that it said Ninja Gaiden despite the fact that
+the 1980s movie The Wizard taught me otherwise was it 1980s when The Wizard came out was at
+early 90s when Super Mario 3 came out there was but there was a part in it where they're going to
+the video game tournament and the guy letting the little kids into the video game tournament
+where it was like oh you do you have to play the next game is Ninja Gaiden and it was really exciting
+I believe that actor was the same one who played um he was also in the police academy movies
+I can't think of the guy's name but he was one of those similar bald actors during the late 80s
+early 90s I can't remember I can't remember that but you and me should go watch The Wizard
+sometime if we get a chance just so we can figure this out because we can't look it up on Wikipedia
+or IMTP that would be way too easy and I'd have to put this down so um
+batter's getting a little low so um what are three let's just ask a prediction on technology over
+the next few years where do you you know see things going or where do you want to see things going
+over the next few years in the Linux world I have no idea
+easy enough so um one other question I've been
+one other thing I um I comment on technology I don't actually predict technology I just
+comment on it in less sarcastic way um one other question I was asked to try to ask during
+the interviews I got is um favorite text editor favorite text editor no it's G-Edit
+without a doubt I mean Kate's good and all but G-Edit no doubt well if you're G-G-K guy fair enough
+no no this isn't up for debate you can be running on Katie but still run G-Edit because you're
+human and that's what humans do my thought humans just no no no I thought humans grabbed a pen
+no no no this interview is over I want to flip a table right now done fair enough well ladies and
+gentlemen uh this is Lord Dawkins Blue with Brian Lunduke at scale have a good night
+all right Lord Dawkins Blue checking in from scale again and I'm sitting here with Marcus
+and what's your last name sir Marcus fine from Linux magazine Germany very cool and um we just
+brought up the um open or the suits open build service if I've got the name right and you've got
+some interesting information on that that I think the hacker public radio audience might want to
+hear more about yeah I was in at first them in Brussels in the Belgium two weeks ago and it was
+Susie open Susie Stefan Kulo who said that Susie is thinking about releasing the
+Sles the Susie Linux enterprise services service servers sources oh my god the Susie Linux
+enterprise service sources into its open build service that means that they can use lots of tools
+that Susie has been using for open Susie like quality assurance with open QA which is what I'm
+here for I'm giving a talk on that um it's automated quality testing and other stuff they can use
+that on automated builds that the Susie build service is doing out of the sources of the enterprise
+product basically they do not they they didn't offer a time plan an agenda or whatever for when
+to release it that he just announced that they will that they will release it and well to me
+basically this seems like not only the first step but a major step towards releasing the sources
+of of the Susie Linux enterprise server so and if I'm understanding this right we could begin to
+start seeing a Sus equivalent to things like CentOS and um scientific Linux too yeah probably
+that was the that was of course the the discussion that almost sparked immediately at first
+in Brussels when when Kulo said that and he was asked if Susie would try to stop people from doing
+so and he said well no we wouldn't buy and even though they didn't have a more precise plan
+but I think this is one thing that probably probably will happen and they seem to be really
+convinced that this sort of contribution that they get will make their product better so to me
+it sounded like an opening another opening and definitely and um
+sus and open sus has some of the you know by far and away some of the most interesting tools out
+there the open build service su studio things that I really wish other communities would replicate
+or maybe in some cases what I would love to see is things like um you know more communities
+working together directly with them on the open build service at least so but um what are some
+of these other you know interesting tools out there in in case you know people in the HPR community
+haven't heard of them and a little bit of a description well you pointed out right that the open
+Susie build service and a Susie studio are two of the major things that Susie did develop and
+sort of give to the to the community throughout the last years um the build service itself is
+often misunderstood it's not really a server farm just run by Susie there's many contributors
+many companies who sponsor that and all that stuff and it's used to build packages and it's
+but it's not only packages for Susie it's packages for Debian you can build packages for Debian or
+Fedora or other distributions on this service that's also why I've heard that many redhead people have
+had a look at it but redhead is so big they probably tend to install it themselves rather than
+use it which it is meant for it's meant it's meant for it's meant as a community thing and uh so
+but the redhead people are pretty much aware of this stuff and that this is a good thing that Susie
+invented there and gave to the community and there are other tools you mentioned that there are
+other tools that that exist around this sort of infrastructure or ecosystem like the one I'm
+presenting on today this is open qa open quality assurance is it an automated test test tool that
+the Susie that open Susie people developed because they found it tedious to test distributions it's
+always the same you install you click you type in the same commands and it's tedious for a developer
+just running it over and over and over again and they developed a test suite out of that which is
+starting a virtual machine with the the new open Susie the daily version that they have
+boots up the ISO image and and thus many tests and they have this this whole thing has grown over
+the last three years or four years it's really become big and as you can see here I have a video
+here running Fedora inside that so they all they even made it possible to test Fedora installations
+within this open qa and open quality assurance and folks I'm sitting here watching the video I'm
+watching and I will try to make sure to get in contact with email via Marcus so I can get the
+link so you can watch the video but I'm sitting here watching an automated install happening now what
+kind of thing what kind of results can people get out of this as far as you know what kind of
+feedback can they expect well the the feedback is best viewed on the website open qa dot
+suzi org I'm just trying where is it my website yeah open open qa dot open suzi dot org and you
+can have a lot lots and lots of test results starting from screenshots so this video that you see
+is just a sequence of screenshots of every single test that the tool does that and you can see
+screenshots from every single stage you can see why an install failed you can see why how it
+succeeded and you can have what I'm what I'm showing right now is a long table of test results
+which shows one line per ISO image so they are creating several ISO images per day and the the
+web server is doing automated testing on them testing until KDE even Thunderbird installation and
+Thunderbird profile setup such integrated desktop matters are being tested and what they need now
+is contributors to help to write tests there the tests are simple they call the needles and it's
+very very simple it's basically Jason Jason data and pearl files and it's just image comparison
+that's all but it's it has grown and it's fairly complex and you get if you're doing it ISO
+development images development this is something that helps getting rid of the tedious testing
+definitely it looks really interesting what would you say is the kind of learning curve if I
+were you know creating say a fedora spin for my own uses how difficult would it be for me to
+you know being not exactly as much of a power user as I want to be at some points to
+create these tests as far as I have not developed the test of my own but as far as I'm told it's
+not that it's not that difficult to create a test of your own I know Richard Richard Brown of
+Susie he has done this fedora test and it's his video that I'm showing and it's it's just you
+can do it online on you can have a look at it at open q a dot open Susie org for example
+I'm showing the bootloader image for example and you can see here there's this what they call
+needles and the needle is a test a test defines a range in an image and in this in this image in this
+square it within this image there has to be for example the word installation succeeded
+if it's not there then it has failed and that's all you have to write you can do the web interface
+okay what I'm looking at is I see the beginning of the installer okay the first one kind of
+was a little hard because of the crosshair version but on the second one where it's you know more
+else okay that that was just your okay that's more your cursor there and that instead of what
+the final needle is I guess I'll show that with the with the failed test because this image is split
+and on the left half of the image you see what the system expects on the right half of the image
+you see what the booted virtual machine returned if it's the same it's not pretty you don't it's
+it's not very it's more self explaining if there is an error I guess so here we have a test that
+has failed let me see if this the red one here we see the red is marked because in this installation
+the first boot failed and let me see what he expected and wow screenshot
+no I should no I'm not prepared for that I should have the better example for a failed situation but
+you have an editor where you can have the success in the left part of the window in the left
+part of the image and the the fail in the right side so you can see exactly why it is that it failed
+and that helps developers a lot because they can go and see what what has been changed since yesterday
+since the last working test and now we have a failed test so what has what has been changed since
+yesterday so the developers can order that QA testers can go to the developers who have changed
+anything relevant to this part since yesterday now what is what are the underlying technologies
+for open QA well there has been a project called auto inst that Dan had vitamin developed and
+and yeah started with he didn't well he didn't start it but he took it and he created
+open QA and basically it's a set of it's it's JSON files who store configuration and results
+and we have pearl files pearl tests who do the needles sort of who do the testing of special things
+and the image matching and well and it's kvm the kernel virtual machine or qemoo who starts
+who are used to start well they are the hyperwizers to start the iso images to boot the iso images in
+what else do we have well that's that's basically all there's nothing more in need it
+when fact i've got on this laptop i've got the i've got open QA running i installed it here
+and i i'm not finished yet and the next step would be just import an iso image and
+and then run the automated test but it's it's pretty easy but who would need who would
+who needs it himself so it's there's a web service for it that's okay and that's that's
+enough for most people so i can go to the open qa site and i can upload my iso directly there and
+do my tests if i'm understanding you correctly yeah should be possible you need a login and then
+it should be possible yes it's not installed it on your own it's easy just at you just install
+open susi tumbleweed the rolling release then add the right repositories and install open qa it's
+all documented on the open qa website all right what other um
+intrat because open susan open sus has always had some of the more interesting i think
+wider technologies um what are some of the other interesting technologies that
+susan open sus might have that people might be unaware of well i'm i'll find pretty interesting
+what susi does in the last years in their enterprise software stuff and for example they were
+one of the first two int who introduced better FS you say better FS better FS you hear both
+okay and the what i also like is the snapper the snapshot tool that they developed which makes
+it pretty easy to roll back to some some state that you had yesterday and you don't have to take
+precautions for it it's it's just there as a boot option you and you can just revert to the last
+working state of your system so and uh well and yeah if i'm not mistaken uh snapper is actually
+just a graphical front-end for controlling features of uh butter FS well it's not a graphical front-end
+it's uh or it's sorry it's uh it's a tool for managing features of uh butter FS
+and but it's an opens yeah and it's like and there is a a yass module for it
+so you get it's it has also a module integrated in the system administration tool
+from susi susi has yassed y-a-s-t their their system administration tool uh yet another system
+tool i believe is what it stands for and you can uh you can choose
+uh screen snapshots from there for example that's also something they added and there's many
+tools like that um what else do they have what is new well they have a new storage server i think
+which is pretty new to be published in february um i believe that is on this
+directly on the susi of things built on um sef exactly it's on sef and i think it's due in
+must must we publish those days made february i was told right and their cloud systems like uh
+also obviously open stack based which is uh the susi cloud and i think it's it's about
+4.0 version there's also right now about to be published and they say that uh this is the
+the open stack version that is the most easy to be deployed and you're here you're with
+Linux magazine from germany but what's your um involvement with the open susi project
+or is it just you use a lot of these tools i use a lot of these tools i'm well i'm German i started
+with susi Linux 20 years ago so that's my personal connection to them there uh and uh but
+in the end it's like that the susi is pretty common in germany i mean here in the us it's
+more or less this redhead country when it comes to enterprise Linux and in germany it's quite the
+opposite there's a lot of susi and not that much redhead uh in companies and that's just that's for
+historical reasons i believe and it's uh well redhead is uh two and a half times the size of susi
+i think but it's as i said it's it's susi is not that known in the us as they are in germany
+but they're very common in germany and and in special branches as well so they are pretty strong
+in in high performance computing they are i think at a point of sales they are also pretty strong
+and what else is it the cloud the one i forgot one thing the super cool yeah the big ones
+top 500 um i i know there is a kind of a solid solid but not huge
+sus or open sus community out there i tried um sus or sled at one time and also open sus
+and me and yes at the time we just did not agree on things at the time and i know i need to come
+back and look at it again because i personally i'm a kd fan and the fact that you know open sus
+their flagship desktop is kd shoot is a reason i should come back and check out things instead of
+you know fedora which you know i i'm a fedora ambassador i'm very you know i very much enjoy that
+community part of it um i just me and gnome we aren't the greatest of friends
+yeah you see i've got two laptops here for this presentation one is running fedora and one is
+running open susi says it all and they're both running kde i'm not i'm not happy with gnome so
+i can't work with gnome it's it's better than than other systems but i'm not nuts it doesn't
+fulfill my needs and use it as a usability but that's also just as you maybe as you as you're used to
+i've been using kde for years in a long time so and with the modern modern distributions i think
+they're getting closer as at least when it comes to the desktop and i'm yeah so and i agree with
+you that susi has had quite some work in the past times to be done with with yes i remember the
+times when yes would overwrite configurations that i made and i was wondering why does this why
+isn't this working anymore and i'm so well said and i and i i that was the problem i ran into if
+you were running eight grow you know especially if you were running a graphical desktop setup you
+basically at the top of config files it would tell you don't bother changing things because
+we'll overwrite it yeah exactly and that has but thank god that that has a lot of a lot has changed
+there thank god now as a you know journalist with you know when it's um magazine in germany um
+what tools do you use to you know write publish edit what do you you know what you kind of use
+there well i'm in the happy situation that our publishing house is has defined plain text
+text files as master then we are using a tool chain of self-programmed xml and pearl tools to convert
+these text files into anything that the printing printers industry can use for it's pretty common
+that they are using Adobe products and pdf's or whatever so the but we have separated content
+from layout we split we have the content the content is in text files in plain text files with
+links to images we have our own markup for that that has been working for 20 years now we are 21
+years old and i guess well i've been doing this job for 10 years and almost nine years
+something like that and uh it has advantages if you separate layout and content and it has
+advantages if you have your made your master files as plain text because you're flexible and since
+a few years our development team made several scripts to convert those text files into xml for
+example or recently into e-pub and other stuff other new formats and that's just one thing that
+i learned we are ahead of other publishing houses because they uh yeah we are close to the technical
+stuff so that's probably well but in the end i think uh when it comes to the printed edition
+you know there's still it's maybe difficult even how no matter how good uh uh
+linux tools for layout like stylus stylus?
+scribbles scribbles scribbles again yes like scribbles have become we tested it regularly but
+it's still like that that the publishing companies what the publishing companies the printers
+want uh doby created pdf for example but we i can i only have to work with uh stuff like that with
+with uh with uh the propriety software very rarely thank god so are the um the tools you're talking
+about has linux magazine germany made those available or are they um closed off to just you guys
+i don't want to say they're closed stores because you know i just can't think of the right term
+for the moment i have no i have no idea it's just a bunch of pull scripts i guess pretty long
+pull scripts i never touched them because there's some developers who know what to do where to do
+i think it's on 95k files i don't know if every anybody ever had the idea of publishing them because
+they are so specific to our needs uh and i have no idea if we have never been asked if anybody wants
+them needs them or whatever so i have no idea i to be honest i have even no idea if anybody at my
+company ever thought about releasing them or because who would need it?
+perhaps someone who wants to try to start you know a small you know purely digital
+magazine at this point you know with the tools you have in place they could
+you know be able to take those and get quickly started instead of trying to use you know
+scribis i'd love to see somebody try because it took me quite a while to get uh
+accustomed with with the layout or the tagging the mock-up language that we developed for it
+it's a small set of uh uh layout things but i i to be honest i really do not know if anybody ever
+thought about releasing it on or if there has been a decision not to release it i don't know really
+i have no idea well i will like i mentioned earlier i will be sure to be an email contact with you
+because this is something i would like to follow up on just to be able to it'd be interesting
+yeah i mean and what was it? Lennox voice recently started up you know with these other you know with
+Lennox magazines kind of becoming a boutique product i think there is room for more you know
+more of these things to come out but you know if they could have you know quicker access to the tool
+you know just you know a tool set to get them up and running that could be
+don't mix up Lennox magazine Germany and Lennox magazine US right it's not Lennox pro magazine US
+is something different right i'm trying to make sure that's why i keep saying Lennox magazine
+Germany to make sure that distinction exists exactly now what's um your preferred text editor
+what's my preferred text that i'm well i'm okay to eager i'm using Kate if i'm on the command line
+i'm using vi never dug into e-max that much i had to i i i i knew i knew how to handle it i knew how to
+use it but i never got stuck with e-mix i got i got vi and Kate probably now one markup publishing
+tool a friend of mine told me about that i keep meaning to check out is and it comes out of the
+python community is called syncs and one of the really nice things is it's very much like almost
+a series of make files you have a text file with your content there's markup language to it
+and the nice thing is at the end it is almost as from what i've seen of it what i've read on it
+so please don't take this as a hundred percent true at the end when you've got your you know document
+ready you issue almost like just you know make install file and it can it'll you can have it
+you know spit out an e-pub for you pdf several different kinds of content but you know you're still
+just a second here you want to do and what's your name so we don't get things two crossed up
+here i'm Lance Albertson i'm with the OSU open source lab at Oregon state cool and i will
+we will sit down and do some talking a little later but um so you have some experience with
+syncs since i've brought this up and maybe you can add to it and correct anything i might have
+said glaringly wrong i don't think you've said anything wrong per se but we've had an amazing
+experience switching over all of our internal documentation wiki stuff and any documentation really
+over to syncs doc um we actually utilize uh the read the docs uh theme which has a lot of mobile
+capability already built into it and it's open source it's on github so we just integrated into
+our jingens build server it does a linting and everything and just have to learn a little bit of
+restructured text and other than that it's an amazing tool we can we do all our documentation
+with pull requests now and github that's great yeah i will say one of my greatest frustrations as we
+come with uh tablets e readers becoming very cheap ubiquitous that sure connectivity is
+really really common a lot of times but when i am reading certain types of documentation and stuff
+i want offline versions and i've only seen very few things that make it possible to grab you know
+an e pub version a pdf version something that i could put on my you know you know
+electronic reader of you know insert your choice so you know and i would love to see more of that
+yeah we're actually using um another syncs doc project called higher glyph to do all of our
+presentation and actually the presentation i'm doing it scales going to be using higher glyph
+so i write my entire presentation in a single restructure text file i run mixed slides and it
+makes an html 5 version of the site that i just cycle through i go to my web browser and it just
+shows everything and higher glyph is an extension for syncs so you can take that original format
+and then still be able you can now do you know e pub pdf um can you do something like um open or what
+the native format for lebray office can you have it spit out does things as far as i know i
+doesn't spit out to any of the open file formats as far as i know but i haven't looked into it
+but you know now we've talked about here what's things it has you know with higher glyph you
+you can now spit out you know four or five different things from one file so definitely great
+and because we're here and i'll share i'll ask you again what's your preferred text editor
+my preferred text editor is them and just because um mark is here it brought it up um is that
+period or do you have a graphical side of things you use i really don't use anything on the
+graphical side sometimes i might use g-edit to do a simple copy paste that maybe vim doesn't
+do nearly as well but i usually stick to vim on command line all right um gentlemen is there
+anything else you'd like to um tell the hpr audience all right and um mark is if people wanted
+to try to contact you you know to be able to learn a little more about some of the stuff you're
+working on what's uh the best way they can get in touch with you well there's this website
+called google and just look for marcus with a k and linux and you'll find me i'm or at marcus
+file at linux at linux magazine so i'm the only marcus at linux magazine so you'll find me
+and you sir uh just look up lance albertson open source lab or lance at open source lab and you'll
+find me all right well gentlemen thank you for your time this is lord dragon blue at scale
+signing off you've been listening to hecka public radio at hecka public radio dot org
+we are a community podcast network that releases shows every weekday Monday through Friday
+today's show like all our shows was contributed by an hpr listener like yourself
+if you ever thought of recording a podcast then click on our contributing to find out how
+easy it really is hecka public radio was founded by the digital dog pound and the infonomicant
+computer club and it's part of the binary revolution at binwreff.com if you have comments on
+today's show please email the host directly leave a comment on the website or record a follow-up
+episode yourself unless otherwise stated today's show is released on the creative comments
+attribution share a light three dot org license

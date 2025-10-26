@@ -1,0 +1,178 @@
+Episode: 1247
+Title: HPR1247: Recording Terrestrial Radio with bash scripts and cron jobs
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1247/hpr1247.mp3
+Transcribed: 2025-10-17 22:18:40
+
+---
+
+Hi, this is John Culp in Lafayette, Louisiana, back with another episode of Hacker Public
+Radio.
+In this episode, I'm going to be talking about automated recording of terrestrial radio
+using shell scripts and cron jobs.
+First though, I want to go back and talk a little bit about episode 1197, which was the
+last one that I did.
+I just wanted to thank Ken Fallon for putting up the show so quickly.
+It really only took him a day or two after the time that I put it on the server before
+it was up and ready to go.
+Also thanks to him for the tip on the SSH config file, which is in the home directory in
+the .ssh directory, the config file where you can set up hostname aliases.
+He suggested that I look into this because it essentially accomplished the same thing that
+my script that I called it stick, where the script that I used to make it easier to secure
+copy files to remote servers.
+Incidentally, Tharo came up with the same tip for me on Identica.
+And so thanks to both of them, that was an excellent tip.
+But one thing that reminded me of was that on Linux, there's really more than one way
+to do so many things.
+And even though I didn't know about this config file where I could set up these hostname aliases
+so easily, I was able to hack together a solution using the tools that I did know about.
+And so for that, I'm grateful to Linux.
+Let's see.
+Also, thank you to Clotu and Frank for comments about the episode.
+And I got an email from a guy named Dave in the UK somewhere.
+He said that he looked at my markdown to LaTeX script and said that there's one part in
+the script where I pipe the output through said maybe a dozen times.
+And he said that that made him twitch.
+And I thought that was really funny because that part of the script I've always thought
+was a little bit hacky and was not very pleased with it.
+He suggested that I store all of those said substitution commands in a said script and
+then just call that script from inside the bash script.
+And so I tried that out and it works great and probably speeds up the process.
+So thank you very much Dave for that tip.
+That was a really good idea.
+Okay, so on today's episode, I wanted to talk about something I learned how to do over
+the past weekend and that is to record terrestrial radio on the computer using the command line
+and scripting it.
+Now why would somebody want to do this?
+Well, it's because there are still some shows that I like to listen to that are only
+on terrestrial radio, but I'm so used to having podcasts which I can listen to anytime
+I want that I find it extremely inconvenient to be tied down to a specific location or
+a specific device at a specific time.
+I'd like to be able to simply record it and then listen back when I want to kind of like
+a personal video recorder except for radio, DVR except for radio.
+Anyhow, the impetus for this came on Friday of last week when the theater department at
+the university where I teach had coming up on the radio that evening, a production that
+they had done for radio, like a radio theater kind of production, it was going to be on
+at six o'clock and I just could not tune in at six o'clock, I've got family responsibilities
+and so forth.
+So that afternoon I started looking around for ways to record the radio.
+I knew that I could stream the radio station on my computer because I had gone to the radio's
+website and found a little listen here button.
+It's our local national public radio affiliate, KRVS here in Lafayette, Louisiana and they've
+got a very handy URL for streaming the radio content live.
+So I got the URL and I tried streaming it in a couple of ways.
+I used the excellent little command line audio player written by Jezra called SAP which
+stands for simple audio player.
+And I also used VLC, you can stream stuff using VLC and there might even be a command line
+way to stream on VLC.
+I've not ever tried the command line version of VLC but I have vaguely recall somebody telling
+me about it.
+I also was successful streaming the content using a package called MPG123.
+So after I was able to stream the content, I needed a way to record it and I looked at
+a couple of ways where you kind of route the sound from out of the output into the input
+and record and it was a little bit ugly.
+But then I found an excellent package called StreamRipper.
+Now, StreamRipper allows you to specify a URL and it will just start recording that stream
+to your hard drive as an MP3 file.
+So this really seemed perfect.
+It's available in the repositories for Arch and for Debian, both the systems that I
+use and I imagine it's available in other distros repositories as well.
+You can also go to sourceforge.net, let's see it's StreamRipper.sourceforge.net and you
+can get various packages there and it's apparently available for Windows also.
+I did not even know that and it has some graphical front ends that you can try out as well.
+It hasn't been updated since 2009 but maybe it doesn't really need to be.
+It seems to work just fine the way it is.
+So I downloaded and installed the StreamRipper package and tried it out and found that it
+worked okay.
+It has quite a few command line options and so I fiddled around until I found out all
+of the options that I wanted to use.
+And the options that I decided to use are several.
+Let's see the command I use has 1, 2, 3, 4, 5, 6 command line options to it.
+The lowercase a option tells it to rip everything to a single file.
+I believe by default it rips to multiple files.
+Like if you were listening to some kind of internet music radio program that has separate
+songs it would put each one of those songs in a separate file.
+I assume my goal only was to rip everything to a big long file.
+And maybe that is also where it seems like the other switch the capital A is a little bit
+redundant to me but I use both of them anyway.
+The capital A switch says don't create individual tracks.
+Then there is an L switch which stands for length and that one takes an argument.
+So you do hyphen L and then a length in seconds.
+So to record a one hour show you would put 3,600 because it would be 3,600 seconds.
+Then there is the S switch that says don't create a directory for each stream.
+Then hyphen, hyphen, quiet, double dash, quiet will do the program without any console output
+unless there is some kind of error.
+And I decided to use this because I knew eventually I would be scripting it and I didn't want
+to be getting a system email with the output from this script.
+Then finally the D switch tells gives you an option to tell a specific directory to put
+the recording in.
+So the entire command then would be streamripper followed by the URL followed by the series
+of command line switches that you want to use.
+And in my case it is hyphen A, space hyphen capital A, space hyphen L, space 3600, space hyphen
+S, space double dash, quiet, space dash D, space directory.
+And all of that will take the stream that I want and record it in one great big file
+for one hour without putting any output to the console and stick it in the directory that
+I specify.
+You can also do it without any option for length and that will just start recording indefinitely.
+And once I confirmed that this worked and that it was recording where I wanted it to and
+with all of the options working properly, it was time to make a cron job so that it would
+record at the right time and just have it waiting for me when I want it.
+Now the show that I like to listen to every day or that I would have like to listen to
+every day is the news on our MPR affiliate which runs sadly from 4am to 5am every day.
+Now that's not a time where I want to get up and listen to it.
+At 5am they start playing cage and music and while I don't really have any big problem
+with cage and music, I don't really want to hear it at 5 o'clock in the morning either.
+That's when I would like to be able to hear the news.
+So I want to be able to automate the recording of the news from 4 to 5am every day and then
+just have it waiting for me when I got up and then I could listen.
+So I stored all of my options in a script where if I ran it at the right time, it would
+record it for the right duration and stick it where I wanted to.
+Then what was left to do was to add a line to my Cron tab that would tell it when to
+start and on what days.
+I don't have to tell it how long, well I don't think you can really tell it how long in
+a Cron job, the length of the recording is handled in the script itself.
+So the Cron tab line to record Monday through Friday at 4am reads 0 tab 4 tab asterisk
+tab 1 through 5 in other words, number 1 hyphen 5 tab and then you put the path to the
+script.
+Now I had never really done a Cron job before where I had to specify the days of the week.
+So I was glad to see that there was a way to tell it every day except Saturday and Sunday.
+For one of the other shows that I decided to start recording weekly, instead of 1 through
+5 I just put SAT for Saturday that would make it record every Saturday at a certain
+time.
+I'm happy to report that for the last three days the script has worked just fine and
+every morning I've gotten up to find my news program waiting for me and what I do to
+get it to my laptop.
+I have the script running on a server because my server is on all the time while my laptop
+goes to sleep every night.
+So in the morning when I want to get the news program I have another script that just
+has the secure copy or actually the R sync command that will go and find the MP3 file of the
+news program and then bring it over to my laptop and then I can sync it up with my iPod
+and listen to it from there.
+I wrote one other kind of script to use with this recording of terrestrial radio and this
+one is one that I want to use if for example I just know I'm hearing something on the radio
+right now that I'd like to record on this station all I have to do is type the name of
+the script and it will immediately start recording the stream of that station.
+And without any command line argument it will just start recording and then keep going
+until I tell it to stop or I can ultimately supply a numerical value of minutes and that
+will be the duration.
+So I would say script name space I don't know 15 and that would tell it to record for
+15 minutes.
+Inside the script I have a definition of the length that says if you find a command line
+argument that's a number then take that and multiply it by 60 to get the number of
+seconds and then use that as the length for the recording.
+And that works great I haven't had to use it that much it was just kind of fun to figure
+out how to do it.
+Well I guess that's about it really thanks a lot for listening.
+I will see you next time on hacker public radio.
+You have been listening to Hacker Public Radio at Hacker Public Radio.
+We are a community podcast network that releases shows every weekday and Monday through Friday.
+Today's show, like all our shows, was contributed by a HBR listener by yourself.
+If you ever consider recording a podcast then visit our website to find out how easy
+it really is.
+Hacker Public Radio was founded by the digital dog pound and the economical and computer
+club.
+Hacker Public Radio is founded by the binary revolution at binwreff.com or binwreff projects
+are crowd-responsive by lunar pages.
+From shared hosting to custom private clouds, go to lunarpages.com for all your hosting
+needs.
+Unless otherwise stasis, today's show is released under a creative comments, attribution,
+share a line, lead us all license.

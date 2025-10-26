@@ -1,0 +1,425 @@
+Episode: 2447
+Title: HPR2447: Server Basics 104 OpenVPN Server
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2447/hpr2447.mp3
+Transcribed: 2025-10-19 03:15:08
+
+---
+
+This is HBR episode 2447 entitled Server Basics 104 Open VPN Server.
+It is hosted by Klaatu and is about 43 minutes long and Karima Clean Flag.
+The summary is Klaatu walks you through installing and configuring Open VPN Server.
+This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+Hi everybody this is Ken from HPR with an important from Wednesday the 20th of December 2017.
+The media in the HPR feeds will be served via redirect from archive.org.
+If you run into any problems can you email admin at hackerpublicradio.org.
+We've done quite a lot of testing and I'd like to thank everybody who helped out on that on the mailing list.
+So nothing should change and nothing should be impacted. All the URLs are going to remain
+in the feeds. It's just that for new shows and they will be downloaded via 302 redirect to archive.org
+and they'll be downloaded directly from there so we don't expect your problem.
+But if there is contact us we great. The reason behind this is that Josh at AnanasThorst.com
+who's been providing our servers has been receiving an unacceptable amount of traffic over the last
+period of and that's resulted in slowdowns on the website and lots of issues.
+So hopefully this move will take some of the burden off the website.
+In addition to that if you can throw a few shekels in the direction of Josh we'd appreciate it.
+If you go to any page on the HPR website there's a information there on how you help him.
+So once again as of Wednesday the 20th of December 2017 the media for the HPR feeds will be served via
+a redirect from ive.org. Thank you very much for your time.
+Hi everyone this is class 2 you're listening to Hacker Public Radio.
+This is episode 4 of my server basics series where sis admin series whatever I'm calling it.
+In this episode I want to talk about open VPN or VPN generally speaking but before I get into that
+I want to talk about or I want to address some feedback that I got on this series.
+Feedback came from well x1101 on mastodon or or a liel from the dev u random podcast
+and he mentioned to me that I mean he's a sis admin long time sis admin and you mentioned to me that
+while the series was good I should probably at least acknowledge that if you go out into the real
+world and try to get a job entry level whatever in sis adminning you're going to encounter non-free
+software shock and horror yeah it's true um there's a lot of non-free stuff out there and the
+chances are that wherever you work you're going to encounter some of it. Now when I started working
+when I started looking for work as a sis admin with zero experience to my name I I looked very
+exclusively at jobs that were Linux or Unix based so I didn't even didn't even entertain the
+idea of doing Windows support I just didn't and it meant that I was unemployed for about a year
+I mean I wasn't unemployed I just wasn't employed as a sis admin I was working at a bagel shop
+and that was great because I got free bagels it was really really a great job actually I'm
+thinking of getting back into that line of work but as a sis admin when I finally did find the job
+I did I did get a lot of Linux experience it was great but even though it was Linux there's a
+lot of proprietary stuff that sits on top of that sometimes so you know you might walk in and find
+for open VPN or for a VPN I keep seeing open VPN for VPN they might be using Cisco
+and for for virtualization they might be using VMware little things like that so just be aware that
+while I'm covering the open source stuff there is stuff out there that is not open source
+and you might find yourself having to deal with that now what I have found in practice
+is that learning the open source stuff as is often the case teaches you so much about the
+principle behind the about the technology really the technology behind the technology I guess
+and in the end you come out knowing just everything you could possibly know about that
+that subject and so when someone throws something proprietary at you you may or may not
+have ever used it but at least you know the concepts that you're going to have to tackle
+and so you know kind of how to approach that closed source system so sure you may not know a
+thing about how to log into a Cisco box router you may not know anything about the the command line
+that Cisco provides you but once you look up a couple of tricks here and there you're going to
+see what exactly it is that they're configuring with different commands and you'll be able to
+equate that with all the open source stuff that you actually do know and it's it's a lot easier
+to sort of to tackle if you if you understand all right so this stupid command here is really
+adding a route to get my traffic to this subnet blah blah blah you know and so it makes sense
+and so I'm going to obviously stick with talking about the open source stuff and I don't think
+while meant for me to to change away from that but but I will continue to talk about the open
+source stuff because that's what I know anyway just with the the acknowledgement that close source
+solutions for the same technology you're going to you're going to encounter them on the job
+and unfortunately a lot of people are going to now I'm getting tied dragged in but unfortunately a
+lot of people are going to to sort of try to sell you on the idea that the open source stuff that
+you want to use is actually more to maintain that's an old one that's an oldie but goody and it
+it just keeps rearing its ugly head people keep saying it and and if you do open source wrong
+then it's true but then again if you if you do close source wrong you have a whole set of other
+problems so if you do anything wrong you're going to be unhappy so if you're doing open source
+correctly you're going to learn it and then you're going to automate the heck out of it and you're
+not going to have to deal with it every day and if you do close source wrong then you're going to
+use closed source and someone else is going to take care of it for you and you'll just never know
+what's going on within that box and where your traffic is actually going and when something breaks
+you're not going to be able to fix it because you're going to have to call in someone else
+to work their magic in their magic box you don't want to do that trust me people are going to
+try to sell you on this and they're going to say well we can take work off of out of your hands
+you're not going to have to worry about this and you will will set up your VPN for you all it
+takes is this mysterious box in your server rack and we'll manage it for you and you'll you know
+at sometimes you will be tempted to go that route you will say well I'm still trying to work out
+my open VPN config files and it's not working and this is horrible and I'm really busy and people
+are yelling at me all right let's sign up so let's sign up with this service do not do it stick
+with open source if you have any say in the matter rely on open source it will not steer you wrong
+you might have to struggle to get it set up from time to time because you don't know it yet
+but you're learning you set it up you automate it and it's perfect so that's just my experience
+now let's talk about VPN and why it's important so VPN is kind of a big deal it's it's it's
+almost I would say to the point that it's that it's expected especially within
+technical industries having a VPN and being able to access your work network from away
+from work is is a it's it's just expected people people expect you to have that set up so if you
+get a job as a cis admin that's going to be one of the things that you're going to have to set up
+almost guaranteed now you might think well hey I set up SSH at home and I even poked a hole in my
+router firewall and I can SSH to my home network from the cyber cafe because we're pretending
+like cyber cafes is a modern term still and and that might seem really cool to you and and maybe
+you even do fancy things like 4x forwarding on over SSH so you think it's it's practically like
+I'm sitting at home it's amazing that's not gonna work for on the larger scale trust me for a
+couple of reasons number one because a lot of the closed source vendors out there and windows
+admins and people who just generally don't know a whole lot about the Linux tool chain are going
+to say well SSH is horrible it's it's a it's a it's a gaping vulnerability you gotta you can't
+have that open on your on your network and that they say that because they hear things about exploits
+and they they know that they know that SSH runs on port 22 so they know that people will brute force
+SSH on port 22 as root and they'll get in and they'll take over your network and all that other
+good stuff of course again you know if you've done it wrong which is you know if you didn't listen
+to the episode previous episode about SSH and setting it up and stuff then yeah maybe you would do
+something like that but of course in real life you personally would not do that you would not run it
+on port 22 you would run it on some other port you would not have passwords even enabled much less
+root login enabled and you would have something sitting in front or sitting between that SSH port
+and the rest of the system such as fail to ban or whatever so it's not really an issue but people
+will say well SSH is not good so they will frown on SSH because they believe that it's a bad thing
+and they'll say no you have to use you have to use VPN because everyone knows VPN is perfect and
+nothing's ever gone wrong with VPN so that's what they'll say now the other reason the actual
+reasonable reason that SSH will not stand up to VPN is that VPN provides a network SSH is just a
+shell that's what it stands for secure shell so in order to use SSH you're logging when you use
+SSH you log into a computer and you are presented as you probably know with a prompt and a lot of
+people don't know what to do with that that's not a useful thing for a lot of people so providing
+them with access to one computer on a network and a prompt it's pretty limited so VPN is a
+virtual private network it provides not just a computer it provides an IP address so your computer
+stays the same it's the one that you're actually typing on and you inherit everything else on the
+network whether it's IP addresses access to networked printers access to internal information
+management systems you know maybe a internal wiki or or or something like that
+important services like like maybe if you are sick for the day you and you need to go into the
+system and and apply for you know a paid day off maybe that runs on the internal network
+and in order to reach that you have to log in to the VPN so that you can get to the server
+within the network that runs that sort of thing so it's it's an important sort of service to provide
+to your your your people to your crew because it it it provides them a network away from the office
+with encryption and a pretty darn good set of authentication options so what we're going to set
+up today well what we're going to set up in this episode because this is quite quite a complex
+process to be honest is a VPN server and then in the next episode I'll step you through setting up
+the VPN clients well we'll just work to get essentially the connection going that's that's the
+hardest part I have found and open VPN is such a big technology with so many different options
+and frankly a lot of different use cases it gets pretty overwhelmed it would be overwhelming
+if I tried to step you through all the different options so what I'm going to do is get you
+running a VPN so that the server and the client can talk to each other we're just going to get
+them to ping back and forth over the same subnet and from there you can try to sort out what you
+actually need to know on top of that I in my experience the initials of configuration
+figuring out the certificates and pinging back and forth you know getting that connection
+to actually function that's the hard part after that it's just a matter of adding other stuff on
+other features that maybe you want a different kind of authentication maybe you want to add in
+some TLS whatever that stuff you can look up after you've got that connection going once once
+the ping was start responding to each other so in order to install open VPN you'll need two
+different things one is the open VPN package itself which will be in your repository certainly
+it's already installed on some distros certainly it's already on slackware I don't think it was on
+scintOS initially but yeah like I say it's in it's in the in the repository and then you'll also
+need something called easy rsa and easy rsa used to be part of the open VPN package apparently
+and then it got sort of forked off into community support quote unquote meaning it's its own
+project now confusingly there are two there are two easy rsa versions that are still sort of
+equally in use so if you go online and look for instructions on how to do all of this stuff
+you well may come across a tutorial that just happens to have used rsa easy rsa too
+where you may have you may stumble across one that uses rsa 3 and that'll be confusing I'm
+gonna go with rsa 3 because that's sort of where everything's going but just be aware that there
+are two very rsa 2 is still pretty I guess popular or there's a lot of use still of of easy rsa 2
+presumably because a lot of those the server guys the server distros are very slow to change
+an update because they test everything first and so open rsa 2 is still just what they've got in
+their docs okay so with that out of the way you need both of those packages open VPN and easy rsa
+on sinto s certainly you would need to enable the epl that's the extra package extra packages
+for enterprise linux you can look up on the fedora sites or the sinto s site on how to do that
+okay so the first thing that you have to do for open VPN really is come to grips with the fact
+that you're going to be managing a bunch of keys so you remember in the previous episode when I was
+talking about ssh and how you should not use passwords and you should use ssh keys and that's all
+all kind of built into ssh and it's pretty simple to to manage because it's you've just got ssh key
+gen and you're just generating keys and passing them out to your users and it's pretty simple well
+open VPN is a little bit more like I would say for instance pgp if you've ever tried to use pgp
+if you're email or or can you pg whatever or open ssl and open VPN is a lot more like open ssl in
+fact it actually even uses an open ssl library so it doesn't have the infrastructure that for
+instance ssh has kind of built in to to to to to juggle all these keys around easy rsa is kind of
+our easy solution to to doing that so once you install easy rsa which I've just done then
+it usually dumps this folder of scripts or ascript depending on whether you're using two or three
+into some shared location and generally speaking I don't believe I've ever seen it anywhere else but
+slash usr slash share and then slash easy rsa so they they really mean in their docs they tell
+you to do this so what they're really intending for you to do is to copy dash rv slash usr slash share
+slash easy rsa just to some location that you can that you that you want to use it from so I'm
+just going to copy it to my home folder right now and then I'm going to change into that folder and
+I see that there's an easy rsa script there's an open ssl dash 1.0.cont and there's a vars
+example and then x 509 types so easy rsa itself is a shell script and it's right there so I'll just
+do a dot slash easy rsa the first thing that I need to do is create my public key infrastructure
+which everyone just refers to as pk i and the command for that is dot slash easy rsa space init
+dash pk i and it tells you okay init pk i complete you may now create a c a or requests
+your newly created pk i der is slash home slash clatu slash easy rsa slash pk i great okay
+so in the folder now that we are in if you if you do an ls you'll see that there is a new folder
+called pk i and if you look in pk i you see that there's a file called private and there's a
+folder called private and a folder called rex and they're empty that's fine that's expected so far
+okay so that's that's just set up the infrastructure for our pk i now what we're going to do is as
+as it kind of told us or as it hinted for us is we're going to create a c a or certificate
+authority so dot slash easy rsa space build dash c a that generates a 2048 bit rsa private key
+and it prompts us to create a password for this private key now notice it might you might notice
+that it's telling you it's putting this private key in the pk i directory that we had that we
+just created with that in it pk i command so i'm going to enter a really embarrassingly simple
+password just to keep it easy for myself and then don't do that in real life but since this is
+just a test environment i'm just using it the bare minimum password which is four characters
+it will enforce a four character password it will not let you just enter a single character but
+anyway you shouldn't be doing that anyway this is i'm just doing that so that as i type and talk
+i don't have to remember too many strings so now let's asking me for a common name which is
+your user your host your server name whatever so it can be pretty much anything but i i think
+what i've always done is i've just used the the host name so i'm going to use dark star which
+is not actually my host name but that's what i'm going to do anyway now again the c a creation is
+complete and you may now import and sign cert requests and so it says your new c a certificate file
+for publishing is at slash home slash clatu slash easy rsa slash pk i slash c a dot c r t so that
+is the c a the certificate authority certificate that we have created now we're going to create
+something called a request dot slash easy rsa gen that's g in like generate dash req like
+request and then the thing that we're creating the request for is our server which we can
+identify by by the the the name that we created that c a for so i'd put in dark star so that's
+what i'll do now again it is asking me for a pass phrase and again i'm doing like a ridiculously
+simple simple one and it's asking me for a distinguished name or a d in and that is of course
+again dark star okay so now we have just re we've a key pair in a certificate request have been
+completed your files are the request till the slash easy rsa slash pk i slash wrecks slash dark
+star wreck and the key is in the same place except pk i slash private slash dark star key so now
+we need to create a certificate for our server and the way that we do that is dot slash easy rsa
+space sign dash req so that's s i g in dash req so we're somewhere it's a sign request space
+server because that's what we're generating it for that it's the literal string server and then
+space dark star which of course is the name of our server that we you know that's how we're
+identifying it so you say you press enter on that and then it tells you it kind of tells you
+what what your request you know it summarizes the request and the subject is okay well here's your
+your your request you're you're about to make a certificate with a common name of dark star type
+the word yes to continue or any other input to abort so i'm going to type yes confirm request
+yes and then it asks me for the passphrase of my for this certificate authority so i created
+that i made it really stupid simple which hopefully you're never going to do and then i hit return
+on with on the keyboard and it generates it really quickly it tells me where it is it says it's
+in easy rsa pk i issued dark star dot crt so we'll need that later we'll we'll move that to a
+different location but first the server needs to have a diffy hole a helmin file to look at
+and the command for that is open ssl dh param that's dh as in diffy helmin param like parameter
+p a r a m space dash out and then some name generally speaking the default name is dh 2048 dot
+pem dot pem and then space 2048 and that tells it obviously how many bits this should be usually
+the default name is dh 2048 dot pem it might be something different in your in your example open
+open VPN config file so just kind of pay attention eventually make sure that that name is is
+something that you actually set i find it easiest just to use the convention dh 2048 i don't see
+any reason to do anything but that and that's still actually generating on my computer so i'm
+going to pause this as that generates okay it's done cool that took no time for you now this next
+step that will we'll go through together we're not actually going to use the key that we produce
+during these two episodes but it is important because it's it's a key that you would need later on
+if you're going to add in extra features specifically tl s authentication on top of all the open
+VPN handshakes that occur which helps set up kind of a firewall to block denial of service
+attacks so it's important but not not essential to get this thing working in a secure manner it's
+just an added feature that you can you can go in and investigate later for yourself when you do
+that though you will need to generate a ta dot key and if i don't tell you how to do that you
+might get confused and think that you it's a key that you already generated well as of now it
+will be it's a key that you'll generate we won't use but you might use personally later on
+and this we actually get to use the open VPN command finally i mean it's just to generate yet
+another key but you know whatever so you do an open VPN space dash dash gen key that's generate
+key gen key all one string space dash dash secret space ta dot key ta dot key is the traditional name
+for it like i say it stands for tls off and you do that and that creates the ta dot key in your
+current directory right alongside of all the other files that we've been generating well not
+not all of them but right alongside the dh 2048 dot pems certainly okay that's that's all the setup
+for the the well it's not all the setup that's all the key generation that we need to do right now
+for the server infrastructure now we have to move everything to where where open VPN is going
+to be looking for them so the dh 2048 dot pems since it's right here in the current directory
+you might as well move that first goes to slash atc slash open VPN slash certs and if the
+sub directory certs does not exist you can create it you'll obviously have to do all of this
+is root so you can just do a make-der dash p slash atc slash open VPN slash certs that doesn't
+exist that's okay it will create it and then you can move the 2048 into there the dh 2048 dot
+pems into that directory and i'm sorry i should be clearer here when i'm saying i'm saying move
+and what i'm actually doing is copying and i do this for a very good reason and that is that
+all of these keys we're going to want to archive we're going to want to back this stuff up so
+you want to copy all the things that you've generated from this directory to the rest of your system
+and then at some point you will want to tar this directory up and put it in a safe place so that
+if anything happens you have all this information you don't want to have to
+revoke all of your keys and make all your clients update and regenerate all your client keys i mean
+you might if there's a breach or something but your server crashes you don't want to lose this
+back it up so i'm copying even though i'm just i'm frivolously saying move i mean copy
+and then you'll also want to create make-der slash atc slash open VPN slash keys kys and if that
+doesn't exist you'll want to create that and you'll want to copy the ta dot key to slash atc slash
+open VPN slash keys and there's more so let's copy the ca cert that we created which remember
+easy rsa placed in the pk i directory so you'll copy pk i slash ca cert to slash open
+slash slash atc slash open VPN slash certs that kind of makes sense if you really think about it
+because yeah dot crt goes into a certs directory makes sense you also have to copy the server specific
+cert to the certs directory so that was placed in the pk i slash issued slash darkstar dot crt
+and you'll put that into slash atc slash open VPN slash certs and then you'll also want to copy
+the key the server key the private key which again placed in pk i slash private this time
+and it's called darkstar dot key and you can put that into slash atc slash open VPN slash keys
+so if you really really think about it it's not i'm not saying it's intuitive by any means but
+i am saying it does kind of make sense if you if you look at the that the kinds of files that
+you have generated which are practically magical but if you look at their extension and you kind
+of look at what kind of directory structure open VPNs main configuration directory has it does
+kind of make some sense okay so once that is finished it's time to set up the configuration file
+and i think that that key step is probably the most frustrating and it's one of the least well
+explained things on the internet in terms of when you go to look up how to do open VPN configuration
+because generally all the how-to is just kind of rushed through it which i mean to some degree
+i have as well but they they kind of just they're throwing all these generation commands around
+and you have no idea what you're generating or where they're supposed to go and it gets really
+frustrating so anyway onto the configuration step the first configuration we need to do is the
+server configuration so that open VPN when we start it knows that it's actually running on the
+server that it's not in client mode that it's in server mode so we'll do a well okay so server.conf
+is the file that we want to do and it really kind of depends again on your package or like where did
+you get open VPN from how did they set it up for you where is server.conf if server.conf is nowhere
+to be found you can find it from or rather within the the open VPN source code that you can
+download from open VPN so if you go to openvpn.net just go into the community wiki and then on the
+left hand side you'll see downloads they go to downloads and then you'll see all the different
+tarballs and things that you can you can download so download one of them and inside of there you'll
+find in a slash let me I'm going to actually start I'm going to just do a cat of slash home slash
+slash downloads slash open VPN blah and then there's a folder in there called sample and there's
+a bunch of folders in there and there's a folder called sample config files and in there sure
+enough there's one called server.conf and that's what I want so I'm going to redirect that to slash
+etsy slash open VPN slash server.conf simple as that and now I can open up server.conf in emax and
+this is and I mean that those sample files are actually really really good to look at because it
+kind of gives you a bunch of different use cases so there are there are lots of different
+configuration files in there some of them will still be a little bit confusing I guess because
+you won't know what you need and what what you should activate and deactivate and that sort of
+thing but a lot of them do at least give you a notion of what is possible and I mean some people
+I've read like to just there's there's so ssh that they just like to use open VPN as as just for
+a single computer to computer type of connection which you can do you just have to set it up for that
+and there's a sample configuration file I think in there if I recall correctly for that sort of
+set up so lots of good config samples in there okay so anyway we're setting up a server right now
+so let's talk about that config so well what I've got here is first first I mean they read through
+it as I said but the first thing that you need to look at is the port port 1194 that is the default
+port for VPN traffic and you can keep it there I guess if this is your first time ever setting up
+a VPN I would say keep it there just so you remove variables but if you want to change it you can
+then the next one is the protocol protocol that I think is the default I guess is UDP I don't know
+why you would need anything other than that there may be valid reasons I'm just saying I've always
+set it up with UDP all right next the device the the device to use on Linux certainly would be
+the tunnel device to you in ton I I think I've used a tap interface before I don't think it was
+for VPN I think I want to say it was for bridging something from Qemoo or something I'm not sure
+but anyway ton is the default and that's what I'm going to go with and it's it's generally what I
+would say that you should go with although that said I have no idea if you have to use tap on
+windows or if there's a tunnel option for windows on that I'm not sure okay next three lines are
+going to be looking for your certificate information and luckily we know where those are because
+we put them there ourselves so the first one is the CA the certificate authority certificate is
+in in my case I put it in slash Etsy so I'm changing this in my config file open VPN slash
+certs slash CA dot CRT I happen to know that that's where I put it the next one is going to be
+looking for the certificate of this server itself so that's a C ERT space slash Etsy slash open
+VPN slash certs I put that in certs again or as well slash dark star dot CRT and then the final
+one is the key which this is the secret key so slash Etsy slash open VPN slash keys slash dark
+star dot key now if you put them somewhere else or you named them something else then obviously
+you would want to adjust that for your for your use case and then after a little bit of more
+comment it asks for the Diffie Hellman parameters and for that DH space slash Etsy slash open VPN
+slash certs slash DH 2048 dot PEM that's just again kind of the default stuff okay so topology
+subnet that's fine I don't care down here there's this thing about configuring the server mode
+and supplying a VPN subnet for open VPN to draw client addresses from so this is essentially
+establishing your own little private DHCP pool that you want open VPN to use when
+when clients connect so I put in here server space 10 dot 8 dot 0 dot 0 that's the default
+default subnet and then space for the mask 255 dot 255 dot 255 so in other words don't touch 10
+don't touch 8 don't touch 0 and then dot 0 meaning yes hand out that last that last number we can skip
+over the if config pool persist we can skip over server bridge we don't need to do that because
+we're not using a tap device now there are a couple I mean you're gonna have to come back to
+configuration file depending on some of on how you want to configure this stuff but right now
+since you don't know how you want to configure it I'm kind of skipping over a bunch of this
+bunch of this the options but there are a couple that you that you'll probably have to look up
+and kind of see how you want this all to go one of them being the redirect gateway definition which
+that's kind of kind of a thing in open VPN you would you you might have to use at some point
+so TLS auth right now we are going to leave that off so if that's not commented out commented out
+it's an important one and it uses the ta dot key that we generated earlier but it adds a variable
+to the connection stuff so if we have time we'll go back to this and try to turn that back on for
+now we're going to leave it off just for simplicity is it's sake now it says cipher
+AES 256 cbc and we're going to need to put that also in our client configuration so don't let me
+forget then there's compression and we could use a couple of different types of compression
+to keep things simple we're just going to do the comp dash LZO compression technically speaking
+that's not even all that necessary but we're going to do it anyway max clients is 100
+so we're just going to uncomment that and say well we're going to do max clients as more like
+10 just because this is a test user nobody group nobody yeah you want to uncomment that so that
+we're we're using unprivileged users here persist key and persist tonne we're going to kind of
+I guess we'll just leave that as is that that's one of those troubleshooting things that if
+something's not working sometimes you have to go back and comment that out as you troubleshoot
+output a short status file showing current connections truncated and rewritten every minute status
+open VPN dash status dot log so I'm setting the log location and then I'm going to set the log
+append location to log dash append space slash bar slash log slash open VPN dot log and once again
+that may be that depending on where you got your open VPN package from that might already be the
+default now for verbosity we can set that pretty high right now so while we're troubleshooting so
+I'm going to set that to verb six which is a sort of debugging and that's that's a good thing to
+have now you can do nine but I find that that's too much and it just flies off your screen way too
+fast but you can resort to that if you if you're having a lot of problems and then I like to mute
+20 which means if there are 20 of the same messages in a row it will not write all 20 to the log
+and that's about it I think that's everything for this for this file that's the server configuration
+so I went through that pretty fast but a lot of those were the defaults anyway so that's a good
+thing and to be honest a lot of these options you're going to have to come back to and
+set some other way because your use case is probably going to differ from this test case that said
+I want to be very clear the options and the values that I put into that config file they will work
+for you you can do exactly as I was doing you don't need to customize the IP addresses or anything
+those are standard open VPN expectations like the port numbers and the IP addresses so you can use
+those exact same values unless that is your home network happens to run 1080 as it's main network
+then you'd want to change the subnet that you are then creating that's a pretty odd ball
+default though I doubt that you're using that so you should be able to enter the exact same
+values as I entered into my config and get an open VPN server up and running so what we'll do now
+is we'll start open VPN just to see if it's working I mean we don't have any clients set up so
+it won't really be all that exciting but at least we'll see that it works so what we'll do well
+actually first before we even do that do an ip space a and or or you could do if you want to do it
+the longer away ip space atter space show and that should show you all of the that's the that's the
+that's the new if config essentially so ipa will show you ip space a will show you all of your network
+connections or your your network interfaces rather so there's the loopback device there's the
+eth device the the you know the actual ethernet port and then there's your wireless port or your
+wireless card whatever wland zero whatever your your one is called so that's that's good now we know
+great and now we'll do the open VPN start thing so it's open VPN is the command now there's a
+dash dash config option but if if that's your only option that you're passing you don't have to use
+that so you can just tell it you can just do open v if VPN space slash etsy slash open VPN slash
+server.com and now it just gives me a prompt back gives me my my prompt straight back well that's
+kind of crazy so if you do a p grep open VPN no nothing p grep VPN no nothing okay so I don't
+think this thing started well let's do a cat of of our log open VPN log and you'll see in your
+log that yeah it actually failed so it says options error dash dash explicit dash exit dash
+notify cannot be used with dash dash mode server so then if you look in your slash etsy slash
+open VPN slash server.com down at the bottom of that file there is a notify the client that
+when the server restarts so it can automatically reconnect and and that's set to to one so we're
+gonna have to set that to zero and then if we do an open VPN slash etsy slash open VPN slash server.com
+it prompts us for a password private key password now we know our private key password we created
+that earlier so I'll enter it and then it just kind of hangs so if I switch over to a different
+terminal and do a p grep open VPN I do see that it is working so the reason that it appears to be
+sort of just frozen is because we didn't demonize this process and that's okay I wanted to be
+able to see that everything was working and I wanted the feedback so I'll go ahead and control C
+out of that now I can I can restart it again and do demon dash dash damon d a e m o n let's
+call it dark star VPN and then we'll do a dash dash config because now that's not the only
+option we're using slash etsy slash open VPN slash server.com and now if I start that then again it
+just gives me my prompt right back so that kind of felt like a failure again so let's do another
+cat on our log file and sure enough it's it's a failure so it says okay can't ask for
+inter private key password if you use dash dash damon you need to use dash dash ask pass to make
+pass phrase protected keys work and you cannot use dash dash off no cash well I didn't use dash
+dash off no cash but neither did I use dash dash ask pass so now I'm doing it again with dash dash
+ask pass it now it tells me it now it asks me for my password and it gives me my prompt back but
+that felt a little bit better so let's do a p-grap VPN and yes I get a 5092 that's the process that
+it's running at right now yours will will be different and so that means that open VPN is running on
+our server so that's great that's huge that's a big deal remember when we did the ip space dash a
+before note space a before we started open VPN do that again ip space a now this time you might
+notice you've got a new network interface my friend you have loopback you have eth zero you have
+wland zero whatever your wireless call and you got ton zero that's a new tunnel interface
+created by open VPN now things are getting exciting I'm going to close this one out we've got the
+server the open VPN server up and running ready to accept clients we have zero clients configured
+and that's a whole other it's a whole other thing you will be making lots of client keys
+ostensibly because that's that that's the one to many relationship you've got your open VPN
+server and lots of different clients so rather than trying to cram all the client stuff both the key
+stuff and the client configuration into this episode I'm going to break it into the next episode
+where we'll configure clients will launch the open VPN client on the client and start
+back and forth you've been listening to hecka public radio at hecka public radio dot org
+we are a community podcast network that releases shows every weekday Monday through Friday
+today's show like all our shows was contributed by an hbr listener like yourself
+if you ever thought of recording a podcast then click on our contributing to find out
+how easy it really is hecka public radio was founded by the digital dog pound and the
+infonomicum computer club and it's part of the binary revolution at binwreff.com if you have
+comments on today's show please email the host directly leave a comment on the website or record
+a follow-up episode yourself unless otherwise stated today's show is released on the creative
+comments attribution sharelight 3.0 license

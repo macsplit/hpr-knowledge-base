@@ -1,0 +1,475 @@
+Episode: 4377
+Title: HPR4377: Password store and the pass command
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4377/hpr4377.mp3
+Transcribed: 2025-10-25 23:57:41
+
+---
+
+This is Hacker Public Radio Episode 4377 for Tuesday the 13th of May 2025.
+Today's show is entitled, Password Store and the Pass Command.
+It is hosted by Klaatu and is about 30 minutes long.
+It carries a clean flag.
+The summary is, try a Unix like Password Manager.
+Hey everybody, this is Klaatu.
+I'm going to talk about the standard Unix Password Manager, that's what it calls itself.
+It's specifically the Pass Command, P-A-S-S, and it is a password manager that you can
+use through a terminal, but also integrate with other applications on your system.
+Password Management is one of those computing problems I think that a lot of us don't think
+about often because modern computing usually has a really obvious and, frankly, usually good
+enough, default solution built in.
+A website prompts you for a password, and your browser just automatically fills that
+password in for you in theory, I mean, I'm assuming that you've given your browser permission
+to store passwords.
+It's a natural thing most of us do it without giving it a second thought.
+I used to do it without giving it a second thought.
+It was fine.
+It worked really, really well for lots and lots of years.
+I was quite happy with it, and then one day, I don't really remember it, but I'm imagining
+one day I felt like I wanted to extract my passwords from the browser and put them somewhere
+else or import them to some other browser or something, and I remember it just being too
+hard, and I thought to myself, this is not what I want.
+I want my passwords in a space where I feel like I control them and own them.
+I'm not saying I didn't own them when they were being stored locally on my machine in
+my browser, I'm just saying that there was enough of a barrier there between me and
+getting to my passwords as raw data that it annoyed me.
+I just, I wanted it to be simpler.
+So I looked around and I found this thing at passwordstore.org, that's P-A-S-S-W-O-R-D-S-T-O-R-E.org.
+It is a website that declares that it has a tool that is the standard Unix password manager.
+It's an odd choice of words because it isn't the standard Unix password manager.
+I mean, standard feels like it's standard, so I mean, you would expect, okay, so I'm
+going to install a Unix or Unix-like operating system, and surely I'll just get past the
+past command will exist, and it doesn't.
+You have to go download it and install it.
+So I don't know exactly what the, or the, I don't know, they use that meaning of saying
+that past is the standard Unix password tool or whatever, but the connotation is that it
+is a password, that it is a command that, that respects the sort of Unix philosophy or
+whatever, you know, whatever you think of that as just sort of like, it feels like a Unix
+command in other words.
+I mean, it is a Unix command, but it feels Unix-y.
+It gives you full control over your data, it stores it in a format that is possibly
+very familiar to you, ultimately is plain text, but it is encrypted, and so on.
+So let's talk about installing past, because you can't really get to know it if you don't
+use it.
+So installing past is pretty simple.
+It is probably in your software repository.
+So on Fedora, for instance, you would do something like pseudo DNF install past.
+On Debian, you'd do something like pseudo apt install past.
+On Slackware, which is what I run, I do specifically pseudo SBO install password dash store.
+That's what the package name is, password dash store.
+The word past, PAS, is not unique enough within the repository of Slackware to just install
+past.
+So password dash stores, what the package is called, on the BSDs, as far as I know, it's
+the same password dash store.
+Okay, so either whether we're calling it past or password store or whatever, and I'm
+going to be using those terms interchangeably, because obviously the website is password
+store.org.
+So I think that the system itself is meant to be called password store, whereas the command
+that you actually use is pass PAS as in password.
+This is an open source command, so you can also just download the source code.
+If you want from get.zx to c4.com slash password dash store.
+So if you're repository doesn't have it, you can get the source code.
+Okay, so the first thing that you need to do to use past, to make it useful at all, really
+is to have a GPG key.
+So you need a key, a key chain encrypted with GPG or PGP, you know, that protocol in order
+for past to work, past relies in order to encrypt your passwords.
+The password store uses your GPG key.
+So if you do not have a GPG key, then you do need to initiate one in order for this
+to work.
+Now you may already have a GPG key, in which case you can use that key.
+No problem.
+You can skip the sort of setup stage of creating a GPG key.
+But if you either do not have a GPG key yet or you decide that you would want a GPG
+key specific to your password store, then you do need to create a key.
+And you can do that with the GPG command.
+I think I've talked about some of the GPG commands before, or maybe I did that on my old
+podcast, a new world order.
+I'm not, I can't remember, but there are a couple of different front ends to GPG.
+For this example, I'm just going to use GPG, not GPG, me or GPG, two, I'm just doing
+GPG because I figure that's probably like the lowest common denominator.
+So GPG space dash, dash, gen, dash, key.
+So that's GPG and then space and then dash, dash, gen, as in generate, G in dash key,
+K, E, why this puts you into an interactive mode where you have to choose between various
+options you're prompted for, for answers, generally speaking, and there is a caveat.
+So listen to this whole sentence, but generally speaking, you can just accept the defaults.
+It's fine.
+It'll work.
+Except this is a big caveat, except you just need to be aware that at the very end, it's
+going to ask you for your real name, for your email and for a comment.
+Normally, these are more or less optional fields.
+I mean, you do have to put something in I think, although I'm not even sure if GPG
+complains if you don't, I haven't tested that.
+But in this case, for the purposes of pass, if I have found, and there might be some
+way around this that I'm just not thinking of, I have found that if any of those fields
+are blank, past fails to locate the GPG key.
+So for instance, if you put real name, clatu, email, clatuatexample.com, comment, nothing.
+Then you're not going to be able to find your GPG key.
+That's in my experience, again, I could be wrong.
+There might be a little hack around it.
+Maybe if you just use blank parentheses in your GPG ID, I don't know.
+But so just make sure that when you're putting in your real name, you put a name, clatu.
+That's fine.
+It doesn't really have to be your real name, obviously.
+GPG, sort of the culture around GPG keys is that you use your real name, but you don't
+strictly have to.
+So real name, clatu, email, clatuatexample.com.
+Again, that doesn't have to be your actual email if you don't want it to be, but it has
+to be in that format of string at symbol string dot top level domain.
+And then comment and then just put a, put a comment in.
+So I, I just put something like password store.
+That's a pretty, that's like that actually is a descriptive comment that'll help you when
+you're looking through your keys, remember why this key exists.
+So it's not a bad thing.
+It's just something to be aware.
+You want all those fields to be filled in.
+Okay.
+So let's say you've done that.
+You've answered all the prompts.
+You've generated a key.
+You've got your little fields filled in for the key, the, the, the, the combination of
+those fields that I've just talked about, the combination of that in a, in a bizarrely
+different order than what it's asking you for them in creates a GPG key ID.
+And you can see your GPG key ID at any time using GPG space, dash, dash, list, dash,
+secret, dash, keys, and then the pipe symbol, grip, UID.
+Then you'll get your, you'll just get the UID of your key back, which in this example
+would be clatu, parentheses or brackets, whatever you call it, password store, closed
+parentheses, clatuatexample.com.
+That's my key ID.
+Okay.
+You're going to need the key ID to, to initialize your password store.
+That's why I'm bringing it up.
+And that is the next step.
+You're going to initialize the password store, either with the GPG key that you've just
+created or a GPG key that you already have.
+But you may need to look at your GPG key ID for something that you already have because
+you might not think about that all the time to initialize your password store.
+You do pass, space, init, I-N-I-T, space, quote, and then your GPG key ID.
+So again, in this example, clatu, parentheses, password store, closed parentheses, angle
+bracket, clatuatexample.com, close angle bracket, close quote.
+This is all provided in the man page.
+So you don't have to like jot down everything that I'm saying.
+You'll see it in the man page pretty well described.
+It gives an example.
+I do admit that it feels a little bit weird that it does feel a little bit tenuous sometimes
+when it's searching for that GPG key.
+But I don't think that's really past that we could blame for that.
+I think that's just GPG and it's interface that we can blame.
+I don't think it does a great job of sort of broadcasting to you how it wants to be identified.
+So UID is where you'll find that information.
+Make sure that you do lots of copying and pasting so you don't get any of the characters
+wrong.
+And I say that because pass will accept whatever you give it.
+The GPG key when you're initializing your password store does not have to exist.
+It will just happily create a thing with that value sort of stored in its configuration.
+And then it'll fail when you start to create passwords.
+So get that right now so that you don't have failure later.
+But as is often the case, the getting it right part is just a matter of copying and pasting
+rather than transcribing.
+Don't give yourself the opportunity to make typos and things like that.
+Now the cool thing is that you can define more than one GPG key to use with a password
+store.
+Should you intend to, for instance, share a password with another user or another system
+that has a different GPG key on it or whatever.
+So there is some flexibility in terms of who can see this, which kind of gives you
+kind of a bit warden-like shared password capability if that's what you're looking for.
+I don't use it like that.
+I could envision, I do have a use case for that personally, but the use case I don't
+think would be optimal for the people I have it in mind for.
+They would not want to deal with pass.
+I don't think in the way that you need to deal with pass.
+So I haven't used it that way, but I do, I'm cognizant that that is available and that
+does seem kind of appealing.
+All right, let's talk about actually using pass and then we'll talk about integrating
+it with the rest of your system.
+So the basics of pass is pretty simple.
+You can add a password to your password store using the pass insert command.
+That is pass insert and then a URL, technically any string, but generally this is your, I'm
+assuming you're using this probably for websites with a URL.
+And so that is the URL you want to put here.
+So if you're getting a login prompt on a website at like example.org, then pass insert
+example.org.
+You are then prompted to type in a password and then to type in that password again to confirm
+that you've typed it incorrectly and typed it in correctly, not typed it incorrectly.
+To make sure that you haven't typed it in correctly.
+Anyway, point is you're going to enter your password.
+You'll hit return a couple of times and then the password is saved in password in your
+password store.
+Where does that exist?
+Exactly.
+It's in your home directory in a hidden directory called dot password dash store.
+And you can look at all of your passwords in your password store by either just doing
+an LS until the slash dot passwords dash store or do a pass space list.
+And that'll list all the passwords that you have recorded.
+You'll notice pretty quickly that that file that you've just added is encrypted.
+It's a dot GPG file.
+So it is an encrypted plain text file.
+Should you ever need to edit what you have entered into the password file?
+You can use pass edit.
+So for instance, pass space edit space example.org.
+You don't have to give it like the path to the file.
+You don't have to include the dot GPG at the end.
+You just give it the URL that you are trying to edit and it knows how to get there and
+to append a dot GPG on the end in order to load it and so on.
+So don't don't overthink the the literal storage of of these files is treat it as a system.
+And and in this system pass understands that things are GPG encrypted.
+It understands that they are stored in till the slash dot password dash store.
+So let's talk about the files the files themselves.
+It's basically one password per file.
+That's the idea.
+I mean, the files are actually pretty flexible.
+That's what we're about to talk about.
+But generally what the expectation is is that you have a website example.org, for instance,
+and and and that website has a file in your password store and in that file, the first
+line of the password file is the password itself.
+If you try to deviate from that very simple schema, things will not work for you.
+The password goes at the top of the password file.
+Remember that.
+Now after that first line, you can basically do whatever you want.
+You can put in notes to yourself.
+You can put in other fields on that login page.
+So for instance, let's say you go to example.org slash login, which is a URL that I don't
+know for a fact exists.
+I in fact, I doubt it exists example.org does exist slash login.
+Don't think so.
+But let's say that's where you went.
+Example.org slash login and you're prompted for a user name and a password.
+Well, once you do that once and confirm that you know how to log in, then you would go
+to your terminal and type in pass, space, insert, space, example.org, just the base URLs
+all you need.
+And then you would type in my fake password, one, two, three, and then you'd type in my
+fake password, one, two, three again, because it asks you to.
+And then you've created the password file.
+But the login page also asked you for a user name.
+So you could do pass, edit, example.org and add as the second line of your password file,
+user name, colon, clat 2.
+Now user name is the string of the field in the form.
+So one, we know is password.
+One might be user name on some other site.
+It might be user on some other website.
+It might be email.
+You don't really know.
+It's usually user to be honest and very frequently nine, like nine times out of 10, I just
+go into my password file and just put user, colon, clat 2, and we're done.
+That's all I need to add to that.
+I don't need to overthink it.
+But there are some websites out there that are a little bit weird and they'll have like
+some different scheme of like logging in.
+And so sometimes I've had to change the key in that key value pair to something other
+than user colon clat 2 that it's had to be like user name, specifically colon clat 2.
+Or email colon clat 2 adexample.com, whatever.
+Generally, I do the password and then I edit and add user colon in my user name and
+that's all I ever need to do.
+And then the password file is basically complete.
+That said, as I've said, you can add more stuff.
+You know, there are those websites out there that have, for instance, the opportunity
+to provide a recovery email or a recovery code of some sort or just a personal note to
+yourself.
+So maybe you want to just remind yourself that, um, I don't know.
+This is your, this is your personal profile and that you should use your company's SSO
+when you're at work.
+Don't use this password at work, something like that, um, whatever note you want to insert
+you can.
+So basically, again, the, the, the first line needs to be the password.
+But after that, you're, you're, you're pretty free to make whatever kind of additions
+to the file you want, which is quite nice.
+And in fact, I mean, theoretically, you don't even have to keep just passwords in your
+password store.
+It's just a bunch of encrypted files.
+I don't know that I would keep a bunch of junk in there because I mean, that can slow
+things down when searching through your passwords and so on.
+So you, you probably don't want to just use it for complete arbitrary stuff, but you can,
+you can personalize it a little bit.
+So as I said, you can see all of the passwords in your password store with pass list.
+You can also find a specific one should you ever need to.
+Like, maybe you've got a website with lots of different sort of, um, URLs that, that,
+that serve different audiences or something.
+And you can't remember which URL exactly you put in for password store.
+So you could do pass, find, and then some string, like, you know, my great confusing site.
+And it'll just do a find really on dot password dashboard.
+Is it any better than doing like a literal find, uh, till the slash dot password.
+Dash store dash type f dash i name, quote, asterisk, my great confusing site asterisk, close
+quote, not necessarily.
+It's just, it is a little bit quicker as you've just, as you've just heard, as I described
+the, the very long find command that it would require.
+Okay.
+So pass is great.
+I mean, it, you can use it on the term from, from a terminal and it's, uh, it's really,
+really usable.
+It feels like a unique expanded is a unique expand and it's fantastic.
+But in real life, you're not going to want to keep going back to the terminal every
+time you log in to example dot com.
+I mean, that's a site you go to every single morning.
+You don't have to go back to the terminal, type in your, the, your credentials to get
+to your password store and, and find the, the, the value that you need and copy and paste
+it over into your web browser.
+You obviously want to replicate what the web browser has already provided you by default.
+And luckily, there are ways to do that.
+There are several ways to do that.
+Actually, the one that I happen to use is called pass FF as in pass fire fox, but there
+are, there are other compatible, uh, clients for password store, you can find those listed
+in the compatible clients section on password store.org.
+I'm going to go through pass FF, it's like setting up pass FF because essentially it's,
+it's going to be similar no matter what you use.
+So for instance, if you're on chromium or a chromium based browser, you'll be using
+browser pass probably rather than pass FF, but the, the, the, all the concepts are the
+same.
+I don't use that one.
+So I'm not going to step through that one because I don't use chrome, but it, it's basically
+the same idea.
+You, you have a messaging app or a host app.
+And then you've got the extension, the browser extension itself.
+So all of these solutions pretty much require a host application to kind of run in the background
+and serve as kind of a, um, kind of a, well, a service for your browser extension to
+then, uh, call on to use.
+Okay.
+So for pass FF, you can download the install scripts.
+It's w get codeberg.org slash pass FF slash pass FF dash host slash releases slash
+download slash latest slash install underscore host underscore app dot S H. Certainly you could
+just go to codeberg.org slash pass FF and find all this information out.
+That would probably be the easier way to do that.
+But you, you download the bash script and then you'd open it up and review it or, you
+know, open it up in the last or whatever, review it, make sure it's doing what you think
+it's doing.
+It is.
+Uh, and then you can actually run it.
+And this is a local, this is a local thing.
+So you don't need pseudo permissions or anything like that.
+You just bash space dot slash install underscore host underscore app dot S H space.
+And this is important Firefox.
+It actually does support the host application anyway.
+Support quite a few different, uh, browser extensions.
+So like if you're using, it says you can use it for like, I think pretty sure they have
+a chromium profile.
+I just don't know what extension to use in chromium.
+So I'm not sure why that's an option.
+You could evolve the, I think opera like there's a bunch of ones that it, it says it supports.
+I just literally don't know from the browser perspective what extension you would then
+use to call pass FF.
+So anyway, bash space dot slash name of the script space Firefox and the Firefox at the
+end there tells the script which kind of configuration to install.
+You do need Python three on your system for this to work.
+I would imagine you would have that on a modern system.
+Um, and then once you're done there, you would go to your Firefox, uh, browser and you'd
+open up the addons dot mozilla dot org slash e in dash us slash Firefox slash add on slash
+pass FF page.
+So just, you know, you're, you're going to your Firefox extensions and you're going to
+a, an extension called pass FF, which is kind of like, uh, verified and sort of marked
+for monitoring by mozilla.
+So it's pretty trusted and install that extension.
+I think you have to restart your browser then because, uh, I think the, the extension
+and the host application don't know each other exists yet.
+So you have to relaunch Firefox when you've installed that particular extension.
+And now you can navigate to a URL that has a login prompt.
+So let's say example dot org slash login again.
+Uh, so you navigate to that and, and, and, and at that point, all of the fields on that
+page, you'll notice have a new icon on the, the right hand side.
+The icon is a little circle with a P in it and, and you can click on that.
+That's the pass icon to see a menu of a short list of URLs that appear to match where
+you are.
+It's like, you know, pattern matching or string recognition, a string pattern matching,
+uh, where it, like if you have example dot org and example dot com in your password
+store, it, it, it may show you both.
+But I mean, the, the top one will be the, the, the, the exact match, um, it gets a little
+bit fuzzy sometimes because, you know, sometimes when you log into a site, the URL becomes pretty
+convoluted and, and, and pass has to kind of like, it usually, it sometimes will return
+more than one result just to make sure that it's got you covered either way.
+You'll find, you'll, you'll see the URL you want.
+You'll click on it.
+It auto fills the form and clicks the submit button for you and you're in.
+It's super, super fast.
+It is something that I don't even think about anymore.
+Uh, you also do have the option if you need, uh, in your extension in the browser extension,
+area, the tray up at the top, there, there, there will be a pass icon.
+You can click on that on a login site if you need to interact a little bit more directly
+with the pass command.
+So you can do things like, um, just copy the username from that password file or just copy
+the password or, or only auto fill one of the fields or, or other, other options.
+I find it a little bit more directly flexible than the built-in browser options.
+Usually in a browser, I, I feel like I'm, I haven't actually used the browser functions
+in a while, but I felt like you could basically choose to fill in the password data.
+And that was your, that was the option.
+I don't remember there being a really easy way without going into like the browser settings
+to like kind of look at what you're really dealing with.
+So I kind of like passes ability to, to, to execute certain pass functions without necessarily
+going back over to your terminal and using special commands.
+That's it.
+That's how you use pass with a web browser on Linux.
+You can do it on other operating systems as well.
+I just don't know how, but I mean, there are instructions on password store.org.
+It looks pretty reasonable.
+It's all basically the same idea, the same notion.
+You've got your, your private password store locally, locally saved on your system.
+You can sync that across systems.
+You can back it up.
+It's all encrypted.
+So as long as you have your GPG key and you manage your GPG carefully, you keep track
+of it.
+You've got all your passwords as, as individual unique files that are each encrypted.
+But once unencrypted, they are plain text.
+You can use, you, you can open them up in your text editor of choice, modify the values,
+and so on.
+And there's, it, it goes beyond that as well.
+It is quite extensible.
+There are several really cool pass extensions.
+You could try out here are three of my favorites.
+There's past dash OTP.
+That's an add on to actually add one time password functionality to pass, which is kind of amazing.
+I mean, there's a bunch of other integrations that you'll have to, to sort of set up for
+that to work.
+But I mean, it is pretty cool.
+There's past dash update, which adds a nice easy workflow for you for updating passwords
+in the event that you change your password frequently or maybe you're just dealing with
+a site that demands that you change your password frequently.
+Pass update makes it kind of nice to be able to do that.
+Pass dash import imports passwords from other password management systems.
+And there's a big long list of what those include on the GitHub page for past dash import.
+But I mean, we're talking things like Chrome, one password, Bitwarden, Apple keychain,
+GNOME keyring, key pass, and all of the other key pass X and key pass X2 and so on.
+Last pass and many more, including interestingly pass itself, which is great.
+If you want to migrate a password store, you can just import it into your new password
+store.
+Really, really handy.
+And there are, there is yet more, those are the three I think that are probably realistically
+well, really two that are really useful OTP and the the update or the import one.
+I mean, I imagine you'll use it once and then forget about it.
+That's that's what I would imagine.
+But I think I probably used it to import my Firefox like when I when I stopped using my
+browser for password management.
+I think that's probably what I used and that's it.
+That's the past command.
+It's a really comfortable, familiar feeling, unix-like solution.
+You get text files in a format that doesn't even require you to have pass installed.
+You can use your password store without using pass, right?
+It's just flat text files or encrypted files in a directory on your system.
+I really quite like that.
+I like the sense of data ownership, not only because it is local on your machine, but
+you have a sense of ownership of how you even want to interact with it and what else
+can interact with it.
+And admittedly, I mean, right now the only real use case I have for it really is is a
+web browser.
+Like that's where I have passwords really.
+I mean, remote systems, they're not using passwords, right?
+You're using SSH keys and things like that.
+So realistically, the integration is exactly one thing, you know, the web browser of choice.
+But who knows?
+I mean, maybe there will be other use cases for it or other integrations for it.
+And either way, it just adds a lot of flexibility to how you manage your passwords.
+It's a bunch of files.
+In your home directory, you can use our sync to distribute it across lots of other machines
+on your, you know, like from your desktop to your laptop.
+I do that pretty regularly.
+I just kind of sync the password stores between those two or you could back it up even on
+the cloud.
+And you could feel relatively secure about it because it is it's GPG encrypted as long
+as you're managing your GPG key in theory, those things ought to be safe.
+So that is pass.
+If you're looking for a really, really cool password manager solution, check it out passwordstore.org.
+Thanks for listening.
+Talk to you next time.
+If you have been listening to Hecker Public Radio, at HeckerPublicRadio.org, today's
+show was contributed by a HBR listener like yourself.
+If you ever thought of recording podcast, click on our contribute link to find out how easy
+it may be.
+Hosting for HBR has been kindly provided by an onsthost.com, the internet archive and
+our sync.net.
+On this advice status, today's show is released on our Creative Commons, Attribution 4.0
+International License.

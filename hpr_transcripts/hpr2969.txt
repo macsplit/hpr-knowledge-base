@@ -1,0 +1,191 @@
+Episode: 2969
+Title: HPR2969: Crewing a spaceship in Haskell
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2969/hpr2969.mp3
+Transcribed: 2025-10-24 14:01:02
+
+---
+
+This is HPR Episode 2969, for Thursday the 19th of December 2019.
+Today's show is entitled Crueing a Spaceship in Haskell.
+It's part of the series Haskell and it's hosted by Tukutoruto.
+It's about 23 minutes long and carries a clean flag.
+The summary is, how to calculate the amount of crew needed for a spaceship.
+This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+Hello, you are listening to the Hackens of the Cradle and this is Tukutoruto.
+Today I am going to talk about how to crew a spaceship in Haskell.
+This time I'm going to try something a little different,
+instead of going through each and every function and explaining each and every detail there.
+I'm going to give a broader overview of this thing and concentrate on how I arrived to this solution.
+There are plenty of tutorials in Haskell how to do some little things,
+but there isn't that much of about how to take a big problem,
+subdivide it into the smaller problems,
+solve those smaller problems and then combine them to a solution of the big problem.
+So that's what I'm going to try out this time. Hopefully you will like it.
+So we have written a designer for making spaceships or rather footprints for the spaceships
+and that works that you first you pick up how and then you put on different kinds of components.
+For example, sales, preach, sensors, sleeping quarters and so on.
+And you are limited by the weight and slots that you can use.
+There's a similar system for the ground vehicles in the future,
+but now we are going to concentrate on spaces.
+And no spaceships moves without a crew.
+And the amount of crew needed depends on the components.
+If you have a science ship with lots of sensors,
+then you will need lots of sensor operators to operate those sensors.
+And then you are going to need archivisers to maintain those sensors.
+And if you have lots of people on part of your ship,
+then you need somebody to coordinate the efforts.
+So for example, when you have a five sensor operators,
+they will be second-class crew members, every five sensor operators will require one first class
+sensor operators. And then when you have five of them, you will need a
+non-drawing plant. Then you are going to need a senior sensor operator.
+So the second class, first class, and senior. On top of that, as soon as you have a crew,
+as soon as you have 10 second-class members, you are going to need a chief who is
+in case of sensor operators, he is a chief sensor operator.
+There is always one of them. There won't be many of them.
+And this person is in charge of overall coordination.
+So you have a crew positions like sensor operators, and then you have ranks like second-class,
+first-class senior, and chief. This difference from the military ranks, those I haven't
+even told about. Here are the inside of a ship who does what and who coordinates who.
+Okay, so, and of course, in a spaceship that is out there for years,
+at the time, you're going to need some quarters. So you have to have a living quarters for all the crew
+you are carrying, and you could have a passenger. Then you have to have a living quarters for them too,
+and there's different times of living quarters. There's a spirit that is basically just
+cramming as much people in the space, as much as possible, and then there's
+regular ones, and then there's the luxury ones. Luxury ones are those big suites.
+Okay, so how would I go about this? So usually I start about thinking. When I start to think about
+these things, how do I solve some problem? I usually throw a lot on the paper,
+with pen and paper to mind maps, do some sketching, think about what kind of things I need,
+what kind of things are related. Sometimes I have a lot of things that I just cross over and think
+that this would be really cool to model, but this would get too complicated. And from there,
+you often come up with the types that tell what the things are. So in this case, data types are
+shown in the show notes, but they're not that important on following the episodes. You can
+probably follow without the show notes. But the data types that I'm having in this time is that
+there's a chassis and a record components, plant components, and these are chassis,
+the hull. Record components are the list of things that have to be installed. If you have a space,
+if you have to have a star sail, otherwise you can't move. And those depends on the hulls.
+Sometimes, you have to have more sail than other, then there's things like bridge and living
+waters and so on. Then there's the planet components. This is a list of things that the designer
+has actually planned. This is the list that they have put on the design. And the unit starts
+is that that's the estimated performance of the design. And for this episode, it's very small.
+We only have the minimum crew and nominal crew. These tell how much the crew is absolutely needed,
+absolute minimum crew to operate the ship. And the nominal crew tells what crew is needed
+to get the optimal performance of the ship. This is for the crew, type of crew requirement.
+And then there's the total crew space telling how much space there's a port of the ship
+for sleeping and leaning. And also, flag that tells if the crew space is required. For spaces,
+it's always required, but for some small ships or land vehicles that isn't required.
+And crew requirement is just that it tells you what position this can be a navigator,
+sensor operator, gunner, doctor, captain, rank, that's the second first senior or chief,
+and how many of them are needed. Okay, then how would I arrive one morning to total crew space?
+That's the three numbers for telling a crew space that the ship has
+or that's the stearage quarters, standard quarters, and luxury quarters. Because it's easy to
+the most amount of people you can get on part of the ship is by using stearage quarters,
+but they are very cramped and very uncomfortable and crew won't like it. Everybody would like to have
+a luxury quarters, that those are huge and heavy, that you have to strike by land. And have some
+amount of stearage quarters, some amount of standard quarters, and if you have a passenger,
+they probably will want luxury quarters. Especially if you have some sort of a crew ship that
+just goes from planet to planet and transports rich people on territorial holidays.
+Okay, so how would I go about this? So that's the description what I wanted to build.
+So I decided to drop it into pieces. First, I wanted to figure out how many people are needed
+to operate, give and sit. Just, just operate. And from when I know that amount of people and
+positions, then I can figure out how many people are needed to manage them, to coordinate them.
+So when I know how much of sensor operators, then I can figure out how many people are required
+to manage them, or coordinate them. And from that, that's basically what we need to do here.
+And because in Haskell, if you often, if you have something that you have a list of something
+and you want to do a operator, to each and every time, then it's enough that you know how to do
+that operation, to single item, and then you just use a SMAT to run that operation to all of those
+items on the list. So that was my idea here. So knowing how much crew are needed to
+operate a single component, was the first that, and it's not always an index amount.
+For example, in case of the long range sensors, I decided that you need, for every long range
+sensor, you need one sensor operator to manage the station, then you need one crew member to help
+help them, and then you need 0.1 artificers to maintain the sensor. So if you have
+10 long range sensors, then you need 10 sensor operators, 10 crew members, and one artificer.
+And of course, if you have only one sensor, you need one sensor operator, one crew member, 0.1 artificers,
+but you cannot have 0.1 person upward of your ship, so you have to get one artificer. So it's
+in this, in case it's a three people. So I made a function, that's just, it's got come to crew
+wreck, that takes a component and gives you a list of how many people are prepared to operate this one.
+And then when I have that function, and then I have the amount of plant components,
+I can just run that function to those components that I have, I have the plant to be installed
+on a ship, here dealing with the crew friends after all here. Then I will get a list of,
+list of, so it's a list of list of people. So there's a list that contains list of people,
+of different, different positions and amounts. These don't have ranks, these are assumed to be second class.
+And then I just combine those, then I combine those lists to one big list, there's a
+join function for that, and I get one big list of people that are needed to operate all the other
+components, or a part of the ship. And this, of course, the same position, if you have
+multiple sensors, you will, in that list, you will have multiple sensor operators.
+So next step is to go through that list and combine them together.
+If you have a one sensor operator, and next item is one sensor operator, you're going to
+sum them together, and then you have two sensor operators. Okay, and that is done by the
+function called acrylic, that just takes a component crew wreck, that is the
+fractional amount of people, list of component crew wrecks, and makes a list of component crew wrecks.
+And yeah, the basically, and now that I have combined those requirements,
+together, now I have just a list of requirements, but each position shows up the only ones.
+So then now I have a list of 10 sensor operators, one captain, and
+five rb-fisers, and one not. So then the next step is to take that list, and figure out how many,
+how many people are required to manage that list of, of, of, how many
+first class senior and chief level people are required to coordinate operations of that crew.
+And that's a, that's okay, now just a piece of, piece of mat, I'm just going through the list,
+checking, checking that if I have at least five, sorry, if I have at least 10,
+second class members of something, then I will add automatically, I will add a
+chief of the same, same, same, uh, group position to the list.
+And then I'm running a module of five to get amount of people needed to, uh, to get the amount of
+first class people. So if I have zero to four, second class, I'm not getting any first class,
+but as soon as I have five or more, then I'll start getting the first class crew members.
+And then on that amount, I'm running a module of five again to get the senior members,
+and those I'm all adding up on to the list.
+And, uh, of course, uh, there's, there's a, uh, one thing that I forgot, forgot to say because
+when I was making a list of people needed to operate sensors, those, those, those,
+that least was done with fractions, so you could have a 0.1 archivizer, the, the sensor station.
+But for, before, uh, before figuring out the coordinating crew, I have had to, uh,
+I had to, uh, move from the, from the fractions to the interiors,
+rounding up. So if I had a 0.1 archivizer or 0.7 archivizers,
+then it got rounded up to one, and if I had two, two point three, it got rounded up to three.
+So I, I could, then I get a whole crew, whole crew members, and from that number,
+I figure out the amount of crew members needed to coordinate them.
+And then I get a list of crew members.
+Now I, now I have a list of crew members that, that, that tells me that this is a,
+uh, this is the amount of second-class, first-class scene here, and three, chief level.
+Crew members needed to operate this ship in a, in a full, fully, uh, sorry, in full,
+full, uh, in full capacity, in best, in best of the ship's ability.
+Then you have a, uh, then you can have a skeleton crew, that is the minimum amount of
+people to get ship moving and doing something. And that is just, uh, the nominal crew that we
+figure out previously, and then I arbitrarily decided that it's a one-third.
+So I divide everything by three, rounding up, and that's what I, that's what is needed to
+operate the minimum crew need to operate. The ship, that's a, that's just an, uh, arbitrary decision,
+decision, well, lots of things are arbitrary decisions when you're building up a game,
+but basically decision by done, done by you. So originally this, this looked with
+hairy problem, like a lot of, a lot of moving, moving parts, but in the end it was just
+figuring out pieces where to cut it into smaller problems, solving those smaller problems,
+and then combining them to the bigger, bigger solution. And that's, that's something that is hard
+to, uh, learn from the books, programming is really hard to learn from the books anyway.
+In my opinion you cannot do that, you learn by doing it. So, theory is important, but
+more important is that you actually apply that theory. You can, in my opinion you can
+read tons and tons and tons of books, but if you never try out those things in practice,
+you're not going to be a programmer. So one of my friends said that being a programmer,
+if you want to be a good programmer, you have to be willing to be a really terrible programmer
+for long enough time, so you're not anymore terrible. So it, it takes a lot of practice.
+And sometimes that's very frustrating, like, it's recently, I've been doing programming for
+20 years, for, for professionally, and I think 30 or something just for fun. And
+recently at work I was trying to say something into the database and it just was not working.
+Like, very, very basic problem, and I had to pull a colleague into help help help me out with that one.
+But so, that's just, that's a source that programming can sometimes be difficult and if you fix it
+to one way of solving things, you're, you might get stuck, so you, you, it will make
+an idea to ask somebody else to help you or take a walk and come back later and with fresh
+eyes try to look at problems from different, different direction, so you could easily, what,
+what are you, what's your problem. But, that's about this episode. I don't know if this was
+better, first, same as always, but I thought that I'll give it a try with a little bit different format.
+Best way to reach me out is either by email or in the papers where to do it at master on
+the social, if you have any questions, comments or feedback, I would be very glad to hear that.
+I have been actually getting a bit more feedback recently about the episodes and that that
+always makes my day when somebody writes or sends a, sends a message or says to me that hey,
+I didn't do a recent to the recent episode and I think something about that. It doesn't have to
+be a good, good feedback, it still makes my day. Okay, in the meantime, Ad Astra.
+You've been listening to Hecopublic Radio at HecopublicRadio.org. We are a community podcast
+network that release the shows every weekday Monday through Friday. Today's show, like all our
+shows, was contributed by an HPR listener like yourself. If you ever thought of recording a
+podcast, then click on our contributing to find out how easy it really is. Hecopublic Radio was
+founded by the Digital Dove Pound and the Infonomicon Computer Club and it's part of the binary
+revolution at binrev.com. If you have comments on today's show, please email the host directly,
+leave a comment on the website or record a follow-up episode yourself, unless otherwise
+stated. Today's show is released on the create of comments, attribution, share a like,
+3.0 license.

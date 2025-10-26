@@ -1,0 +1,138 @@
+Episode: 3166
+Title: HPR3166: Using Ansible to mirror a Git repo
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3166/hpr3166.mp3
+Transcribed: 2025-10-24 18:07:34
+
+---
+
+This is Hacker Public Radio Episode 3166 for Monday, 21 September 2020. Today's show is entitled
+using Ansible to Mirrorer Git repo. It is hosted by Clartu
+and is about 26 minutes long, and carries a clean flag. The summary is
+Clartu uses Ansible to Mirrorer Git repo on two separate Git hosts.
+This episode of HPR is brought to you by Ananasthos.com. Get 15% discount on all shared hosting
+with the offer code HPR15. That's HPR15. Better web hosting that's honest and fair at Ananasthos.com.
+Hey everyone, this is Clartu. You're listening to Hacker Public Radio. This is going to be another episode
+about Ansible, because why not? I did an episode a couple of days, weeks. I don't know when things are getting
+posted some time ago, and it was an intro to Ansible episode. Hopefully it was useful to some
+people, and I figured you know what might be interesting is to do a little bit of a demonstration
+of exactly sort of getting around the thing that I was talking about in that intro,
+which was, well, what do you do with the thing once you know that the thing exists?
+I think it's a classic problem with so many different pieces of tech, whether it's hardware,
+like the Arduino or the Raspberry Pi, or a programming language, like anything from Python
+to Java to C++, who knows, whatever it might be. Even to applications, they're really cool,
+and you're excited to have access to them, and yet you kind of grind to a halt when you sort of come
+down off of the excitement and realize you don't know exactly what you're going to do with this thing
+that you've discovered. Well, if that's where you are right now about Ansible, then this might be
+an interesting demonstration of some of the things that you could use Ansible for.
+And again, I think that veil between Ansible and, for instance, Shell Scripts,
+it's pretty thin sometimes. A lot of times you're going to look at one thing and think,
+why would I use Ansible for this task? Why wouldn't I just use the Shell Script?
+Or why wouldn't I just program this in Python and be done with it?
+And that's a perfectly valid question. That's something that you will be able to ask of what I'm about to do,
+and it will be a valid, a valid question. The thing to remember here is that sometimes you just have to pick a tool.
+We can postulate the right word, is that even a word? We can consider, we can invent all kinds of different ways
+to do any given task, but at some point you just have to sit down and do the task.
+And so Ansible is the tool that I chose to use for this particular task.
+What's the task? Well, here's the thing. So sometimes there is a repository of some code that I find particularly useful
+and it's hosted one place. And I want to fork that code and host it somewhere else.
+But I want to keep that thing updated. I don't want to fork it once and then lose all of the future commits,
+which really is kind of what happens when you fork a project. That's kind of the big downside of forking a project.
+But that is kind of the model that, for instance, GitHub and GitLab promote.
+That's kind of the way that you do things. You fork a repository. And once it's forked, you don't get those automatic updates anymore
+because you forked it. You've made a copy of the project and you've walked away with it.
+So I wanted the ability to fork something, but to continue to get the commits so that I was really mirroring a Git repository.
+And I wanted to do this for a couple of different reasons. Number one, just because sometimes I can't be bothered to log into one hosting provider versus another.
+I don't want to go to GitHub today. I want to just stay on GitLab, whatever.
+The other reason is quite frankly that there is a precedence having been set now.
+It is a real life thing that sometimes something that was open source two weeks ago stops being open source now.
+And people can, it doesn't happen often, but they can actually just remove a repository.
+And then you're scrambling around thinking, oh my gosh, who's got the latest fork of that project?
+Because I just thought that project was going to be there forever. And now it's deleted, it's gone.
+That's problematic. I don't love that. But I mean, that's kind of the way things work, right?
+I mean, you start a project, you get to delete it when you want to.
+So I wanted to be able to ensure that for certain open source projects, I was able to mirror it with minimal delay in the, you know, when they commit versus when I pull their changes.
+I want sort of the most up-to-date thing of that project. It doesn't, it's not that important for that many projects for me.
+But there are a couple that I just feel like I really want my own copy of that. But obviously I want to continue to benefit from community efforts.
+Which means that I can't just clone a project and forget about it. I need to clone and then continually do a get pull.
+Or not continually. I regularly do a get pull every, I don't know, two days or so, or every day, or whatever you're, you know, whatever you feel comfortable with.
+I had a couple of different shell scripts written for this. And I couldn't decide off the top of my head whether I was going to just make a shell script to look at a whole folder and identify all get repositories in that folder and then go into each get repository and do it, you know, do it, do a get pull, do a get pull, and so on.
+I couldn't decide if that's how I wanted to do it or whether I wanted to make some kind of get hook somewhere that would do some kind of automated thing and then go through and trigger all those hooks.
+I just couldn't quite decide how I wanted to go about this. And ultimately I just decided that something quite abstract like Ansible to manage that for me could be a good way to do it.
+So here was my logic the first time around. And this is the simpler, the simpler method of the two that I'll kind of present, although the second one I'm going to leave mostly to you to explore because it is its online.
+So the, the first step was a new playbook. And of course, again, as I said in my intro episode, you should make yourself a project directory because then you can put other files in that project directory and refer to it from your Ansible playbook.
+And kind of construct a more modular program. So the first playbook that we'll create what is called a site. YAML. And that'll be in my my get mirror directory, for instance, I will do a dash dash dash for the first line because YAML will complain if you don't.
+And then return space dash name colon mirror a get repo with Ansible. So in this case, I'm I'm naming I think in my intro you would recall I I start with task host hosts tasks name. And in this case, I'm I'm I'm naming the project itself, which is mirror a get repo with Ansible next item within this list within this name list is hosts.
+And I'll do local host here again, because it is this is a script that I just run locally. I don't do this to a bunch of different hosts on my network. This is something that I although you could you would hosts, you know, get get machines or your get boxes or whatever, you know, and and and have it execute on lots of different lots of different places.
+But I'm not doing that next item would normally be tasks, but I'm not going to do that yet. I'm going to I'm going to insert a new thing here. And this is vars v a r s. So I'm going to create a variable not not necessarily because it's something that I have to do. But it's a good thing to demonstrate. Remember in my intro episode, I use a built in variable from Ansible from from the gather facts step of Ansible. And that was Ansible underscore package underscore manager.
+But I could create my own as well. And then use it later in my script. So I'll do that now vars colon and then the next lines and then I'll space enough to be under my vars element. And that'll be get underscore dirt colon and then slash I don't know path slash to slash my get repo.
+So whatever the path I would want to have serve as my my mirrored get repository location, that might be slash temp, it might be slash opt, it might be dollar sign home, something, you know, till to slash my get mirrors, whatever you want it to be.
+And then the task. So this is going to be the actual tasks list. So tasks colon. So this is all within that same block. Right. So we've only indented twice for hosts twice for vars twice for no four times for get doors because that's the name of my var twice for tasks.
+Now we're going to do the same thing to two two spaces and then dash space name colon clone the get repository. So this is the actual task of of this playbook under that we're going to invoke the module called get GIT colon.
+So this is my module the get module again you can find all of the Ansible modules on docs dot Ansible dot com go to the module index. And for this one, you might want to just look at all all modules, but you'll you'll find it listed there and that will tell you what you can do with that particular module.
+And more importantly, I guess what the syntax would be for that module. So I'm going to look at it right now. Oh, there's a lot of things that start or that contain GIT, but not starting with GIT. Okay, how about if we look for space GIT. That's better. Okay, here we go. So there's get there's some get hub modules. There's some get lab modules. So in theory, we could make this process even smoother than what I'm about to do. I'm just using raw get and this is this is compatible with Git.
+1.7.1 and above. So that's something to keep in mind. It looks like get you can you can get things from you, you can clone things with Git doesn't look like you can push though. There's no push command here. So that's something that that we might have to work around. So already we're getting lots of lot of information just by kind of scanning over the module documentation. And that's useful.
+The only thing that's required is a destination, which is the path of where the repository should be checked out. The parameter is required unless clone is set to know and repo is also required, which is the Git SSH HTTP s protocol address of the Git repository.
+It sounds like we need to give this Git module a repo, which is the online location of our of the Git repository that we want to clone. We need to give it a destination directory, which as you may have guessed is going to be the value of that variable that we created.
+Whether to clone the thing or not, and then it looks to me like there's also the option to update either yes or no. If no do not retrieve new revisions from the origin repository operations like archive will work on the existing old repository might not respond to changes to the option, the options version or remote.
+So in other words, we can tell it to update if the thing already exists and that would be useful. In fact, that would be key. That's that's exactly what we want. So that's four parameters that we're going to pass it to of which are required and then to I think one is just kind of the explicit yes do clone.
+And then yet the final one is the the very explicit and very key yes do update. So Git is our module and then we will indent twice to be within my task twice to be within my name twice to be under Git repo colon and then the path to the online location.
+So in this case, we haven't we haven't forked it or anything like that on on in this case GitHub. So we would just pass the normal kind of HTML access, you know, HTTPS colon slash slash GitHub.com slash example slash example dot get. And then again, eight spaces to get to get lined up with repo will do desk DST colon and then we can invoke the get very the variable.
+And that's curly brace curly brace space Git underscore dirt space curly brace curly brace and that just invokes whatever variable I've created in my in my playbook and and puts it into into the argument for desk.
+DEST next line same indents is clone colon yes next line same indent update colon yes that block of configuration looks online to some key repository that I want to mirror and it either clones it if it doesn't exist or updates it if it does exist.
+There you go. That's all you need to do is there advantage there to well, that's not all you need to do, but that's that's the process for for that step for that side of the equation.
+Is there any advantages here to using Ansible over a shell script arguably maybe because the shell script that you might use would not you know that the different commands to clone a repository and pull a repository.
+Those are two different things and so you would have to you'd have to work differently on those two things on also I'm trying to think of a way on a shell script to to sort of do all of this without losing track of where of your current directory.
+And you certainly could with push D and pop D I think that probably the easiest way to do it that I can think of you know you would so you would loop through to each directory and when you found a directory you push D to it do the get clone or and or the get pull whichever one applies and then you pop D back out of it or something like that actually you wouldn't be able to descend into the directory yet because it might not exist yet.
+So if it doesn't exist then you would clone it and then if it does exist you would change into it and then pull so the logic is similar it's not exactly the same is that a advantage to using Ansible I don't know if it's an advantage but it's just if there's a difference.
+And certainly you know Ansible doesn't quite it isn't a script it's not a it's not a it's not a it's not something that you you write as a command so we would not then use Ansible on a one off sort of like I feel like mirroring a get repository right now so I'm just fire that command up it's not going to happen that way if we want to add a repository to Ansible we'll have we would have to go in and create a new task.
+Or a rather a new named task on you know within the task list we'd have to create a new dash space name colon and and add our repository to that and and that get that get variable with it we'd have to break that out because now we're using the same using the same name directory so we would have to change that so for many many repositories this would have to change and in fact it will change in a little bit you'll you'll I'll provide a link to a
+repository that is able to to break that out a little bit okay so now what we want to do is delve into our get configuration of the thing that we've just cloned or well yeah the thing that we just cloned and we want to update the the potential remote location of that repository because right now that get repository that we've cloned it still sees its remote as wherever we've cloned it from.
+That's just the nature that's how get works we want to change that so what we would do then is make a new task so that's dash space name colon and we could name this task add alternate remote and then indent four times to be in within that task or however many times it would be is it four or six and you know that's one two two four four
+four times and I and I underscore file colon desk equals curly bracket curly bracket space get underscored or space curly bracket curly bracket so we're using that get variable again to find our our target our local clone of of the place of the repository slash dot get we know that if it's a get repository it's got to have a dot get
+folder and then slash config and once again we know that config is there because it's a get repository now this is a module the I and I file is a module of Ansible and it can process it can parse and alter I and I style configuration files
+which is what get config is so to zero in on a specific section the parameter is section equals and then in this case it's remote mirrored and the option equals URL and the value that we want to set it to is instead of for instance
+https colon slash slash get hub dot com slash example slash example dot get it'll be something like for instance get at get lab dot com colon example slash example dot get so we're zeroing in on a section of our I and I file we're looking at the option called URL
+and we're changing that URL to get lab and then for the next line for indents tags colon configuration not necessary just kind of nice to have okay so again thinking about Ansible versus for instance a shell script the logic here is different right with a shell script and certainly well with a shell script you would do it the way that you would most certainly do it interact interactively through the through your through your shell you would do a get remote dash
+maybe to look at what you're working with and then you do a get remote you know change you'd probably add I mean I did a whole episode on this actually where you would do it just with within you could do it within get as a get not a get hook exactly but it's just a get configuration and you could add a separate remote to your to your remote list and then push to both
+at the same time so you could do that and if you were going to shell script it out that's probably in your head that's what you would do you would issue those commands but this is Ansible and it's you're not just you're not just playing back what you would normally do interactively in a scripted form you're you're sort of you're configuring the state of this thing and the state that you want to leave your get repository in is with a different remote and interestingly the way to do that through the answer
+is not to use the get module because if you look at the get module documentation you'll you'll find no particular way to do that there's no remote as far as I can tell there's no remote changing ability there's a remote there's a way to get the name of the remote but I don't see any way to change the remote so we're doing it a little bit of a brute force method here but that's fine because we're able to do that
+so we've changed the remote and then finally the last the last thing would be to then push to that remote and of course all of these steps are going to be decided upon by Ansible whether you know which which step is absolutely necessary and which is is not necessary and so on so for instance you can do you can do that get clone initially and rest assured that it's not going to like try to re clone everything the second time around it's just going to pull it'll do a get pull
+those are the again we're targeting a state and Ansible knows hey it's already been cloned I'm not going to do that again oh it hasn't been updated lately though so I'll do that instead and likewise when it gets to that second task of adding a different remote if Ansible sees that that remote has already been updated it will skip that won't change anything because the state is already it the repository is already in the desired state so our final task dash space name colon push the repository to my alternate remote this one's a little
+little bit funny because there's really no way as far as I could tell through pure get now I didn't look at the get lab modules I don't know that the get lab modules no I'm sure they must have been there when I first did this script either way I didn't look at them and maybe I
+didn't want to do that because I didn't lock it into get lab that that could be that that's actually probably what it was but I'm using get lab is an obvious alternative to get hub it's kind of the sort of an obvious one you could with with this method you could
+use any any get server really it doesn't have to be get lab because you're you're naming it yourself it as a remote so it can be your own get it can be your own get server it could be anything
+okay so indent four times to get under that that name task and then I'm using the shell module to you guessed it pass a command to the shell and the cool thing about this is that you can still use your
+answerable variables so we can do shell colon space and then get space dash dash verbose if you want space dash dash get dash dirt equals curly race curly race space get
+underscore dirt curly race curly race so we're setting this is a very cool option with with more recent versions of get then say I don't know 1.6 I think 1.4 something like
+that you can actually set hey this is where the get dirt actually is located that you need to to use and so in this case we're saying okay well we're
+setting it to get underscore dirt slash dot get and in space push space mirrored space head and mirrored in this case is the branch name that I used it
+wouldn't necessarily be the the name that you would use it would just I do push origin head push mirrored head whatever so basically the push command that you would use if you were to push this
+thing manually to to a get repository that's it those are the three tasks required to clone or update a repository that exists on server that you
+don't want to deal with alter the remote location and then push any changes that have just been made to that repository this has been working really well for me
+but someone developed a variation of that method and posted it to get hub interestingly enough and you can check that out if you want because it's it's actually a really
+good demonstration of modular Ansible and that is located at get hub dot com slash Dwayne DW a Y and E dash Lee L E slash mirrored underscore repos I'll include that link in the show notes I
+imagine feel free to check it out I think it is it's worth a read if if nothing else and I'm by read I just mean there's there's two the
+reading is somewhat useful because it tells you how to actually utilize this but there are two YAML files that you'll want to look at one is called tasks dot YAML which you
+don't need to deal with I mean you need to have it but you don't need to change it and then the other one is called mirror underscore repos dot YAML which is the one that lists all of the
+repositories that you want to to to to use to to to process and you define that in a in a in a task all of its own you create you set up some
+variables which then gets used by this other this other playbook as it loops through all of these different tasks so it's kind of it's kind of a nice way to see how
+you to see a more modular approach than the the sort of the one that I did which assumed I guess at the time I was kind of assuming that there would be
+well certainly a smaller number of repos then probably I probably should have known that I'm doing it just for you know thinking oh I'll just do this for one or two
+repositories that's not realistic it's never going to happen you're always going to find more stuff to mirror out there on the internet
+especially if you're inclined to that sort of thing which I'm to I'm not actually I'm not I don't need to I don't feel the need to clone the entire internet or
+anything like that but there's a lot of good open source code out there and some of it you know I just I really hate for to disappear without a backup so it's kind of like I don't
+know it's kind of nice to be able to have a copy of so there you go that's an Ansible use case to essentially yeah backup get repositories off of
+platforms that you don't necessarily own and push it to another platform that you don't necessarily own that's silly but I mean like I say get hub
+versus get lab doesn't really matter get lab obviously you can actually own its open source you can download your own
+instance and run it yourself but it's also overkill I mean if you just want to pull something down from get hub and or get
+lab and or any other platform you can do that and then just mirror it to some other place like it doesn't have to be any
+placed way out there in the internet on the cloud it can be a raspberry pie hooked up you know lying in the corner
+somewhere of your own house or apartment it just doesn't matter so hopefully that was informative maybe gave you some
+ideas on on how to use Ansible or how do you get thanks for listening I'll talk to you next time
+you've been listening to hecka public radio as hecka public radio dot org we are a community podcast network that
+releases shows every weekday Monday through Friday today show like all our shows was contributed by an
+hbr listener like yourself if you ever thought of recording a podcast and click on our contribute link to find out how easy it really is
+hecka public radio was founded by the digital dog pound and the infonomicon computer club and it's part of the binary revolution at
+binwreff.com if you have comments on today's show please email the host directly leave a comment on the website or record a follow-up
+episode yourself unless otherwise status today's show is released on the creative comments
+attribution share a light 3.0 license

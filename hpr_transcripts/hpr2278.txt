@@ -1,0 +1,684 @@
+Episode: 2278
+Title: HPR2278: Some supplementary Bash tips
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2278/hpr2278.mp3
+Transcribed: 2025-10-19 00:47:39
+
+---
+
+This is HPR episode 2,278 entitled Some Supplementary Mass Tips.
+It is hosted by Dave Morris and is about 40 minutes long and carries an exquisite flag.
+The summary is finishing off the subject of expansion in Part 1.
+This episode of HPR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15.
+That's HPR15.
+Better web hosting that's honest and fair at An Honesthost.com.
+Hello everybody, this is Dave Morris. Welcome to Hacker Public Radio.
+Well today I'm doing what seems to be the seventh in a series about BASH.
+It's gone in quite a long time actually, I'm surprised.
+It started in 2014 November of that year and the last episode was created in, was released in 2016 in June.
+So it's nearly a year since the last one coming up to that anyway.
+So I've been talking about the business of expansion which is a big topic.
+Now I thought I was in the final straights of this discussion.
+I thought this would be the last episode, but it turned out that in order to do it justice,
+the last phase, path name expansion has really needs two episodes to complete.
+So this is the first of that pair.
+So in this episode we'll look at simple path name expansions and a bit about how you can control the way it moves.
+Then we're going to look at extended pattern matching in the last episode.
+And that'll be it for this particular topic, though I'll probably do more BASH things in the future.
+I've done long notes to go with this and I've included the appropriate extracts from the BASH manual page at the end of the note.
+So there's a convenient place to go and look.
+I don't know about you, if you ever look at the BASH manual page, it's huge.
+And it's not easy to navigate and find stuff.
+So this is why I've done these extractions and stuck them in these notes just to make it a bit easier to find stuff.
+The extract in this episode will also be useful for the next one.
+So what we're talking about this time is path name expansion,
+which is also known as file name expansion or globbing, which I always think is a strange and wonderful name.
+It's about the expansion of wild card characters, such as the asterisk you will sometimes use when you're referring to file name.
+So if you typed ls space asterisk dot txt, then you're expecting ls to come back with all of the files that end with dot txt.
+The asterisk means any file name that, and the other bit says, I want this at the end.
+Now the name's glob and globbing, which I still find strange, have an historical origin that I've mentioned here.
+And in the early days of Unix, this type of wild card expansion was actually performed by a separate program, which was called et cetera in slash ETC slash glob.
+And this was an abbreviation of the phrase global command.
+Then later on, there was a library function glob, which was, which replaced this program.
+And the name, although the whole business has expanded and changed quite a lot since then developed evolved, then the name still is still used.
+Operating systems other than Unix and other environments and scripting languages also have a glob pattern idea using wild card characters.
+The actual characters often are different from those that you'll see in bash, but the concepts are very similar.
+And there's a whole Wikipedia article on this, which I've referenced in the notes.
+Now one thing to bear in mind is that this process of expansion is not the same as regular expressions.
+Regular expressions, and I've talked about these in the learning said and the learning org series, are much more sophisticated because you can talk, you can describe a lot more about where you want the variable bits to be.
+Whereas the glob patterns are older and not as sophisticated.
+Now this process of wild card expansions normally used in the context of file names or pathster files, but they're also used in other contexts as well in bash.
+And we actually looked at these when we were looking at parameter and variable expansion in episodes in episode 1648.
+And I put an example of what we did, which we set a variable door in this particular case to a particular file path slash home slash user etc etc.
+Then the expression echo, dollar, open curly bracket, DIR, that's that variable we just created, hash sign, hash sign, asterisk slash, closed curly bracket.
+Returned just the last component of that multi element path name.
+So here the asterisk slash matches a part of the path in the variable DIR.
+And because we're using the double hash mark thing, this strip these away from the front of the string.
+And so what it's actually saying is find all occurrences of anything followed by a slash and remove them.
+So anything followed by a slash is everything up to the last slash.
+And this does the same thing as using the base name command that you probably used to if you're into bash scripting and stuff.
+But this is actually cheaper to run, I think, because it's all done in bash, though it's a bit more convoluted to type, perhaps you might argue.
+So for this particular episode and the next one, I thought it'd be useful to have a bunch of files to experiment with.
+So I did some stuff to create them in a test, under test user I use for this sort of stuff.
+And I've listed the commands I used to do this so that if you want to, you can follow along.
+Even if not, you might find it useful.
+So in the home directory of this account, I typed MKDIR, MakeDur, which makes the directory and the directory I called path name underscore expansions.
+It's part of this thing.
+Then I cd into it, then I typed MKDIR, MakeDur, space, then in curly brackets, a dot dot z.
+Now you remember we saw this, this is a brace expansion, we saw this in an earlier episode.
+So what that does is it makes in one pass all of the directories with the low case, low case a through low case z.
+Then the next thing is a for loop, four space d, space in space, and then that brace expansion again.
+So we're now going to loop through all of these directories.
+Then because I'm using here a compound command, type, type return at the end and bash come back comes back and says,
+well, I know you haven't finished yet.
+So here's a different prompt to show that I'm expecting you to type more and then finish the this long command.
+So the next line is do, so it's part of the four command, which I haven't really looked at, but maybe we'll we'll in future.
+And then within the loop, I've got a touch command.
+Touch is simply a thing that changes the date stamp on a file, updates the last access date.
+If the file doesn't exist, it'll just create a empty.
+The path that I've placed after the touch command is dollar D.
+So D variable contains an A or B or a C, et cetera, up to Z, followed by dollar.
+And then in curly brackets D, followed by in curly brackets A dot dot Z, that brace expansion again.
+Then in curly brackets, zero one dot dot by zero, close curly bracket dot TXT.
+So what that will do is it'll loop through all of these A to Z directories.
+It will create files in each one.
+The files will always begin with the letter of the directory followed by another letter, A to Z, followed by a two digit number in the range zero one to 50, followed by dot TXT.
+And the reason I put the D variable in curly brackets, the second time I used it is because
+otherwise there's ambiguity about what a variable name actually is.
+And in order to disambiguate it, you put curly brackets around it or braces if you like.
+So by this means each directory will contain 26 number of letters times 50, which is the number of numbers filed, which is 1300.
+And because there's 26 of those, you will end up with 33,800 empty files, maybe overkill.
+It probably is now I look at it, but the idea was to have a place where we could search for specific file name structures and inquire a large mass of file.
+So if we want to experiment with pattern matching stuff using these test files, we need to learn about the pattern characters.
+Now according to the manual page, I've copied a sentence from there just to make it clear, which I'll just read out to you.
+Bash scans each word for the character's asterisk question mark and open square bracket.
+If one of these characters appears, then the word is regarded as a pattern and replaced with an alphabetically sorted list of file names matching the pattern.
+So what we're saying here then is if you're giving a command to bash, which having something on the command line, then using these wild card or pattern characters, then you will trigger this behavior.
+Summarize the pattern characters a little bit here, although there's a lot more detail in the notes in the manual page extract section sort of appendix to the notes.
+So an asterisk then matches any string, including the null string.
+So it can be anything or even nothing.
+Question mark matches a single character.
+So a little asterisk is used in regular expressions as somewhat different meaning and asked us question mark.
+And then there's square brackets around a number of letters.
+The letters can just be things like a, b, c, but you can also have a range such as a hyphen z.
+Not the dot dot thing you get with this very suspension, but a hyphen.
+Well, that means there's any character that falls between those two characters makes up the range.
+I made the comment as a footnote note that when this stuff was invented, everything was tending to use ASCII characters.
+So when you said something like a range of characters, then it just meant you needed to go and look at the ASCII range and you had a fairly limited range of possibilities in there.
+Nowadays, it's a lot more complicated because we're dealing with unique code characters where there could be a huge number.
+Depending on what language you're working in, there will be different answers coming back.
+So that gets a lot more complex.
+We will not dig into that one, but I think it's far too complex for a, um, a, an episode like this.
+I was a bit more about using these square bracketed expressions.
+If the first character following the open square bracket is an exclamation mark or a circumflex, then it negates the effect of the range.
+So then any character not enclosed is matched.
+The exclamation mark is the posic standard.
+The circumflex is the original way this has done in the early Unix versions and it's now non-standard because posics is the sort of standard of everything.
+If you want to match a hyphen, then you just put it at the first or last character in the set.
+So something like open square brackets, hyphen A, hyphen Z, closed square bracket means the characters A through Z and the hyphen.
+We could have put a hyphen Z hyphen just two different ways.
+So it just removes the meaning, um, from the, from the hyphen as being a range definer.
+If you want to match a closed square bracket as one of the things in these brackets, then you can make it the first character in the set.
+So you might have open square bracket, closed square bracket, A hyphen Z, closed square bracket.
+So the first closed square bracket is a character to match.
+There's a whole range of character classes that can be used in these square brackets and we've got classes.
+We've seen these in the intro to, um, to say, I think, did we do it there?
+But we've certainly seen it in the org one.
+Open square bracket, colon, then the name of a class, colon, closed square bracket.
+And you have to put that inside square brackets.
+So for example, open square bracket, open square bracket, colon, Al, N, U, M, colon, closed square bracket, closed square bracket means Al, non means alphabetical and numeric, which is the range A to Z, lowercase A to Z, uppercase and zero to nine.
+So it's a, it's a shorthand way of expressing that.
+There's a lot more detail there to go into, which I'll leave you to do if you want to, because it's in the manual page extracts at the end.
+So if we want to refer to all files in the directory, A, assuming we're in that top level directory and we're looking for files which have an A is the second letter.
+Then the example is LS space, lowcase A slash question mark, lowcase A, asterisk.
+So looking in directory, lowcase A, we're looking for files which have any first character followed by a single letter A, followed by anything.
+The question mark means any character in this particular case, all of the files begin with A anyway.
+So it's a slightly silly example, but it, I think it makes the point.
+The command will return 50 file names and I've shown something of what might come back as a result.
+So you get A slash A, A, zero, one dot TXT, et cetera, et cetera.
+I've used the minus W option to LS, which restricts the width of the number of columns that it returns.
+So that was just really so I could cut and paste the result into these notes and it wouldn't wrap around the line in ugly ways.
+Now, as I've already said, there is a certain resemblance between these glob patterns and regular expression.
+And you've seen regular expressions in the learning series and learning organ and other places.
+Be careful you don't confuse the two, regular expressions are more powerful but are not available in bash when you're expanding paths like this.
+They are available in bash but we will not be looking at those in this particular part of this series.
+I might come on to them later, I've certainly put a note to cover that subject but I might never get to that because I don't know how popular these are anyway.
+The expansion of these patterns takes place on the command line as we've already discussed and it results in an alphabetical list of path names.
+And it's not, I don't know whether most people are aware of this, took me a while to discover this when I was a Unix newbie many years ago.
+If you type the command echo and you follow that with one of these expansion expressions, then echo is actually given by bash a list as a result.
+So I've given an example here. So if you type echo space, location a slash question mark, location a zero star, asterisk I mean, then you get back a list of names which you don't see but echo then reports them to you.
+So it says that that particular expression means files in directory, location a beginning with any character followed by a and then a zero and any number of further characters.
+And the result was nine file names of path names I've written here which is more precise because it includes the directory.
+Now this has been quite, it is an important concept anyway, but it has actually been quite a difficulty in the past. I'm not sure whether later the current versions of bash are so fussy about it.
+But I've certainly experienced versions of Unix where using sh and bash, if you generated too many path names or file names on a line as a, when typing a character, typing a command I mean, then there were limits to the number of arguments that a given command might be able to accept.
+So it would be possible to generate thousands and thousands of of path names and for the command to fail because you've given it too many.
+I can remember having to delete many, many files in a directory, for example, many years ago and there were, there were many tens of thousands of files there.
+And I, you can't, you couldn't then anyway simply type RM star in that directory because it expands the more and hands them to RM and RM couldn't cope.
+You had to then, you had to sub, sub divide them. There were other ways of doing it, but as a newbie I fell over that one.
+So I have not fallen over it in recent years, possibly because I know to avoid it, but also more likely because bash has gone a lot cleverer with dealing with this type of thing.
+I was dealing with machines with limited processing power and limited memory and so forth.
+So I've demonstrated this business of what actually gets returned using an array, I'm not sure how useful this will be, but I'll just go through it quickly.
+And it was partly just to remind you about arrays which we covered in an earlier episode.
+So I've created an array which I've called VEC VEC, so I've typed VEC equals and then open parenthesis, a slash question mark,
+in the case a zero star, closed parenthesis. So it's exactly the same expression, so for except we put it into parenthesis.
+And that is an expression, the whole command is one that says, treat VEC variable name as an array, the parenthesized thing,
+it will return whole list of stuff which will be popped into successive elements of the array.
+Next line is echo, dollar, open curly bracket, hash, VEC, open square bracket, at closed square bracket, closed curly bracket.
+So what that does, I'm sure you remember this from the bash parameter manipulation episode several years ago, I'm not serious by the way.
+What it does is it says, it's an array expression, but the hash on the front of the array name says, tell me the number of elements in the array.
+And the answer comes back as nine.
+So if you then echo the contents of the array, which is dollar, open curly bracket, VEC, open square bracket, at closed square bracket, close curly bracket.
+Then you get that list of nine path names as before.
+Now it's important to be aware that these pattern expansions don't occur when they're quoted.
+Because effectively you're hiding them from bash, it's just treated as a verbatim string.
+And I've got an example of that same expression enclosed in double quotes and in an echo command.
+And what you get back is exactly what you put in between the double quotes.
+Another thing to note that if the pattern doesn't end with a wild card, that implies that the bit that ends your pattern has to match the end of the file name.
+So I've got an example, echo space, low case A, I won't keep saying the case because they're all low case, A slash A A 1 star TX.
+And what you get back is exactly what you just typed.
+If you do that again and put a T on the end, so it's star TXT, then you get back a list of file name.
+And the reason is that the pattern which ended with TXT matched a whole bunch of files.
+The pattern which ended with TX didn't match anything because there was nothing that ends with TX.
+If you put an asterisk on the end of it, star TX star, you know what I mean, when I say star, let's just go, can't get out of that habit.
+Then you would have seen all the file names.
+So later on we'll be looking at how you can control the way in which bash deals with this type of thing, in particular what it returns if it finds no matches.
+So there are a whole bunch of options that affect the way that path name expansion works.
+And in order to switch these on and off, there is a command SHOPT, I suppose you pronounce it.
+And it's a built-in command part of the bash shell.
+So if you simply type SHOPT, then you get a list of all of the options that it is aware of with their setting.
+And there's a lot that we won't be covering here. There's only a small subset of them that relate to expansion.
+I'll not be looking at these in a huge amount of detail.
+So if you type SHOPT with the name of an option, it returns its current setting.
+So there is one that we're going to be looking at called dot glob, DOTGLOB.
+So SHOPT space dot glob, and you get back the answer dot glob and then off, well in my case you did.
+To turn one on, you use SHOPT minus S, where the S stands for set, just to help you remember.
+And if you want to switch it off, SHOPT minus U, name of option, SHOPT minus U dot glob, will turn it off, where U stands for UNSET.
+So S for switching it on, U for switching it off.
+There's also another option to SHOPT, which is minus P.
+So I've got an example, SHOPT minus P, space dot glob, space fail glob, two of the things we're going to look at shortly.
+And it comes back with the command form and for setting these things.
+So it comes back with SHOPT minus U dot glob, SHOPT minus U fail glob.
+So at that point they're both off and it provides the commands for switching them off.
+So the assumption is you would do this, you would save the results somewhere other.
+And then you would fiddle around with these options and then to reset them to the previous state, you could execute those commands from your script.
+So let's look at the list of options which relate to pathname expansion, dot glob, with was the one we already mentioned without explaining it.
+This controls where the files begin with a dot are returned by pathname expansion, normally they're not.
+So if we create, we haven't got any dot files at the moment, if we create one touch space, a slash dot, and then I called it dot file.
+With that really thinking about how that would sound when I spoke it out.
+So it's the full stop, or period, d-o-t-f-i-l-e.
+And that's how you would create what an empty one.
+Such files are called hidden because many parts of the operating system don't show them unless you particularly ask them.
+But finding them with wildcards will fail.
+So this is an example, l-a-s-s-space-a slash asterisk dot asterisk.
+And it says ls cannot access.
+No such final directory.
+So you think, oh, I'm sure I've got one just created it.
+Why can't I find it?
+ls space-a slash question mark dot, that'll cover it wanted.
+Question mark d-o-t asterisk.
+Get the same answer back.
+Cannot access repeats the expression and you use no such final directory.
+Okay.
+So the question mark didn't match it.
+The asterisk didn't match it.
+So what about if I put a full stop in brackets?
+ls space-a slash open square bracket dot closed square bracket.
+d-o-t asterisk.
+Oh, cannot access no such final directory.
+Now, if you understand ls use ls,
+you will know that there is a minus a option to ls,
+which shows hidden files.
+Well, that solved problem.
+Well, it doesn't really.
+It doesn't because if you're using a wildcard expression with it,
+then the expression will be the thing that's handed,
+or the expanded version of the expression will be handed to ls.
+And it will not find the adopt the file with the leading full stop.
+So ls is simply given this pattern,
+which it treats as a file name,
+and then it goes looking for a file called asterisk d-o-t asterisk,
+or any of the other ones we experimented with,
+and it can't find it.
+If you simply did ls minus a and finished there,
+then you would see the file,
+but you'd have to plug through all the others as well.
+However, if we switch on this dot glob thing
+by typing the command shoppedspace minus s space d-o-t-g-l-o-b dot glob,
+then we do ls space a slash asterisk d-o-t asterisk.
+Yay, we see it a slash dot d-o-t-f-i-l-e.
+So, as I say here in the notes,
+if we, if we simply did ls minus a,
+then we'd see 1300 files in that directory.
+And it might be easy to miss the fact that there is a dot filing.
+I know it's artificial,
+but these can be the sort of situations that you will bump into.
+So I show an example here,
+where I use the ls command, ls minus 1,
+minus 1 simply means output everything in a single column
+rather than multiple columns across the screen.
+Minus a, space a,
+so look in the directory a,
+checking, returning all the so-called hidden files,
+and doing in one column,
+then I pipe that into tail minus 3,
+and the answer is we see a-z-49 dot t-x-t,
+a-z-50 dot t-x-t,
+and then dot d-o-t-f-i-l-e.
+As I said here, as a Unix newbie,
+I did struggle with this issue quite a lot.
+As did many of my colleagues,
+which we were all learning Unix at the same time,
+because we've got Lambert with various Unix systems.
+How about how he is supposed to do this?
+And it was not clear.
+And the manual,
+man pages didn't really explain it,
+and so on and so forth.
+So if you ever get faced with this,
+this is a thing to remember.
+So let's go on with some more of these
+shocked options,
+E-X-T-G-L-O-B,
+X-T-G-L-O-B,
+controls extended pattern matching features.
+I'm not going to look at them this time.
+We'll check them out next time.
+Probably quite quickly,
+because I doubt whether they're that useful,
+but I just thought about to cover them.
+Not convinced they used to anyway.
+Maybe I'm wrong.
+Next one, fail-glob.
+This controls whether an error is produced
+when a pattern fails to match.
+So the sort of examples we've seen so far
+is when a pattern matches nothing,
+you simply get the pattern back.
+So we'll see how this can be done.
+So I've got an example where we
+you shopped space minus S fail-glob.
+So we're setting it,
+and we do LS space A slash A-A50s asterisk.
+And we get back, there is one file,
+and it's called A-A50.T-X-T.
+We'll be.
+Then we do LS space A slash A-A51 asterisk.
+Well, there's no such file, actually.
+And we get back an error,
+a bash error which begins high-fin bash,
+call on no match,
+and then the pattern.
+If we switch it off,
+shopped space minus U,
+space fail-glob,
+and then we do that.
+We look for this A-A51 file,
+which doesn't exist.
+Then we get back,
+LS cannot access the pattern,
+no such file or directory.
+So LS has been given the string A slash A-A51 asterisk,
+and it goes looking for a file of that name,
+and you can't find it.
+So with fail-glob on,
+you get an error,
+if the expansion can't match a file.
+With fail-glob off,
+when no match happens,
+you simply get the pattern returned to you,
+which causes LS to have slight brain failure.
+There is a problem with this.
+The fail-glob has other effects
+that might not be entirely desirable.
+If you are like me,
+and you use tab for command completion,
+and so forth, and file name completion,
+then it affects that.
+Because it messes with the mechanism underneath,
+that's used by tab completion.
+So I don't think I'd recommend using it.
+In fact, to be honest,
+a lot of these options are just curiosities,
+as far as I can see.
+The need for them is fairly limited,
+unless you're way out there in the extremes of writing,
+bash scripts, and so forth.
+So I've sort of preempted the punchline here,
+but never mind.
+Next one, just go through them pretty quickly,
+I think now.
+Global ASCII,
+glob, sorry, ASCII ranges.
+It's the option name.
+And if you set this on,
+it disables the use of collating sequences
+of the current locale,
+and refers to traditional ASCII.
+So that's that business of bracket expressions
+like A hyphen Z in square brackets.
+So here's me doing a test,
+MK-Dur test, CD test.
+Then I touch a file which is an A with an accent.
+I touch a file called B.
+Then I set glob ASCII ranges on
+with the minus S,
+shocked minus S.
+Then I type LS,
+square brackets, A hyphen B,
+closed square brackets.
+And all I see is B,
+because the ASCII ranges
+does not include the file name
+with an accent on it.
+I switch off glob ASCII ranges,
+shop space minus U,
+space glob ASCII ranges,
+LS, the same thing,
+square bracket,
+A hyphen B,
+closed square bracket.
+Then I see the accent at A and the B,
+and so forth.
+I don't know why you would use that.
+I'm never, ever either.
+I'm the absolute,
+be all an endore,
+but I can't.
+I don't have enough imagination
+to think why I'd need it.
+This next one,
+glob stars,
+might be a bit more useful.
+In this case,
+if you switch it on,
+you have an extra pattern,
+which is two asterisks,
+which causes
+recursive scanning of directories
+in a pattern matching process.
+So, my example here
+uses,
+I create some more directories.
+So obviously I didn't create enough
+the first time around,
+did I know?
+Nevermind.
+So I create,
+make DOOR,
+DOOR,
+DOOR 1,
+and then inside that,
+DOOR 2,
+and inside that,
+DOOR 3.
+So I've got a path,
+DOOR 1 slash DOOR 2,
+and I've used the minus P option
+to make DOOR,
+which is the way you tell it
+to make all the directories at once.
+Then I touch a file,
+some files,
+there's a file called test.tmp,
+and a file called ReadMe,
+inside the lowest directory,
+DOOR 3,
+there's,
+you're not going to be able to get this,
+if you listen to this on the bus,
+but nevermind.
+There's a,
+hopefully described it well enough
+in the, in the notes.
+I created a bunch of files anyway,
+some, at the various levels of these directories.
+I used the tree command,
+which I think JWP did a show on,
+which is a really nice command.
+I've used tree on DOOR 1,
+which is the top level directory,
+and it shows this nice picture,
+graphical sort of picture
+on the command line,
+of DOOR 1,
+with a file in it,
+DOOR,
+and a directory in it,
+and DOOR 2,
+and DOOR 1,
+with some files in it,
+and another directory in it,
+and DOOR 3,
+underneath DOOR 2,
+with two files in it.
+So, the point of doing that,
+was so we can list files
+in this tree structure,
+using the double asterisk thing.
+We'll use Echo,
+to do this.
+You see the results,
+without going through LS,
+which complicates the issue a little bit.
+So, my example is,
+Shopped-esque glob star,
+and Echo,
+asterisk, asterisk,
+slash, asterisk,
+dot,
+TMP.
+So, it returns,
+the path,
+DOOR 1, slash,
+DOOR 2,
+slash, DOOR 3,
+slash, test dot,
+TMP.
+Which you probably only really
+get,
+understand,
+by seeing the picture,
+and this is not,
+it's the only real way to demonstrate it,
+I think, but it's a,
+it's not the best one
+if all you're doing
+is listening to this,
+while you're driving,
+anyway,
+it shows all of the files,
+which end in dot TMP,
+in all of the,
+the different directories,
+and there's one in each directory,
+sub directory.
+If you follow the double asterisk,
+by a slash,
+then only directories are matched.
+So, Echo,
+space,
+DIR 1,
+slash,
+asterisk,
+asterisk,
+I can't say it now,
+slash,
+then you see
+the directory structure,
+listed out on the line.
+You can do the same with LS,
+but when you do that,
+it also lists the contents
+of these trajectories,
+as it traverses them.
+If you switch glob star off,
+and try and do that first Echo,
+asterisk, asterisk,
+slash, asterisk,
+dot TMP,
+then you only see one of them.
+It doesn't recurse through
+all of the directories.
+So,
+this is mildly useful,
+but I think I would
+not recommend using it,
+unless you really want to get,
+well, maybe it's
+beyond my pay rate anyway,
+but I don't use it.
+If I want to find
+weird and wonderful stuff
+in the directory hierarchy,
+I would use the Find command,
+which I am not going into details of,
+but I've put an example of
+in the notes.
+I think somebody has done this,
+maybe dandered this
+in his,
+in the Shell series,
+to recover,
+find,
+I can't remember.
+You don't need to,
+to,
+there needs to be something
+on the HPR site
+that covers Find,
+because it's an amazingly powerful command.
+So, you want to do that one,
+feel free.
+So, we've got some more,
+well, two more.
+No case glob we've got.
+Normally, the path name expansion
+is case sensitive.
+If we set no case glob
+on, then it isn't.
+Can I just leave it
+at that rather than go
+into all these details?
+I think you probably prefer
+if I,
+if I don't drill down
+any further with that one.
+It,
+I have,
+put some,
+some worked examples
+in the notes.
+No glob,
+and you double
+L, G, L, B.
+We saw before that,
+when,
+when you,
+when a pattern match
+is nothing,
+the patterns return.
+Which means,
+the command right treated
+as, as if it's
+a natural path name.
+We saw LS doing this a lot.
+If you switch no glob
+on,
+then instead of doing that,
+you get back a null string.
+So,
+often that's more useful.
+And again, I,
+I think this is sufficiently
+obscure that I'm
+going to enter in any
+more detail,
+but there are more details
+in the notes.
+So, let's,
+let's draw a conclusion
+at this point then,
+where we're fairly long already.
+So it's important
+to understand
+path name expansion
+in bash.
+It's important
+for effective use
+of the command line
+for writing bash scripts
+and so forth.
+It's good to know this,
+and it's good to know
+that you can control all its
+behavior a bit.
+But I'd say that really
+only dot glob is,
+is the important one.
+And then when we go to the
+next episode,
+we'll look at some
+of the expansion issues
+in relation to
+extended pattern matching
+operators, which are
+a new,
+new asia edition
+to bash.
+We'll have a look at that then.
+There's a whole bunch
+of references back
+to the previous shows
+in the links section
+to learning said learning org
+and a few references
+which go into some detail
+about glob patterns.
+You might find
+more useful than what I've
+just told you.
+But hopefully they'll fill
+in any gaps.
+All right, I'm going to call
+it quits at that point.
+Okay then, bye.
+You've been listening
+to Hecker Public Radio
+at HeckerPublicRadio.org.
+We are a community podcast
+network that releases
+shows every weekday
+Monday through Friday.
+Today's show,
+like all our shows,
+was contributed
+by an HPR listener
+like yourself.
+If you ever thought
+of recording a podcast
+and click on our
+contributing to find
+out how easy it really is.
+Hecker Public Radio
+was founded by the
+Digital Dove Pound
+and the Infonomicon
+Computer Club.
+And it's part of the
+binary revolution
+at binrev.com.
+If you have comments
+on today's show,
+please email the host
+directly.
+Leave a comment
+on the website
+or record a follow-up
+episode yourself.
+Unless otherwise stated,
+today's show is
+released under
+Creative Commons
+Attribution
+ShareLife
+3.0 license.

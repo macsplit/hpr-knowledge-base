@@ -1,0 +1,181 @@
+Episode: 4356
+Title: HPR4356: Mirror Mirror On The Wall
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4356/hpr4356.mp3
+Transcribed: 2025-10-25 23:37:12
+
+---
+
+This is Hacker Public Radio Episode 4356 from Monday the 14th of April 2025.
+Today's show is entitled Mirror Mirror on the Wall.
+It is hosted by Lee and is about 13 minutes long.
+It carries a clean flag.
+For the summaries, Lee talks about running a private Ubuntu Mirror.
+Hi I'm Lee.
+I'm going to talk about running a private mirror for a Linux distribution.
+A prerequisite is that you'll have a reasonably fast internet connection, and while you could
+put the mirror actually on your desktop PC, for what I'm going to talk about, I'll be
+assuming that you've got a server running, and it helps if this is always on, and you
+probably want at least a terabyte of free space on the server, and I'm assuming you have
+one or more PCs running the distro of choice.
+Now why would someone want to do this?
+Well one reason would be that you can install, reinstall and upgrade packages on one PC or
+several PCs, even if the internet connection is down.
+It's also arguably quite efficient in the case of having several devices to be able to
+get packages once only rather than having to fetch them for every device.
+On the other hand, if the server is mirroring an entire distribution, that's a lot of packages
+being downloaded that probably will never get installed.
+What might have got me interested in doing this though was probably the situation of a
+kernel update killing the network drivers on my desktop, and while my practical solution
+was to go back to the previous kernel version, while troubleshooting I also kept finding
+myself in the position of needing to install a package, but I couldn't download it because
+my network was not working, and I just wished I had a local copy of all the packages somewhere
+I could easily grab one and copy it to my PC with a USB stick.
+And yes, even without a mirror I could have downloaded packages on another device, but
+it led me to the realization that without the internet, a PC can be dead in the water,
+firing a complete reinstall.
+If you're lucky enough to have an installation USB stick or DVD ROM handy that is.
+And while those installation media hold all the packages, these will be earlier versions
+that may no longer install because of dependencies with other packages that have been updated
+since the OS was installed the first time.
+So there are pros and cons in cases where the extra effort is justifiable.
+It's probably not necessary for most people or businesses who might be using Linux, and
+to be honest it was just that I already had the disk space on my home server and already
+had the good internet connection, so I thought why the hell not.
+So now I'll talk about some of the practicalities of doing this.
+Not so long ago when Arch Linux was my daily driver, I sat up a private Arch mirror, and
+to be honest it started life as Manjaro because the installation process was less prone
+to human error, but I'd switched repos and swapped everything to do with Manjaro out
+of it.
+But now I'm running Kabuntu on my main PC and Headless Manjaro on my home server.
+So interestingly the scripts I'm running to mirror the Ubuntu repository are actually
+running on a non Ubuntu server.
+The script I'm using is called APT-Hyphen-Mirror, and it sources on GitHub at github.com-4-APT-Mirror.
+They are looking for a new maintainer to incorporate quite a few pull requests, and I see recently
+someone has volunteered to take over, and they have already created a fork of the repository
+at github.com-4-electric-worry-forward-slash-APT-Hyphen-Mirror.
+I'm running the script in CronTab as root.
+The line in CronTab starts 0, 1, asterisk, asterisk, asterisk, so it runs at 1 a.m. each morning,
+and then the path of the script, which is forward-slash-USR, forward-slash-local, forward-slash-been-forward-slash-APT-Hyphen-Mirror.
+And thanks to some guy on the internet for an episode I listened to recently.
+I think HPR-408, where you mentioned USR can stand for universal system resources, because
+I'm not really heard of that, and I was just associated with it and pronounced it as user.
+And I think, historically, it might have been to do with the difference between kernel
+space and user space, with low-level stuff to do with the operating system happening
+on one security level, and user-level stuff being the program's utilities that did stuff
+for the user that ran without direct access to the underlying hardware, so it had to communicate
+with the kernel through system calls.
+Anyway, to configure the APT-Mirror script, there's a file in it, which often, again,
+I pronounce it, although I now know it's often pronounced Etsy.
+This often happens when you're self-taught for reading and experimenting and never actually
+say these words out loud to anyone for several decades after you first learnt the words.
+The configuration follows Etsy forward slash APT, forward slash APT-hiphon-mirror.conf.
+The important line is set space mirror under the score path, space forward slash disk forward
+slash FTP forward slash mirror, because that is the folder where my mirror will be stored.
+And forward slash disk is the mount point for a hard disk, or to be more accurate, I'm
+spanning two multi-terabyte mechanical hard disks with merger FS.
+And by the way, spanning has no redundancy, which is fine for stuff like this, because
+if it dies, it dies, and it just gets re-downloaded once the hard disk is replaced.
+Then I need to tell the script where it should be downloading the mirror from, and this
+goes in the file forward slash Etsy forward slash APT forward slash mirror dot list.
+And the important lines are like their space, then HTTP colon forward slash forward slash
+archive dot ubuntu dot com forward slash ubuntu space noble, which is short for noble
+number, and it's the code name for Ubuntu 24 long term support release, then space main,
+space restricted, space universe, space multiverse.
+Basically this line needs to be specified in three more different variations for security
+updates and backporks.
+Another block of four, which I've commented out, which would be if I wanted to mirror
+the source packages, which would have been originally used to build the binary packages.
+But I don't ever want to build these standard packages from the sources, so I admit those
+are from my mirror.
+And finally at the bottom I put clean space HTTP colon forward slash forward slash archive dot
+ubuntu dot com forward slash ubuntu, that just removes outdated files.
+And actually in the APT hyphen mirror dot com file, I mentioned previously, there's a
+line set space cleanup underscore freak short frequency space daily to tell it how often
+it gets rid of files that are no longer needed.
+So I can now run the APT mirror manually, and I probably do this in a screen or team accession
+so I can detach and leave it running because it's going to take from several hours to
+maybe even a day or so to run for the first time.
+And then I will enable my line in front of so I have APT mirror running in the wee hours
+of every morning to fetch anything new.
+The result is I have a mirror on the hard disk of my server, but it's not my shoes there.
+I need to share it over the LAN to my PC or PCs.
+I'm going to do this via FTP, and I use the demon VSFTPD to do that.
+And the VSFTPD website is security dot appspot dot com forward slash VSFTPD dot hgml if
+you'd like to read more about that software.
+Now VSFTPD is a very security conscious FTP server, so there are some hoops to jump
+through to get it running right, but I'll not go into those in too much detail.
+And while apparently it did get hacked about 15 years ago, I've been up a back door for
+some people, so you could just type a smiley face and get shell access to the server.
+VSTPD was running on.
+This had nothing to do with the VSFTPD server itself, but it was someone who cloned the
+repo, then introduced the back door, then someone else decided to use their version of
+the repo, which got put on cloud instances provided by Google, making servers running
+that version vulnerable.
+But since then, everyone has a lot more aware about these sort of risks.
+The fact this is running on my LAN behind that and not publicly facing the internet in
+any way means it's probably OK to be permissive about how I've configured it.
+In the config file on the server in forward slash Etsy, forward slash VSFTPD.com, I've
+specified anonymous underscore enable equals yes, and set a non underscore root equal to forward
+slash disk forward slash FTP, and allowed no underscore a non underscore password to be
+equal to yes.
+So basically it's serving up this mirror as an anonymous FTP server, so my PC I'm running
+APT on does not need to have any passwords or anything else configured to connect.
+I mean, if I did have my server somewhere else, I might rather rely on a VPN that is a
+virtual private network to connect over rather than ratcheting up the security on VSFTPD.
+But if you were really concerned, you could always do both.
+Now on my actual desktop PC running a Ubuntu, I need to do away with the default sources,
+otherwise APT will ignore my mirror and be connecting to the Ubuntu mirror or some other
+external mirror to download packages.
+The configuration for sources of packages nowadays is in forward slash Etsy, forward slash
+APT, forward slash source dot list dot D, and the file I edited in there is Ubuntu.Sources.
+In its file, I'm needed to tell APT where to look firstly for normal packages and then
+separately for security updates, as these are treated slightly differently by the package
+manager.
+So for normal packages, I'm specifying in Ubuntu.Sources, capital T types colon space
+Deb, the next line capital U R I, it was colon space, then the path to my mirror, which
+is FTP colon, forward slash, forward slash server, which is the host name of my server.
+So I'm up to an IP address on my LAN in my Etsy hosts.
+Then forward slash capital M, mirror, forward slash all low case mirror, forward slash archive.ubuntu.com,
+forward slash Ubuntu.
+Then on the new line capital S, suites colon space, noble space, noble, hyphen, update,
+space, noble hyphen, backports.
+Next line capital C components colon space main, space universe, space restricted, space
+multiverse.
+Then on the new line capital S, signed, hyphen capital B by colon space, forward slash,
+U S R, forward slash, share, forward slash, key rings, forward slash Ubuntu, hyphen, archive,
+hyphen, key ring dot GPG.
+And this whole block gets repeated with a minor variation for the security updates.
+So that's it.
+I have my update mirror and I can just type sudo apt update and sudo apt upgrade to bring
+my PC up to date.
+And just to be honest, my whole apt configuration on this PC is a bit of a mess.
+I have lots of third party repost configured in sources dot list dot D. These are known
+as PPAs or personal package archives, including zero tier.
+That's a VPN Microsoft for some reason, maybe for some fonts or something, as well as
+Heroku and Google, I think for Chrome and Missyla, because I was probably getting an
+NGO version of Firefox at some point and tailscale.
+So that's another VPN and both these VPNs, I mentioned, are for connecting to other servers.
+They're not for hiding my peer address or anything like that.
+So looking at my shell history, my actual process for upgrading also includes commands
+like sudo space, app space, hyphen, hyphen, fix, hyphen broken, hyphen install, and sudo
+space, app space auto remove.
+In any case, that's how I'm keeping my system up to date.
+In summary, there are a few use cases where people organizations might want a private mirror.
+In general, you can mirror everything, which is probably going to require an awful lot
+of bandwidth and this space, or you can mirror just the bits of the distra you want.
+I've talked about using FTP as a protocol for the mirror.
+It might be just as easy to use HTTP, for example, with engine X or Apache, and maybe there
+are other options.
+What I haven't gone into is that some companies or institutions may even be in a position
+to create a public mirror, which distributes the resources needed for a Linux distribution
+to be publicly available and provides redundancy and optimise its network usage, so people
+are downloading from sources close to them, making updates potentially faster.
+I think there's a whole other side, especially in terms of security and resource usage,
+to do with providing a public service like that, so I can't really comment on that based on my
+own experience. If you have something to add, feel free to share that by leaving a comment
+on the HPR website, or recording a show. That's all for now, thanks for listening.
+You have been listening to Hacker Public Radio at HackerPublicRadio.org. Today's show was
+contributed by a HPR listener like yourself. If you ever thought of recording a podcast,
+you click on our contribute link to find out how easy it really is. Hosting for HPR has been
+kindly provided by an honesthost.com, the internet archive, and our syncs.net. On this
+otherwise status, today's show is released under Creative Commons, Attribution 4.0 International

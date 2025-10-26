@@ -1,0 +1,223 @@
+Episode: 2272
+Title: HPR2272: In Which Our Hero Takes 4 Hours to Install Hyper-V Server 2012
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2272/hpr2272.mp3
+Transcribed: 2025-10-19 00:42:28
+
+---
+
+This is an HBR episode 2,272 entitled, in which our hero takes 4 hours to install Hyper-V Server
+2012.
+It is hosted by only half the time, and in about 13 minutes long, and carry an explicit
+flag.
+The summary is a tale from the trenches, when good servers go bad.
+This episode of HBR is brought to you by an honesthost.com.
+At 15% discount on all shared hosting with the offer code HBR15, that's HBR15.
+Better web hosting that's honest and fair, at An Honesthost.com.
+Greetings and Felicitations, Hacker Public Radio.
+My name is only half the time, the reluctant windows sis admin.
+This is my second contribution to your glorious podcast.
+I come to you today with a tale of strife, of victory, and of windows servers.
+In which our hero takes 4 hours to install Hyper-V Server 2012.
+The story was originally published on March 19, 2017, on reddit.com ygarwaxisadmin and
+reddit.com ygarwactails from tech support under the same name only half the time.
+So we had this server.
+As all servers are want to do, this one had run successfully for a number of years.
+Everything worked perfectly, until it didn't.
+It ran to my knowledge, only Hyper-V Server, on its system drive, and had a second set
+of drives for hosting the VM that ran Microsoft deployment toolkit to service our depot.
+Our depot is on its own physical network, sharing with production only an ISP demark.
+I had long since abandoned the depot and its trappings, thinking it someone else's domain,
+thinking my time better spent on client systems thinking that I didn't need to know what
+happened in the off-dignored part of our operation.
+I assumed that it was set up properly since it had been stable for so many years.
+But you know the old saying, when you make assumptions, you make an ass out of you and
+it's the problem.
+Our monitoring systems report the two servers offline, the hypervisor and its virtual.
+I said on a depot technician to take a look, they come back online and he tells me that
+it needed to be rebooted.
+Having divested myself from giving a damn about the depot, I barely found the energy to shrug.
+Then it happened again.
+When I again saw the technician and promptly got wrapped up in some client-facing issue,
+I forgot about the servers until they went offline a third time.
+I didn't have to tell my depot tech he was watching the same feed as I at this point.
+He rummaged a bit, came back with a story of defeat and virtual disks not being found.
+The server won't boot because the virtual disk can't be found, he said.
+Okay, so you mean the virtual won't come up, but what about the physical, I replied.
+No, that's what I mean, it won't get past bios, it's complaining of a virtual drive not being found.
+Sounds bogus, let's look.
+He was not wrong, that is what the screen said and what it meant was raid failure.
+I slid off the front of the server case and sure enough, one of the drives had popped.
+Oh, did I mention?
+No backup.
+The rabbit hole.
+Drives pop sometimes, ain't no thing.
+We build systems to be resilient.
+You slap a fresh one in there, it starts re-silvering and you get on with your day.
+Not this time, gentle listener.
+While digging through the raid controller I found to my amazement horror and daughter confusion that
+whatever chuckle fuck set up this server put the two system drives in a raid zero.
+As I stared at the screen in that blinking amber drive light, all that could pass my lips was a quiet.
+Oh my god, why?
+In this scenario, I didn't see any way forward, but through.
+So far, it had been demonstrated that the bad drive would behave for about two hours, then throw a fit.
+I shut down the server and took some time to think about how to proceed.
+In that time, I rediscovered some of the things that the virtual server was serving.
+Things like Microsoft deployment toolkit, DNS, DHCP, Pixieboot, but most importantly,
+the lone domain controller for depot.local.
+Oh, and it was the only machine that was set up to manage the hypervisor through the
+Hype of a console and server manager.
+Great.
+Compounding the issue the virtual was not stored on the separate set of raid one desks in the server as I had assumed.
+It was stored on the system drive.
+Oh, joy, oh, rapture, new mission, rescue that virtual.
+The struggle.
+First things first.
+I assume I'll only have one chance to rescue this data before the drive bites the dust for good.
+I plug in the VJ and keyboard and take a deep breath.
+I turn on the server.
+It fails to boot into the operating system.
+Come on, you little shit.
+Take out the drive, put it back in.
+Success.
+We boot into the OS and I'm presented with a log on screen.
+Password.
+There are no log on service available to process your request.
+Shit, that's right.
+Ah, the virtual is the only DC.
+Okay, local admin it is.
+Log in successful.
+Sweet.
+Presented with a command line and Sconfig.
+Grab the terminal, start poking about, CD to C and DIR.
+Find a folder named VMs, Bingo.
+Start copying the VHDX to the raid one set.
+The server moves the data at a respectful 700 megabits per second considering its current
+degraded state.
+It eventually finished the transfer after about 10 agonizing minutes.
+Back down the physical to preserve the bad drive.
+We are out of the woods, but it's still a long way to grandma's house.
+The king is dead, long live the king.
+I have a plan.
+Now that I have the VHDX and since we clearly need a replica server I'm going to push my
+luck.
+I'll build a new server and see if I can't replicate that virtual.
+I happen to have a disused server sitting right next to the bad one.
+It's admittedly dissimilar hardware, but that shouldn't be a problem.
+I don't know why it's line dormant or what it was used for in the days of Yor, but it's
+mine now, eminent domain.
+And here is the story of how it took me 4 hours to install an operating system that usually
+takes 3 minutes.
+We need to load up Hyper V2012 on this new server first.
+As a standard procedure, I disconnect all but one drive from the motherboard.
+I do this because sometimes the windows installer decides that the system partition belongs
+on a different drive from the C partition and it makes me cry.
+I used Rufus.
+What a fantastic little utility really.
+I need to donate to that guy to make the Hyper V2012 boot disk from ISO.
+I know how it takes a few times to get a USB to go into its slot correctly.
+Not me.
+I whipped that bad mammoth jam like a sharrick and from 30 feet away and it slid perfectly
+into the front of the server.
+Fireworks, 100 doves, the works.
+Boot it.
+Get to the installer part where it asks you upon which drive you wish to install at boom
+error.
+System up was unable to create a new system partition or locate an existing system partition.
+Weird.
+Sounds like a problem with a disk, right?
+Open up disk part, clean it, format, create partition, sign it a letter, no go.
+Try it for drive.
+Nope.
+Disconnect the CD drive maybe.
+No dies.
+Connect all the drives and try each one.
+Nada.
+Bring up into a bunch of usg parted to redo what I did in disk part, search, recreate
+the install media, gooseg, try the back usb ports.
+I'm running out of ways to say no, but in essence nothing was making this error go away.
+Screw it.
+Maybe this is why the server was sitting unused.
+Maybe it's a bad mobile or something and frankly I don't care.
+Part out the drives junket.
+We happen to have a literal pile of servers to pick from so I grab the one on top because
+it's the most similar to the bad server and because you must be out of your damned mind
+if you think I'm digging through that amount of junk.
+This'll do nicely.
+Remember how I said I didn't want anything to do with the depot?
+I still don't.
+I want this new server to be unkillable.
+May he reign for a thousand generations.
+So I may have gone a little overboard with the red setup for one simple hypervisor which
+is going to be backed up and replicated.
+But there is a one terabyte raid one with a hotspare and a 500-ish gigabyte raid five
+with a hotspare.
+I never want to hear from the server again.
+Okay, so we start the Windows server install and the same error.
+No way.
+I have done this dozens of times.
+This is insane.
+I've used this exact same USB drive to do it.
+I can use it on an ancient spare laptop and go through the whole install perfectly fine.
+A dug through pages of posts on forums and tried every last solution suggested except
+one.
+I find on page three of Google, which honestly I didn't even think existed until this
+day, someone say that it only failed for them when they used a USB 3.0 drive to install.
+I look at the end of my USB install media.
+I see blue and then I see red.
+No way.
+So I hunt around for a USB 2.0 drive.
+Takes me a few minutes, but we did have one holding up the leg of a table.
+Rufus took a little bit longer to on this one.
+When the drive was cooked, I gingerly placed it into the receptacle and crossed my fingers.
+If this didn't work, that's it.
+I'm out of ideas.
+No clue.
+But it did work.
+I couldn't believe it.
+USB 3.0.
+Why Windows?
+Why?
+Playing with fire.
+Creating a new domain is a pain in the ass.
+I considered a number of possibilities, but now that I had the reinstalled the server figured
+out, I figured let's go nuts and join the new hypervisor to the old domain depot.local.
+If you'll remember from six years ago when I started telling you this story, the sole
+virtual server performed a DHCP DNS and domain controller functions.
+I powered up the bad physical server.
+It complained, but complied.
+I started the virtual.
+No issue.
+Waited a few minutes, then joined the shiny new server to the domain depot.local.
+From there, with the DC up and running, it was a simple matter of using the HyperV
+console to set up replication.
+After about an hour of pacing back and forth like I was awaiting the birth of my
+first child, virtual made it and was failed over successfully.
+There are a few more issues to resolve, like the DNS server having the wrong IP is for
+just about everything, even though they've all been using the same statics for years.
+DHCP not responding on port 4011 for Microsoft deployment toolkit and pexyboat.
+DHCP being handed up by the virtual and by the router on the same subnet and the DNS server
+refusing to connect over the HyperV switch, but now at least I don't have a not my stomach.
+I don't know how this environment ever worked like this.
+What a mess to clean up.
+I ripped the bad half of that raid zero one of that server like a man possessed.
+I nailed it to the wall behind my desk.
+There's a sign under it that reads, raid zero is not raid.
+If you use raid zero on anything, I will throw this hard drive at your head.
+I have good aim.
+It will probably hit your mouth.
+Once again, my name is only half the time.
+You can reach me at only half the time at gmail.com.
+I am the reluctant Windows Systems Administrator.
+This is my second contribution to Hack or Public Radio.
+Promise I'll make a third as soon as I have some content worthy of your glorious podcast.
+Till then, I'm signing out, y'all have a great day.
+You've been listening to Hack or Public Radio at Hack or Public Radio dot org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HBR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out how easy it really is.
+Hack or Public Radio was founded by the digital dog pound and the infonomicon computer club
+and is part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly.
+Leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise status, today's show is released on the creative commons,
+attribution, share a life, 3.0 license.

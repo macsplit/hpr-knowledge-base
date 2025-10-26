@@ -1,0 +1,489 @@
+Episode: 2723
+Title: HPR2723: Using Elm in context of 4X game client
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2723/hpr2723.mp3
+Transcribed: 2025-10-19 15:40:34
+
+---
+
+This is HPR Episode 2007-123 entitled,
+using L-min context on Forex Game Client.
+It is hosted by Tuku Toroto and is about 45 minutes long
+and Karima Clean Flag.
+The summary is Tuku Toroto's new decision-on-structuring L-application.
+This episode of HPR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code
+HPR 15. That's HPR 15.
+Better web hosting that's honest and fair at An Honesthost.com.
+Hello listeners, I'm Tuku and you're listening to the Hacker Pocket Radio.
+The trick of today is riding L-client for the Forex Game that I'm working on.
+Initially when I started working on the game,
+I had an idea of riding it mostly with the HTML-client set that is
+and only had a little bit of scripting here and there.
+But as the work-progressor soon realized that it wouldn't work very well.
+And there was some things that I perceived that might cause performance problems.
+For example, if you are in the old way that I wrote when you opened a display or the page
+that was used to design the spaceships, it always called to the...
+It first loaded the L-program and then the L-program called to the server to load some data
+that was needed for the seed construction or seed designing.
+And if the user later on came back to that site, that back to that page, it did that again.
+But that led me into thinking that maybe I should ride the whole client in an L-m
+innovative. It loads the code only once and as the user navigates around the program,
+it doesn't have to load the code over and over and over again.
+And it also could cache some data that difficult doesn't change.
+It wouldn't have to retrieve it from the server site.
+For example, the technology, technology 3 that tells what the player has researched
+and what they are able to build doesn't change that often.
+So it wouldn't have to download that from the server all the time.
+So all this led me into scrapping pretty much everything I wrote with the method
+using Hamlet template and look into writing the client site with the L.
+So as I said, back end of the server site is in the method.
+It's called Haskell's framework for web platforms and the client site is written in the L.
+So they need to communicate and for that I choose pretty standard rest interface,
+rest place interface. So there's plenty of JSON data flowing to back and forth.
+The back end and front end are printed in the languages that are static typing,
+which made it all at least in this current project, I really like it, like it.
+The transfer of data in between is of course in strings.
+So you need to have a you need to pay or I need to pay attention how the how those strings
+handled so that the data sent from the server does not change to something completely different
+on the client site. But luckily the LM and Jesuit has a pretty cool good tools for this.
+So my goal for this was to keep things as easy as possible, keep them type safe
+and extensible because I don't have that clear idea of what I will be.
+Writing in a couple of months for example.
+And then this of course the things like user authentication,
+authorization that I wanted to print to the client site to work some of you have to be able to
+tell the difference between regular player and administrator because administrators have their own
+set of views on the client site that they can use to examine the state of the system and
+do maintenance and such things.
+So there are typical architecture for the LM has four major parts, these are the model,
+U, messages and update function. Model is a single type that catches the state of the program,
+view is a function that when given a model will render HTML and that HTML may contain things that
+produce events for example on click, handler on some link or button and those
+are used to create messages or are instructed, the instruct LM that when you click this thing
+you should create this kind of message. And the message is a single type again that catches all
+all the interactions that the programs can have. For example, you should click in on some button
+or program receiving a update from the server or program sending update to the server.
+And the final final part is the update function that when given our
+model current state of the program and a message will produce a new model and a possibly new message
+to. So because of this I didn't have to really think how what the overall architecture of the
+program that was already given to me but I had to figure out how to make this thing a sort of
+extensible. There are multiple pages for example one page to view all the star systems that the
+player has found and on nodes of another page to to look into details of one of those far
+systems and then get another page to look into details of a planet and to the two things that
+you usually do in a 4x game on planets constructing things, changing policies, things like that.
+And I decided to split this thing into pages like there's a one function to render
+each of these pages. Well I mean one function to render one page and then another function to render
+another page and one function the page to handle the messages that it made create and then one
+function to initialize the model when the page page is open. I put in our links into the
+follow nodes into these examples of these functions and then there's a one function to
+yeah the one function to initialize the model when the page is open. This is basically the two
+when when user opens for example a planet view for for first time for a certain planet and
+the client doesn't yet have a data that is needed for the explain that information. This
+function will create a bunch of requests to the server that by the way I need the population
+information for the earth and I need all the buildings allocated on the earth and I need
+things that are being constructed on the earth and those are sent to the server and when the
+response comes back that here's the data we store them into the model. There's a
+for the for example for the buildings there's a dictionary for that is
+the key to buy the planet ID actually it's key to buy the integrals because you cannot
+exactly you cannot put self-defined pipes into the key to the dictionary you have to
+cast cast them to integrals or strings for example there's only very few data pipes that you
+can use as a key in the dictionary but in any case those are stored in the dictionary
+and you can find them if you if you know the ID of the planet you can find
+buildings that are being constructed on it and the view function that renders the planet
+we look into that dictionary find that check if the if there's a buildings present present it will
+render them name and level and damage I think info information when it was last observed
+and if the information is in present it will just leave that part of the UMD
+a property should put out some sort of indicator that will tell the user that the data is in present
+and as soon as the update comes from the server it will it will change that part of the UI it will
+Elm does it in a way that as whenever a model changes it will change the respective parts of the
+UI on the on the on the on the browser these are called reactive programming and Elm is
+even functional reactive programming really it's really nice I am very I'm very happy for
+work with Elm because you can always at least I have the feeling that you can pretty much always
+indicate things like for example if I have something that may or may not be present then the
+data that the type of that is maybe that thing X maybe buildings if the building system type of
+that tells me what kind of buildings are on the planet and then on the when I'm rendering on
+the screen there's the Elm made sure that I don't just really really start rendering them it
+forces me to check that hey this is this thing might or might might not be present the compiler will
+tell me that you did not do that you have to do that it doesn't it doesn't type check so
+on the rendering part I have to account both cases the information is present or information is
+not present and that's that's that's captured on the type level in the model it actually it
+really says that this might or might not be here and as soon as I soon as the thing changes the
+UI changes okay so the model is split into couple parts you know in my system there's the
+general path that holds all the common data like planets that have been the information on
+the planets that have been retrieved from the service parts, how much resources the player has
+what time is it in the game things like that that that can be used pretty much everywhere and then
+there's a single type for each of the pages for example for the planets the I'm for the view that
+is used to render or the page that is so shows the planet information there's a type called
+planet r r has also copied the naming convention from the yes or
+and that pipe holds the data that is needed for specifically for that page like if there's
+a info panel that player can open or close or if they're the search fields that they can do
+to use. That kind of information is used in that model. I mean, so in that, that is
+a particular model pattern. Those two together are actually the latter one is part of the
+first one. The view function that is used to render this planet information has, that
+that function has all the information it needs to put rendering. Each page has their own.
+I guess one could call it view model. I couldn't think that of the name, that holds that data
+that is specific to that particular view. And this is the one that is inutilized by
+e-function when a page is open first time. Okay, the message is there's a type that has
+inventively named as a MSG, so opened of as a message that holds all the messages that the
+program needs to react or send access to react to. And again, it has a separate
+message for each of those different views. For planet, there's a planet message is for the
+stars and these stars and messages. And that message contains usually the stuff that
+only that page needs, needs users click the open this info panel that sends a specific
+planet message. And then there's an app message that is used to deal with
+responses for queries to the server. If my system has queried, has asked the server
+to send information about the population on the planet, it will arrive back as an app message
+population received and then the population received contains all the relevant information.
+And this is a 100-part update function in the element. All the messages are
+handled by the single update function. They come to the single single function that is in
+charge of taking care of everything. And if you have a big program, it can get really,
+really big. And that's not fun. So again, I split this into the smaller parts.
+It's, I eat, subtab message, have their own handler. So when the, there's still one
+update function that is in charge of dealing with the messages, but that can delegate the
+handling to the other other other functions, depending on the type of the message that
+actually arrived. I think that's all about messages. So where do these messages
+are sent to this or rather way to this queries request sent to the LMSA type
+URL or that is, that is, that is, that's it for the address to send data. And all the
+end functions that deal with the networking use, use that one. I didn't want to use
+that because that would mean that I would have to write the strings quite many
+places. And I have, I have noticed that I tend to do typos in
+those and that will lead into hard to debug problems because, because that will lead
+into the incorrect behavior that is noticed only when the program is running. I rather
+have the typos code in advance when you are, when you are compiling the program. One way
+would, would be to define constants for this, but I thought that again,
+borrowing something from the result, I made our own type called end point. And this
+end point is used to capture, it has, it has all the end points or addresses that
+you can call on the server side. For example, and that type even captures the
+parameters that you need to send to the, you need to give to that type. For example,
+if I wanted to request information about population on the planet, that type,
+that constructor I would call is an API population, inventively named and that
+takes a single parameter of the planet ID. So whenever I want to call to the
+server and I want the API population, I can give this specific constructor data
+constructor and the compiler will make sure that I have typed it correctly and I have
+given it to a correct amount of parameters and those parameters of correct
+byte. But of, and then on the behind the scenes, I have a function that will
+turn this, because the, Elm of course does not understand these pipes. I had to,
+first of all, I had to define my own versions of, of get, post, put and delete,
+that not to the rest behavior. And these take these end points as one of the
+parameters and then they understand how to get from the end point into the correct
+URL byte. So mapping is in one place. And they also, that, for example, get
+has information of what kind of event will be, what kind of message will be
+created and what kind of decode or JSON files will be used to process this
+data. So when the response comes back from the server into the update function
+of ours, it, it has already been passed the JSON data has been mapped into
+the Elm object. So it's very nice, it's pleasant to use. You don't have to,
+there's a one place where you have to worry about transform taking JSON data
+apart and constructing a Elm object and that places somewhere behind the scenes
+that you don't have to worry about when you are doing these calls.
+Same, same system is done with the pages instead of end point, this type is called
+root. The idea is the same though, the root captures the different pages and
+parameters that you are required to give when you want to move to that page.
+For example, if you go to the home page, it's just a home or you don't need to
+give any parameters to that. But if you are, you, if you want to send
+user to a specific page about specific planet, it takes two parameters.
+Planet R takes two parameters, star system ID and planet ID. And based on those
+two parameters, there's a root to string function that understands that
+planet R actually maps into the string that is slash star system,
+slash and then star system ID, slash planet ID.
+So again, the Elm, of course, the HTML function of the Elm don't understand
+a path of roots. So I actually define my own version of HRED that works
+identically to the Elm's HRED, but instead of taking a URL, it takes
+my root parameter and then behind of the, when it's rendering the stuff on the
+screen, it will actually use the correct Elm's HRED to output the data to
+output the HTML that the browser understands. So this is a little bit of
+good. And there's the whole Elm HTML library that is really good and
+couple of little additions that are specific to the system data.
+And here are the, since 0.19 version of the Elm, the Elm program can be made
+aware of on what URL, URL is it is being run. So this allowed me to
+wrote the system in a way that the server, the ESRD, will serve the same
+Elm program from multiple locations. For example, if you go into the
+homepage, it will serve the same Elm program as if you went to the, for
+example, planet page or star system page or page about messages.
+The all will serve the exact same Elm program. And the Elm program itself is
+aware of URL where it was started, which allows it to, in the start
+app, to move to that correct view, it will render. For the user, it will
+look like they are, they are starting from different, different pages
+within the program, as they actually are starting from the, from the different
+pages within the program, but it's still the same Elm program in every, in
+each and every of these cases. I made this because it allowed me to, for
+example, this allows players to keep links to other players, if they, if they
+have opened a specific, a planet, for example, they can set copy
+the URL, mail that URL to another player and say that, hey, have a look at
+this planet. And if that another player has sufficient information, they have,
+they have observed that planet at some, at some point, opening, opening
+that a URL will give them the correct, correct view, they can see the same
+plant. And if they are, members of the same faction, they are getting the exact same
+information even, because I, I, I had a feeling that it's important to, even,
+even when the program, even when the client site is a single program, it is
+important to give the user's ability to send links to another user
+and have those links work in the way that they would work in a normal,
+normal that, not, not, not in a case, not in a, because in some cases, they
+are those single page applications where you cannot link into a sub-view.
+And I don't like those. I think that, I think that the ability to link to
+a specific point in a system is a very crucial integral part of the
+web. Okay. Yeah. And now I lost my door. Okay. There's a part of this,
+that was required for this is the, the, we have the function root
+to string that when given a root will give you the correct
+string that you can use in the URLs part to facilitate the mapping from the
+another, another direction we have, we had to create a mapping that tries when
+given a any kind of string as a URL will try to figure out what root
+that this would be and part of that mapping for this is defined in the
+function root that I have the definition of that in the show notes,
+that only, that basically maps that if there's a, for example, if there's a
+string profile, nothing else, it will map to the profile page within the
+program, if there's a string star system slash star system ID slash
+planet ID, it will not do the planet hard resource or root, sorry,
+root. And then the top root home is used when passing fails.
+So whenever you say, for example, if you use types that you have a
+hello world, it will take them to the home root. And what else?
+Predecramps, yeah, there's a part of the, the really, this one is actually
+pretty proud of, I lifted the basic idea from the yesterday again, but
+in top of the top of the page, there's a Predecramps, this is just a
+hierarchical navigational age, it displays names of the pages that are
+earlier and not early on the history, but sort of an above of this
+specific page that users currently, when they are the very beginning
+it shows just a home as a text, but if they click to the
+better star systems, the Predecramps will read home slash star
+systems. And now home is suddenly a link that you can click and get
+back to the whole page. And on the star system page users have a
+little list of star systems that they are aware of, all these
+all these data that the client is showing is based on the, on the
+reports that have been generated during the gameplay. I talked about
+those earlier. And those, those, those reports are just telling
+the user that this is how you observe the, how you observe the
+world, this is the information you have, and the client is dealing
+only on those reports, the client never ever sees the actual data about
+what's the real state of the world. But I got lost, so when they
+click a, for example, a solve system, now the Predecramps will
+read home slash star systems slash solve, not star system, not
+general name, but solve because that's the current system they are
+viewing. And home and star system text are links to those
+respective pages. And now the user are showing the details of the
+solve system. They are a list of the planets that they are aware of
+if they click the Earth, they are taken to the page that shows
+the details of the Earth. And now the Predecramps will read home
+star system, so home slash star system slash solve slash Earth.
+And all about the Earth are links to the door to the rest of the
+pages. This, the idea behind here is that the users are, they are
+aware of where they have navigated, they have some sort of
+contextual information of the location in the system, and they
+are also given a tool to quickly jump back to somewhere. They can
+use browser type button. Elm program will detect that now
+they have requested moving to a different URL, and we will
+serve the correct page, meeting the Elm program. You don't
+actually exit the Elm program when you hit back or forward in
+the browser. Until you go all the way to the back and you go
+back from where you started from the Elm program, then you
+of course are, the new, of course, leave the Elm program.
+How, how, how game client and pretend to, was it
+proved the start page of your browser, for example.
+So the Predecramps are offered another way you don't have
+to use the back button that you can directly, even if you are
+viewing the third you can directly jump to the home page of
+the game client. I'm just clicking that home link.
+And these, these, these are defined. Well, there's a little
+bit of functions that are not interesting, but the Predecramps,
+I'm calling Predecramps past the whole thing, is made
+in a, there's a function, Predecramps part that takes the
+model and produces HTML, that's the whole whole thing.
+And that also wraps it in a, some diffs and filings and
+what not. The actual work, work is done in a function called
+Predecramps, that takes the model, because you need to know
+where you are, you need to, and then there's the
+Boolean Slack, which tells you if you are on the first node
+or in some other node, then it gives you the current
+truth that you want to construct the Predecramps from and
+it will produce you a list of HTML.
+And this, this will call itself recursive,
+recursively. The first, first one is called with the
+flat being. Actually, I don't remember, I have to admit,
+I don't have code, I have only the definition here.
+I think it was called with the Boolean tree true,
+meaning that this is the first element. And after that,
+the recursive code will turn that Boolean to false,
+but I'm not sure that which, of course, means that I should
+get rid of the Boolean Slack and have a real pipe that
+is, for example, the Predecramps placement that can
+have two values, first and some other.
+Because then it would be visible on the pipe definition that
+what this Boolean Slack is actually used for.
+It would have a sensible name and it would have, well,
+it wouldn't have any more values or any less values than the
+Boolean, but it would have a sensible name and it
+could have a pipe and it would mean that you don't accidentally
+stop something incorrect there. Or even at least it would make it
+harder to put something incorrect there.
+And that thing is calling third function called
+decrement that takes the model root and produces a
+couple of string and maybe root. The string here that
+it produces is an actual text that is being shown.
+For example, in case of the home page, it just reads home.
+In case of the file system, it's reads star systems.
+In case of the Earth, the planet Earth, it will read Earth.
+And for that reason, the function needs the model because
+the model holds the, all the data that has been
+retrieved from the server, it has the dictionary that
+has the, that has the planet information and that
+dictionary is keyed by the planet ID that
+integrally, because you still can't put the
+planet ID as a key of the dictionary.
+And based on that information, this segment
+who understands that now we are on a, because
+root is of course the planet A that has two parameters,
+star system ID and planet ID. Based on that
+information, that and the model that has
+given the segment can read from that dictionary that
+is in the model. The information of the planet
+being currently shown and get the name of that planet
+and put that written that, by the way, this is
+not just any planet is, planet Earth.
+And the second parameter on the
+sample that is written is the neighbor root and
+that is used to indicate the parent of the
+this segment. In the case of the home, it's
+nothing because there's no parent, but in the
+case of the, for example, if we are navigating
+to the, or have navigated to the view about
+Earth, the parent will be star system A with
+a correct star system ID. And this will
+trigger the recursion in the
+breadcrumb function, because it notices
+that, okay, this has a parent, so it will
+go to the, but it will call the segment
+again. And in the root, it will give that
+star system as a parameter that will
+produce a double with a string as a
+soil and just star systems A as a
+parameter. And that, that will trigger
+the recursion again and from the
+decursion you are getting a home
+actually, yeah, home and nothing,
+because home doesn't have a parent anymore.
+So the, when, wherever you are,
+wherever the user is within the system,
+the breadcrumb path, when given a model
+will produce a list of all the pages
+and the names starting from the home
+ending to the current location.
+Oh, starting from the current location
+ending to the home, which, whichever way
+you, whichever way you want to use it.
+That was, that, that part of the
+program was kind of fun to code. I like,
+I like that. And as I said, I
+lifted a bar of this from the
+ESOT site. There's quite a bit.
+I, I feel that there's quite a bit
+neat things on the ESOT that can be
+done, that can, that can be used in
+other systems. And I'll have to
+use them on the L. There's a,
+I like, like I said, earlier you
+cannot use star system IDs,
+planet IDs, basically self-defined
+tags in the ESOT keys of the
+dictionary, that's a limitation of the
+end. That's a, I have had
+couple of packs of, because of that,
+because the, I have just a dictionary
+with a key as an index, and the
+index, of course, doesn't tell you
+what it is used for, it's just a,
+it's just a number. But
+everywhere else in the program
+performance, I'm not, I'm
+trying to keep the use of primitive
+data tags to the minimum instead.
+So all the places where I'm talking
+about planet, planet IDs, the
+identification of planets, it's the
+planet ID type, that is, that only
+wraps a index, but it gives,
+that wrapping gives the meaning to
+the index, and it keeps,
+you mixing the planet IDs, for example,
+with the star system IDs, and
+the same thing with the resources,
+I talked about the resources on the
+end, sorry, on the ESOT site,
+and on the end of the end site,
+there's a similar system. I couldn't
+figure out if, if one can use
+quantum tags, I think you cannot
+yet, or will never be able to
+but I still have a, I have, I still
+can have a resources type that
+has a three type of resources, the
+biological resources, the
+mechanical resources and the
+chemical resources. So at least
+I'm not going to mix biological
+resources and mechanical resources
+with this data. I might mix them
+in a different context, in a way
+that, for example, I would mix the
+constructions speed with the
+resource, with the
+required amount of resources and
+things like that, but still
+I'm sort of happy with the resource
+handling, and on the resource
+handling is not, but this is
+image and satellite resources
+and raw resources that play
+and uses to construct
+things, and I'm very happy
+how it's handled on the
+end site. I probably
+missed quite a bit while trying
+to explain, but if something
+else comes to mind, I'll record
+a new episode and have a feeling
+that if I keep working on this
+game, it will, it will take
+eights, it's like years and
+years to get it to somewhere,
+somewhat playable state, but
+it's a fun project. I'm having
+lots of fun trying to learn
+the Haskell and Elm and
+Lead Programming, and what not.
+So I would be interested to
+hear if you have any experiences,
+experience on Elm, how you like
+the language so far, it's a
+relatively young language, and
+if you have experience on the
+Elm and some other of these
+new languages like PureScript
+or even some JavaScript
+frameworks like React, and how
+Elm, if you can talk about
+the differences and the similarities
+between them, I would be extremely
+interested in hearing those on the
+hack-up of the radio, but this is
+too calm, this was quite a long
+episode and tried to keep this a
+little soul in the future, so
+have a good day.
+We are a community podcast
+network that releases shows every
+weekday Monday through Friday.
+Today's show, like all our shows,
+was contributed by an HPR listener
+like yourself. If you ever thought
+of recording a podcast, then click
+on our contributing to find out
+how easy it really is.
+Hack-up of the radio was founded
+by the digital dog pound and the
+infonomic computer club, and it's
+part of the binary revolution at
+binrev.com. If you have
+comments on today's show, please
+email the host directly, leave a
+comment on the website or record a
+follow-up episode yourself.
+Unless otherwise stated, today's show
+is released on the creative
+comments, attribution, share
+it, read it or license.

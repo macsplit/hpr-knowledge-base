@@ -1,0 +1,379 @@
+Episode: 1244
+Title: HPR1244: LiTS 029: ab - apache benchmark.
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1244/hpr1244.mp3
+Transcribed: 2025-10-17 22:16:12
+
+---
+
+Welcome to episode 29 of Linux in the Shell Apache Benchmark.
+My name is Dan Waschko.
+I'll be your host today and before I continue I'd like to thank Hacker Public Radio for hosting
+the website and also for the wonderful work that they do and hosting also host the audio
+file which we're listening to right now.
+HackerPublicRadio.org, fantastic community resource, consider helping out by contributing
+your own episodes to Hacker Public Radio.
+Otherwise head on over there and listen to some really great content by the community
+so it's always something interesting going on.
+Today I'm going to talk about Apache Benchmark which is a handy utility for doing some
+rudimentary benchmarking of your web server.
+It's also handy for trying out your load balancing, see how that's going and also to
+suss out some problem areas that if you are seeing intermittent errors on your website
+and you can narrow it down to maybe a page or a couple of pages that you want to test.
+You can run those through Apache Benchmark to put some stress onto the system and hopefully
+reveal that error.
+We do that a lot of work.
+Now there's some caveats with Apache Benchmark that you need to be aware of before using it.
+Unlike some of the more high end benchmarking utilities like I'm trying to think of what
+HP's load, there's a product called avalanche, there's another product that HP puts out.
+I can't think of the name off hand but anyway the way Apache look Benchmark works is not
+very sophisticated, it's primarily hitting one page on your website.
+It's command line utility, it's very handy but it's not as in depth as some of the other
+benchmarking or commercial offerings that are available.
+It's just something to get you started, something to take a look at your system and do some
+primary testing.
+Like I said, one of the things that it does very well is you can have it hit a website
+to produce an issue or to put some load onto your website to maybe produce an issue that
+may be intermittent.
+It's not reflective of how an average user would probably go to your website so just be
+aware of that it's again primarily testing one page.
+So let's jump into it.
+Apache Benchmark most likely is not going to be installed on your Linux distribution
+by default.
+You can get it in some distributions like Slackware and Arch by installing Apache web server.
+Some other distributions like Ubuntu or Debian have it under the Apache U-Tiles package.
+You can just pull that down instead of getting the full web server.
+Don't be afraid to throw the web server on your workstation or your laptop to choose
+on a regular basis if you're looking into doing lamp development or any website development
+or just want to cut your teeth on the little basic administration.
+It's a great way to learn.
+So once you get Apache Benchmark on your system, the executable for it is AB and all you
+really need to pass to it is AB and go page that you want to hit on your website.
+Now I'm going to use my website, my server that I have and a page on there.
+Right off the bat, I want to say number one, absolute most important thing.
+Do not run Apache Benchmark against a website web page or whatever against anything that
+you do not already have permission to run Apache Benchmark against.
+You could get yourself into some serious trouble.
+So again, only run this utility against something that you have permission to run it against.
+Don't run it against my website, run it against your own.
+Alright, but in my examples, I'm going to be using the linuxlink.net slash index.php.
+So that's all you need to pass to it is a page that's hosted by a web server and it
+doesn't have to be Apache.
+It could be any web server that you want to test.
+Now you probably want to have another shell open and observing what's going on the web
+server.
+Like if you're running on a Linux or a BSD server, run top.
+See what's going on.
+So you can look at the load that's going on on the test to see how your system is performing.
+Take a look at the log files, whatever.
+You probably don't want to run Apache Benchmark on the web server itself.
+You don't want to use Apache Benchmark on the web server to hit a page on the web server
+because you can introduce extra load onto that web server because of the Apache Benchmark
+that you're running.
+So run it from the second system.
+So again, Apache Benchmark AB, the URL, HTTP, colon slash slash www.dlinuxlink.net slash
+index.php is an example I'm using.
+If you run that, what it's going to do is all that's going to do is hit it with one
+request and come back and you're going to get the results.
+Now that's not much of a benchmark.
+Fortunately, Apache Benchmark has a couple of switches to help you out.
+First one is dash n.
+The dash n switch tells how many requests, the number of requests, the same.
+So if you do dash n100, it's going to send 100 requests, dash n1000, it's going to send
+1000 requests.
+Now, if you're able to do AB dash n500 and the links link.net slash index.php, don't
+forget the HTTP, colon slash slash in front of that.
+That's going to send 1000 requests to the web server one at a time.
+Again, that's probably not going to be much load, but you want to start working with
+this concurrency.
+That's the dash c, it's for concurrency.
+So for instance, dash c100, so if I did dash n5000 and dash c100, that's going to do
+send 1000 requests to the server in groups of 100.
+So it's going to send 100 requests at a time until it hits 1000 requests.
+So that's the way that that operates.
+I'll be careful of that, how you read it.
+So what it would do, some of the documentation you might read might leave you a little confused
+as to how concurrency works.
+What it does is it does not mean that it will process 100 concurrent requests 500 times.
+That's not what it means, or 100 current requests 1000 times, because I'm using an n of 1000.
+What it means is it's going to send up to 100 requests concurrently for a total of 1000
+requests.
+So it's going to send 100 requests, only come back, it's going to send another 100 and
+then another 100.
+So just be aware of that.
+Now your concurrency has to be less than the total number of requests, so it's going to
+chuck an error.
+So just be aware of that.
+So what I'm doing here is sending 1000 requests, which is the concurrency of 100.
+So that's 100 requests at a time.
+Now what's going to come back after it's done, what you're watching, the screen is going
+to show you iterations of progress.
+Now those iterations of progress are going to be roughly 10%.
+Every 10% of requests that get completed, it'll show you an iteration that says, if I
+was doing 1000 requests, 10% of 1000 is 100.
+So for every 100 requests, it's going to come back as a process 100 requests finished,
+and it's going to be 200, 300.
+So roughly 10%, the minimal amount you'll see is 100.
+Well, not actually that's not sure.
+You'll see roughly in groups of 100 or 10% of the request is how that operates.
+Now when it comes back, you're going to get some summary information reported to you.
+The first grouping, after it's running, you're going to see the progress is going on.
+The first grouping that you're going to see is going to show you the environment that
+was tested.
+So you're going to get back, it's going to enlist the server software on the environment.
+In my case, I'm running Apache, and if it can success out the version, it's going to
+show the version of Apache.
+It's going to say the host name of the server that it was running against is probably going
+to be the domain name that you passed.
+It's going to tell what port that you ran it against, HTTP is running against, or 80
+by default, unless you specified something different with a switch or, you know, in the
+URL.
+It's going to say the document path, and in this case, it's slash index.php on my system,
+and it's going to say the document length, how much data is going to be returned by the
+document that you've requested.
+Then you're going to go on to the next session.
+That session is going to be informative about the test that was run.
+It's going to show you the concurrency level, in this case, we're running 100.
+It's going to tell you this time it was taken for all the tests to run, however long
+it took those tests to run.
+How many successful, completed requests there were?
+Hopefully, it's 1,000 completed requests, in this case, it's going to tell the number
+of failed requests.
+If there are failed requests, it'll break it down into some further subcategories like
+whether they're familiar with connecting, familiar with reading, incorrect content length,
+or an exception was thrown.
+Otherwise, it should say zero.
+Then you're going to have a list of right errors, so to show you that, if there was any
+right errors that occurred during the total running.
+It's going to tell the total number of bytes that were transferred from the server to
+the whole test.
+It's going to show you the number of bytes received from the HTML, it's called HTML
+transferred.
+It's the total number of bytes received from the server that were from the document, because
+there's other information being transferred back and forth, but that's aside from the
+contents of the document.
+It'll give you a ballpark range of requests per second, which is the mean number of requests
+that the server process per second.
+Now that value is determined by the total number of requests divided by the number of seconds,
+it took to complete the request, very simple mathematics right there.
+It's going to give you a mean or average of the time per request, so the mean across all
+concurrent requests and how long it took per request right there.
+Then you're going to have the transfer rate, and this is going to show you the transfer
+and kilobytes received from the server per second.
+That's about an average of the transfer received from the server in kilobytes.
+Now there's a third section that details the overall connection time results, and it
+presents a couple of different values.
+First off, connect.
+What that means, it's the amount of time it took to connect to the web server and return
+the first bits of a response, and you have processing.
+Now that's the amount of time it took the server to process the request.
+So the server is, you send a request, it's the connection time, and then how long it
+takes the server to process the request to begin returning a value.
+Then there's waiting, and that's how long it took for the first byte of data to be returned
+from the request.
+Now that's, what that actually means waiting, is if you're connecting, you get a request
+that you connect it back from the server.
+That's the time that the server is processing, that's waiting time, and when you get, that's
+processing for the server, when you finally get the first bit of data back, aside from
+that first acknowledgement of connect, that's when waiting.
+That's how long, that's when waiting starts, the first bit of data return from the request.
+Then total time is how long it took to complete the request.
+That's how long, you know, a total it took to complete that request.
+Now those values are in a table format, and you're going to get a couple of different columns.
+Minimum, that's the minimum amount of time that it took to complete that portion of the
+request, whether it was minimum connect time processing, waiting, total time, minimum.
+Then you're going to have mean, mean is the average, so that's the average number of seconds
+or milliseconds for that request, that is going to be returned to you for those connect, processing,
+waiting, total time.
+Then the mean comes with the plus or minus standard deviation and milliseconds for that,
+for that average, median, that's the middle value of all requests.
+Now to actually get this value, you have to list all the numbers in that range, and then
+you find the exact middle number.
+So if your numbers returned were like 1, 3, 5, 7, 1, 3, 5, 7, and then 1,000, 2,000, 3,000,
+the middle number in there is 7, absolutely no relationship really with the average.
+It just means that's the middle number, okay, that's what median is.
+Then there's max, maximum number is the maximum number of milliseconds it took for the request.
+You're going to get those values broken out for you, minimum, which is the shortest time
+it took for whatever to be requested, whatever process, mean is the average, median is the
+middle number, max is the most amount of time it took to complete that part of the request.
+Those values are handy.
+Now the final bits of information are going to show you percentages, and it's going to
+show you percentages of requests served within a certain time.
+And you're going to see like 50% is going to say one column is going to have a percentage,
+the other column is going to have a value of milliseconds.
+It's going to say, for instance, 50% of the requests were handled within 990 milliseconds.
+That's little more than half a second, but it's not a full second.
+60% of the requests were like 65% of the requests, 1,500, and some of those requests were handled
+65% of those requests were handled 1,565 milliseconds.
+So it kind of gives you an average, a number of going up, which eventually you're going
+to get to 100% of the requests were received in some amount of milliseconds.
+Now that doesn't mean that it took, let's say your top number there is 3,000 milliseconds.
+Now you say 100% of all requests were completed within 1,3000 milliseconds.
+Does it mean that all the requests took 3,000 milliseconds of complete?
+It just means that 100% all the requests were finished in 3,000 at the top of 3,000 milliseconds.
+That's all that means.
+It would have completed in that time.
+So now that you have kind of a basic understanding of what those values mean, how to interpret
+a patchy benchmark, what you really want to focus on is your average, how long it takes
+an average of milliseconds of complete a request.
+If it's under a second, hey, you're doing great.
+But if it's like four or five seconds, you want to start looking at why it's taking
+that long.
+For static HTML pages, you should be lightning fast.
+You'll see those numbers change.
+If you keep running the test multiple times, those values are going to change.
+But you should, after four or five times, start to get a good feel for how your system
+is going to run under some stress, concurrency.
+You should be able to see like adjusting the concurrency and total number of requests
+and concurrency.
+You should be able to see how well your system will perform under load and what kind of load
+your system can handle.
+And at what point your system load starts to become a problem, and you've got to think
+about increasing some of your resources.
+And again, it can also be a great way for assessing out bottlenecks and being able to look
+and say, well, if I'm running this query or this web page, so many of you may have
+many times, look at this when it's hitting this page as opposed to maybe hitting a different
+page on your site.
+There's something going wrong with my web application.
+I need to start looking because my average response time is increasing, and it should actually
+be staying the same for what I expected to.
+OK, let's talk about some of the other switches in there.
+There's a dash case switch, which is a keep alive feature.
+Now keep alive, what that does is keep alive on a web server, it keeps the connection open
+between the web server and the client to perform multiple requests.
+And that's done within the same HTTP session.
+So now the default is to have that turned off, but you can turn it on with the dash case,
+which in Apache Benchmark and the request that the connection be kept alive perform as
+many requests as possible, instead of just connection made, sends back data and drops
+connection until it sends more data or whatever, communication is reestablished, it'll keep
+that connection alive.
+Now if you need to authenticate to the web server, like say you want to Benchmark something
+behind a basic HTTP or Apache authentication, you can do that with a dash capital A switch,
+and you would provide it username and password with a colon between the two.
+And credentials username and password, now be aware that this is base 64 encoding.
+So if you're not benchmarking against an encrypted or an SSL encrypted web page website,
+it's going to be transmitted and people can get that credentials if they're sniffing
+your network, sniffing the traffic going around.
+So how do you go against, how do you tell it to use HTTP or HTTPS, simple, just instead
+of using HTTP, you do the HTTPS, now you can tell it what version of SSL or TLS protocol
+to use with the dash F switch, and it accepts all capital letters, SSL 2, SSL 3, TLS 1
+or it'll accept all of them.
+If you need to run your stuff through a proxy, your test through a proxy, use the dash
+capital X, and then you're going to like the authentication, you're going to define the
+proxy IP address and the colon separating it from the proxy port, so that's all you
+need to do.
+Now by default, what Apache Benchmark says is users get requests, okay, now get requests
+when you send a get request through the HTTP protocol, it will respond with the full
+body of the document and the headers and everything.
+You can change it to use the, just you a head request, which only gets back to header
+or header information, does not get back the body of the document using dash I.
+So dash I will turn on a head request, it will not return the body of the document, it
+will only return the document headers and meta information if that's what you want
+to do.
+Now let's say you want to test against a form or something like that, you can send
+the post and put information through Apache Benchmark with the dash P for post and dash
+U for put, which is respectively.
+Now this also requires that you pass to it a file with the post or put contents and that's
+done with the dash T capital T switch.
+So if you're going to use post or put dash P or dash U, you have to use the dash T switch.
+And if you're going to use the dash capital T switch, you have to use the post or put
+switches, dash P or dash lower case U. And what the dash capital T switch is, it specifies
+the content type.
+Changes are for a form you're going to specify the content type of application slash x dash
+www dash form dash URL encoded, okay, pass that into there.
+There are other media types that you can pass to it.
+I have a link to a Wikipedia page that lists all the media types that are known.
+Check that out.
+I'm not going to go into the detail in those here.
+Back to the post and put.
+Once you have the dash T and the media type, you need to pass to it a file that contains
+the post or put information and that's done with name equals.
+And then like for instance, in the example I gave on the web page, you would put name
+equals Dan in the file ampersand ampie semicolon for the ASCII equivalent of ampersand or
+the code equivalent of ampersand.
+And then like email equals and then your email and blah, blah, check out the website for
+further information.
+So you need to have the form name and the value into the file.
+So it's going to be passed as a URL encoded to the web page of the patchy benchmark.
+You can change the size of the TPC and send and receive buffers with the dash b switch and
+then you specify the size and bytes.
+You can instead of running a patchy benchmark for a number of requests, you can run it for
+a number of seconds with the dash T and then some value like 10 would run it for 10 seconds.
+If you want to do requesting concurrency with it, you can do that too.
+Actually, the dash T kind of supposes I believe it's 50,000 requests by default, it either
+runs for that period of time or hits 50,000 requests, so you can pass C for concurrency
+to it.
+You can use dash N if you wanted to, but if you might get mixed results if your test finishes
+before the time limit.
+You can control the output of the patchy benchmark.
+We already talked about, you know, the output is just a standard text file and if you wanted
+to save it, you could redirect it, but you can control it and some of those fields that
+are put out there with the following switches, dash D, that suppresses the percentage information,
+which is that last block of output word says 50% of the requests were served in 500 milliseconds.
+You can suppress that with dash D.
+Dash Q will suppress the progress when you run a patchy benchmark.
+It will list after 10%, it'll say like 10% of requests completed, it'll be like 100 requests
+completed, 200 requests, you can suppress that with the dash Q.
+The dash capital S in reporting will suppress the median and standard deviation columns with
+the connection time.
+It will also suppress any warning or error messages when the average and the median are more
+than one or two times the standard deviation apart.
+So you can suppress that information with the capital S.
+You can change the verbosity of how, of when it's running.
+Again, standard, it'll either show you the percentage completed or it will just be
+if you're using dash Q, it won't show you anything, but if you use the dash V for verbosity
+and select one of the numbers, two, three, or four, it will present the following values
+of two will present any warnings that it receives, three will present or print out all the
+response codes for each request and four will also print out any warnings, response
+codes, or and it'll also print out the header information that's received per request if
+you really want to see that.
+You can switch from standard text output in a patchy benchmark to an HTML table format
+with the dash W switch.
+So when you provide the dash W switch, it'll just present it in standard out in an HTML
+format and a table format that it'll present the values at the end there in a table column
+format.
+You probably want to redirect that to a file and HTML file so that you get that information
+to be able to view it in something like a web server or through a web browser.
+You can make some formatting options available to you to pass attributes to the table columns
+or column, table row or column HTML tags, for instance dash X, lowercase X, allows you
+to pass table attributes where you can set like the width of the table.
+You can use CSS in there too, but you want to encapsulate whatever it is inside the
+double quotes.
+Dash Y for the TR attribute and dash C for the TD attribute.
+You can pass in like old HTML attributes or you can use CSS styling in there if you want
+to.
+Again, make sure you will encase it in double quotes.
+There is the ability to create a comma separated file, a CSV file with the dash E switch.
+When you do that, it will still display the progress on standard out, but the resulting
+CSV file will contain only two values in there.
+A percentage from 0 to 99 is a list each 1%, and the time it took to serve the percentages
+or requests in milliseconds.
+It will show you 1% of the requests reserved in this many milliseconds, all the way up
+to 99% where we serve in this many milliseconds.
+That may not be too handy to look at.
+So there is one final formatting option, which is dash G, which gives you a tab separated
+format, which has a little bit more information, but something like this can be imported in
+the GNU plot, IDL, Mathematica, or Spreadsheet application, and it will allow you to plot
+that information out and give you a little more detail in the CSV.
+So that is a patchy benchmark in a nutshell.
+Go on over to the website, there is a lot of links over there for more information on some
+of the definitions in there, or interpreting the results.
+I don't think I have found a website or a webpage that goes into the full detail of the interpretation
+like I have breaking it down and explaining what some of those values mean.
+I have links to the pages that explain those individual values, but they don't necessarily
+pull it all together for a patchy benchmark.
+So do check that out if you have not already done so, and also check out the video associated
+with this page.
+This has been Linux in the Shell episode 29, my name is Dan Washco, thank you very much,
+thank you Hacker Public Radio, and you have a great day.
+You have been listening to Hacker Public Radio, or Hacker Public Radio does not.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by a HPR listener like yourself.
+If you ever consider recording a podcast, then visit our website to find out how easy
+it really is.
+Hacker Public Radio was founded by the digital dog pound and the infonomicum computer
+club.
+HPR is funded by the binary revolution at binref.com.
+All binref projects are proudly sponsored by Lina Pages.
+From shared hosting to custom private clouds, go to LinaPages.com for all your hosting needs.
+Unless otherwise stasis, today's show is released under a creative commons, attribution,
+share a like, read all your life's needs.

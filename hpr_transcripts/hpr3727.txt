@@ -1,0 +1,153 @@
+Episode: 3727
+Title: HPR3727: Expanding your filesystem with LVM
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3727/hpr3727.mp3
+Transcribed: 2025-10-25 04:42:11
+
+---
+
+This is Hacker Public Radio Episode 3,727 for Tuesday the 15th of November 2022.
+Today's show is entitled, Expanding Your File System with LVM.
+It is hosted by Rowan, and is about 25 minutes long.
+It carries a clean flag.
+The summary is Rowan describes adding a new hard drive to his work computer and expanding its file system.
+Hello, this is Rowan, and welcome to another exciting episode of Hacker Public Radio.
+Today I'm going to do a dramatic reenactment of installing a new hard drive in my work computer.
+I've been running Papa OS on my work computer, and even though we're mostly a Windows environment, I just decided to run Windows in a VM.
+So far it was working great, but apparently my VM's image kept growing.
+I thought I had it set to not do that, but anyway, I started getting a disk out of space warnings and realized that it was the VM image growing too big.
+For my 500 terabyte, no, not 500 terabytes, 500 gigabyte drive.
+Anyway, so I decided to go ahead and order a one terabyte drive to add into it, and this is that.
+After installing a new one terabyte crucial MX500 SSD drive into my work computer, I was trying to decide the best way to mount it.
+I remember when I originally installed Papa OS, I didn't use Linux volume management.
+I just, I'm more familiar with the old, you know, mapping the partition and then just mounting partition.
+And I just didn't want to mess with LVM in case I needed to upgrade the disk space.
+I figured I'd just, you know, add the new drive in and then map, you know, map it to like home or something.
+But now that I'm here and I'm actually, you know, have the new drive, I was like, I don't really want to waste all that space.
+Especially once I realized that most of the space was from, you know, my one big virtual image of Windows.
+And so I'm like, okay, how do I add LVM to a system that's already run?
+And I did a little Googling, found some good articles on it, and that's what I did.
+And actually it wasn't too bad, especially since I was creating the LVM initially on the new drive.
+So basically, I guess LVM used to really confuse me.
+I now, I don't know why, it's not that hard, but I finally, I think this time around, kind of grok it.
+And basically if you just think of it as with LVM, it creates, there's sort of three layers.
+There's what they, you know, they call the, I guess the physical volume layer.
+That sort of maps in my mind to like your dev, SDA drive, the various old style drives.
+So, and then there's another layer, which is the volume group, and that's kind of like, I think of that as sort of the raid layer.
+That's where you can put a bunch of these physical disks into one good group of storage space.
+I mean, it's not raid, but that's sort of how I think about it.
+And then on top of that, you have your sort of volumes or partitions that then get mapped into these volume groups.
+So with that in mind, that was like, I sort of started like understanding the commands and the flow of like how you create these new.
+So after the first thing you have to do is let the LVM know that there's a physical disk.
+So there's the PV create command.
+So with mine, I just said PV create space, forward slash dev, forward slash SDB, because SDB was where the new drive was.
+And then they have this nice PV display command, which then will show you all your physical volumes.
+So now I have this new volume.
+It shows it, you know, it's mapped to dev SDB, it gives the size, 932 gigabytes.
+So you do lose a little bit with, you don't get the full one terabyte of space as with all the meta information that needs stored.
+And then it gets a UID.
+So after I had that going, you then have to create the volume group that you want, you know, basically where you want all your data to go.
+I'm just going to have one volume group.
+I think these days when you're using particularly like Ubuntu and you just let it default, it creates just one volume group and map puts the root file system on that.
+And that's basically what I was, what's going for.
+So your next command then is to use VG create and then give it a volume group name.
+I think the default for like Debian and them is they use like data VG.
+I just called it my host name with the VG after it for the purposes of this.
+What is this called?
+Podcast, that's it.
+I just had a cat crawl across my lap and it was disturbing me.
+Let's see.
+You, I just called it work. So work VG.
+So you go VG create space, work VG space, forward slash dev sdb.
+And then you'll see a volume group working work VG successfully created.
+And then they have a VG display command, which will then show you all your volume groups.
+And that yes confirms that I've created a new volume group.
+And if I do PV display then that shows me you know the physical volume group.
+And you know they sort of match up as far as you can tell like sizes and stuff mapping to them.
+So after you do that you need to actually create the volume or partition as I think of it.
+And so if you want to map it back to the old style, which then gets created on a volume group.
+So I'm going I just basically just going to have one big root volume group volume on my volume group.
+And so you use the command LV create dash in for name.
+And I named it root.
+And then dash L and you can give it the size you want.
+I put 931.51 space and then you give it the volume group.
+So work VG.
+And so it creates the volume group.
+So now I should be able to basically my process for this was I was going to on the new disk create a LVM volume.
+Copy my whole root disk file system root file system partition onto it.
+And then run once I have that running on the new Linux volume group to computer booting to the new Linux volume partition.
+I would then wipe out my old I was like I think SDA 3 my old root file system partition and add it to the volume groups.
+And then instead of just having like like one terabyte of like data space and then you know half a terabyte of like operating system space.
+I would just have like 1.5 of a whole you know group of data space to use.
+So I just use the cat command and I do cat dev SDA 3 and I output that to dev mapper work VG dash root.
+And so the dev that mapper is the device space that is a link to the actual volume group.
+And whenever you create like a Linux volume, the the link that's group gets created is the name of the volume group dashed and whatever the name of the Linux volume is.
+So in this case it's work VG dash root. And then I got an error no space left on the device and I'm like oh that's weird.
+I know that one terabyte is bigger than half a terabyte what's going on.
+So then I did PV display and it showed that I have you know that 931 gigs and I did LV display and I noticed that it said 932 megabytes not gigabytes.
+I said oh I realized the default unit for LV create as megabytes and I didn't add a G to my size.
+So another good reason to always include units whenever you're doing something so that you make sure to get exactly what you what you need.
+So I basically went back and you instead of just giving it Linux you can you can now extend the volume.
+So that's basically saying you know use more space on of the physical the physical volume put more space into the Linux volume.
+And so it's LV extend dash L for this telling it the size you can actually give it an exact size but I always just if I'm usually I'm just adding the rest of the space.
+So they have it's dash L space plus 100% free and then you give it slash dev slash work VG slash root so you're pointing to the actual partition.
+And then that extends the file system to take up all the space and the working so that worked LV display again and it's the now I have the full 931 gigabytes.
+Okay so now that I have enough space to copy my.
+We partition off the original drive you can just rerun the cat command and get a cup of coffee so it did take a while.
+Like I don't know 10 15 minutes I think I don't really remember quite at this time but enough to get a little other work done while it was done.
+Once that's done you need to now set up a environment so that you can update your boot image and things so that when you boot you can boot up the new.
+Volume group and so I created a new directory called new dash root in the media directory and then I mounted it I mounted the dev mapper or work VG dash root to media forward slash new root.
+To do a DF to just check that and saw that you know they're mapped but then you notice oh you're new volume group work VG dash root is not only 450 gigs because when you do cat you're basically like burning an image onto it.
+It's the same size as the original partition which was 450 gigs.
+So now you need to expand the file system to use the whole space available on the Linux volume.
+And so I unmounted it and then used resize to FF. It did warn me of it needed to check the disk partition first so it says please run e to FSCK space dashes space forward slash dev forward slash mapper forward slash work VG dash root first.
+So I went ahead and did that and after that was finished I re-ran the resize to FF and mounted it did a DF dash H and now the says size 916 G and use 421 G which was the amount of space used up on the original partition.
+So much much better. So now we do need to get the computer to boot using LVM and the new drive.
+The first thing we want to do is set up a change root session I guess they're called so you need to bind a couple of the system directories.
+So you want to mount slash dev to the new dev root on the new sort of media new root dev where I'm where you mounted the new Linux volume.
+And then there's a prox system this and run. And so that's mount space dash dash R bind forward slash speed dev space forward slash media forward slash new dash root forward slash dev.
+And then it's basically the same command except instead of the R bind just do a dash dash bind for the prox system this forward slash system and forward slash run system.
+And then after those are mounted you can do a shot root to see each root to space slash medius forward slash new dash root.
+And then the next thing you want to do is make sure that fstab is updated to point to the new root file system.
+So I did a cat to see where it was listed in there and mine's just it's an ex T4 system initially it was referenced by the partitions UID I did a look up like what's the best practice for doing this.
+And I don't know the one and it's listed in the show notes the one blog I read on it the person said they'd had the most luck not using the UID of it but using the link in the device tree so it's like dev mapper forward slash working work VG dash root.
+So that's what I did I edited my fstab and just replaced the where it's pointing to.
+So after that you need to update your in it ram fs used by the bootloader so this is for pop OS they use system de boot and instead of grub 2 I did have to look around to figure out the tools.
+Just everything references grub to at this point which I do miss I did to like grub but I'm working with system D so I found the tools and the first thing I wanted to do is make sure that the LVM modules were part of the bootloader so there is a command.
+I found you can run it's ls in it ram fs space forward slash boot forward slash in it rd dash dot image dash and then dollar sign left print you name space dash are right print space pipe and you pipe that to grip ldm and then you get a whole list.
+Hopefully of things and there is a bunch of LVM related stuff so I figured I was good to go.
+So next I then tried to run the command update dash in it ram fs space dash you and then I got an error I was like what's going on.
+Looking down through I see the error message you see error could not find a block device for the a partition this is a critical error we cannot continue.
+Through the trace back the look down I saw oh couldn't find the block device for forward slash boot forward slash EFI.
+And so then I did an LS BLK for the standard block devices so it's LS BLK space dash f and I see SDA SDA 1 which is the boot partition SDA 2 SDA 3 which is my main partition old partition SDA 4 which is a swap SDB to the LVM.
+It's like okay so I know the boot partition is there.
+But if I so then I did a df dash h there's only thing three things listed I've got my route which is map to forward slash dev forward slash
+map forward slash work BDS 2 I've got a forward slash dev forward slash s hm which is map to a temp fs and I've got forward slash run which is
+mount to temp fs right I'm in a change route I need to actually mount the that boot section again so that it's available in this session.
+So I ran a mount space forward slash dev forward slash SDA 1 space forward slash boot forward slash EFI.
+I then ran the update dash in it ram fs space dash U again and generating boot in its target and okay I get a success so great.
+So now I've updated the in it ram fs I've updated fs tab so now it's time to see if I can boot into the new file system.
+So I do shutdown space dash r space now and I get running in ch route ignoring request so I exit out of the ch route
+and rerun the shutdown dash r command restart machine.
+Wait a minute and yes success and booted right back up and now let's see am I actually running from the new LPM.
+I do a df dash h and he up there it is route is mounted to dev forward slash mapper forward slash work dash BT great.
+So now the next step is to reclaim the space from my SDA 3 partition which was the original route file system.
+So now we have to let the Linux volume management know that we want this partition to be a physical disk or a physical volume.
+So we do pv create forward slash or the pv create space forward slash dev forward slash SDA 3.
+And we get a warning ext for signature detected on for slash dev forward slash SDA 3 at offset 1080 wipe it.
+Yes or now I pick yes so what white being x the signature physical volume forward slash dev forward slash SDA 3 successfully created.
+So now I need to add that physical volume that we just created to our working our volume group the work bg volume group.
+So you do vg extend space work bg space forward slash dev forward slash SDA 3 volume group working bg successfully extended if I do the bg display.
+I see that let's see what does it say bg size that's what is before bg size 1.36 terabytes allocated space 931 gigabytes free pe space size approximately 457 gigabytes.
+So it's now the volume has been extended or the volume group excuse me and if you do an LV display you see that the volume size is still 931.
+So now you have to extend the Linux the volume so you do the LV extend space dash L space plus 100% free space forward slash dev forward slash work bg forward slash root to extend the Linux volume.
+So now it says size of logical volume work bg for slash root change from 931 gigabytes to 1.36 terabytes.
+Yay, and if I do the LV display that confirms that once again if you do DF desk H though you see that your root file system is still just 916 gigabytes in a way of to extend the file system.
+So we run the resize to fs space or slash dev forward slash mapper forward slash work bg dash root and I did that on the running system it works fine if you know you're just expanding it.
+And now I do another DF desk H and I see that the root file system is 1.4 terabytes success.
+I now have added my new hard drive created the Linux volume or added Linux volume management to my system and created a working group.
+That's the volume group with the combined and a file system with the combined size of my original partition and my new desk.
+So I was very excited everything went very smoothly and you now have another episode of hacker public radio.
+You have been listening to hacker public radio at hacker public radio does work today show was contributed by a HBR listener like yourself.
+If you ever thought of recording podcast and click on our contribute link to find out how easy it really is.
+Hosting for HBR has been kindly provided by an honest host.com, the internet archive and our things.net.
+On this otherwise status today show is released on our creative commons attribution 4.0 international license.

@@ -1,0 +1,538 @@
+Episode: 1358
+Title: HPR1358: How to set up GnuPG, a PGP-compliant encryption system
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1358/hpr1358.mp3
+Transcribed: 2025-10-18 00:11:37
+
+---
+
+watching
+.
+.
+.
+Hi everyone, this is Klaatu and this is Hacker Public Radio.
+This episode is going to cover encrypting email with GPG specifically.
+GPG is the GNU privacy guard, it's based on the PGP specification which was developed
+back in the 90s by Phil Zimmerman, who was later actually taken to court by the US government
+because they felt that he was by writing encryption software and letting it outside the borders
+of the United States.
+They felt he was literally exporting a weapon, so they actually took him to court.
+He did not end up getting thrown into prison for life, but he actually got around it
+in an interesting way.
+He published the source code in a book, paper book, and said, hey, it's free speech.
+And that kind of, I don't know if that was literally what won the case or whatever,
+but that's what he did and it became an issue of freedom of speech rather than weaponry
+because apparently the same source code if printed on paper becomes something completely
+different than it is in digital format.
+Yes, it's a wonderful, wonderful world of laws and details that we live in.
+So anyway, GPG happens to be a pretty good system for privacy, apparently.
+And the way that it works is that each person in the equation of sending an email has two
+different keys, a public key and a private key.
+And so if I email Ken Fallon, I might type out an email and then I might generate an encryption
+method using my private key and his public key.
+Now the email is encrypted, so I send it to him, it's still encrypted, it gets downloaded
+onto his computer, it's still encrypted, and then he runs a little program and it uses
+my public key, not my private key, but my public key and his private key to then decrypt
+the email.
+If that makes no sense to you, think of it mathematically.
+I'm not a mathematician, but this is kind of how I sort of sat down and kind of thought
+it out.
+So we all know basic algebra, 1 plus x equals 2, solve for x.
+If you said 1, you're correct, 1 plus 1 would indeed equal 2, so x must equal 1.
+So if we make that a little bit more complex, you might have something like 1 plus x equals
+2 plus y, and now if I ask you to solve for x, it becomes a lot more difficult, right?
+Because you don't know what the value of y is.
+So in, I mean, x could be 1, and y could be 0, right?
+Because then you'd have 1 plus 1 equals 2 plus 0, and that would be 2 equals 2.
+But just as easily x could be 3, and y could be 2, and then you'd have 1 plus 3 equals
+2 plus 2, both sides equaling 4, so again, it could be right.
+So it becomes a lot more complex that way.
+Now with the private key, public key thing, you're not just dealing with simple equations
+like that.
+You've actually got a lot more going on.
+So you've got, for instance, q times a equals q divided by b, where a is, let's say,
+2 times x, and b is, let's say, 3 times y.
+So in this equation, the q would represent the e-mail, and then we're modifying the e-mail
+by the product of some known factor that would be your public key times some unknown factor
+that would be my private key.
+But we would know that that would be equal to the same e-mail in reverse, so let's just
+say it's divided by some unknown factor that's your private key, and some known factor
+that would be my public key.
+So even though in that setup, you've got a lot of knowns and unknowns, and you've got
+a lot of things that you could look at and analyze, there's always an unknown missing
+factor.
+As long as I keep my private key private, and you keep your private key private.
+If our private keys get revealed to the world, it tips the scale a lot, because even if
+one of our private keys gets revealed, then it tips the scale, because now there's that
+known missing factor, you can reconstruct, okay, here's how they encrypted it, or here's
+how they decrypted it.
+So now we can tell how they got to that point from some unknown place.
+So hopefully that makes a little bit more sense.
+Now obviously even in that complex version, you could just cycle through a bunch of numbers,
+right?
+You could say, okay, well I know that Q is unknown, but I know that ultimately Q times
+2 times x equals Q divided by y times 4, so if I just cycle through a bunch of possible
+numbers for x and y, eventually I'll hit the right number or the right combination,
+or at least you might hit the right combination.
+You might not ever know if you hit the right combination in this scenario.
+In real life you might, because suddenly the email would make logical sense in some known
+human language, and that's kind of I guess that's the one possibility that all this encryption
+stuff always has, right?
+I mean they could eventually chain enough GPUs and enough computers together and just cycle
+through every known possible combination within a certain bit range and they might hit
+upon the solution.
+So it's kind of good to keep in mind that at some point presumably the encryption is
+going to be figured out, or it's going to be something that they can crack very easily,
+and then no longer will your emails be encrypted.
+So it's the typical little race to keep ahead of the people trying to undo the things
+that you're doing.
+So just keep that in mind, the level of numbers being used to generate all of these different
+algorithms and encryptions and stuff, they're pretty big.
+But again progress marches on, so you don't know really how big that will seem in ten
+years or twenty years or five years.
+Okay, so let's look at GPG directly first, although in real life you're probably not
+going to use GPG directly necessarily.
+I sometimes do to encrypt files, but more often than not, like my daily use of it is in
+an email program through an email client, and with that you don't really, you're not
+going to be aware of all the GPG stuff happening in the background, all you're going to know
+is that it's happening, which is nice, it makes it really, really easy to do the encrypting
+and decrypting, and it kind of makes it very natural, and it doesn't slow you down any,
+when all you're trying to do is email someone or read someone's email, becomes very invisible,
+and that's good.
+But I do want to go over briefly what it's doing in the background so that you'll know,
+you'll understand that it's not just magically happening, and that's always a good thing.
+So first thing you need to do is go to GNUPG.org, that's the website to download the GNUPG
+program.
+If you are on Linux or a Unix-like operating system, there's a good chance that you'll
+already have it, but not guaranteed, so you may have to go download it.
+The quick and easy way to find out would be to type in which GPG, and if it tells you
+that GPG exists, for instance, in slash user, slash bin, slash GPG, then yes, you have
+it.
+Otherwise, you probably need to get it.
+So if you're on Linux, you can probably download it from your repository, and if you're
+on anything else, well, BSD, ports, but anything else, GNUPG.org is probably the place that
+you'll end up going.
+So assuming that you're on Linux right now, just because that's the only way I've really
+used GPG directly, or something with a shell that will give you access to the command
+line version of GPG, you can first and you should first generate a GPG key for yourself.
+If you don't have a key or a pair of keys, it doesn't do you a whole lot of good.
+It's not going to do you any good, really, because you kind of need something to decrypt
+an encrypt off of, and that's your key, those are your, I guess, your seeds.
+So if you do GPG, space, dash, dash, gen, that's GEN, like generate, dash, key, then you'll
+be taken to a little walk through program of generating a key for yourself.
+So the first question that you'll be asked is do you want an RSA, and RSA key, do you want
+a DSA and El Gamel key, DSA sign only or an RSA sign only, you probably don't want it
+sign only.
+So RSA and RSA or DSA and El Gamel, whichever you prefer, I'm going to go with DSA.
+And DSA keys may be between 1024 and 3,072 bits long.
+The default is 2048.
+To be honest right now, I'm going to go really low, because I want this to be a quick thing.
+So I'm just going to go to the lowest 1024, just so that you don't have to wait on me.
+But in real life, you could certainly go with the default, which is 2048, or you could
+go with the 3072.
+There would be some technicalities about time, obviously a larger, bitted key is going
+to take longer to encrypt and decrypt information.
+It's just more numbers for the computer to crunch.
+But if you're trying to stay ahead of that little curve where people are decrypting things
+in theory, then maybe going longer would be better.
+I don't know.
+It's really your own paranoia level should guide you.
+So either way, whatever you go with, it will ask how long the key should be valid for.
+I usually just say it's not going to expire, because I have no reason for it to expire.
+But if you were managing a business or something, and you were doing something with employees,
+maybe you would have their keys expire after a year to make sure that they don't leave
+the company and then still use their key or something.
+I don't know.
+So I'm going to say zero, meaning it will not expire.
+And then it asks for confirmation.
+Is this correct?
+And I will say yes to that.
+So then it's going to ask you for your user ID to identify yourself.
+So this should be how you identify yourself to the people you know.
+And there's a little bit of, I guess, there's a bit of a debate going on over what that
+means, like a real ID.
+What is that?
+I mean, is that literally whatever your government has you recorded down as?
+Or is that what you use on an everyday basis?
+If you don't use your real name on an everyday basis, should that be what you're using?
+And if you've got an ID card with some name on it, then you should probably use that ID,
+blah, blah, blah.
+I don't really care because I'm not in the business of making GPG people feel happy.
+And I feel like as clatu, which naturally is my real name, clatu, I mean, that's people
+know me as clatu.
+And so if I go to a GPG signing party where we are signing each other's keys saying yes,
+I trust you, I trust you, I trust you, I trust you, I trust you are who I, you say you
+are, then that's about as good as you're going to ever get, right?
+Because I could say that I was clatu, but actually I could be secretly someone else,
+I could be gourd, and you would never know.
+But certainly, clatu to you is this voice that you've heard on Hacker Public Radio,
+be a new world order, maybe some other podcasts who knows.
+So, so if as long as you're going to associate like this person speaking to you right now
+with a key that you keep getting from this person, and if you talk to this person and say,
+hey, did you just send me an email with the word ardvark in it?
+And I say, why yes, I did, then there's some level of trust there, right?
+You can now believe that the email that was signed with the GPG key that was labeled
+with clatu's name is certainly the same person as the person who talks on a couple of
+different odd casts.
+And that's about as deep as any of this stuff is really going to work, right?
+Because as you know from earlier episodes of Hacker Public Radio, people can fake identification,
+they can fake ID cards.
+So if I take an ID card to a GPG signing party and show them that ID card and then it has
+a name on there and they sign my key, I mean, does that really mean anything more than
+what I've just described about you getting an email from me and then talking to me about
+it?
+So, that's a big debate.
+I'm not going to get into it.
+Well, I just did.
+I'm not going to get into it any further.
+So, I'm going to type in my real name is clatu, my email address, I'm going to put clatu
+member.fsf.org and then a brief comment and the comment I tend, I don't really know
+what they're intended for, but I tend to just, I tend to use the comment field for some
+explanation of why that key exists or who, which clatu this is because I know that clatu
+isn't necessarily the most unique handle in a geeky community since it's also a very
+popular science fiction name.
+So, I'm going to put blue hair augaster and that, I feel, just kind of gives them some
+reference so that if they're looking around for my public key, they kind of get, you
+know, they'll know, oh, this is, yeah, this is clatu, the augaster, not clatu, the
+guy who maintains, you know, some random program on UNIX, although that could be true
+too, technically.
+But anyway, so I'm going to change anything, no, I'm not going to change anything so I
+will say okay to this.
+And now it's asking me for a passphrase and entering a passphrase is good.
+You will want that because you probably want to authorize your computer to use your key.
+You don't want just anyone sitting down at your computer to be able to use your key.
+You tend to want to explicitly tell your computer, yes, I am me and I give myself permission
+to use this key.
+So now it's generating the key and it's asking me to do stuff.
+It says do something with your computer because we need more entropy.
+So I just open up web browser and click around and just kind of do, I don't know, what
+I think is random stuff and eventually it finishes creating the key.
+Now if you took that longer key, really, really long key, then it might take you a little
+while to generate enough entropy and randomness for your computer to use in order to generate
+that key.
+So it might not happen as quickly as it just happened for me.
+So just keep that in mind, don't panic, just keep using your computer and eventually
+you'll get your prompt back and it'll tell you, yes, we've just created a GPG key.
+It actually tells you a lot more than that, it tells you that it's created a trust database,
+trust DB, it's created your private key that is marked ultimately trusted because you
+trust yourself presumably and your public key as well.
+So now that we've got a key on our system, we can really, we could start using it right
+away.
+So if I, if I echo space quote, hello world, close quote, pipe into GPG dash, dash
+encrypt greater than, so I'm redirecting the output of this into test dot GPG.
+Now I'm basically just going to echo the phrase hello world and I'm piping it into GPG
+and I'm having GPG encrypt this, these words hello world and then I'm going to redirect
+the output of that command into a test file, so test dot GPG.
+So we're just, we're literally just, we're going to create a file essentially that is
+the encrypted phrase hello world.
+In order for GPG, remember GPG uses a private key and a public key, so in order for GPG
+to encrypt this, it needs to know who is allowed to unlock it, what public key is permitted
+to, to unlock this cryptic phrase.
+So it's using my private key right now, it needs a public key to sort of add to that algorithm
+and create the encryption, the, the way that you enter the, the, you define who can unlock
+this is you type in the name or the user ID of the person you want to be able to unlock
+it.
+Now you don't have any other keys on your system yet and on this particular box, neither
+why because this is a test box, I'm doing it at the same time as you are, so you have
+no one else to encrypt this for.
+I mean, you could type in Bob, but there's no Bob GP, you don't have anyone on your
+key ring, essentially.
+So right now, let's just encrypt it for ourselves.
+So I'm just going to type in clatu and hit return and it, it, it scans my little key,
+my key chain and it says, okay, I see a clatu, I'll go ahead and assign, I'll use that
+public key and your private key, so really it's the same public and the private is both
+mine, but that's fine to encrypt this thing into another user ID.
+So if you want someone else to be able to open this message, then you could type their
+name in, but again, you have to have them in your key chain and you don't have anyone
+in your key chain yet and that's fine.
+So we're just going to end this process by hitting return and it unceremoniously returns
+us to a prompt.
+So now if you do an LS in your current directory, you'll see test.gpg does exist and if you
+cut test.gpg, you see gibberish, that's what you want to see.
+My, my terminal shows, yeah, really ugly gibberish, it's not just nonsense letters, I mean
+it's nonsense characters that I've really never seen before on my computer.
+So that's a good thing, that is an encrypted, encrypted message.
+So now we could also do a gpg, space-dash decrypt, and then give it the name of the file,
+so test.gpg.
+I hit return and it says, okay, you can unlock this as long as you've got a passphrase.
+Why is it asking me for a passphrase, and how does it know I am who I am?
+Well because my little gpg program running in the background, it knows that my private
+key and my public key are associated with the user executing these commands.
+So the fact that it just asks me for a password is simply because it recognizes who I am,
+it's aware of my private and my public key.
+So there's a little bit of invisibility already going on, it's not like we have to tell
+it to use class 2's public key to unlock this thing, it already knows that.
+And sure enough, when I type in my password and I hit return, it tells me, okay, it's been
+encrypted with 1024-bit-elg-e-key, the ID number of that key, it was created on this
+date by class 2 with blue hair and augaster, add class 2 at member.fsf.org, and then it spits
+out the text of that message, which was the phrase, hello world, and that's how you encrypt
+and decrypt things.
+So for all of you who have been using, say, true crypt or some such program as that,
+you can actually do the same thing with gpg.
+So if I had a whole folder of stuff that I want to do in crypt, I'll just make a test folder
+here, test-durr, mkdurr, space, test-durr, makes a test directory, and then I'll go in,
+well, I'll just pipe in some random stuff into some files in test-durr, so I'll list user
+bin in there, and I'll list user sbin into a file, and then I'll copy jpeg out of my
+pictures folder, here's some cats, so copy those into the test directory.
+So now I've got, I've got about three files in this little test directory now.
+So now if I wanted to encrypt this whole directory, all I would have to do is tar it up, so
+I'll tar, space-cf, create file, test-durr.tar, and then the name of the directory to use
+as the source, so space, test-durr, so now it's tarred, test-durr.tar, and now I can encrypt
+it by jpeg, space-dash, encrypt, test-durr.tar, and again, it's going to ask me, well, who do
+you want to be able to unlock this file? So again, I would just, since I don't have any
+friends yet, I would type in clatu, and it asks me for another user, well, I don't have
+any other users, so I just hit return, and then it's done, because these are really small
+files, and sure enough, now I've got a test-durr.tar.gpg. So for all the world, that is an encrypted
+folder, and no one could tell what was in there. And in order to decrypt it and view the files
+inside, they would need to have access to my private key, and to the public key for which
+it was intended. So in this case, again, we're encrypting stuff for ourselves. So if they had
+the password to our private key, and they were on our computer, they could indeed decrypt
+that file pretty easily. But presumably, you wouldn't tell people your password to your
+private key. So even then, people shouldn't be able to just go in and decrypt it without
+knowing your password to your private key. So lots of levels of protection there, that's
+kind of nice. Let's talk really quick out of back of this key up. That would be gpgspace-dash-export-secret-key.
+And that would export your secret key. You would probably want to redirect that to clatu.secret.gpg.key or something like that.
+And then you would probably want to put that in a very safe place, because again, the whole
+equation comes tumbling down if your secret key, if your private key, is known by other parties,
+that kind of ruins the whole mystery of it. So keep that safe, keep it secret, keep it safe,
+and back up, I generally speaking, I back up my .gnu-pg folder, because that's got my key ring in it,
+and all that other good stuff. Now, another thing that you can do and probably should do is upload
+your key to a key server, and not your private key, your public key. And the reason you want to do that
+is because in order for gpg to work, people need to know your public key. They need to be able to
+encrypt stuff for you, and decrypt stuff that has come in from you. So that's kind of an important
+thing. That public key wants to be known. That's why it's called public. And you can do that by
+send keys. You do a gpg-send-keys, and then you would need to know your ID. So actually,
+let's do this first. gpg-space-list-keys. That'll list all the keys in your key chain,
+but the first one you'll recognize is your own. That's your actual key. And it tells you
+the identifier, the identifying number of your key. And you'll see that under,
+well, the last line of your key block, it says pub-1024-delta-f-e-e, blah blah blah, 2013-09,
+whatever, uid-clat-2-blue-hair-adcaster, and then sub-1024g-2b564-delta-0a.
+So the two beta-564-delta-0a is the identifying number of my key, or more specifically, the number of
+my key as identified by the username that I have provided. That's typically the one that I use.
+I don't know that there's best practice in terms of which one you should refer to, but either
+one of those will do. The fe-e-0-0, whatever, or the 2b564-d-0a, whatever. So either of those
+identifying numbers will do. So if you do a gpg-space--sind-keys, and then paste in that identifying
+number, and then hit return, that should send it to a key server somewhere out on the internet.
+Which key server it sends that information to will probably simply depend on whatever distribution
+you're using and what kind of presets they have in place on my Fedora test box. They already
+had one kind of assigned, and much to my surprise, it just sent it, which I really did not mean to do.
+On Slackware, they don't preset that for you, and you have to define one yourself.
+There are a couple of different servers out there. There's a sort of a new one from Fedora,
+actually, themselves, which is I think keys. FedoraProject.org. So you can use that one.
+There's one, I think it's pgp.mit.edu or something like that. So yeah, there you go. There's our
+servers out there, and then of course servers typically marry each other after a while. So you've got
+sort of, you've got key servers talking to other key servers so that your public key gets
+propagated fairly quickly all over the place. And again, that is what you want. That's part of
+the model of the gpg system to have that public key out there so that people can grab it,
+use it along with their private key to send you a message, send you a message, and then you can
+use your private key and their public key to then decrypt what they've sent you in vice versa.
+Okay, I hope that all made sense. I think it did, but now we should take a quick coffee break
+and then move into actually using this technology in everyday emails.
+Oh, wait a minute. What am I doing? It's the wrong podcast. We don't take coffee breaks at
+hacker public radio. We're going to jump right into this email stuff, but you could pause it and
+go get a cup of coffee if you really wanted to. I'm not encouraging that necessarily. There are
+lots of different email applications out there. Clients, I mean, and you can use any number of them.
+The two that I know, the three that I know work with gpg are pretty much transparently
+are thunderbird, k-mail, and mutt. And the reason I know that those work transparently is because I use
+them. I will describe how to do thunderbird and mutt. And hopefully the ideas presented here will
+sort of translate easily into the other programs that you may find. Thunderbird doesn't actually
+support it out of the box. You have to install an add-on. K-mail supports it out of the box,
+so it's pretty darn easy with K-mail. But thunderbird, you have to add that on. And since thunderbird
+is a lot more portable than K-mail, I would like to go over that one. And then mutt, of course,
+is mutt. To get an add-on in thunderbird, you go to the thunderbird menu, wherever that is. It depends
+on what version of thunderbird you're using. They've moved it over to a little hidden menu over on
+the right lately, but you can find it elsewhere. Maybe in the file menu or something if you're using
+an older one. Either way, get the add-on. And the thing that you're looking for in add-ons is called
+in-nig-mail, e-n-i-g-m-a-i-l in-nig-mail. Now, when I search for it in the thunderbird add-on
+search menu or what it's search bar, it comes up as a results with the best match. And it only
+gives me the top five. None of which actually matched the word in-nig-mail. So if you set your filter
+to the name, match the name, still won't work. And then down at the bottom of the results,
+the first five results, click see all 54 results. Once you do that, it will let you see more results.
+And it does that by taking you, I think, to the web page, like the add-on web page at like
+get thunderbird.org or mozilla.org, whatever. And the top match at this time is indeed in-nig-mail.
+And it's a featured add-on. So featured that it doesn't come up in your standard search. And then
+if you roll your mouse over it, you can click add to thunderbird. And it adds, it warns you as it will,
+that it's not a mozilla project. You can't really vouch for the developer and so on. So click
+through that and go ahead and just install in-nig-mail. It would be the correct answer there.
+This is one of those plugins that requires a restart of the application. So once it is installed,
+there's a little bar up at the top that says the install will finish once you restart thunderbird.
+And then it gives you a button to restart thunderbird now. And then sure enough, it has installed.
+So once thunderbird opens back up, you won't really see a whole lot different. If you look
+closely, you will find a, that there's a decrypt button possibly somewhere up at the top. Again,
+it kind of depends, you know, on what version of thunderbird you're running this. I don't know,
+this is again on my test box. So it's whatever Fedora is on right now is what I'm running.
+So there's a decrypt button, but it's grayed out. And that's normal. The time that in-nig-mail
+will sort of present itself most obviously is when you compose a message or write in thunderbird
+terms. So if you click the right, that's W-R-I-T-E button at the top of the thunderbird window,
+then you get a new empty message. And you can go up to the, you'll see now a menu at the top of
+that, of that window or, or, you know, wherever you see your menus. And you will see that there's a
+file edit view, insert format options and open PGP. This is the place you're going to want to be.
+So just to kind of prompt thunderbird to make us configure the, the keys that we want,
+we will just go ahead and say that we're going to sign this message from the open PGP
+menu sign message. It pops up a warning and it says you did not yet configure open PGP security
+for the selected identity. Do you want to do this? So we'll click configure. This takes us to a
+open PGP options dialogue box and we will say, okay, so enable open PGP support for this
+identity. And by quote, identity, it means the person, the person and the, the email account and
+everything that you are using thunderbird for. So if you hadn't, you know, if you've got thunderbird
+set up for like one email address, then that identity is that one email, email address at your
+username. If you have thunderbird set for multiple accounts, maybe you have a work email, you have a
+personal email, you have an internet email or like a web mail account, maybe you've got lots of
+different identities. So you may want to only use your GPG key for a certain one of those identities.
+So whoever you are composing this message as, which right now, since I only have clats who
+configured in thunderbird, that's the identity to which it is referring. So yes, I will enable GPG
+or open PGP for this identity. And it says use email address of this identity to identify the
+open PGP key. You could do that, but I'm going to, I would prefer to use a specific open PGP key.
+I just prefer to do it that way. I'll select the key. It pops open a select, a secret open PGP key
+to sign. It auto detects my .gnu PG folder now because it's looking for keys on my local system.
+So I select that key and it fills in the little hex code number thing. I don't know if it's
+actually hex code, but it's a number anyway with an x in it. It looks really technical. And then it
+gives me a couple of default options. So the defaults you can do for a GPG email are that you could
+sign the message, but not encrypt it. So basically you're just saying, you're including your
+public key along with the message. You're signing it with your GPG key. You're not actually
+encrypting anything. It will be human readable by everyone. It's not getting scrambled.
+You could also sign the encrypted message by default. So you're sending your public key
+and you're encrypting the message by default. Meaning it will come through as a scrambled blob
+that no one can read unless they have the correct public key and their own private key.
+Or you can encrypt the message by default. I find that's usually not something that you want to
+do because not everyone in your life probably uses GPG. If so, you're a lucky person. I do not
+have everyone in my life using GPG keys. So encrypting a message by default would be a bad idea.
+Or I could use GPG mine by default. Never use that. Don't really know what it means. So I'm
+going to sign the non encrypted messages by default. And I'm going to say, okay to that.
+It tells me that I've just made some settings and do I want to confirm that and I do.
+And then I could type out this message to anyone. And you'll see that when you send it to,
+I mean, if you send it to yourself or something or to another account that you might own,
+you will see that at the bottom of your message now or somewhere in your message,
+I forget where a Thunderbird puts it. But I think it's at the bottom. It puts a big long,
+ugly string of random looking letters. That is the representation of your GPG key.
+And people could use that to then import your public key or whatever or look at it against what
+they have on file for you, whatever. So that's just signing it. If you want to encrypt it,
+you could go to the OpenGPG menu or the OpenGP button at the top of the Thunderbird window
+and tell Thunderbird to, yes, I want to encrypt this message. Now that's going to encrypt
+the message for the email address that you are sending it to. It's going to cause problems if
+you don't have that person's key in your key chain. So I'm going to hit send
+it's going to ask me why it can't find on record a key for this person that I'm sending it
+gourd at www.geneworldorder.info. There is no, I don't have that person's key.
+Okay, so here's where we're getting into the idea of the public and private key pair.
+We were able to use GPG earlier in the terminal because we had both our own private and our own
+public key. That's that's easy. We can pair those two things together and encrypt something.
+But if we want to encrypt something for someone else and send it to them, we need to get their
+public key onto our computer so that we can pair our private and their public key, generate the
+encryption, do the encryption and then send it. So that's not so hard. I find the easiest way
+for myself just to go back to the terminal and do a GPG space dash dash search dash keys
+and then type in the name of whoever you're searching for. So I'm going to do a GPG dash dash search
+dash keys space gourd and actually I don't know any of these gourd because there's not really
+a gourd that I know and they're all from 2000 and 2001. But anyway, if I there's nine results
+for gourd, one of mine, one of which is mine, my real key, but that's not what I want. I want
+some other gourd. So I'm going to do a GPG or rather I'm going to, it asks me keys one through
+nine of 19. Okay, that's why. So I'm only seeing the first nine for gourd, enter a number or next
+or quit. So I'm just going to randomly choose the second result. I type in two and it imports that
+public key. So now if I if I look at this person's email, which is a Spanish email, I think ES,
+right, that's Spain and it looks pretty well confusing, but I'll just paste it into my Thunderbird.
+I'm not going to send this message. I just want to, you know, I just want to see what happens if I
+actually that won't be possible. Now I'm offline. It won't work. So I'm going to click send this
+message. And so sure enough, it goes through. And in fact, if you if you look at what you're
+sending in your sent box, if you went offline like I did, then you'll see gibberish. It says begin
+PGP message. Character said is ISO 8859. I'm not using UTF8 really. Version GNU PG comments using
+GNU PG with Thunderbird and then a bunch of gibberish. I'm going to delete this message because I don't
+know who this Gort is and I don't believe that he probably wants to receive email from me in
+spite of my name relation to him. That looks like it works. So now if Gort was to get my message,
+then what Gort would need to do if he didn't already have my public key, he would need to go
+search for my public key, import it into his key ring, and then his email client would probably
+decrypt that message for him. And that's kind of that's how this works. So that doesn't tend to be
+the way I use it. It tends to be more like, hey, someone just sent me their public key. Now I can
+start encrypting messages to them and I don't have to go search for their key personally. And that's
+simply because a lot of people do have keys on servers that are no longer really useful. And so if
+you send them something encrypted, they'll write you back and say, hi, I have no idea what you just
+said because I opened that GPG key or I created and uploaded that GPG key 10 years ago and I haven't
+used it since. So please just tell me what you said. So I tend to get verbal or email confirmation
+from people that yes, I want to use my, you know, let's start communicating with GPG encryption
+and then maybe they'll send you their public key or you then you can search for it and kind of
+look for their name and their email pair. And all you do is it's GPG space dash search keys
+and then their name or their email or whatever and select the number that is the correct result
+and it will import it into your key chain for you. There is a GPG import keys or import key
+and if someone sends you like a key then you can do that. That works too. But I think more often
+than not, I tend to get confirmation from the person that yes, they want to start using GPG. I
+search for the key that, you know, under their name and email and then I import it that way.
+And that's sort of it. So that was, that's Thunderbird and Enigmail. It's really not that hard.
+Now the nice thing about this is that if someone sends me an email back that is encrypted with my
+public key, Thunderbird is smart enough and GPG is smart enough in the back end to recognize that
+this is an encrypted thing that they're that we're dealing with here. And so it just sort of
+automatically decrypts it for me. And if I might be thinking of K-mail but I'm pretty sure it
+gives me like a little box at the top of my message viewer pane where it says like this wasn't,
+you know, this was a GPG encrypted message from user whatever. And so you know that you're reading
+something that that really is encrypted but you're seeing the decrypted version of it. It's
+either Thunderbird or K-mail that does that. Something graphical. So that you know it's encrypted
+but you don't have to bother with like going through any kind of legwork, you don't have to copy
+the message into a file and run it through GPG manually through a terminal, you know, it's just,
+it just all happens magically on your computer in your email client. And the advantage here of
+course is that it is encrypted. It's encrypted when it's saved, you know, to your to your
+computer. It's an encrypted entity. It's not being decrypted until you launch your email account
+and tell it that you want to view that message. And then it decrypts it for you. The other good
+thing about that is that it's obviously encrypted on any server that it exists upon. So if you're
+using a web mail service then they have your email yes but it is encrypted email that doesn't
+make any good sense to them at all. And so that's kind of nice. Okay, so that's Thunderbird.
+K-mail is very similar in terms of setting it up. I'm not going to go through that because it's
+not quite as portable as Thunderbird. And MUT is a little bit more a little bit more work to set up
+correctly. And I want to kind of do an overview because it is actually a lot of a lot of
+work to get it going. I mean not a lot of work but a fair amount. So the first step would be to
+use or to make sure that your server has GPG installed which I'm assuming if it's a Linux server
+then it would have GPG installed. And again which GPG would would confirm that for you. And sure
+enough I have GPG installed actually in my bin folder on the server. So it's not system wide. It's
+just in my home folder. So now if I go back out to my home folder and I do a less on my MUT RC file
+and I scroll way down to the bottom where I have all my GPG stuff then I have a lot of different
+options being set for PGP. So for instance one would be set PGP underscore encrypt underscore
+only underscore command equals. And then it invokes you something called the PGP ERAP. That's an email
+wrapping program that WRAP PGP ERAP which is in user bin on this computer space GPG space of
+bunch of options and then encrypt two and then my key number and then a bunch of other options
+to show to direct it at the text that it should encrypt for me. I will include all the like a sample
+MUT RC file in the show notes but when I go into MUT and I hit M to create a new message I type out
+a recipient. I type out a subject. It takes me to EMAX. I type in the body of my message.
+I save that message. I get out of EMAX. Then it takes me back to my MUT screen where it's saying
+okay are you ready to send this. So by default I have it to set in my MUT RC file to to sign my
+message which is fine normally. I like to sign by default. But in this case let's say that I
+want to encrypt it. So I hit P for PGP menu and then it gives me a list of options and that's
+encrypt, sign, sign as both inline format or clear. I don't know what inline format and clear mean
+but the encrypt and sign obviously and sign as but I only use encrypt and sign. So sign by default
+so really I only use encrypt. So if I hit E for encrypt then it's going to now invoke GPG with
+a certain set of options as defined in my MUT RC file and it's going to in other words encrypt my
+entire message with my right now the my private key and the person to whom I just made my email out to
+they're their public key and then if I sent it then it would be it would be sent. I'm not going
+to send it and I'm not going to post on the message but that's how that works. So it's it's
+practically the same thing. It's just it's just a little bit more manual mostly in the sense that
+you have to enter a bunch of new stuff into your MUT RC file. It's not pretty. It's a bunch of code.
+I stole it from somewhere online. It works really really great. It works quite well. I've never had
+a problem with it. I've gotten messages from other people. I've you know it decrypts fluidly just
+as fluidly as on Thunderbird. You never really realize it's encrypted except that you get a bunch of
+open PGP output at the top of the message to sort of show you hey this has been signed and it was
+encrypted and you're viewing it using this public key and it's as simple as that. And again the
+same rules apply. The the reason you're able to encrypt something for someone is because you have
+their public key. The reason they're able to encrypt something for you is because they got your
+public key and that's all anyone ever needs is public keys. You don't ever share your private key
+and you can use GPG based encryption on email from the moment you send it over the internet to
+the moment that it gets to their computer until they explicitly tell it to decrypt for them
+and and depending on their the software that they're using it may not even might not actually
+decrypt it. It might just be showing the main decrypted view which then goes away once they close
+that menu or that window. So hopefully that helps you see how easy it is to to encrypt and decrypt
+files. It's it's super easy. I mean it really is GPG set yourself up with the GPG key pair
+and starting encrypting your files if you want and starting encrypting your emails and make sure
+make sure that you back up your private key. You really want to back up your private key. Did I say
+that you should back up your private key because that's what you would want to do. If you if you
+start encrypting stuff whether it's it's sent mail or whether it's files and then you lose your
+private key you will not be able to decrypt those messages anymore. So be aware of that. But other
+than that caveat this is a pretty pretty neat and easy way to encrypt stuff. So try it out.
+My public key is listed on the key servers out there. So if you do a GPG dash dash search dash
+keys and then clatu where you could even to make it more exclusive or whatever just do a search
+for not clatu because that's there's only one not clatu and that's me and it's pretty pretty
+obvious I think it it lists all the different identities that I've that I've got online. Just grab
+that and start emailing me encrypted emails and that would be cool because then we'd be all secret
+spy like. So do that have fun. The more you use GPG encryption the less
+suspicious it looks. So use it often for even little little everyday messages just encrypt it.
+The more noise there is out there the better. Thanks for listening.
+You have been listening to Hacker Public Radio at Hacker Public Radio. We are a community podcast
+network that releases shows every weekday on day through Friday. Today's show, like all our
+shows, was contributed by a HPR listener like yourself. If you ever consider recording a podcast
+then visit our website to find out how easy it really is. Hacker Public Radio was founded by
+the digital dog pound and the infonomicum computer cloud. HPR is funded by the binary revolution
+at binref.com. All binref projects are proudly sponsored by linear pages. From shared hosting
+to custom private clouds, go to lunarpages.com for all your hosting needs. Unless otherwise stasis,
+today's show is released on the creative commons, attribution, share a like,
+3.0 license.

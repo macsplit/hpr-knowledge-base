@@ -1,0 +1,539 @@
+Episode: 212
+Title: HPR0212:  The Dark Art of Autotools
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0212/hpr0212.mp3
+Transcribed: 2025-10-07 13:59:11
+
+---
+
+[♪ OUTRO MUSIC For swordsplay by
+The
+The following presentation from the Utah Open Source Conference on August 28th through
+August 30th, 2008, is underwritten by Mozzie. Founded in 2005, Mozzie Incorporated is a software
+company focused on making simple things simple and complex things possible. Mozzie Incorporated
+located in American Fork, Utah is an EMCE company. Visit their site at Mozzie.com. Streaming and
+podcast hosting bandwidth for this and many other presentations at podcast.UTOS.org has been provided
+by Tier 4. The presentation entitled The Dark Art of Autotools was given by John Jolly.
+Welcome everyone. The title of this presentation is The Dark Art of Autotools. It's my pleasure
+to introduce our speaker, John Jolly. John has been programming for 25 years, 15 of those years
+professionally. He has been working with open source software for more than a decade and currently
+as a member of the Nobel Suci server architecture team, specifically responsible for IBM's
+Z-Series kernel and crypto drivers along with infinite band drivers for Intel and power architectures.
+This room is sponsored by Nobel's open source technology center. Please visit the OSTC
+information booth in the Expo Hall. At this time, I'd like to turn the time over to our speaker, John Jolly.
+Do I have this on right? Can you hear me? Should I get it closer?
+Let's go. I'm glad somebody agrees. Okay. Thank you very much for attending. I have a sneaky
+suspicion that when they were planning room, scheduling rooms, they were thinking auto tools.
+Who the heck wants to hear about auto tools? We'll give them the spars one. But I'm glad to see
+so many people here. Yeah, we're going to talk. I'm just going to get right into this. There's
+a wonderful introduction. I appreciate that, David. One of some of the things we're going to
+cover is we're going to cover some of the problems you have with portability. This is really prevalent
+in the open source community as you never know the type of architectures you're building on.
+We're also going to talk about what tools are available to help us get around those portability
+issues. Proper usage of the tools, setting up the tools for a new project and using the tools
+on mature project. Now, one of the benefits of attending this is you get to watch me walk the
+high wire. This is not just simply going to be a presentation. I'm actually going to do this
+with you watching. And I promise I won't crash and burn. I tried this before. I think I can do this.
+So one of the problems we have with writing source code is when you write it for your particular
+platform, maybe you're on the intel. You write it on your intel platform. You're familiar with
+the architecture. You're familiar with what it does. But whenever you get this source code,
+whatever you take the source code, put it into a package and send it out to somebody else. Suddenly,
+you have other people doing other things. Usually sometimes you end up in the compiling.
+You have different function names that you have to worry about. Some libraries have one particular
+function name. It may have others different prototypes, different header files like string.
+Is it string or is it string study? There are platforms that do strings. BSD uses index function
+instead of storker. Storker copy? Some platforms use B copy instead of storker. Which one is it?
+So you get these bug reports after a while. And you start fixing them onesy twosies. You start
+looking like this. With the fdaps all over that don't make much sense, this code just becomes
+a monster nightmare. You have any issues of insurility. There's lots of things you've got to worry
+about. When you go from the intel platform to the power platform, you run into this. One of the
+architectures I work on primarily is the IBM Z series, which is power based. And you run into
+numerous issues. That's probably the primary thing you have to deal with if you're porting
+something from intel to the power. So you end up with lots of pound-elf and pound-elf, lots of
+defined macros. You end up with multiple build environments and this has always been nightmarish.
+In any development. You end up with, well, you run this build script to build it for this platform.
+But there's another build script in another directory. It's very easy to complicate the build
+process. Now, I'm also coming at this. One of my primary responsibilities is a packageer of
+software for Susa. I work on the kernel. I do a lot of kernel builds, but I also do several
+packages where upstream their source is written. I simply take that source, make sure it works
+that it builds properly. We package up the binary so that you can download it from repository or
+have it on a CD. If that build process is very complicated, the spec file that I use to create an
+RPM becomes unmanageable, becomes huge and unwieldy, and I throw my hands up in frustration and
+tend to rewrite the whole build process just so I can make it work easier for me.
+Okay, so again, the customer wants to build the binaries themselves sometimes. This is
+very common in the open source world. Raise your hand if you've ever gotten through the
+config make make install process. See, if you're in open source, that's practically a requirement.
+You have to know those three steps. But luckily, we only have those three steps. It could be a lot worse.
+And you need to make sure maybe they don't have your build environment. I have my specially crafted
+build environment. Works very well for me. But does everybody else have mine? Not likely. You have to
+test for that. Maybe they lack the access rights to actually install the software on the system.
+And what if they're building on a platform you didn't expect? What if they finally realize, well,
+you know, I'd love to run system tap on the arm. You have to be prepared for those things.
+And that's one end. So this is what's expected by the user. Users expecting one compressed file,
+one directory to build with it. You can't have multiple spread all over. One method to configure your build.
+One commands perform the build and one command to install. And no errors. Ever. Yeah. Okay.
+Well, set of tools has been created that will help you accomplish this. The problem becomes learning
+the tool or the set of tools. And I'm going to talk about those tools. I'm going to talk about the
+order that they need to be used. I'm going to show you some ways that this can easily be simplified
+to make your job easier. Auto scan, AC, local, lib tool, and auto comp. Those are parts are actually,
+yeah, all of these auto make is actually part of its own. Almost everything else you see here
+is part of the auto tools except for lib tool, which helps us build dynamic libraries.
+And then the auto make, which actually is different from configure. And I'll explain where that
+difference is and how that works. Okay. So the first one I'm going to talk about is auto scan.
+Now auto scan is an interesting little tool. What it does is it searches what you already have and
+tries to determine if you have anything useful of what it can build for its files. All right.
+Come on. There we go. So I'm going to go ahead and uncompress the end time
+part of all there. End time is a very simple little project. It has a source directory.
+So it has a make file, a source directory, and a few source files. Now this is a very simple
+little program. All it's going to do is use end curses to put a clock up there. That doesn't
+even do proper formatting on the clock. But I should, from the directory of make file, be able to
+just type make it builds it. And there's my binary. So let's run it. Again, this is not a
+complicated program. I press Q in the clock ends because it's using, so the question becomes what
+can I do to make this work for me? And also the make file also has to make clean so that it gets rid of.
+You know what? Can everybody read this or do I need to increase the font? Is it okay?
+Just making sure. Real simple make file. And you think this is great. I can send it out like this,
+right? Does this make file check for end curses? Does it verify that everything is in place?
+What happens if I don't have the end curses library? What kind of error will the user get?
+They'll get something really crazy like, don't know where what's, what's, uh,
+scurrying it is. And sorry, I'm going to fail you. And so there's no description here.
+Or the first tool that I explained here is auto scan. Just running auto scan creates two files for you.
+The two files that creates here is the auto scan log and the configure.scan. The configure.scan
+is the most important file here. You can obviously tell the auto scan log get a whole heck of a lot.
+It's not a two terribly important file for this. The configure.scan is the interesting one though and
+we're going to go into that one. This is what it generated for my auto comp.
+Now this is the first step. Now again, I want you to understand there is a significant difference
+between auto comp and auto make. Auto comp is just configuring to make sure everything is in place.
+It does nothing with the make files per say. It doesn't really generate fun make files for you.
+Auto comp in conjunction with auto make does a lot. Right now, this is just an auto comp file.
+There's nothing about it. The only thing you see about a make file in here is there off the bottom
+where it says config files make file. And that does not do anything in this particular context.
+So let's explain a little bit about what this file really means.
+I'm going to go through several of these. So we start out with the prerequisite.
+You can specify what the minimum version of the auto comp is that you're running against.
+We leave that one alone. We then come to an AC admit. Right now this line is important.
+For the auto comp to make sure that certain labels are set properly. Now let me explain
+something about the auto comp system. Everything in here is created through the M4 macro language.
+The M4 macro language is really simpler than you think. All it does is replace words and put
+in other text. It's like an entire language, a pound defines. It's what the M4 macro language is.
+When you look at this, when you look at the AC admit, realize that it's going to replace it with a
+whole other section of text for you. And what it's doing is eventually creating a script file for
+you called configure. This will insert a lot of back script for you in the long run. But for you
+right now, all you need to know are the three different parameters. Everything in here is
+big as text. There really is no such thing as type within the M4 macro language. But something
+you have to understand also is that it's very important to quote things. And the quote character
+in M4 is the square bracket. Those leads to a problem. If you want, you can add actual, you can
+add lines in here that will be inserted into your configure script just as if it were batch lines.
+But what is the square brackets used for in bash? Is the test. It's what actually tests the
+condition for you. So if you're using the test macro, you're actually, yeah, you're using the
+test macro to put those things in. It's going to consider it as quoted text and treat it considerably
+different. So be aware that it does not use just regular single quotes. So in this particular
+context, you cannot use square brackets to do a bash test. But there are other options. What are
+the other options? You can actually use the test command line. That really is all the square
+bracket is as nailiest to test. And it will go ahead and take, and you can do your conditions of
+messaging. There are three parameters here. The name of the particular function, the package name,
+the version of it, and then the author. Very simple. Now, in my particular package,
+Autoscan actually puts in postmarkers for me. So I can come in here and delete those.
+Actually, I think it's up to three now. And I always like to quote.
+Okay.
+Okay.
+This next line is not in the Autoscan. This is where your configure and your auto-make
+meet. The auto-make init, auto-make. I'm not going to talk about that right now. I will talk about it
+in a few moments. We're going to skip over that line. It is something you need to add. So really,
+that's the only line you need to know to make this work properly. ConfigSorster, all it's really
+doing is providing a file for a sanity check. All my files there, it's going to use one file to
+check against. And for me, it picked, I think it was n time ui, it's the one it shows. Yeah,
+source n time ui. Config header. Now, the config header is not a file that's actually in my system.
+One of the things that the configure script does for you is it creates a header file.
+Now, you run configure scripts. Most of you run configure scripts before.
+The configure script flies by with a lot of information. You see things such as GCC version,
+GCC uses this and this header is available and this particular function is not available.
+All of that information gets put in as pound of fines within the config.h. So all that
+really needs to happen is your source code needs to include config.h and then check for these
+pound of fines. And that will tell you what platform you're on, what capabilities exist,
+what capabilities don't exist. You're going to determine if the library is there and build
+differently, whatever you need to do. But that's what the config header is. Config header
+line just specifies what is the file name for the configure header. Now, this next section,
+that's really the header of our configure AC file. This second part here is where we check
+for what programs exist and there's lots of checks. This is actually one of the most confusing
+parts of auto tools for most people. It's trying to find what macro they want to use to check
+for a particular program. I listed a few of them here. This one obviously is checking
+Jets for a C compiler. This is checking for C plus plus, for a trend, you can check for
+ox set, aqua set. It's actually a special macro called check Prague. The check Prague macro
+takes some parameters. All these other ones do not take parameters. They simply look for the
+executable and get something that works. AC check Prague, though, takes some parameters.
+You can specify a particular executable you want to make sure it's present. So if the macro
+doesn't exist, you can create your own. That way, that program can be found. And again,
+each of these macros, when you insert, it will create a variable with the proper executable
+main. So is it GCC? Is it C plus plus? It will identify it through a particular macro variable
+that you can use in your make files. You can use in your programs, whatever you want to do.
+Now, I also include with the slide deck, which is on the Utah open source. Just go to this particular
+class entry and the slides are there, so you can download this. At the end of this slide,
+it actually shows several links. One of those links actually contains a very comprehensive
+list of these macros. Of those particular test macros.
+Checkered is the next one that you're going to need to modify. We've only modified our file
+once at this point. We modified it to make sure that AC init was set properly. Check lives is the
+next one. This is where you're actually checking to see if particular libraries exist inside the
+system. Let's go back to, and it's nice enough to actually say you need to fix these things.
+Replace main with a function in LN curses. So main is not a function in N curses,
+but it should be relatively easy for me to find something. If I go to, let's edit.
+It really doesn't matter which function it is. It should, other than it should be a function
+that's in the particular version that you want to make sure exists. Honestly, we're not interested
+in anything, but let's just choose. Where is it? Yeah. In that screen, that's one of the functions
+that we use. That's usually the best choice is to find one of the functions used from that library
+that you're using in your source code and put it in there. And all you have to do is put
+function name in there. So I'm going to put it in in that screen.
+And you'll just do this one for each library, but auto scan was nice enough to automatically
+detect which libraries I was using based on my make file. These other things, so this actually
+came from my make file, this actually came from my source code. So it's reading all of the different
+parts of my source that exists and trying to find what's necessary. Let's go back to.
+So check for whatever libraries. You can add your own lines here to check for whatever libraries
+you need, but checking for header files is also important. Probably the most common ones you will check
+there are macros already created, like header standard C, which will check for standard IO,
+things like that. Other headers you need to look for specifically, like the encurses.h.
+Standard lib is actually one, if you want to double check, you can check for through here.
+This will verify whether a header exists or not. It will not fail if it does not find a header file.
+It will simply make a mark inside that config.h saying yes, that header file exists, or no, it did not exist.
+And you need to respond appropriately. So put all the header files that you would check for.
+Don't worry about particular header file failures. It's not that important.
+All you're doing is checking to see if the header file exists and then using the config.h to work with that.
+There's also macros for checking for particular structures.
+In this case, common one, if you're using the TM, the struct TM.
+It's usually found within time.h, but sometimes it's not included within time.h.
+It's actually included in sys time.h. And so a macro will be defined TM in sys time.
+You can specify a different header to find your TM structure.
+So in my code, what I would do is I'd say if death TM in sys time, pound include sys slash time.
+Pound else include time.h.
+And there is a lot of different for different type deaths and structures.
+Different library functions that may exist within the system.
+In this case, the AC type signal finds correct signal return type.
+Signal function actually has different return types depending on the platform you're building on.
+BSD, I believe, signal returns a value whereas on Linux, it does not.
+And so this will allow you to, it will actually define a return value to this macro.
+And all you have to do is say red sig type in your source code.
+And again, that will be defined within the config.h.
+And then finally, these last two lines, this is what closes off your auto-conf here.
+And we'll see all this go right here shortly.
+The config files is a list of files that will be generated by the configure script.
+So when you run the configure script, certain files will be created.
+And these specify which files are going to be created.
+In this case, a make file and a make file in the source directory.
+Now, for the initial configure AC, it doesn't do anything but simply create a,
+and just copy the make file.
+It doesn't do anything miraculous.
+I'm not using any of the macros inside my make file.
+Using auto make though, auto make will create make files that I can use.
+And we'll create very simple ones.
+AC output should be the last line in your config, in this config your file.
+AC output basically tells the macro system generate the rest of the, the config your script.
+This must be the last line in your, in your file.
+Okay.
+So coming back here.
+So some of these other tools that are used,
+and we'll be going through these pretty shortly.
+AC local actually will take certain files from your system that you've installed either through
+our PM or through Debian package files, whatever. It will take some of those M4 macros and
+put them local to your directory.
+Lib2Is is an important tool for creating dynamic libraries.
+It also creates several files that are necessary for the build process to create these files.
+And then there's the autocomph which will take that file we just saw and generate config your
+for us. Now, I'm following these tools at you and I'm not getting you any order to them.
+Is that root of me or what?
+We get that. I'm going to do the, and it auto-make here. I skipped over that, but I need to add this.
+So auto scan actually does not create this.
+But what you need to do is put in the options that will be as pass to the auto-make utility.
+I am going to put this line in. Generally, you put it up here in your header, but it doesn't
+really matter as long as you put it before those last two lines.
+Configure headers. This one starts with AM instead of AC. AC obviously start
+is standing for auto-comph without the macro system it comes from. AM standing for auto-make.
+Every system that uses, that creates info macroes for the configure and different systems can
+create different macroes will generally have a different set of initials to start out with.
+There should be some documentation depending on the system you're working with.
+And then auto-make.
+And again, what this does is take several options. The most common are
+WR, WR, and foreign. Both two options to
+err on warnings and make everything an error basically.
+And the foreign option, what that does is it says this is not a GNU authorized package.
+It does not have all the GNU files in it. Without this foreign option in here, this foreign option
+would actually cause the auto-make tool to halt with an error because it can't find things like
+read me and change log. And the files that most people expect to be in there, my file didn't have
+that. If I wanted to be a good citizen of course, I would take out foreign and then just follow
+the error codes. But in this case, I'm going to leave it in there to make it to simplify things for me.
+Okay, one other thing I'm going to put in here is, or not make file, I am sorry, source, make file.
+So yeah, there's going to be two different files generated for me. My original package,
+only have run make file. That was in the root directory. Well, what I'm going to do is create
+another, I'm going to create a make file in the root directory, but also create a make file in the
+source directory. You will do this with the package, with a, when you properly auto-tool a package.
+It's better to have make files all through it. I'm going to save this.
+Okay, I'm not quite done with this though yet. Because I put in the AM and NIFT auto-make,
+this is now expecting a different file. Well, for AutoComp, this file that I just edited,
+the configured scan, is all I need. It needs to be called configured at AC though.
+Move, configure, configure, see. There we go. It needs to be called configured at AC. I'm standing
+for AutoComp. That's the only file I need to create my whole configured script. I'm done,
+with auto tools. Now I need to step into the world of auto-make and create the proper auto-make files.
+Believe it or not, auto-make in this case is simpler than auto-conf.
+Okay, auto-make, so we need simple auto-make AM files to create complex make file.n's.
+What will happen is, the make file, the make file AMs that we create now,
+that auto-make will turn into these make file.n's. These make file.n's will be used by auto-conf
+to create your file make files. So make file generates files that will be used by,
+I mean auto-make will generate files that will be used by auto-conf.
+Okay, and these files are wonderfully simple.
+In the case of the root directory, since I'm not building any source code in there,
+all I need to do for those auto-make files is say, these are the sub-directories I need you to go in
+to, to recurse into and build. One line, that's all my auto-make AM should have at the root.
+Subter is equals the dot, so that it will build anything local. I don't need the dot,
+since I don't, I'm not building anything local, but the dot, I put the dot in there anyway is
+tradition. And on the source directory, and what we'll do is, recurse into the source directory,
+build anything that's in there and then come back out.
+So I'm going to create that file nice and quickly here. Make file.nm
+subters equals dot and source. Now the order that these are added here is important.
+That was going to be my question. Yeah, the order those exist are very important.
+If I put the dot after the directory source, it will actually recurse into source first,
+exit out of source, and then try to build anything that you specified in the local directory.
+When I show you the dot, how much time am I running? I've got about half hour.
+Okay, I might be able to get to it. I'll show you a pretty complicated package,
+where you're recursing into a source directory, that recursing into library directories,
+and then tool directories, it's convoluted. But the subters makes it very easy to specify the order
+that they're built in. That's a good question, I appreciate that. That's what that make file
+am should contain. So I'm going to go into my source directory. I'm going to create another
+make file am. It depends. Yes, that would probably be the best way. In the project I'm going to show
+a little bit later, there are three directories in the sub directory and the source directory.
+Two of them are library sets of library routines that are associated with the dynamic library
+that have to be built first. But the third directory actually depends on the library that's built
+by the root directory. And so that's the two libraries, a dot, and then the tools directory.
+So it varies depending on project. Really the dot placement for this particular project
+is but useless. I don't even need to include the dot. I just include it for
+tradition sake. It's not necessary.
+Okay, let's come back to hearing and I mean one line big deal. This is what confuses most people
+when it comes to auto make. And let me explain what these lines mean. Usually the first line
+in the auto make am defines the thing you're building and where it will be installed.
+In this case, the first part before the underscore defines where it will be installed.
+Ben stands for user bin or user local bin. It depends on its system dependent.
+Lib would be user lib or user local lib. You could also specify a no-inst.
+One of the things I do later on is I build a take a set of files. I build a library that I don't
+need to install. Well, that library is going to be no-inst underscore and then the type. In that case,
+it would be libraries. There's two types that I've listed here but there are other types
+include there are other types that work and they're listed in the website specified at the end of
+the slide. But in this case, in user bin, I'm going to have programs by that name.
+End time will be installed, should be installed, whatever this build is all done, in user bin.
+And it should be an executable program when it's done. If I wanted libraries, I'd probably do
+live underscore libraries, which says in user live, install these static libraries and it would
+list the names of them. That's what the first line defines. The second line or the subsequent
+lines will take the particular executable or library that you specified and specify particular
+details about that. In this case, end time, which was the executable, and the sources that are
+associated with end time. I only have one source file listed here. My actual package that I've
+got in here actually has three different source files. One thing that's very important about
+this sources line, I think I explained it. Yeah. So it's the files that belong to the build and
+something that's very important. The sources line should also contain header files that are
+associated with this particular directory. There's a reason for that. Everything that's found on
+the sources line is going to be included in the make file so that you can create a distribution.
+You know those nuclear tarballs that people send out? When this is all done with one command,
+it will create a tarball for me and test that tarball to make sure it's correct. It's built
+properly. If you forget to put header files in here, it's not going to package your header files
+for you. Make sure you include every file that's on any sources that you want in there. There's
+also other tags that you can include, I don't have it listed here, that says these files belong to
+this package, but they're not source files. They're text files or readmeas or things like that.
+Other targets you can have are like seed flags, which are compile flags, or pre-processer flags.
+Pre-processer flags being dash i for include, dash capital i for include.
+Entire the LD add will actually specify for executables, libraries that can be linked.
+Load add is actually used by libraries linking to other libraries. A little bit different. I'll show
+you the difference there a little bit. Let's go ahead and create that last.
+So which tools should I run? What order? What should I not run a tool? Are we any closer to
+enlightenment? I'm looking a lot of, but let's go ahead and make that last.
+Yeah, please go ahead. Auto scan does not create any make files. Auto scan only creates the two files.
+The log file and the configure dot scan. It doesn't actually, it's not responsible for make files at all.
+It's not it's job. The auto makers is what will do that for you, but you have to manually create
+the make file, the make file dot am files. So let's go ahead and create this one. This one's
+going to have been programs, so might want to actually remember I'm in the I here.
+This is n time, n time sources is equal to my head n time dot c n time ui dot c and n time ui dot h.
+Okay, yes. So so include headers is actually specifying that include files or something that's
+going to go in the Etsy include directory and these are header files that are going to go there.
+So include headers and then it lists the list of headers in it. That line would be as useful for
+when you're building libraries, if you're building libraries, you want to make sure header files,
+but it doesn't replace putting headers in the source sources line. Sources still is necessary in
+the sources line in order to package them properly. That's a good question, though. I appreciate that.
+One more question? Yes, please.
+Last time I said it, I noticed that all of the old black information I could find was like five years out of being.
+Right.
+Like the auto-loaded tool book, which is really, it looks like it's going to develop written, but it just seems like a lot of information has changed.
+And I just wanted to give you a little of a good reference online.
+I've got a couple of links at the end of this that are really good.
+Most of my presentation, I will readily admit that I am plagiarizing from some of the best.
+I'm standing on the shoulder of a really, really incredible presentation generated from,
+I forget the university now. Anyway, let me get to it. I'll show it.
+Very good. It goes into much greater depth than I do within this hour walk presentation.
+I highly recommend if you use auto tools to go through it.
+It spends like 30 slides just explaining the M4 macro language.
+Okay.
+So let's go ahead and write that. At this point,
+I've got the auto scan lock, which was useless to me.
+Configured by AC, this is the old make file. It hasn't been touched since I started this.
+I can probably delete it. It will get overwritten whenever it gets to it.
+The make file I am, which I created.
+So really, these are the two primary files. The configure AC and the make file I am.
+It's used by auto-conf and auto-make, and then here's my source file and then the auto-make here.
+So, out of the auto-conf, auto-make, AC local, all those really put you run.
+Well, we're very lucky in that somebody figured out that this was confusing as heck,
+and maybe somebody should write a tool to run all the tools.
+It's called auto-reconf. It's a godsend.
+Auto-reconf will take those three files, just those three files, and generate your whole
+configure script for you. Everything's done at that point. You don't have to worry about which tools
+are run. It'll take care of all that for you. It'll run them in the proper order.
+The first time you run it, you want to run it with dash I, or I think it's dashed
+action install. It will create necessary files. Otherwise, you're going to get error messages.
+Error messages that basically say, I'm sorry, I don't see that file, I can't continue.
+Auto-reconf, you should run auto-reconf every time to configure AC changes, or make file I am changes.
+If you've already gone through the configure.stap.slash configure and it's built to make files,
+you don't have to worry about running auto-reconf at that point. The make files can tell if their parent
+make file I am has changed and will rebuild themselves. These guys got everything in order here.
+If you really want to see how everything is going, do a dash v and it shows you each of the commands,
+the output of each of the commands, you can actually see which tools you need to run in which order.
+It's actually quite educational. Or you can do what I'm going to do and just do auto-reconf dash I.
+See if I screwed it up.
+No errors, I think I'm successful. This is where it gets really complicated, it created a lot of files for me.
+Created AC local and full auto-make cache, it created configure hn, there's my configure script,
+depth comp and style shell, the make file hasn't changed yet, but it created make file in. Same thing
+here created make file in. You can tell that here's my make file at 16 bytes, I was a subterge.
+It's definitely much more complicated at this point and make file in. There's a lot of data put in
+there. At this time it's time to do the dot slash configure. If you watch the dot slash configure,
+now you'll see. There's your see compiler. Let's see where I'm looking for. I probably have to
+go up, I think it passed by it. I don't see it, it's got to be in there somewhere.
+Yeah, there it is. Yeah, checking for a net screen and the LN curses, yes, it found it.
+So all that's been put in there, I should now be able to type make and it creates my program for me.
+Now, without all of the explanation that I put into it, creating those files, making notifying
+basically three lines, actually no four lines, four lines in the config.ac, creating two files that
+has three more lines, I've created the whole system here. That includes building, includes cleaning,
+go ahead and make, it includes the make install, which I'm not going to run at this time. Actually no,
+I'm going to make install. And you can see that it knows that it needs to put into user local bin,
+my end time program. I can specify with the prefix command somewhere else, maybe I want to put it
+in my home directory. All of that's made available to me at this point. This is the real,
+so this is the real key here though, I want to show you, my make file now is substantially larger
+than it was before. There is a special make, I think it's this check, yeah, this check.
+This check is a special make command that will create your toggle for you and then verify that that
+toggle works. Go through and configure it, check it, go to the toggle and tell you at the end,
+there's your toggle. That was the name of the package we created and there's the version that was
+in the AC and net. That's right. So what this toggle is, this is everything that's necessary
+to actually build the project somewhere else. There are some extra files in here. I don't know why it
+includes these things, it doesn't need to make file am's. Make file am there, make file.am there,
+it doesn't need those. Obviously it didn't create these, it didn't create, copy the configuration.
+Those three files aren't necessary anymore.
+It could be, yes, they might want to change those and regenerate these configure files.
+This is all that is necessary to build your project anywhere.
+I can put this on, I should be able to copy this to a mainframe now with running Linux and be able to build it successfully.
+I should be able to actually take this to, because it's a toggle, I should be able to put on a slackware system
+and have it build properly. It doesn't matter where it goes now, it's a proper build system and it should look for
+everything that it needs. It should find everything that it needs at this point.
+How did it determine that GCC or was the appropriate compiler to file these services?
+One of the things it does, what it builds to configure, and we'll scroll back on.
+This actually runs through several compilers. Right here it says it's checking for GCC.
+It finds it right off the bat. If GCC wasn't in there, it would have failed and gone out to another compiler.
+It checks for half a dozen different compiler names.
+I should have pressed my question differently. I know that I'm not compiling Java or Fortran or whatever.
+Oh, it doesn't know. So yeah, how does it know whether it's compiling Fortran or Java?
+It doesn't.
+The continued AC file really is just checking for tools. To see if tools are available.
+Whether or not it's compiling using GCC or Fortran depends on the make file about AMs.
+The make file about AMs, whatever you specify a .c file, the make file knows that that's a C file program.
+It's going to compile appropriately. If it finds Fortran files, which are prefix.f, I believe, it knows that it needs to build Fortran files.
+It was Java. I'm not certain if any tools exist to build Java. Probably you should be working with ANT at that point.
+I don't know if make files has a combination or at least within the new auto tools for Java.
+I don't know if installment considers it worthy of his attention.
+Anyway, but that is, yeah, it will go through and for whatever tools you've created it's going to put macros into the make file.
+If you're checking for C++, it's going to use C++ macros in the make file.
+How close are we?
+Got five minutes. I don't know if I can do this fast enough.
+I'm going to do something really quick though, just to show you how easy it is.
+This obviously has been divided up so that there is a main executable, but these are support areas.
+I can actually create a library of those.
+So I'm going to create a live directory and move.
+Oh, no, I'm not.
+And here I'm going to create a live. I'm going to move from source and time UI files into live.
+Inside live, I'm going to go ahead and create a make file am.
+In this case, I'm going to do no inst.
+Yeah, you're probably right. Live should be a binary directory more than anything.
+I'm just going to create a live directory as my source code, but you're right.
+So no inst libraries.
+I'm going to call this live and time UI.A.
+Now, when I live and time UI, now for any character that's not an underscore, you need to replace it with an underscore.
+It's an alpha-numeric character, or an underscore can be in there.
+Other things need to be replaced with underscore for these particular tags.
+And that's how I need in there for that make file to create a library.
+I do need to change this make file am so that the live directory is in there before source.
+And I need to change my configure AC.
+The only part I need to change my configure AC is in here so that the live make file is created.
+Now, I haven't done anything in the source directory.
+I do make clean right now. It's actually going to rebuild everything for me.
+Oh, there's one other thing that I need to include here.
+Because I'm building a static library, it needs the ranlib macro defined.
+And that's not been defined so far.
+And it tells me I need to add ACprog ranlib to this.
+This is actually an error that makes sense.
+If I go to configure AC, go up here to the prop section.
+There's type ACprog ranlib.
+And that's going to allow me to build a static library.
+I forgot to make that change.
+You know, I'm going to do it this way.
+How do we call that shy?
+That should rebuild everything that needs to be rebuilt.
+Oh, that's right, I forgot to change my source make file to get rid of these guys.
+I'm just going to add it to the subterge.
+I did add it to the subterge.
+I do need to live add to this.
+And LDAD is actually what I need.
+Oh, that's such a good thing.
+You know, I'm going to add that.
+Now, in the source make file.am, just get that in there right now.
+Because I am now using a static library for end time, I need to do end time.
+LDAD is equal to the back directory and lib.
+And it is libendtimeui.a.
+The ad just specifies where the static library should be found.
+And we're going to add a recomb.
+You can use that shy over and over again.
+It won't hurt anything.
+Oh.
+This is my problem right here.
+It's still looking for my saturday check.
+It's looking for my saturday check telling me there should be a UI in that source directory.
+No, there's not.
+Oh, it should be end time to see.
+Get it right eventually.
+Okay, so there's a high wire act here.
+There it goes.
+All right.
+What did I mess up here?
+Oh, yes.
+One more.
+There's an end time, CPP flags.
+I need to specify my dash include.
+Because there's a header file now in a different directory.
+And there it is.
+It went to built in my source directory and then time program.
+And there it is.
+So now that I'm all done with that, just to make a disk check and create it all for me.
+Now it's creating a library.
+I can make this library dynamic very simple and my slides actually detail that.
+But I don't have time to go into that right now.
+This is what I just did for the library so that you know.
+There's the LDL ad and CPP flags.
+If I followed my slides, I would have done this faster.
+If you want to make it dynamic, really simple.
+You change it from libraries to LT libraries.
+You add the LA extension for dynamic libraries.
+And you of course change that to match the new file name.
+And then you LDL ad.
+And if you're moving to a static library, you're watching the library.
+And you have the x2.18.
+That's it.
+My slides are out on the 2008.
+You talk the open source conference website under this particular thing.
+And these really recommend going to this site and playing with that if you want to.
+That's a good question.
+Maybe I should send out the...
+Maybe I should put the...
+I don't think I can post this for a while.
+Send me an email.
+I think my email is on there.
+Send me an email if you want to add a tiny source code.
+And I'd be happy to send it.
+I don't think there's a better way to do it because you want to.
+Somebody need stuck to close the door.
+Any questions?
+Thank you very much.

@@ -1,0 +1,348 @@
+Episode: 3535
+Title: HPR3535: template Haskell
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3535/hpr3535.mp3
+Transcribed: 2025-10-25 01:06:33
+
+---
+
+This is Hacker Public Radio episode 3535 for Friday the 18th of February 2022.
+Today's show is entitled Template Haskell.
+It is hosted by Tuku Toroto and is about 47 minutes long and carries a clean flag.
+The summary is Tuku Toroto's how she's using Template Haskell to cut out a mount on
+code she writes.
+Hello and welcome. This is Tuku Toroto and you are listening to the Hacker Public Radio.
+Today's episode is about how I'm using Template Haskell to hide some boilerplate code.
+This episode will be quite cold heavy and it will be hard to follow without show notes.
+So if you have a chance please have the show notes at hand.
+I'll try my test to explain the code feels speaking but it will be easy if you can also follow via text.
+I'm using a new type to create a lot of new types in my code and the idea is that
+instead of passing around for example text or intake I give them a further name to tell them
+apart. So I have a planet name and star system name and item amount and such things as a
+pipe. So if I have a function where I pass in person's first name and last name it is
+immediately obvious when you're reading the code which one is which if they were both text
+then you would have to keep track which variable is which but if they are of different types
+then the compiler does that for you. And like I said I'm using new type for that and I'll be
+using a planet name as an example throughout the episode and the new types are just a really quick
+recap. New types are really a way to define a type that is checked during the compile time
+but that is optimized a way during the run time so there's no any performants count on this one.
+And it's a three line to define one there's a for example in case of the planet name there's
+a new type planet name equals M key encore planet name curly brackets and planet name text
+deriving showread EQ and this defines a new type called planet name that's the type
+constructor that is what you what you use when you have to tell a type like when you have to tell
+that for example this value here is of type planet name or this function here accept
+parameter of type planet name it has a data constructor mk planet name that one is used when
+we need to create a value of that type like this this has a value of earth you say that mk
+planet name earth or call this function with value earth and I'm using mk as a prefix to avoid
+naming conflict with the database columns because if I have the data constructor planet name and
+then I have a database table called planet and it has a column name tentat column has a data
+constructor also called planet name and then there will be a naming conflict because you have two
+planet names so you have to keep telling that this planet name comes from here and that comes from
+there and that gets bit tedious so I'm just using mk as a prefix for all of my data constructors
+for the new types and then it has a underscore and planet name that's a name of the field because
+our new type wraps a field so underscore is prefix because of I'm using a lens library and
+prefixing things with underscore let's me to create lenses automatically I will talk about those
+maybe at some later point they are they are really fascinating topic but they are very proud and
+there's actually a whole book written about that so I'm not going to try to squeeze it in now
+and the unprefix comes because we are kind of unwrapping the value and then the last piece the
+double column text means that that unplanet name is of type text and then the last line
+deriving show read eq means that we are automatically deriving some instances show let's me do
+turn our planet name into the plain text and read allows us to read that text back and
+construct a planet name out of that that's handy when you are doing interactive development
+but usually usually that's not that often used and eq gives us access to equality and not equality
+if this is a index then I would also have to order and map instances here they let you do all the
+things which one is created and which one and now gives you a basic numeric operations like plus
+minus taking the absolute value and such okay so that's that's the recap on the new types so basically
+yeah just creating a new type and giving it a name so we can give track of things easier in the code
+and I create those basically whenever I have something called name I'm usually creating a new type
+for that I'm not using text and quite often if I have in value I'm creating a new type for those two
+like if there's a amount of some items or level of something or count of something or such things
+and then for the purposes of my program there's a 1, 2, 3, 4, 5 things that I have to create instances to
+there's a string to change and from change and persist field and persist field SQL and these are
+these are the ones that I end up writing all the time and these are the things that prompt me to
+look into the template SQL. Your string lets me to use string literals in the code so I don't
+have to use mkplanet name earth in the code if I just want to create a name earth I can just
+put the quotation marks earth and the Haskell compiler understands from the context that
+here we are trying to create a planet name without a data constructor so it does that
+behind the scenes to change and from change is for turning our planet name into the change and
+back basically it just creates a change and string that is transferable between server and client
+persist field is for storing and retrieving our planet name into the database and back from
+the and persist field SQL tells the persistent that the that's the database library that I'm using
+it tells what kind what type of field should be created in the database for storing this value
+okay so that's that's like I need to write quite a lot of code to do that all and it gets
+repetitive because it's the same almost same order time and there's a there's an example of
+this implementation like if I let write all this by hand that that is in the show notes if you
+want to have a look it's a I think this 15 lunch or so okay so template Haskell so template Haskell is
+they to generate code via program so you you can have a Haskell function that is executed
+during a compile time it evites some code that is inserted into the source file and then the
+source source file is compiled so it is a bit like least macros for example and at the very very
+easiest lowest level or simplest level you are not you can just have a basically copy paste
+this content as it is to the source source file type of template but with a little bit more
+advanced or complicated you can in you can pass parameters to your template function to guide
+how your how how the code should be generated you can actually even pass code into that template
+and then the template can introspect that code and that generate code that somehow in the
+compile time it seems that it is modifying the pasting code so you could have add some error
+handling for example in your code so how you call this is basically you're going to have our
+function is called make domain type and it takes two parameters so to call it I'll just write
+dollar open back and make domain type planet name as a string and two ticks text close
+barren so we are calling the make domain type function with a two parameters one is string
+planet name another one is name text that's a name of a type called text and I'm going to
+introspect that pasting name a little bit to see what if I if I need to generate the
+hard domain type for int or for the text because there's a one this function handles both cases
+and they need to generate a slightly different code so let's start going through the code example
+there's a first function make domain type takes a string and name as a parameters and return
+a written school list of tech so this tech is the our created code the code that this function
+generates I tried to find out where that navigation or shortening comes from couldn't find anything
+so I'm telling myself that it's a shortening of description it's a description of code it
+probably is a wrong idea but that's the test I could find or come up come up come up with actually
+and q is the monot that we are you that the template has to use is it does a lot of things that are
+not completely sure actually but one of the things that it does it it keeps track of function names
+and variable names actually I think it only keeps track of symbol names but anyway you can ask
+it to create unique identifiers for yourself for you and it will create you always unique ones
+because even if you ask the same same kind of symbol or either identifier files
+it can it keeps track of what has been created and can give you a new one that doesn't conflict
+with the previous one okay so we start by calling rafi function to the that type my name that
+was passed in and rafi is something so it's a function that does the intersection it looks up
+what the what that name is what it stands for and create your variable or description of
+what we what you have so in our case when we passed in a text it will find that okay this text
+is a type constructor and create a respective data structure it can create your information
+about functions and what not and then we are going to do a that and match because there's a lot
+of different cases so and here here you can see what's a a bit annoying thing about type Haskell
+because there's a lot of different kinds of code elements in the Haskell
+and they are represented as a data structures in the template Haskell there's going to be a lot
+of abbreviations so here we are doing the pattern match that case tq of and then this is
+tycoon i and parents so that's a type constructor that we are pattern matching and then there's a
+data D bunch of underscores and D name so these are for because there's a lot of different
+kinds of data constructors even so here we are just making a pattern match to the simple path
+of data constructor as a type constructor that does not have any parameters and then we call
+to select domain name command type for that so if he is the path in name was a simple type constructor
+that doesn't have any type parameters or isn't any higher kind of time type or anything
+then we are calling select domain type and let that to do the code generation for us otherwise
+we are going to use report error to tell that only simple times are supported so if if somebody
+were to call or make domain type and pass in for example a function name then it would during
+the compile time it would signal it would signal you are line where this error happened and it
+would signal you the text only simple times are supported you could even report even more detailed
+error but because this is I wrote this mainly for myself the function I just I'm happy that
+it's just says that you only simple times are supported I that should be enough for me to
+remember what is going on if I were working on a little bit of team then of course it would make
+sense to make a more detailed error report okay select domain type that's a function that takes
+the string name and returns our constructor data code sorry and we are using a card
+code clause clause here so if the f type that's the type in or text if it's a text then we call
+make text domain type and pass in the name of the type we want to create that is a planet name
+in our example if it's an int then we call make into domain type type and give that
+are passed in domain type name otherwise we are again report an error that is an unsupported
+type this is because somebody could call our function and say that I want to create a domain type
+double and that would pass the first check on the previous function and it would be called in
+this check I didn't know I looked a little bit I thought a little bit about how I would handle
+doubles but there's the there's the trouble that the double one in this relative is because it's
+a there's only 01234 and so on and negative numbers so it's easy to represent on the database
+but when you use double then you have to start thinking what the what precision you want to use
+in the database and I didn't want to make those decisions ahead of time so if if I have a one
+double new type in my code that is saved in the database so I figured that I can just leave it
+as it is not used this make domain type function to create that and just write all those instances
+by hand because I have to decide the precision in the database for example but anyway here we just
+see which one which one we are using and because we are using a because we are making a
+planet name that is a type of text or will be type of text we are going to make text domain type
+function okay and that takes a stream as a parameter and returns a description again and
+are actually lists of descriptions and here we have several functions that we are calling one
+one by one to create first one creates the new type definition and then the following ones create
+instances to declarations of instances for that new type I could have generated everything in one
+one big function but then it would have been a big function and it would have been quite unwieldy
+to handle in the long run so I broke it into logical pieces so one creates a new type and other
+ones create instance definitions one by one and then we just in the end take all those definitions
+and then we can create them together they are lists so we end up one big list of code and
+redo them that and that gets spliced into the source code in the compile time and some of those
+functions are general like the new type definition it's almost identity identical between the
+int and text so they are passing an extra parameter to tell that I want a text new type
+and some of those like make is string instance is specific to the text there's no point
+of making a is string instance for the int so that can that that term need an extra parameter
+and to make new type definition this is the function that starts generating a code for us and
+this is there's two ways of creating a code of generating code in the template Haskell1 is
+creating a a st by hand like abstract syntax tree by hand and another one is using
+code lessons and I like using quotations a lot more because
+there you don't have to fight that much of code you basically fight your
+code that you want to generate as a v's and then you can splice in
+variables of variable parts there but with the abstract syntax tree you have to actually create
+the syntax tree by hand and it gets tedious but for some reason I couldn't get the new type definition
+working with the quotals quotations so I have to use the a st method here and
+well now you get to see the both ways of doing that so here we are returning a list
+of descriptions and the first one is a new type d that's a data constructer that creates a
+new type and it takes a bunch of parameters so first one is in the documentation referred as a
+CXT it's related to the confluent kind but that's a feature of the Haskell that I'm not familiar with
+so and I figured out because I'm not familiar with that I can just give in a empty list there
+I'm not using constraint kind so I'm using a giving an empty list there so open bracket close bracket
+next is a name of the new type we are generating this is a and this has to be a correct type
+so I'm using mk name to turn our string into the name then the 10 is a list of type variable
+findings that we are not using so empty list again then there's a maybe kind that I'm not
+again quite sure what it does so I'm passing nothing there we are not using kinds there
+this is that like very very reassuring when you're generating code and you are going like I don't
+know what this is I don't know what that is so I'll just pass in I'm not using that but such a slice
+I tried to look into some of those things but it started looking like I would have to do quite a
+bit of reading to learn those and decided that I can do that at some other point okay and then
+the after the client yeah then there's the con that's a data constructor we'll cover that just
+in a moment because that's the meat of this thing that's the line that starts with wreck
+and the last one is derive closer that's a list that of where you can automatically derive some
+instances like show read and e2 in our case and we are using a function called
+derive close for new type I'm sorry yeah yeah using the derive close for new type function
+for deriving that I'll go out that in a little bit later it's a handy little thing I wrote
+but then the data constructor wreck so all these up to this point while this is a parameter for
+the new type the data constructor that creates a new type and this wreck is a annotated data constructor
+that creates a record type because new type has a record type inside of it it's a it's a three
+after all so it tells that it has a data constructor and it has a field like it's a record but it has
+only one in our case so wreck an mk name is the first for the wreck the first parameter is the name
+of our data constructor and we are using mk name function to create a name and we are taking that
+planet name as a string an appending mk in front of that so this is what creates mk planet name
+data constructor for our new type this this function called and the next line is is a list of fields
+the record record holds and because we are using a new type we only have one one field there
+and the first one is a first parameter it's a double and the first element in the double is the name
+of the field we are using mk name again and we are appending underscore un into our planet name
+string so this is where we got the underscore underscore un planet name as a name of our field in the
+in the record and then controls two things it controls the source and darkness that I don't know what
+it does I try to look into that completely without and then the source strictness that controls
+when the value should be evaluated or computed should it compute that immediately or only when asked
+default is only when asked that's how high scale is working but sometimes you have to
+instruct high scale that don't don't don't delay computing of this value until it is needed but
+computed immediately because while while you cannot get stack of flows in a Haskell you can run
+out memory quite easily well not quite easily but sometimes you can run out of memory or you can
+get a space leak very simple looking program consumes tons and tons and tons of memory and that
+is related to the evaluation of the Haskell program how it is computed when the values are
+computed and one way of controlling that is controlling when when the value should be evaluated
+with the source strictness but we are we are just no source using the no source strictness
+so using the defaults here and the last one is a pipe of the of the field in the record so
+quantity is a constructor at the data constructor for the type constructor that sounds confusing but
+we are creating code that says that this is this type constructor is a type that is the value that
+was passed in so you know always it's a text so that's a quite lot of the right and keep track of
+and it's quite a lot of when you are getting started to look into like trying to find all these
+recti conti then new type t all these constructors it's it's quite tricky to do I didn't I didn't
+enjoy writing that that piece of code that much so there's a type template Haskell documentation
+page that I had I had open all the time while I was doing that and going back and forth
+and trying tracking what needs to be there and because then you are writing anything bigger
+remember this piece piece of code creates three lines of Haskell code that actually could be
+just a one liner but it's a lot to keep track and if you have a more complicated code
+then you are going to get more and more nested ASD the abstract syntax tree so and it is hard
+to read afterwards so I mentioned that derived clause for new type function that we are using to
+create that derived clause that so that's a function that I wrote by myself and that again just
+does checks what type we want to handle is it text or int and then it just
+used a returns a list of type constructors in a in case of text it returns show read and
+ego and in case of int it returns show read ego or numb and if somehow we had gotten this
+for with some other type it will again report an error like it's an unsupported type it shouldn't
+happen but it could could have it to write your functions in a way that they handle every possible
+case so we report an error and how we do this is basically we have a list of strings and then we are
+using a function that we created by using function composition for the conti and mk name so that conti
+dot mk name can be read as a conti of mk name so we are taking two functions and packing them
+together and this creates a new function that when you give it a string it uses mk name to turn
+that to string to the name and it's that result in immediately to conti that uses that name to
+create a type constructor and then we use the smaller than dollar created and that's our
+application we are using that to call that this newly created function to each element in the
+list so we use that function to we we call that function to show and then to read and then to
+make you and return the all the created values in a list so we get a type constructor show type
+constructor read and type constructor for ego and uh okay then test the make is a string instance
+this is only for the in case we are creating a text domain type and here you can see the difference
+between the constructing the code with the abstract syntax tree or quoting because here we are
+doing open bracket d pipe bunch of code pipe close bracket and this means this is a quotation
+so the text inside of the quotations is not treated as a it's not treated as a code in a
+way that it's not executed when this function is called but it is treated as a text that is turned
+into the code and returned as a AST so we can just write what we want to do and Haskell Haskell
+will take care of turning that into the AST this is a lot easier a lot nicer way of doing
+and then there's a part that we need to worry for example we need to create is string is string
+instance to a planet name and we are passing in a planet name so we are just using that dollar
+open parent con t dollar mk name name close parent here we are first calling mk name to that planet
+name string and turn that to a name planet name and then we are using con t to turn that name
+into a type constructor so then when this part is done this this line reads instance is string
+planet name where so that we are executing a tiny piece of code and splicing the result into
+the quotation this is this is how list does things this is very very similar how list does things
+if you are familiar with the list and then on the next line there's the from string function
+again we are splicing more code there and here this con e mk name mk plus plus name
+what what is that it takes the it takes the planet name string and pretend that with mk so we get
+mk planet name turn that turns that string into a name and turns that to the expression
+so we are calling a function a type data constructor mk planet name and then there's the dot from
+string but in the end so that's the function composition so what we are doing is first we are
+calling from string and what that returns are fed to the mk planet name data constructor
+sorry and this is this is what is used to turn spring literals into the into the planet name
+types and this is like I said this is a lot a lot nice a lot easier way of doing things
+not so much of coding and you can a lot easier follow what is what is being done
+and in the same way we are dealing with the the test that make to change an instance and make
+from change an instance for text they are working in the working in the pretty much in the same way
+as the make is string instance function the general code is a slightly different but the I mean
+completely different but the idea behind is the same so we have we have a quote that has the
+code and then we have the then we are splicing in the variable parts the parts that we need to
+var i var i okay uh person feel instance so we have a function make person feel instance for text
+because there's a two implementations there's one for the text and one for the int that's
+likely different and this instance has three functions so if I were to generate that with the
+ASD approach it will be a quite a handful of code and while the here the idea is the how you
+generate the code is the same but here here the generated code is somewhat more complicated
+so for example test this line const path equals config const name open bracket var p mk name s
+closed bracket so this creates a pattern that we use for pattern matching so and that const path
+value is used in the two-persist value function so when two-persist value is called with a pattern
+that is mk planet name s we handle it the s now contains the text that is we want that the system
+wants to persist and that's the how the persistent takes care of it's the persistent leverage task
+put in that now but then when the two-persist is called with the mk planet name s which
+was take the planet name new type apart so that we can have access to the to the underlying text
+that is stored in the s that's why we are using the pattern matching here and from
+persist value this is even more interesting case here here we are constructing a pattern p text but
+this time it's a is a persist text s so then this from persist value is called with a
+value that is persist text s so the system has loaded a value from the database that is persist
+text so it's a text column in the database and chords this then we are constructing a
+our planet name and passing that s as a parameter and returning that as a right value
+the the from persist value function returns either so it can be right when everything
+works well fine it's this case so right mk planet name s but then there's the second line from
+persist value underscore this is a pattern match that matches to everything that has not been matched
+so far so if we call the from persist value with the persist text then the first function takes
+takes care of that but if we call it what for example persist plot so somebody has loaded the binary
+plot from the database and tries to turn it into the planet name we return left fail to deserialize
+so we are signaling an error that this we cannot deserialize this value and then it's the persist
+libraries persistent libraries task to handle that error so it probably just traces and
+error somewhere and says that there's a problem and we cannot we cannot turn this binary plot into the
+planet name because because when we are when we are saving the data in the database we have a
+we have a complete control of what might we have at hand but when we are loading the data from
+the database we don't we don't have full guarantee that we are actually that somebody hasn't edited the
+database by hand and changed the column definition for example or if the husband back and the column
+definition does not what the code says it should be that's why we are that's why we have to be
+paranoid and tell what's going on and the make persist field SQL instance function that creates the
+instance for the sorry persist field SQL and that is a that is a fun instance that tells to the
+our database library what should be the type of the backing field in the database so here we are
+just saying that we are using the select backing SQL that function that I wrote to select
+depending on the type that we are creating if it's a text then we are creating SQL string
+data constructors and if it's in then we are creating SQL in 64 data constructors this
+this will indicate to the our library what is the type of the backing field and when the
+the periscence is actually really really nice when you when you start the program and you don't have
+the database at all it will automatically create that for you and if you it will use this
+information to create your correct type database column types
+okay so that's a lot of a lot of code reading code allowed and especially the part that makes
+the new type definition is a bit of a pain to work with even even when you know what it is
+supposed to do if you come into the code and you have no idea what's going on here probably is
+kind of kind of puzzle to figure out so that's the that's the that's the thing like
+with this system I can with a one line create a new new type and associate that instances
+and that will cut a amount of code that I have to write and maintain down quite a bit
+imaging that I have made a mistake somewhere and I have a back there's only one place I need
+to fix it and it it is automatically propagated everywhere where this is used the draw side is
+of course that if I have back then that's propagated everywhere where this is used but at least then
+it's hopefully easier to find and you can have a higher abstraction level you don't have to talk
+talk about new types and how it's saved into database and how it's turned into the string and
+what not but you can just say that okay I have a domain up here and we know that this can be
+saved into database so no need to worry about the details and so it's really nice when it's
+working and when it's not working then you have to start debugging and that's a that's about
+annoying thing to do one one thing is that if it generates incorrect code then then the
+it might be a bit tricky to find out what's going on here not because you you cannot see it
+you don't normally see the generated code but the compiler has a flag ddump slices and ddump to file
+that lets you it instructs the compiler to generate temporary files
+where it shows that in this file the following template has the function was run and this was the
+result and that is that is useful when you are trying to debug the problems that generate code
+so ddump splices and ddump to file
+and okay I guess that's it it's a long enough episode already anyway so if you have any any
+questions comments or feedback you can catch me by email or facebook and to do it at tech.lgpt
+or even better record your own episode and let us know what you like or hate about template
+haskell or if you are using a list you could talk about how list macros are done because
+they are bit similar but they are bit different and I personally I think list macros are much
+nice at work with but that might be because I've been working with those quite a bit more than
+with the template haskell this is the first ever template haskell I ever wrote
+so I probably should have said this in the beginning but a bird of warning if you are trying
+to figure out how template haskell works and what are the good ideas and good buttons
+this episode might not be the most trustworthy source of that information because this is the first
+template haskell code I have ever written so there might be something funny going on here
+but it should give you an idea what you can do with the template haskell it's not nothing else
+okay that's it I'd ask for a
+you've been listening to Hecker Public Radio at HeckerPublicRadio.org today's show was
+contributed by an HBR listener like yourself if you ever thought of recording a podcast then click
+on our contribute link to find out how easy it really is hosting for HBR is kindly provided
+by an honesthost.com the internet archive and our sync.net unless otherwise stated today's show
+is released under a creative commons, attribution, share like, flea dot o license

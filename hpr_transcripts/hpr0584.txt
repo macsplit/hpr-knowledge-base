@@ -1,0 +1,228 @@
+Episode: 584
+Title: HPR0584: A Little Bit of Python: 12 Global Interpreter Lock; Concurrency
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0584/hpr0584.mp3
+Transcribed: 2025-10-07 23:33:57
+
+---
+
+.
+A little bit of Python episode 12 on the global interpreter lock and concurrency.
+I'm Andrew Kushling located in Washington DC.
+I'm Michael Ford located in Northampton in the UK.
+And I'm Jesse Noller located somewhere outside of Boston.
+Our large discussion in this episode is going to be about Python's global interpreter lock,
+what it is, and some recent code changes that have been aiming at making it function better.
+So to start off, I should explain what the global interpreter lock or guild is.
+Python is implemented, sorry, I should clarify and say, see Python is implemented with one big lock.
+And the goal of this lock is to ensure that Python objects are only modified or accessed from one single thread at a time.
+At its heart, Python has a small virtual machine that is busy spinning through a loop implementing bits of bytecode.
+And the effect of the global interpreter lock is that there's only one thread of control actually running this Python bytecode at any one time.
+For a long time, the way this was implemented was by counting opcodes executed by the virtual machine.
+A thread would run a few thousand or a few hundred opcodes and then stop and yield the CPU,
+letting some other thread have a chance to run.
+People notice that this was causing problems for certain applications.
+In particular, if you have several threads that are all doing fairly CPU heavy things in pure Python code,
+you don't actually use your CPU very efficiently or you don't use multiple CPUs because you're constrained to have only one thread running in Python code at a certain time.
+And in fact, David Beasley did some work recently.
+And what he discovered was counterintuitively, if you suppose you have two threads running and they're both doing some very CPU intensive work,
+if you run them on a system with one processor, then Python does what you'd expect it to do.
+The global interpreter lock means that only one thread is active at a time, so you get your threads switching between each other.
+But then if you switch and run the same code on a system with more than one processor and you can simulate that if you've got a machine with multi-core processors,
+you can simulate this by turning your individual cores on and off.
+That suddenly the code takes dramatically longer to run when you have more than one processor active than it did if you just had one processor.
+Now, fair enough, Python isn't using more than one processor because it's not allowing more than one thread to run at the same time,
+so it really wouldn't have expected a side effect of having more processors available is that your threaded code takes a lot longer to run,
+and he looked into this and he found out that because the operating system is saying, hey, well, I've got more than one system thread,
+I've got more than one processor available, so let me try allocating each of these threads to different cores.
+So it tries to wake up the thread that doesn't have the global interpreter lock.
+This thread then says, oh, can I have the global interpreter lock and the answer is no, something else has got it, so it goes back to sleep.
+So the operating system tries to wake it up again and you end up with what he called radical thrashing where the operating system is trying to wake up these threads,
+but because of the global interpreter lock, they can't actually do anything.
+So one of the core Python developers, a French chap called Antoine Petrou, implemented an alternative system,
+so this effectively was a new gill, and you might, if you read any of the discussion around the Python global interpreter lock,
+you might hear it referred to as the new gill, and it was the first time the gill code in the core of Python had been touched for like 10 years or something,
+that used an alternative system for deciding when to wake up the, or when to hand over, hand the lock over to the threads that didn't have this particular problem.
+But it turns out that there's another corner case, another particular situation where the new gill also has problems.
+And so there currently there's a big discussion and there's some debate around how this problem can be solved and what might be done about this,
+and I think Jess is going to talk to us about that.
+Yeah, so basically what it is is Antoine went and implemented what everyone's been calling the new gill.
+And so the new gill showed radical improvement, and everyone thought everything was happy at Hunky Dory.
+Well then David Beasley turned around and actually tested some stuff, and one of the things he found is that, you know, IO bound threads were actually getting harmed by the new gill when mixed with CPU threads.
+Basically what would happen is if you've got a CPU bound thread, a little chug away, chug away, chug away, and then the new gill, which was a timer basic gill, basically, you must release the gill within this time frame.
+And what he found was IO bound threads would get starved because what would happen is the second you enter C code, the gill would be released.
+And then all of a sudden that thread, the thread running the IO bound code would immediately release the gill because it's IO bound code, it's IO code.
+And then it will it would immediately want to return or do something else. And what happened is the second and actually released the gill, some other CPU bound thread, which is, you know, greedy by definition, would actually acquire the gill and have a hold of it.
+So that IO bound thread would actually have to sit there and wait for the time out period to actually expire.
+So basically you'd have that convoy effect of, you know, all of your IO bound threads actually having worse performance in the new gill than in the old gill case.
+You know, there's a bug report. It's actually if you go to bugs.python.org forward slash issue, seven, nine, four, six, you can actually see David's original bug report in the full discussion about all the changes, the possible things that could fix it, et cetera.
+But so this was actually pretty heavily discussed at PyCon this year. And David Beasley did a fantastic, fantastic talk.
+And that's up on the the Python video. So if you get the opportunity, go and watch the video of that presentation, because it's, it's a, it's a fantastic you put together a presentation, very easy to understand, even if you're not sort of out there with all the details of the gill.
+Yeah, so David Beasley did this amazing talk at PyCon. And that spawned an open space session and a lot of a lot of people who are much smarter than I am, discussing possible fixes to the gill, especially the new gill.
+And the general consensus that came out of that room as far as I can remember in somebody else will probably send me an email correct me is that the interpreter needs to actually grow a real scheduler, not just, you know, an actual intelligent relatively fair scheduler so that we don't just beat CPU bound threads into the ground or we don't just beat IO bound threads into the ground.
+We needed something that would be saying rational and there's obviously a ton of work, you know, Lennox kernel, they've got the completely first scheduler and all these other schedulers for deciding how threads are put to sleep or woken up, you know, how the workloads are handled.
+And so that was the common consensus coming out of PyCon is we need, you know, a more mature, more robust scheduling system.
+So speaking of being mature, it's a shame that Brett isn't here because he's he's wanted to swear on this podcast for quite a while and now we have a legitimate reason for it.
+So now enter somebody named near eyes, I think I pronounced that name right earlier this week, actually posted a patch to that bug report I cited earlier and he ported the brain fuck scheduler, which is not tied to brain fuck the language, but actually tied to the guy who actually implemented it. What did you say, Michael? How was he quoted as to the
+brain fuck scheduler because he said that he must have he must be fucked in the brain to work on on this particular problem because it's very mind-bending.
+Well, yes, and actually if you read the patch, you'll understand why. So near actually uploaded a patch that ported the scheduler over and actually his initial benchmarks showed, you know, some improvement and it's it's a much more robust scheduler than what we have currently.
+Now, this does not get rid of the Gill and so there's been some and Mike's been involved in some conversations about this. What this does is it basically renames the Gill and changes it to, you know, a big mutex that everyone has to acquire.
+It changes a lot of the names of the internals and it changes how things are scheduled, but the fact of the matter is you can still only have one thread within C of L, which is basically the core evaluation loop for Python at anyone given time.
+So it doesn't get rid of the Gill, it just makes it a lot more well behaved. And so that's actually that patch that nearest put in is actually still being discussed between him and Antoine as to, you know, whether or not this is the right way to go about it, etc.
+So if you're feeling squirrely, I would try downloading the patch. It's for Pi 3K only. And I would say download the patches in in that bug, which is again, it's issue seven nine four six on bugs up Python.org.
+And download it and give it a try and definitely give the feedback to Antoine and near as to, you know, whether or not it works better worse or the same for you.
+So the whole area of scheduling algorithm seems to be something that requires a lot of tuning and tweaking. Certainly for Linux, they've had long discussions of how do we make a scheduler that works for interactive apps running on someone's desktop where you click in a window and you wanted to respond.
+And does that schedule actually work well for a server app where maybe you don't care so much about the latency, but you care about throughput.
+Oh, definitely, Andrew's definitely right. So one of the things that happened at Python when everyone was talking about growing a scheduler, you know, for every person who'd say, well, why don't we schedule things this way?
+There'd be another person that says, well, that would harm this workload. One of the things with dealing with schedulers and deciding what threads run when is that there's no one true way of doing it, right.
+You will always harm someone else with the decisions that you make. So all we can really hope is to put in something that's good for the most common case, eG single threaded operations, which most most Python applications are single threaded.
+We can put something in that does relatively well across fairly diverse spectrum of things and then export tunables, you know, little switches knobs and flabnosticators that would allow you to basically tune the guild's release and acquire cycle to your workload.
+Well, one of the interesting things about the new guild is that it does change some of those APIs. And for example, I think at the moment the system module has this check interval API, which lets you set how many op codes it go in between checks to see whether there's another thread that wants the guild.
+You remember Andrew was talking about earlier, that's how the original guild was implemented. And of course with the new guild or whatever we finally end up with.
+And that'll be in Python 3.2, by the way, and not in Python 2.7, which is just about to hit beta. This says check interval API is going to have to change because it's just not going to be relevant.
+So yeah, as Jesse says, some of the knobs that you can twiddle to tune performance are going to change.
+I think we should make it clear that one of the changes of Antoine's new guild is that it switches from switching every in op codes to a time based switch where it switches every in milliseconds or whatever.
+Oh, yeah, I thought I mentioned that. Yeah, I mean, it's the guild, the guild, the Python 2 guild is basically every 500 bytecode instructions switch.
+And Antoine switched that to a time based one, which actually introduced the convoy effect I mentioned earlier, which basically, which actually penalizes anything that uses a C extension, which includes numpy IO operations, etc.
+Basically, if you enter C code, most C, most C extensions immediately release the guild.
+And the problem is that if they immediately release the guild, some other greedy thread will grab the guild and hold on to it for that full time period, which does have the potential for the convoy effect you mentioned.
+There are lots of situations for which time based is much fairer.
+And part of the reason for that is because Python op codes are not a very good way of measuring how much time has progressed, because they effectively take an arbitrary and potentially completely different amounts of time to execute.
+I mean, if you're in a very fast loop, then op codes can take the order of microseconds to execute, whereas if you call into a regular expression, you know, I mean, a single op code could potentially take a second.
+Obviously, that's another corner case, but time based is generally much fairer than an op code switch.
+Yes, however, in Python, things aren't always what they seem to be.
+So, yeah, basically, the time based one actually penalizes anything that uses a C extension that quickly releases the guild, which is ironically C extensions that quickly release the guild is the only reason why the Python 2 implementation of the guild actually didn't bother most people, because it didn't harm them.
+The guild didn't actually penalize.
+Well, I owe down to applications as badly as CPU bound applications.
+Sure, but for example, in the case of something like NumPy, that probably releases the guild, because even after releasing the guild, it can still do its processing in its thread,
+and whilst letting another Python, because it doesn't need to go back into the the developer that core, it can carry on spinning away inside NumPy without needing the global interpreter lock.
+Oh, I don't think I don't think for NumPy, that would be a problem.
+But for IO bound stuff, where you need, when a new packet comes in, you want to be able to respond to it very quickly and don't want to have to wait for time on.
+I mean, the basic point is that basically for a C extension or IO bound extension, they get penalized if they're called and they quickly release the guild, and then they need it back to basically say, you know, I either have information or I don't have information.
+Basically, if they return very, very, very, very quickly, they're going to get penalized by the scheduler.
+And so this, I mean, this probably won't bother NumPy applications as much as it would IO bound applications, but basically if you make a NumPy call that could return in, you know, a nanosecond, then you're going to get penalized for the full time timer of the time based guild.
+So I mean, it's obviously an edge case for things like NumPy workloads, but for IO bound workloads, that is actually fairly common.
+So the good news is that there are lots of very clever people who are looking at this, and hopefully with the, with this scheduler, and this, this scheduler patch really is the first time that we've looked at getting a real scheduler rather than the standards of mutex operations that we've had up until now.
+Obviously, as Jesse has said, there's still going to be some corner cases, perhaps having a way of tuning the tuning the way this behaves is going to be essential.
+But in the general case and for the common cases, it's going to behave a lot better.
+And in particular, compared to the old guild, where running any multi-threaded code on a multi-core system would really impact the performance of your Python code.
+It's going to be a great improvement, but you're going to have to switch to Python 3 to see that improvement.
+Yeah, I just, so one thing that's always kind of bothered me about everything that's been being discussed is, yes, if you are running IO bound threads on a multi-core machine, there is a penalty, right?
+It doesn't go as fast as you mean.
+Do you mean a CPU bound threads?
+No, no, no, no, no.
+So CPU bound threads on a multi-core machine, you see no benefit of running in multiple threads, right?
+It actually runs, it's slow.
+It's slower.
+However, you should be using processes if you can.
+Yes.
+But let me point out that for IO bound applications, using threads on multi-core machines, and this is the one thing that I think people forget time and time again in this entire discussion is, yes.
+If you have IO bound threads on a multi-core machine and you run them in Python, they do not run as quickly as you think they should.
+However, you will still see a speed up.
+They don't run efficiently and there are problems, and David has done an amazing amount of work pointing out these problems.
+But one of the things that I heard people walking away with the talk at PyCon, they were walking away saying basically, there's no reason to use IO bound threads in Python, right?
+They'll never work right, they'll never get a speed gain.
+No, benchmark your application, right?
+Sit there and spin up, you know, 20 or 30, you know, IO bound threads, and compare that to the single threaded version of IO bound threads, and you'll actually see it, you'll actually see a performance improvement.
+In Python 2, threads aren't completely useless. They don't work as well as they need to, or they should in most of our minds, but they're not completely useless.
+And threads are useful for a lot of things, so we can't just say go off and use processes exclusively.
+Yeah, and if I can just add that there's, there's a very simple way around the problem of the global interpreter lock it in Python.
+If you want to use threading and you want to use threading for CPU bound operations or for IO bound operations, or for whatever.
+And you want to do that without the problems of the global interpreter lock, the easiest way around that is to switch to using gython or ion python, both of which have true free threaded currency without the global interpreter lock.
+And both are complete implementations of Python and available now.
+I think one of the Python developer groups fears about introducing a thread scheduler was that it would be really complicated code.
+And it would be something that you can tweak endlessly without ever having a clear idea of whether you're improving things for actual use or not.
+We'd end up re-implementing the operating system scheduler.
+One nice thing about nearest proposed BFS scheduler is I think it's conceptually very simple, at least from scanning through the patch.
+There's 150 lines of code, is that right?
+I could not tell you.
+That's sort of order of magnitude anyway.
+About right, yes.
+And unfortunately the bug doesn't have a detailed explanation of the logic underlying it, but I think the way it works is that it's keeping track of a deadline time for each thread.
+It tries to run each thread so that it executes before it hits its deadline.
+And if a thread misses its deadline or if a set of threads misses their deadlines, those threads are running in feefo order.
+So they're basically just sorted by deadline order.
+And the deadline is then updated in different ways depending on whether it's a CPU bound thread and it exhausted its slice of time or if it exited its slice of time early.
+It would be very nice if someone were to write up an actual TL explanation of how this patch schedules.
+But I think that's how it works from a rough scan.
+Yeah, a simplified version.
+Actually, if you search for a B is in baby, Fs scheduler, and you do a quick Google search, the first hit is actually says BFS patch.
+And it actually links to the BFS fact, which is actually a pretty good read, basically the why the where for who wrote it, how the scheduling works.
+It's a short read, but it's probably dense.
+If this patch actually goes in, I think that having a little chunk of text on docs.python.org is going to be critical just so that people understand what it is and how it works.
+I actually didn't find the BFS FAQ really explained how it works.
+It talks about tuning parameters and it talks about his patch plans and certain schedule of classes it supports, but I didn't figure it out from that fact.
+Yeah, like I said, we're going to need up on docs.python.org.
+We're going to definitely need a.
+We're going to need something with diagrams just to kind of explain it.
+I had to do some coding that really needed diagrams this weekend and my lack of ability to draw.
+And especially when you're working remotely, that became a real problem.
+Oh, here we go. I've actually got the document that explains the scheduling.
+If you're interested in finding out exactly how the BFS scheduler works, you know, kind of the internals of it.
+Do a Google search for sked, which is s, c, h, e, d, dash, capital B, capital F, capital S dot t, x, t.
+So that's sked dash, BFS dot text.
+The first hit on Google is the white, the text document that actually describes how the scheduler works and some of the tuneables, et cetera.
+And we should note this describes the Linux BFS scheduler, which is much more complicated than the Python one, which is taking inspiration from the Linux BFS.
+Yes, it's a rough port. But if you're interested in like the history of the BFS and where BFS came from, go take a look at this.
+This doesn't, like Andrew said, this doesn't exactly explain how the Python implementation works.
+That's going to require a little document up on docs.python.org, but it'll get you part of the way there.
+It looks promising, but I'm certain it will require further work and experimentation.
+And Python 3.2 itself is looking to be going to beta towards the end of the year.
+So there's plenty of time to work this out. Unfortunately, the job is easier for Python 3 than it is for Python 2.
+Still supports the threading models are quite now quite old and obscure platforms, which means that it's very unlikely that this scheduler is going to be backported by the core developers to run on Python 2.
+Because the platforms that Python 2 supports don't all have the threading primitives that are needed.
+There's this new PEP, it's targeted by 3K. It's PEP 3148. And it's just called Futures. Execute computations asynchronously.
+This is put together by Brian Quinlin. And what it is is a little small amount of syntactic sugar around building thread pools or process pools and then executing functions and other bits of code within it concurrently or asynchronously.
+If you take a look at the PEP, there's not a whole lot of bulk to it because it's not big. The actual implementation of the code is actually pretty small.
+And what it does is it gives you a little thing called an executor that allows you to say so with futures dot red pool executor max workers is equal to five as executor, you now have a handle to that that process of that thread pool.
+And you can then pass things into that thread pool that will return you a future. And that future contains that future result basically says, is it done? What's the result? What's its state? And you can call methods like cancel on that, et cetera.
+Fundamentally, this isn't, you know, groundbreaking groundbreaking computer science. It's just a little bit of syntactic sugar for when you want to execute blocks of code asynchronously, right? You don't care about the result.
+Having the result now, you just want to have the result sometime in the future, eG futures. It was actually modeled after the Java, you know, concurrent futures package, which is actually pretty popular and and in widespread use.
+So what's the state of this pet Jesse has this been accepted? Is it likely to go into go in and will it be Python 3.2 or 3.3?
+So that's kind of up in the air. Brian's actually been on vacation. It was proposed to Python Dev and there was a lot of back and forth about, you know, should it be called most of the arguing was actually about the name.
+People argued, you know, it shouldn't be called futures. Other people said, like myself said, listen, other languages already called this thing, this concept of things to be returned in the future futures. Let's just leave the name alone.
+So once Brian's back from being on vacation and we iron out one or two windows isms or window problem, a windows problems with it. I actually think it could probably hit the next version of Python 3, which is 312, I think.
+3.2. Yes, sorry. So yes, so 3.2. One thing to note though, I believe it's going to actually go into namespace, which I've proposed, which is concurrent.
+So basically, you'd be able to say from concurrent import futures. My, my little personal goal with this is I'd like to see Python grow, I can current package.
+You could say from concurrent import pool or from concurrent import futures or from concurrent, you know, import X, where X is basically syntactic sugar over common patterns and operations when dealing with concurrent concurrent code.
+So there might be a thread pool in there. There might be there would be futures. There might be some things from multi processing like the map and apply async and other things pushed into this concurrent package and remove from the multi processing module.
+I think this is this would provide a nice foundation moving forward for our people trying to get started with concurrency and parallel constructs within Python.
+When you say it was inspired by Java Util concurrent, are the actual class and method names inspired by Java or just sort of the concept and general organization of the package?
+Well, quoting directly from the pet, it was heavily influenced by Java's Java Util concurrent package.
+The conceptual basis of the module as in Java is the future class, which represents the progress and result of an asynchronous computation.
+So basically what that says is Java has this concept of a future, which is also been called something called a promise, which is a result is a thing which has not occurred, but you are promised to have a result for in the future.
+So that's basically where the inspiration has and Java actually has something called Java Util concurrent future.
+So if anyone, if anyone, if anyone feels very strongly about futures and you know, they hate the implementation, once again, it's pep 3148.
+I would recommend you get involved on Python dev. There's a discussion that's been going on for a little while.
+I encourage people to download the reference implementation, which is actually pretty complete.
+Give it a try. Basically what Brian has done is he hasn't made it so that you can just ignore the difference between threads and processes.
+He's just given its syntactic sugar, so you don't have to think about actually implementing the pools and the futures and kind of managing startup and shutdown yourself.
+And needing a pool of threads or pool of processes is a very common pattern.
+Oh, it's it's it's it's ridiculously common, ridiculously common.
+I mean, I think the big takeaway here is that concurrent programming and how you handle computationally expensive things on on multi core processes is just becoming ever more and more important.
+And Python isn't ignoring this problem. It's trying to adapt and grow new APIs and new solutions to these difficult problems.
+Oh, and in one of the things that I've been kind of saying, and I said, I said quite a bit at by come this year, which is in the in the land of concurrency and parallel computing, if Python has an original thought, we're doing it wrong.
+And really it's there's a lot of languages. There's a lot of comp computer science out there.
+There's a lot of constructs that come from other languages that Python should adopt over time and you know, do it pathonically for some measurement of pathonically.
+But do it pathonically and pull it into the language. So I don't want to see us, you know, going off and blazing new trails and making up new stuff.
+I want us to see, you know, time, time tested and proven constructs inside of the language.
+I'm used from the world of alternative implementations and I follow the iron Python world quite closely. I was doing full time development with iron Python for a few years.
+And I've been working in unit test recently. And one of the things I've just added is support for better handling of control CC.
+You can make out of your test suites, but it'll handle that elegantly and wait for the current test to end and then report all of the tests that run so far switched on with the command line option.
+And that uses the signal module and also the week reference module for the first time I'd use that in Python, which I found very interesting, but which is utterly irrelevant to what I'm talking about.
+But trying it on iron Python didn't work because they don't have the signal module. So I emailed the iron Python lesson said, well, can we have the signal module please.
+And they said, oh, we've just done that. It'll be coming out soon. And the very next commit was the iron Python signal module.
+Just like that, that'll actually go into iron Python 2.7, which isn't going to the next release is going to be iron Python 2.6.1, which despite being a minor point release has some really interesting stuff, particularly performance improvements around startup time and import time improvements, which is great because iron Python is is quite a bit slower at importing stuff than see them see both them.
+But they've also found a new way of getting a lot better compatibility with the Python Unicode support. Now iron Python like Python 3 has all Unicode strings, which which makes string handling much nicer, but it does lead to compatibility problems where you're running Python frameworks or applications like Django.
+And they found a much better way of supporting Unicode in iron Python. And that's going to be in iron Python 2.6.1, which is coming out shortly.
+So some other news in the Python world. Obviously, we're not the only Python podcast. There is out there. A podcast that's been going for a long time.
+And I'm sure most of you have heard of because it's a very good podcast is the Python 4.1 podcast series. And that's a gentleman called Ron Stevens, but we've also just had news of a new podcast starting up. So we've got some competition.
+And this is from Python import podcast and their URL is from python import podcast.com. They've actually recorded their first episode now. But at the time of us recording this session, it's not available to listen to that. They say it will be released on the 1st of April, although they promise it's not an April's full strip.
+So I encourage you all to go and listen to it. Give them feedback. Tell them how good it is, but they're not as good as us.
+Although this is not a competition. And the fact we're involved in that, David, Starnick, Mike, Croute, and somebody else, Chris Miller.
+They're the three folk collaborating in from Python import podcast. I'm looking forward to hearing it.
+This has been a little bit of Python episode 12 on the global interpreter lock and concurrency.
+Please send your comments and suggestions to the email address all at bitofpython.com.
+Our theme is track 11 from the Headroom Project's album, Haifa, available on the Magnetune label.
+Thank you for listening to Haifa Public Radio.
+HPR is sponsored by Carol.net, so head on over to C-A-R-O.N-E-T for all of us in need.
+Thank you.

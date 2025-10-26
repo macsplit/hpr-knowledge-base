@@ -1,0 +1,744 @@
+Episode: 1291
+Title: HPR1291: Parsing an ISO8601 formatted duration field with Perl
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1291/hpr1291.mp3
+Transcribed: 2025-10-17 23:06:52
+
+---
+
+Hi everybody, my name is Ken Thalam and I'm joined by Dave Morris and we're going to
+do a joint episode tonight. How are you Dave? I can, I'm good, thank you. It's traditional
+that we do some playful banter, so let's do playful banter. Okay, enough of that. That
+was it. It's just hot and I have all the windows open so if you're here. Yeah, yes, pretty warm
+here. Even for Edinburgh, it's, it's pretty amazing. Okay, we want to tackle the most boring
+of topics. Well, to be honest, we're in the middle of the winter drought or the summer
+drought or winter drought here in Australia. Here in HPR, there are no shells and I want
+to ask Dave a load of questions about a pearl script that he has written for me and
+Dave, you've been so kind as to a writer script and be come on to talk to me about it. Okay,
+so parse 8601. First of all, let's find out what 8601 is. It's an ISO 8601 and it is
+a date format and if you go to xkcd forward slash 1179 link in the show notes, you will
+find a humorous cartoon depicting that all dates should be 8601. And basically what
+it is is year-two-digit month, four-digit year-two-digit month-two-digit day-of-month
+day-matter-t hour-two-digit-hour colon, two-digit-minus colon, two-digit-second. More or less,
+there are summer abbreviations that you can do and there will also be a link in the show
+notes to a two-day specification for that and also for the Wikipedia page on that. So that's
+the first thing. Any comments on that, Dave? No, no, no, the only comment I had was I've already
+started on some show notes, so the definition of the two definitions of the spec we're
+talking about tonight are in that. That's cool. Boss, that is the date format which everybody
+should be using and ironically enough, as I look in your paroscrypt, Dave, more, pointing
+at you, you are not using ISO 8601. I know, I wish to submit a patch. I'm actually, okay,
+I'll give you my excuses now. The way that I write post scripts, I use a Vim plug-in, which is
+whose name I've forgotten just for a moment, it's called some pull thingy. And it has the capability
+of pointing at the field and going click or talking in a bunch of funny characters and it will
+then update the date. So I keep the created date and the revision date updated by that means,
+and it does a more human legible but less standard format in there. So maybe I should nag the
+the creator of this thing, say, how about we have a different date form? Actually, I'm
+to think of it, there may well be a way of fiddling that under the configuration file. So,
+not look to that yet. Yes, the point I can ask, and this highlights exactly the issue that I have
+with any other date format, other than 8601, is that we have 0407 2013 is when I was created on.
+And it's somebody from the states looking at that, we'll go, okay, that's the 7th of March,
+March, no April. No, April, yes. Yeah. So if you put the field away round for a start,
+everybody knows all this is a four-digit year, therefore it's ISO, it's 601.
+Oh, I do understand the, whenever you're doing anything machine readable, then definitely 8601
+is the way to go. Also, maybe a little bit of debate when it comes to human readable.
+No, no, if human readable, I dismiss that argument. If people start using that format,
+it's completely within a week or two, you're completely converted.
+It's, and the right sense, it's the year, month, day. Okay, as I read it, I have the days on the
+bottom right hand corner of my PC, and that's the form up there. It gets very, very easy to read.
+Plus, it also means if you're saving files or something, you can sort them by days without having
+that. Oh, absolutely, yes. Yes, yes. Yes, yes. Yes, I have certainly done this for many years.
+Yes. Okay, but that is besides the point. There is a, the such a thing, that is the format for the
+days, but there's such a thing as a duration, and that is also covered by the same specification,
+and that duration follows slightly different standard. It kind of works in the same way,
+but it is missing. It starts, first of all, with the letter P, and I believe it originally
+started meaning period, but now it's just a start identifier. Followed by zero or more years,
+zero or more months, zero or more weeks, zero or more days, followed by the T for time designator
+if it's there, followed by zero more hours, zero more minutes, zero more seconds. Anything you want
+to say about that? The week's thing I'm not sure about, where did you get that from? That's
+the IS from the Wikipedia page. Yeah, yeah. I saw it in the Wikipedia reference, but not in what I
+took to be the original specification of the thing. So whether the original has been embellished a bit
+to include weeks, I don't know. Do you know anything more about it? I think what has happened
+here is that the ISL standard organization, being an international standard body charge
+hardcore money for their specs. So therefore, these specs in order to use them, you need to
+purchase them. And they're very, very, very expensive. And what they do, smart as they are, is they,
+if you buy one, then they will reference four others in this. And then the one that you actually
+looking for might be four deep down. And we're not talking cheap to you know, there are six or
+700 euros for a, for one of these specs. And what you were looking at was the W3C consortium
+version, which is publicly available. And I think for all intents and purposes, that's
+closest thing we need to base it on because I think they also cover the XML specification as well.
+So everything goes back to that and then they go back to the ISO. It's excellent. But that
+particular one didn't seem to include a weak spec that I could see anyway. Personally,
+I don't like the idea of weeks anyway because it's real. I don't like the idea of months either
+to be brutally honest with you. Well, a week is a more clear definition than a month.
+It would be yes. A week would be more clear as well. There's a lot of wobbliness in this,
+this whole business of date specs. I mean, duration specs because you know, this is a month long,
+but which month? Yeah, exactly. To the year long, but which year? No, it's a leap year or not.
+And it's all rather messy. So what I've seen myself in an application for this, which has been,
+in my experience, people tend to use just multiples of days. So if they want to say a year,
+they'll say 365 days. So many hours, so many minutes, so many seconds to avoid that
+disambiguity, is that a word? Ambiguity, I would imagine. Yes. Yes. Yes. Turn that upside down.
+And you avoid the ambiguity of that. They explicitly do it. However, if you're writing
+specifications yourself at home and want to make sure that people are using this format,
+duration format, you should also highlight in your documentation that you are forbidding the use
+of month and possibly years over, possibly weeks as well. Yeah. Yeah. Okay. Okay. Yeah. Days, I think
+I've put some comments in the script that I've written to that general effect already. So
+just for the future readers to ponder. Yes. If anybody's interested enough to read it. Good.
+Anyway, so you have a plural script. Tell us about plural, what it is. Well, Paul's a wonderful
+language, which the origin of which I can't really remember. I'm afraid, but it goes back quite a
+long way. And it is a language which was brought together from the ideas that already existed in
+the Unix operating system. So the author looked at things like grab and awk and said and thought,
+oh, it would be nice if you have the language that incorporated them all. And he created
+Paul. And there it was. So it's a strange, a very warm yes indeed. It was a linguist, which is
+an interesting position to start from. It has its, guess you call them strong advantages.
+And others would call them idiosyncrasies, which have come about as a consequence of
+the origins from a linguist. But it does explain a lot actually. And it kind of helps you
+to remember it as you're learning. If you know that to start off, if you don't, it's
+you'll be getting ahead against the law. Well, it's, yes. Anyway, that's that's Perlina in a very
+small nutshell, which is actually a book. Why? That's probably Randall. Randall sure. This is
+got his finger in there somewhere, I'm not sure. But yes. So it's the fact that I would like to
+think that the fact that the the O'Reilly books use animal symbols on the front, animal logos
+on the front. And the pearl one tends to be a camel. And a camel is traditionally an animal
+that was created by committee. It gives you some indication of what you're in for when it comes
+to Perl. However, Perl is a wonderful language and it's very, very powerful. Many people say,
+oh, I hate Perl because every Perl script I ever look at is a mess and I can't make
+head or toe of it. And but the same thing could apply to any language. I've seen
+the many. Okay, any not, not any, but many. I've seen some pretty dire C programs and some appalling
+Pascal programs and et cetera, et cetera. Python, perhaps, there's, they're more
+trained. They're required. Yeah, yeah. But you know, it's my point really is that it's the writer
+who you have to complain to rather than the language. Yes. And this is actually why we're having
+this discussion. But before you go, before we go further, I actually want to recommend a,
+if you're lobbed with some Perl scripts or have to do some Perl work yourself and want to get
+off the ground pretty quick, I found Sam's teacher self Perl in 24 hours while third edition by
+Clinton Pierce to be quite a very easy read just covers the basics and goes, doesn't go too deep
+or try to be too smarmy and smart as certain books do. It's very down-to-earth and
+nice examples, but that's a by-the-by. Good, good. But another hint perhaps is if you are
+able to and you're allowed to, feeding the script through the Perl tidy utility is a damn good
+thing to do because it takes it and formats it in a standardized style and makes it look a lot
+prettier and more readable. I always do with mine. Okay, I fear greatly what would happen
+what was that? We have somebody, somebody just joined the channel.
+I'm just going to mute them if that's okay, sorry plumber user, but you're making
+recording a show at the moment. So yes, but it's yeah, go on. You're going to deny my
+recommendation of using the entirety, perhaps? No, no, not at all. I just very worried about what
+would happen if I ran through some of my scripts. You see, I labored under the illusion that my
+my Perl food was improving, but then I asked Dave here for a problem with some regular
+expressions to do this ISO 8601 duration thing and then I realized how far from that goal I have
+drifted. So I want to walk through your script and don't worry, I know everybody, this is relatively
+short scripts, it won't be that painful. And hey, if it is that painful, the reason you're listening
+to this show is because you didn't sit down on the mic and record the show and send it in. Yeah,
+so don't complain to us. Thank you very much. Anyway, Dave, your script starts with hash
+exclamation mark slash user bin Perl. I think we get that, bash scripts, the first line defines
+the bash script. Now, then what you have is 28 lines of comments, which are bullet. The file,
+what is called the usage, what is called the description options, some notes about just
+author and copyright and stuff. So tell me, do you start off with that first or do you,
+where does that come? Is that the last thing you do or the first thing you do?
+Firstly, first thing, because I use this Perl plugin, which is completely forgotten
+number three. Oh, Perl support, it's called. I did talk about my episode about the in plug-ins.
+It's a simple matter to simply open up, open a window and say,
+bung the standard template in there and for a program. And you get a script template like this,
+comment template like this, I mean, and another thing is if you wish, because you can modify
+the template to your own desires. Yeah, okay, yeah, perfect. And you, yeah, but you start off
+them before how knowing what you're going to code and not just sit down and try and hack something
+like I do. Well, okay, the real answer is at the point, point before I actually sit down with
+an editor, I would probably try writing some stuff on the command line, because Perl can be
+involved from the command line. If you type at the command line, Perl's based minus E and then
+open quote, single quote, preferably, the stuff you type between the single quotes is a little
+Perl script. So if you're playing around with experimenting with the regular expressions, which
+are the nastiest things to prepare, it's often a brilliant thing to do just to try out your ideas
+through that. That means, you know, with me, I get you. So, for example, I did, when I was
+designing the regular expression here, I did that using the Perl minus E function and then simply
+put an example of a duration time spec into a variable and through it at the regular expression
+to see what happened. So it was a fair bit of 10, 15 minutes of playing around like that before,
+before I actually resorted to editing something. Okay, so then everything else is just a wrapper
+around the regular expression that you've written. Effectively, yes, yes. I just heed the regular
+expression into the file and then start structuring some Perl around it and played with it from there.
+Now, we're as far as line, oops, line 30, which is use 50101. Does that mean you must use that
+version of Perl 5010? That means that one will, that one will be greater. Okay. Yeah, that one will
+be higher. So then the use strict and use warnings, I think those are related to stopping you
+do shortcuts. Yes, you have to declare variables, strict means declare or variables before you use them.
+Perl is very, very easy going about these things. I hate that personally, I much sooner declare
+everything, be rigorous about it. And the warnings just, just enables the warning level.
+Yeah, sorry. That's part of the standard template that I just used to create, create
+Perl scripts. That's what it is. I suspected that as obviously it's a pure and wordable location.
+I'm surprised you don't use dumper as all are, is your Perl food way beyond the user?
+Well, I wouldn't, I don't want to load modules into a script that I'm not going to use.
+If I was going to use it, yes, but I mean, I could add it as part of the template and comment it out,
+but I don't really want the script to be loading stuff that it doesn't need.
+If a plan, if a plan to use it for debugging, then yes, but not otherwise.
+Now, we need to explain to people here, there's a whole goal of additional modules that you can
+load into Perl to basically do everything you want. And there's a site out there called CPAN,
+which contains all these modules. So rather than reinventing the wheel, I think the general
+rule of thumb is you should, you should not reinvent the wheel. You should go to CPAN and get
+your stuff, bring it in and reuse that. Did I get that operator?
+You did indeed, yes, it's one of the great strengths of Perl. There is a huge archive of
+libraries modules that you can include in a script. And I would be extremely surprised if you
+couldn't find anything that you need already done out there. Yes, that's where you declare them
+at the beginning of your script. So we're at line 34, so you're going to say my dollar duration,
+and the dollar duration, the dollar stands for scalar. Scalar variable, yes, is like a,
+and he, Larry Wall picked the dollar because it looked like an S, so you would know it was a
+scalar. Did you know that? Yes, and he picked an S for an array because it has, it looks like an
+S, an A sign for array, and he picked a percent for a hash because it looks a bit like a H.
+I didn't know all of those. No, no, no. And that's usually as far as I get into Perl books,
+because there's also another excellent cartoon, you know, like that I've seen for webcomics,
+where it goes. Here are two ducks. Add one duck is three ducks. And then using the same logic,
+logarithmic for n over x, y, z, you know, really complicated algorithm. The note underneath is,
+this is, this is how most computer books are written. The, you're really simple first two paragraphs,
+and then the dumps dies really deeply in, which is why you sound as teachers at Perl,
+it's actually quite good. But only I digress. It's not part of, but I'm not called it.
+It's true. What you said is true, though. Okay, so you just have some other stuff. My sign,
+which is a plus or minus, or which, yeah, I guess you're going to do that. Now, I want to go
+onto your clearing an array here of labels. Yep. And you use in this QW thing, which I have not used
+ever before, believe it or not, seen it used. So years, months, days, hours, minutes, seconds,
+and correct me from wrong. What the QW does is puts quotes, comma, quotes, comma, quotes, comma,
+quotes, comma, comma. Why have I not used that before? Am I completely thick?
+It's a, it's a wonderful shortcut. It's definitely something to be, to be used. I'd recommend
+you do so. And, but you see, I think what happens with me is I start off coding without any,
+just rambling, you know, pick a piece of code here or hack it there, or I need another variable.
+I'll put it up, quotes, comma, quotes now. And then I need another one. I'll pick it up and just
+put it up. You know, it starts off as being one. And then it expands. Yeah, I know. What you see
+with my coding is I'm incredibly finicky and the control freak when it comes to this sort of stuff.
+So I have to keep going over it and tidy it up and make it prettier. So you've seen the result
+of much purification here. Oh, so it's worth it though, because when you come back and look at it
+later on, it's clearer and cleaner. And then you can probably hack lumps out of it and stick it
+in another script easily. And there you are. You've got the result of your previous tidying already
+appear to it. Yeah. And then actually this is, this is specifically really why I wanted to do
+this show. It's not about necessarily about pearl. It's about making pearl, you know, essentially this
+is a, a beautiful script. I spend quite a lot of the last few weeks looking at not beautiful
+scripts because I've written myself. And then Dave sent this thing over to me and I nearly was
+I was I was very impressed and very happy to get it because I've answered my question when I was
+actually nearly crying. We got the how little time I took you to write it and how pretty and
+useful it was at the end. Yeah, yeah, well, there you go. Let's see. We'll move on. So what
+what you're doing is you're defining the labels and you're defining the fields which is going to
+be interesting in a minute. And something new I see in this version is you're defining a hash
+of ISO duration. It's it's not for any great nothing very important. It's merely me messing around
+and showing how it might be nice to stick all this into a hash with labels on it. And if you look
+a bit later on there's an example of how it's how it's done. So I was there they're just I was
+going to write some notes around this and say here's how you do this if you ever need to do it.
+I prefer using hashes over over I will we'll come to we'll come to this. I just need to remember
+to to talk about this. Okay, so then we go down line 30 skipping over the commons which are
+really useful. We've got 35 and 36 now you're going to do two regular expressions here. And we're
+specifically even though the reason for this script is that I was having trouble with this. Well
+I consider a fairly complex regular expression. I don't know if you degree or not. It's moderately so
+taken while he's down. Well you know you're if you if you delve into regular expression you'll find
+some some that will just completely blow your head off. Yes you will. So this is this once you get
+to it. It's actually not that hard to do. Okay, so correct me if I'm wrong the first one you're
+checking for an integer which is slash d plus. So that is I need to just with zero or more one or
+more. There has to be one or more one of that slash d means digit and the plus that follows it
+means one or more. Okay hold on to that talk now because later on I need to check for a digit
+with the years in front of it. Okay, so and you're looking for a fraction which you define as
+any square bracket zero dash nine so square bracket which means any number zero to nine. Why not
+use the slash d then there? No particular reason actually. No particular reason why not. I'm not I
+think that I know what it was. I was actually that was that was me just being being a bit silly
+there because I was actually going to include the decimal point within the within square brackets.
+So not hyphen nine will stop would mean it's quite happy to accept the digits not to nine in
+that full stop. And then I thought oh no actually that's not very good because we need there to be
+only one decimal point where that would have allowed any number of them. So so I changed it but
+I didn't yeah that that should be tidy. That's Mr. a tidying pass. One is only human of course.
+Okay so you guys what we have now in mind because I've cracked us from people with
+men's profile is slash D plus so meaning one or more digits. And then we have parentheses open
+parentheses question mark colon or escape. So like backslash period or full stop backslash D plus
+close parentheses question mark. Okay so digits plus and then in the in between the two brackets
+is take that store that as a variable later yes. In between the parentheses use that as a variable.
+No no no. Here's the issue here when you put parentheses around an regular expression or a part
+of a regular expression what that means is you want to capture the stuff that matches that bit
+of the regular expression. Yes. So something something when the expression is fired up we'll grab
+piece of the text that's fed to it. But there are times when you want to enclose things and then
+apply some function to them and you don't want your brackets to be capturing so they're called.
+Oh yes. This this expression open parentheses question mark colon followed by stuff and the
+close parentheses means I want you to bracket these so that they're a unit but not use the capturing
+process. Yeah. And the reason for that is because in this particular expression we want to say
+we're looking for a digit one or more digits followed by a full stop followed by one or more
+digits or just a straight digit. I mean the decimal here could either be something with a decimal
+point and some following digits or not. So we want to put a put the the non capturing parentheses
+around the dot other digits and the question mark after it means that it's option. So it applies
+to that whole bracketed expression. So so the reason you put it in brackets in the first place
+right assuming that is removing this capturing thing which was what I was referring to put
+them into a variable. So it says then the whole thing is slash D plus so I mean one digit plus
+so that'd be the before the fraction part. And then they then it just says these three characters
+open brackets question mark colon is just to say this is evaluate this is one unit.
+Yes exactly. And then this escape dot means don't use the dot as a this or more characters
+which is it as a regular dot followed by a slash D which is digits where there has to be one.
+Close the bracket. Close the question. Close the brackets meaning that evaluation. So what you're
+saying in there is a dot with one or more digits would be required if I didn't have the final
+question mark at the end. Yes. Yes. Okay. It allows that to be optional. Now people driving along
+on the law more perhaps brain has just blown up because because of this we strongly advise that
+you follow along with this in fact we should put this in the as the title of the show.
+Well see now what I've done in the show notes that I've started drafting right yeah but
+well two things two things to say here. Number one is the script itself is available for
+for download it will it's up on Gatorius and the URL of it is in the in the show notes right so
+you can grab your own copy of it when you sit and gaze at it while you're listening to the show
+if you want to follow this through. The other thing I've done is in the show notes I've actually
+started on a little tutorial about how to how to knit a regular expression or what I do to knit
+a regular expression anyway. So I'm trying to sort of explain step by step how I arrived at the
+expression that's going to follow. How did I do it? Well a simple way to approach this sort of
+stuff I always find is don't get too bogged down in the detail right we've got a thing here where
+you've got to have a P starting expression then it's followed by one or more digits and a Y
+but maybe not you don't have to put that in if all you want to do is express the thing in days
+then you can put P number D and that will express the number of days you can emit that bit entirely
+and just put the T portion and then number of hours or minutes or second so all of these things
+are optional and as you start to think of all the possible ways of expressing that your brain
+explodes so yes the way I did it was simply to write a simple regular expression that says
+taking the an example of one of these duration things with all of the fields filled in how do you
+write an expression to match it so my expression just went P some numbers Y P some number
+followed by some numbers M etc yeah it's hard to express in words it's why I've tried to write
+some notes about it and then I went over that okay well from there I need to capture bits of it
+because as it was it wasn't being captured so put some brackets around the bits that want captured
+and then some of these bits are optional so put some of these special non-capturing brackets
+around that lot and put a question mark on the end to make them optional and and so on and so
+forth so gradually it was built up layer by layer you with me I am completely with you so say we
+were to do this with something simpler like an email address and you would first of all start with
+writing jewel as example.com try and capture that and then you might approach that say it's a
+string of letters followed by an ad followed by a string of letters but hang on no it's more than
+letters so stick some numbers in there as well in the in the in the brackets that you're using to
+match it say and then you say oh no hang on you can also have hyphens in there so bang them in as
+well oh you can also have dots in there put them in can you have a plus is that valid you're not
+yes it is valid but by some people's definitions of mail addresses and so on put what was that
+if you can't use that a lot yes yes it's valid it's valid but a lot of miles servers don't
+don't accept it it used to be a standard I used to use it a lot because it's a great way of
+putting variance on your address it so if you sign up to a mailing list you put plus
+something rather on the end of your your normal address and then you know it's come from the
+mailing list and you can filter it easily on the basis of that but some mail service Microsoft
+particularly mail mail just exchange does not like it I think you have to do stuff to switch it on
+okay that's a buy the buy on you yeah what you're seeing is we take the complicated thing we break
+it down start with something and then work up build your way up let well let me express it a
+different way when I was when I was learning to to to write programs and I was actually teaching
+I was running an evening class at an education evening class many years ago in Pascal and there
+was a book that had come out at that time written by a couple of guys at Glasgow University
+Computers Science Department and they were using the technique or stepwise refinement so you start
+with your specification possibly on a bit of paper in a simple possible form you know program read
+some data do some stuff with it writes write and answer that's your program then you look at each
+piece of it and you say well what does that actually mean and you then expand it into maybe now you
+can actually start writing some statements in your in your language and and then you take each each
+non expanded piece of that and and refine that so you're going through it step by step refining
+it layer by layer it's it's it's not a it's not a well regarded methodology these days but I think
+it should be personally because it's a method I use but yeah I end up a crap called and you end up
+with beautiful calls I guess I'm missing a step somewhere along well maybe maybe I polish more I
+don't know yeah that could be it all right um let's continue on with the so you've defined two
+variables which are actually what they how to do a regular expression on the integer and on a
+fraction one thing I should say hold on before you move on yep that these things are enclosed in
+qr brackets qr means this is this another thing like qw but it means this is a regular expression
+what it does is it causes the burl interpreter to compile the regular expression at that point in
+time but you can then go and uh bandy this thing around and use it in other other contexts um we
+could get into what's compiler what's a compiled regular expression and what's not but uh I'm not
+even sure I could answer that very well uh moment but uh uh let's leave it as a marker that that's
+that's quite a powerful feature of the poem and that's why I've used it there okay cool uh of course
+that fact completely uh went over my head uh there you go there you go so now you have the
+real regular expression where you're bringing in all of these together sub parts of regular
+expressions um you're wrapping this in the qr which obviously is a compiled
+again you might wonder why the hell did I put it there because the regular expression is to be
+used in an if statement because we're gonna check things against you know does it match this
+regular expression or not well the reason is because if you put it in the if expression it looks
+absolutely nightmarish I think I really like to generate these things as a compiled
+statements somewhere else where I can you know fiddle about with it and make it look pretty
+and then can use it later on in the and possibly more than once um elsewhere in the in the script
+yes it does actually look and actually that explains uh those explains one of the questions
+because you have uh while we we'll get to it later on um how you're using it how you were able to
+avoid using it um okay cool no that explains that okay now within this one you have open brackets
+question mark x closed bracket what's that hello make expressions have the capability of
+lots of extra gobbins which is which is um which is not available in many other regular
+expression environments um uh which you can put within the expression so they're sort of
+pragmas and uh an extensions and so forth um simpler regular expressions you can simply put
+normally put slashes around your your regular expression um so slash some some expression slash
+followed can be followed by modifier so the very there are a lot of modifiers one of them is i
+which means all of that regular expression don't care about the case of anything you match in it
+uh the one that i'm using here is x which means the regular expression can be formatted with spaces
+in it comments in it laid out with new lines in it and look generally made to look prettier you
+you can either stick that at the end after the close um curly bracket or you can stick it at the front
+in this format using the the the fancier version i love this because this is this i think this
+this regular expression would actually give somebody a heart attack if they if they looked at it is
+now if it was all if it was all on one line yes it would give you it would definitely you would have
+a hell of a job to work out where one sub expression began and and the next ended and so forth
+so for those not following along reading the script there's 11 lines of this regular expression
+which includes variables that we have already defined previously which we have discussed
+before and each of those lines are kind of filled out in a nice column so tabed in you have
+the regular expression tab the comment and exactly what each part of the regular expression
+does so it's really really tidy really really easy to read and i wish more people would do this
+so that's line 54 line 55 is uh sharrott's open brackets open square brackets plus minus
+close square bracket question mark close bracket now let me assume a string begins with the
+optional sign so the uh sharrott is a start of line correct yeah and i i think that's the correct
+word for like the chinese has type symbol and then the square brackets are a plus and minus symbol
+followed by a question mark and the question mark means it may be there are not one oh one oh zero
+one or zero yeah okay proceeding expression yeah got you and you're enclosing that in a regular
+bracket and nothing special about those those are capturing brackets those are capturing so that
+means now the percent one it is percent one isn't it uh yes in these go this is captured and what's
+it must be a magic variable because i'm not assigning a variable name to it
+oh this pearl is very flexible this an aphorism that goes with with pearl is a t w a m i i can't
+remember what it is there's more than one way to do it whatever the initial letters are of that
+Tim Whitty or something people would pronounce it um there's there's always multiple ways of
+achieving a thing in pearl um this this um this particular one is um well when you are when
+you're capturing elements in a regular expression uh yes you're quite right they go somewhere um
+they can go into what you could effectively call magical variables that are sort of behind the
+scenes that you can you can access after you've applied the regular expression to to the string
+that you're working with um but you can also make it return a a list um a list of of items which you
+then assign to a list of variables or to an array um a bit later on the if this is what you're
+going to do this is it uses the assign to to list type of uh and this is kind of what confused me
+area on because i was using the percent one percent two percent three which isn't really handy if
+you need to add in another line that you missed because then you need to change the numbers
+yes yes yes you better not to do that if you can help it so assign directly to variable names
+that you know are an array yes okay that that's that's by far the best way of doing it with
+it not again all right so the next line is an easy one it's got the letter p now i don't know if
+that p should be i've always seen there's another case p but i would need to read the spec to see
+whether it would be yes i don't know i assumed all these letters were were uh
+uppercase and if they're working do you would put it you would not put it in the bracket because you
+don't want to capture it you just follow by follow up with a nigh um you can how would
+it make sense instead of you can do that thing where you put brackets around it with a question mark
+and an i uh i think not followed by anything i can't remember now what what follows what follows the
+modifier yeah or you could just you could simply modify the whole string because you probably don't
+care about if you don't care about the case of that you probably don't care about the case of
+anything else but yeah you'd probably you'd probably ignore case in the whole string the whole
+regular expression yeah true no okay cool cool but this is there's another example of meh let's
+let me check the spec do it step by step by step as what you're saying yes yes okay yes and then we
+go on to the next line which one two three four five five more five lines are very similar
+so don't get worry pox the open parentheses colon sorry question mark colon what do we say that
+was non capture was this is an enclosure but a non capturing non capturing enclosure non capturing
+parentheses okay then we have which follows on two parentheses surrounding the int which was the
+slash the plus from before which we compiled in regular expression yep yeah um so what do you say
+in there and then followed by the letter y close parentheses close question mark so the non capturing
+bit is the y and the capturing bit is the int for you yes yes and the exact same lines repeated
+for month days hours and minutes and in there we have one thing you've missed though
+you you assume that the closing the last question mark was some some are balancing the first one
+well it isn't I'm afraid it's it's it's to make what optional it makes the whole of that that expression
+from the first parenthesis to the last optional because your your um yes duration might
+emit the year spec completely absolutely yes yes correct so the in order so a non capturing
+uh parenthesis is just terminated with a regular presentices without anything yes yes perfect
+it's it's now you're doing a phone uh funky one here for the time because you're encasing the
+whole time thing in and non capturing parentheses as well yes with an optional with an optional
+character mark because the whole yes the whole time the whole the whole time thing might not exist
+and then if it if it does then there must be a t to start it absolutely yeah yeah okay I get that
+and then the fraction is the fraction regular expressions just before the seconds and that is more
+to do with the specification than all of this okay perfect now halfway through the scripts folks hope
+we haven't put all those truck drivers to sleep wake up wake up okay now we're at line 70 if you're
+following log did the did the the riveting news here on hpur and we're two minutes overdue for
+the community news to start but asher will plow on ahead nobody's online okay then we have duration
+equals shift right now and now she shift means something completely different huh I won't ask no one
+asks anything from a peck on the cheek to a snog all right okay there you go there you go that's
+the best definition I heard from a good friend of words so this is obviously taking it from
+where now at the argument string yep where did the arguments we happen to find arguments because
+this magically appear out of the door well when the script runs as with anything that you run from
+the command line in the next unit system you can follow your your invocation with any number of
+arguments which are parsed by the the shell and fed to the the script for the program or whatever it
+is so this is the pulled mechanism for saying get me the first one of these things that they're
+presented as an array to the to the script and this is where there's more than one thing to do it
+because you've got that dollar arg a capital A or g yep which I have been using because I'm an idiot
+apparently well it's it's a way to do it's another way to there's many ways of doing things in
+in pearl this is this is the the simple but simple to look at complex to explain method of doing it
+but yes it's shift when in this context the top level of the script shift means get the arguments
+from the command line and pearl is very very much that that the context it's very much
+dependent on the context yes because if we were doing a loop through a an array for instance the
+shift then will refer to the array as opposed to arguments correct it can do yes and it can also
+mean different things in a subroutine yes which is why I think I think it means an
+equivalent of the arg dollar because then it was very clear to me yes well I wouldn't argue with
+you because to me that's that's a sort of shorthand and it me it's very meaningful to me because
+I've done this so many times but but when I was an early pearl programmer I was I wouldn't have done
+that probably I just thought nah I'm going to be puzzled by what the hell that means when it comes
+to rereading it well what will concern me more is that if I put it in the wrong place then I
+suddenly I'm shifting arguments from the from the motor program as opposed to the loop that I'm
+going through or or the loop I then pick up and put it into a subroutine because I want to make
+it clear and then suddenly shift the context of shift changes well it's actually quite logical
+shift at the top level means shift from the the argument array to the program shift in a subroutine
+means shift from the argument array given to the subroutine shift with an argument itself
+an array argument itself means shift off this array okay it's it's it's pretty logical yes yes
+to me anyway okay folks just as a reminder here that you can send in your own
+programs and talk about them for hours if you wish as well anyway you were going to say
+oh I was really going to say that this wild loop is is there so that you can feed the script a whole
+bunch of these expressions and parse them all rather than fire it up multiple times with one at
+one at a time I did not know this that was why yes the would have been under this is actually a very
+very clean and elegant way of getting parameters through I must say yes money pennies and how do you
+yes the other thing is there's a along with it there's a file of example expressions so all you
+need to do is to is to put a cat statement on the command line with with them as a command so that
+that's the contents of that file are simply offered as a command line to the script when it runs
+so it's pretty common bash convention yes and if you want more information on the cat command you
+should go back to Dan wash goes minutes in the shell series here okay print duration nothing
+special here they variable duration which will print whatever the first parameter in this case
+goes we'll run on to it the first time then we skip over and then we get to the to the good
+misimpedated if open brackets space open bracket dollar sign comma a percent feels close bracket equals
+open brackets duration space equals tilde dollar or e for regular expression close bracket close brackets
+open squiggly brackets I don't know what that is open squiggly bracket for the if statement yeah now
+question number one here is the sign how do I know that they if the sign is is optional you said
+so will it not then okay well I want to explain to people I want to ask you this is my assumption
+of starting over on the right here you have duration equals tilde regular expression and the
+equals tilde is the format saying this is a regular expression so all that junk
+perform it on the variable duration which is the first argument because we just shifted it correct
+enough that's right it's it's supplying the regular expression to the contents of duration
+okay and those two prejudices following those explodes that out to being one one
+wasn't the course one quote comma so we had a year one year one month one day T one hour one
+minus one second it would be a quarter one comma one comma one comma one comma one and that
+would pipe back into the other side of the equal sign correct or not yes yes it essentially correct
+yeah it's that expression the regular expression application there is operating in what pearl calls
+list context the fact in a bracket means I'm a list give me an answer back as a list so
+come back as a list forget the commas because a list is a sort of entity of items in a in a row
+if you like a stack or something would it be an array yes effective yes yes yes and the the
+equals that precedes that so effectively you've got two list expressions you've got a bracket
+thing with the regular expression stuff in it and you've got a bracketed thing before that with
+variables in it so it says on the right hand side generate a list and on the left hand side
+stuff the results of that list generation into these variables okay so the first item from the list
+goes into sign anything left goes into at fields which is the array so you're the you're filling
+a whole set of things together and why did I split them for people you and I know I just want
+to make an explanation here for people who are following along I don't know why you get this far
+if if you're not into programming don't know why you get this far if you are into programming but
+let me hey it's our show we can do what we want more live on the edge a array would be a bit like a
+chest of drawers I imagine so you know you put a value into one chest of drawers and then underneath
+there's another one underneath there's another one underneath there's another just that's how I
+liked to think of it now perfectly fine concept yes okay now stack of pigeonholes or how do you like
+to stack a pigeon holes not really unless it's a two-dimensional array correct yes yeah picked up
+something don't know what it was for the picked it up it's on the underside of my shoe okay now
+have I found a bug in your program because you have on one hand you're going to do all this funky
+stuff so you're going to get all these values multiple values and then you're going to put them
+onto the other side and the first one you're going to assume a sign yeah and I just set it as I
+set it out loud I just realized that even if these things are optional it still returns an empty
+position it returns it returns beautiful they don't know value in Poe which is called undefined
+so therefore this chest of drawers is already defined the size of it is already defined by
+the regular expression because by the number of capturing elements correct in the regular
+expression yes it almost sounds like I know what I'm doing and you know for a moment there I have
+but the beauty of this is I recorded it and I can prove to myself later on I didn't understand
+at the time all right so sign you just want to put in there into a separate one itself rather than
+in in fields yes yes because because it's easier it is it's it's not a it's not a field of a date it's
+a it's a separate entity yeah okay and now you're doing a really cool parallel thing which I must say
+I did a little happy dance I knew about it but I did a happy dance when it finally hit home
+and it is signed so the variable sign is equal to the plus character on less sign which is
+which means if the sign isn't filled in or is empty or undefined then you make a plus
+by default yep that's right it is beautiful so it defaults to plus yeah and this again just this
+formatting of unless something do something or die unless blah is kind of the opposite of the if
+it's another example of this plural do with many different ways and it's also it's also a linguist
+view of the world I always think because you know in English you say if and you also say unless
+so makes sense that the programming language would do that as well yeah but then I have the
+I struggle them with my purl you know pick a pick a way of doing it and be consistent with
+consistency of coding because sometimes I will do you know for the same loop I will do it with an if
+statement and otherwise and sometimes I'll do it with an unless statement yeah what I'm
+telling to do now myself is I use an unless if it's a very simple one-liner and I use an if if
+it's if there's going to be multiple options and well I would I tend to use that the rule that if
+it makes sense if it's meaningful then then use the unless you know if you say unless some test then
+do something sometimes that's more meaningful than if not some tests then do something it's it depends
+it depends on on the context I think but the fact you've got both options options of doing optional
+ways of achieving it is one of the things I like about Perl yeah but okay so we're checking
+essentially what we're doing is it is checking here if a variable is defined or not and yes quite
+often when I'm looking at data I'm checking to see whether it's defined or not if it's defined I want
+to do something if it's not defined I also want to do something but with that unless thing you can't
+go into four different lines of things it's it's one single line you can you can you can you can
+it's just you can use it instead of an if just your if test is reversed you put it at the front
+yeah yeah yeah so you can say unless brackets dollar x equals one equals equals one
+and that's the same if it's not yeah but you can you then therefore like if I want I want to
+set x equals to one I want to print out something I want to run another variable oh not in your
+subroutine I want to do something else which you can do with an if statement because you enclose
+it in the currently bracket yes same with the nice oh but I haven't seen people do that well I
+suppose a lot of people don't like it I personally find that quite fun but it depends on the
+context it depends you would only use it I think if if it was appropriate you know if if you've got
+a if you've got a variable that you're using as a Boolean flag where you know something like unless
+unless light is on then put the light on or something and that if if it reads well in a sort of
+garbled English form then sometimes that's more meaningful I believe okay yeah but the only
+thing that I fear is that you are you reading it if it goes to multiple sentences and then the
+unless is at the end you're assuming that it's doing all these things with the natural fact oh yeah
+sorry about that this is a negative statement oh yeah it's true it's true yes that the traps of
+booleans and the the knots and the the ants and the organs of it are still there regardless
+yeah but they're up you have to trade carefully yeah you you will have a bracket of code and it's only
+at the end you find out that it's it's it's not an if statement it's a known unless statement
+hmm because on the other side okay fine we've sent enough time now the next caution and this is
+the next line and correct me if I'm wrong here you're doing you're saying feels equals
+a whole ghost stuff which we'll talk about later than feels the whole stuff stuff which we'll
+talk about later is the map command which is between curly braces and then in between that we have
+two other brackets which has got the words defined open brackets dollar underscore
+close brackets question mark dollar underscore colon zero close brackets yeah so the whole thing is
+the array feels is equal to the mapping of of feels where in you're doing and check on each
+of the fields to see if they're defined and if not you put them to zero correct yes it's it's forcing
+everything that's undefined to be zero so that you don't because because you actually want to
+display these things and displaying undefined values causes problems yeah and it's very
+it's a lot clearer yes but why not use just use the unless or not the unless but you know
+the implicit statement you have it if like we had before if sign feels if just the variable name
+then that just checks to see if the variable exists or not why use the point
+um just a convention really just just in the deprecase just did you know that
+I don't know whether it's because I will then read oh by the way the dollar underscore is this
+magic I think notepad that people are allowed to use the kind of chocolate temporary chocolate
+where you can throw a variable without and of course this is all in context as well now what does
+the map command do pray the map command applies an expression to each element of an array so it's
+a type of loop you could write this for this same thing by simply going through a loop which loop
+through every element of the the array said is is it is it defined yes then okay you carry on
+otherwise replace it to zero you try it in that way oh that's just a more a quicker and more
+convenient way of doing it yeah which is why I've avoided it like the plague as well it's nice
+one to get in handy as maybe and you're also using this other short form of if then statement
+yes something that's that's a conditional expression I think it's defined as okay thanks
+conditional expression so you've got this before the question mark which is the if it's if
+time is equal to I guess that's the test there's a test yes followed by a question mark and then
+you got the true branch and then the false branch so to separate by colon the test you is if it's
+defined yes and then the question mark is if it's true then it's dollar underscore so it is what
+it is if it is return yes yeah otherwise is put to zero the result of each iteration through the
+the map loop implicit loop returns values which are then strung together and put into the fields
+on the left hand side of the side which is what I want to talk to you about in a minute but this
+again the whole purpose of the whole purpose of this show is kind of to explain to me why
+you're picking this form of of code in this point because I always try to avoid this one
+I prefer to go if then this then equals yes and I tend to do that on the on a if it's a short one
+I'll put it in on a single line what it makes for ugly code it's um it's a matter of taste really
+I think uh I've come my the first language I learned was alcohol 60 to give you some idea how old I
+am probably um which you couldn't do anything other than build a loop with with with a with a test
+inside it uh and um so you know that that was that was a fine convention um you could easily bring
+that sort of logic to pull and do it in a case like this uh one of the nice features and shortcuts
+of a poll is is this things like map and so forth and so I've just developed the the personal
+convention of using them wherever it's appropriate now that I feel confident enough to do so um I
+would use them I think I wouldn't advise anybody to force themselves to do this if they didn't feel
+happy with it with it no no I understand but um again what I was trying to do in my own silly way
+was uh be consistent in in the code and not mix it not mix a lot but that results in very very
+ugly code whereas you've got very pretty looking code but you're mixing these conventions doing exactly
+what I was trying to avoid doing but when you do it it makes for tidy code it's also using the
+power of per I mean so long as you as long as you understand what what it's doing then
+know that this this is one of the powerful features there will be some of the things in other
+languages too and oh python's quite good at doing this type of thing where you take a list and
+zap through it doing particular thing to stuff um within it so you know it's um it's it's it's
+the feature and it's a okay desirable feature now this is uh I want to go back to to a question
+as a phenomenal mind for some time if you go back to our chest of drawers so you have one drawer
+stacked on top together what essentially you're doing here is you're going to take the value of the
+years that I give in the argument so one more more more more and you're going to put the first one
+in the top drawer which will be called zero yes the second one into the second drawer which
+we call one and the whole right down and that array is called fields so we on the chest of drawers
+we're writing in chalk fields at sign fields and then shelf zero shelf one shelf two three go away
+now you're rolling in another chest of drawers and you're calling that fields uh no it's it's the same
+one sorry it's the same one it's it's it's doing a juggling juggling act here it's it's grabbing
+things out of the array and doing stuff to them and poking them back into the same array um
+um how do you all labels you have labels sorry labels labels labels over the top so you have an array
+so the fields one sorry is i'm not talking about the fields one i'm talking what you were doing
+there to use our drawer analogy was you were using the map command to go through each of the drawers
+check to see if there's something in there if there isn't put in a zero and if there is just go to
+the next one so essentially that's what you're doing all right but now with this labels thing that
+you're doing you're pulling in another chest of drawers and you're calling that at sign labels
+and then in the first drawer which is drawer zero you're putting in the word years the second
+drawer which is drawer one you're putting in months and so forth days hours minutes seconds
+and then you're using by virtue of the fact that you know you're going to display these print them
+off in a loop and you're going to go from zero to the end of the drawers so you're going to open the
+pull out both drawers at the same time you're going to look in the first one and go one pull out the
+second drawer and go year you're going to close those two go to the next two pull them out one
+okay so that's kind of what's happening yeah you're talking here about the using two arrays and
+using using the fact that they're the same size yes and yes then doing a loop from one to the
+maximum and then using the second array as labels okay why not use that well you're talking about
+this thing called ISO duration don't think you said that did you well no I'm more referring to
+the other program the previous version of this which didn't have the the ISO duration thing oh okay
+okay sorry you're talking about the the for loop yeah the for and we're going down to the for loop
+at line 97 number skipping okay conveniently over the hash way of doing this which
+to be honest I'm more comfortable with because the idea of maintaining two arrays in order because if
+if you're doing some sorting on the first one your second one goes completely here by or so now
+if you had four years before it's now three months it's four months you know what I mean yes well
+let me you're trying let me try and pull pull it all together in the in the the latest version of
+the script I'm using a hash merely as an example of how you could use a hash as a way of storing
+together both the labels things like years month etc along with the value so you end up with a
+with a structure that contains labels and values so that's quite a convenient way of doing things
+however the problem the problem with using that is that when you come to display its contents
+you probably want to display them in the order of years month days hours minute seconds
+the way that hashes are put together the labels are not in any any particular order they're
+in completely arbitrary order so if you if you simply cycle through the labels you have no
+easy way of ensuring they'll come out in the right order absolutely so it could come out as
+in our case one week one year one month whatever but that doesn't change the structure of the
+does it mind you no the relationship before the label to the value sorry going yeah don't before
+we go any further using our analogy on what a hash is before if we take a chest of drawers and we
+put some and we get a marker and we write another chest of drawers not the other two that we have
+on one side of the corner the other side of the room we've got a chest of drawers that's got all
+the shelves of it and we call that what are we calling this ISO duration yeah and then on the
+front of each of the drawers we're writing on the first one we're writing years and then the second
+one we're writing the word month days hours minutes yeah so using that you can go to that hash
+which is what's what's called in C called a structured something another kind of
+so you can refer to specifically that hash and that's named value so you can go that hash hours
+and go directly to that drawer without having to cycle through to that hash it's zero yes it's
+called an associative array yeah yeah yeah that's right that's right okay so I use these all the
+time because I find them far cleaner to work with then whereas the thing you were saying before
+is I've got two arrays one of which have got labels and the other one's got fields and the only
+reason that they're useful is that they're both positioned the same it's like having two
+chests of drawers side by side with with the labels in one and the values in the other but it's
+only the fact that they correspond one with the other that you've got you've got useful
+useful knowledge there yes yeah but if you want to do yeah okay boss the phone you think about
+hashes is they're multi-dimensional you can make the manuscript you're like so you can have
+a drawer that has got that's called zero one two three more down along and then inside of that
+you can have a shoe box that's got a word years on it and then say that's the value and then
+you can sort through you can sort through zero to the end ignoring what the labels are and then
+get the values if you want it yep but I don't do that either because usually I know exactly what
+field I want to refer to yes you can make some pretty hairy structures within within poe but yes
+that's for another day I'm sure yeah but it won't be for me all right because trying to get them
+working with multi-dimensional arrays and references and references to hashes hashes is it gets
+very hairy very quickly but I one thing I didn't know that you could do was just dump an array
+of hashes like that using this one liner well that's why I did it it's it's it's referred to
+as zipping together to to arrays into it into a hash I think I put right there just as a demo really
+is you know what's what would be really useful if you would mind and you've done it for some
+movie code is that you're using the plural terminology for for what you're doing because I find
+it very difficult in plural to figure out what it is the terminology is that they're using to
+describe the thing and by the time I figured out what the plural terminology is the thing that I'm
+trying to find out I figured it out anyway because I've read so much stuff then I figure out what
+the terminology is yes yes yes well we probably need a need need some show notes
+to along with this that maybe explain some of this stuff I guess cool um yeah okay okay so now
+you've assigned the sign to a single one and you've assigned ISO duration to labels and fields
+oh that's really cool is there any particular reason do you think why hashes are just in
+some random order and not um not ordered I think it was more memory efficient or something
+from what I could read yes I think so um because it is a it is a hash table which is the result of
+doing some rather rather funky mathematical analyses on the on the contents the whole concept
+of associative arrays work that way you can't you can't be sure of the way in which things come
+out and I think pearls gone even further with this and has ensured that the the order of
+labels within a hash are always randomized between invocations of a script because it makes
+the script less predictable if you're trying to hack it from outside yeah so yes okay so moving
+yeah go on then we have the print if command as a whole print f command which is
+all on directly from c if I'm not mistaken indeed yes yes and then we would have percent dash
+seven s call on space percent six s new line called comma double call sorry double
+call comma double call sign double call comma dollar sign quotation tell me what that is
+that prints out in a formatted way in seven columns the string sign the minus seven means left
+justify it always it would it would be right justified within the seven columns um and then
+that's followed by a six um column uh string which is um right justified uh so you would see
+see see so momentum yeah come on ahead right we're good we're good so you you will the reason for
+that is because there's a further print f a bit later on that that uses the same format um for
+printing out the values that we've fished out the the duration and um it just wants to do the line
+up so the loop is simply stepping through the two arrays together using indexes into them because
+their index from zero through to the the maximum number of elements within them and for each one
+it prints out the contents of the label and the field so you see year number month and a number and
+so forth now the first time you ever looked at something like this it it does look a bit like
+rocket science so the but it's a standard c for loop actually it is it is yes the the only
+difference is that dollar hash fields business which is pearls way of uh specifying the length of
+the thing but that's not even pearls originally that's what bash does as well for for representing
+length of things i think that that comes from from way back when and the dollar i plus plus
+thing is is a c thing and it's it's all through unix okay so they inside the four of those uh
+two parentheses and closing three portions of the loop you have the start they um they check to see
+if it's the end and the uh implementation the first part is my dollar i equals zero and i took
+me ages to figure out why people picked dollar i yeah well it's just again that's convention
+it's i and j and k tended to be the variables just i think but because you see it in mathematical
+expressions right okay so i equals zero double semicolon means traditionally in pearl a new line
+is that actually a new line semicolon is merely a statement end you can put multiple statements on
+a line in this structure of the for loop then it simply separates out the uh the components of
+the the iterator of the for loop now that's a c convention i think okay and then the next thing is
+for i which starts a zero is less than or equal to the number of fields uh and then the first one
+it's not and the second one of not and then it goes up until six whether it's six or eight and then
+it would be and then if semicolon and then i plus plus mean each time you do this thing increment i
+because if you don't i will always remain at zero and you'll be in this loop forever indeed
+how would you've done it more than one occasion so i wonder what when you press control c don't they
+loop field pain anyways and then we have the print up statement using your percent dollar minus
+seven s trick and then labels square bracket dollar i square bracket comma fields square bracket dollar
+i square bracket and that so each time your labels and your field chester drawer on one hand you're
+taking out zero from the label store and the other hand you're taking out fields from the
+fields chester doors perfect and then we close the for loop we close the if statement and the if
+statement we're still with us from three hours ago when you were driving through Cincinnati
+the uh that is the regular expression itself so if the regular expression succeeded uh we've
+done our thing which is we've stored them and we printed them all out and the else would
+it be just simply print in validation and the final line almost final line is print a new line
+and then we have the end of the while loop right otherwise if you had put in one duration space
+another duration space another duration it will continue happily on and in the end we have
+exit and at the very end you have one of your vim marker things it's a mode line it's it's an
+instruction to the editor to say by the way this is a pull file etc etc tab stops shift with
+expand tabs etc etc i won't go into that maybe that's for another podcast why have you picked
+tabbing of four instead of two like that's the shift with that that's what you get when you
+yeah that's what you get when you press the tab key that's not the size of a tab is merely the
+what vim does to move you the number columns it uses to to to uh skip when you press the tab key
+to line things up and i've used that because you know it used to be the convention that you
+indented by three but three to be a nasty number is four yeah well it's it's uh i don't taste really
+okay and one other question is why do you put your stark bracket uh curly bracket
+on the same line as the statement and not directly underneath it again it's it's convention it's
+it's style it is the recommended style uh if you go to the style gurus of pull um and if you feed
+this particular script through old tidy it will it will enforce that particular rule um but again
+you know it's it's convention you can break away from it if you want to the the real rule is
+if you're writing scripts and you're in a team all writing scripts then use the same rules
+throughout otherwise you get into those sorts of difficulties perfect div that has explained
+to me that have been bugging me for a while and stuff you can't actually handle it because uh
+it's it's convention system okay with that i think we should uh we're 40 minutes over so we're
+now around the hour and 40 minutes oh my god uh we better stop now for the community news as ever
+so anything else you want to add no that's me all right thank you very much and remember folks
+we're running fairly low on the shows so if you want you can record something uh i think
+yeah upload it uh if you look on for the information send an email to admin at hackupublicradio.org
+or go on to augcast.com on irc.frino.net and ask anyone there and they will give you the
+password for the ftb server uh with that tuning thank you very much again Dave uh thanks very
+much for doing this and thanks very much for the um the instructions on how to be a better program
+oh tune in tomorrow for another exciting episode all
+you have been listening to hackupublicradio or techupublicradio.org we are a community podcast
+network that releases shows every weekday on day through friday. Today's show like all our shows
+was contributed by an hbr listener like yourself if you ever consider recording a podcast
+then visit our website to find out how easy it really is hackupublicradio was founded by the
+digital dark pound and the economical and computer cloud hbr is funded by the binary revolution
+at binref.com all binref projects are crowd-responsive by linear pages from shared hosting to
+custom private clouds go to lunar pages.com for all your hosting needs unless otherwise stasis
+today's show is released on the creative commons attribution share a line

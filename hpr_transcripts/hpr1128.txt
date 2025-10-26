@@ -1,0 +1,118 @@
+Episode: 1128
+Title: HPR1128: Compilers part4
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1128/hpr1128.mp3
+Transcribed: 2025-10-17 19:28:57
+
+---
+
+I don't know what to say, but I don't know what to say, but I don't know what to say, but I don't know what to say, but I don't know what to say, but I don't know what to say, but I don't know what to say, but I don't know what to say, but I don't know what to say, but I don't know what to say.
+Hello everybody and welcome to another riveting, riveting edition of about compilers. I guess that's the name of it about compilers. This is part four in the series on miscellaneous radio theater 4,096.
+And I know I know I said in the last episode we're going to be talking about the front end of a compiler. And now we're going to talk about the glorious world of code generation.
+Well I've got news for you, we're still going to talk about the front end of a compiler.
+There's a review we'll make a nice calculator using a lexical analyzer generator called lex and a parser generator called the act.
+Lex and the act are standard on unix. And if you don't have a chance to Zarlbina repo, the canoe versions are called lex and bison.
+Building this calculator will exercise our knowledge of lexical analysis, parsing and synthesized attributes.
+Lex takes a while containing token descriptions and outputs a complete lexical analyzer that matches one token at a time from its input and returns a token number.
+Returns a token number from an API called yylex that is meant to be called by yax parser.
+Yax takes a file containing complete grammar and something called back us in our form. Well actually not really back us in our form exactly but pretty darn close.
+I'll just call it back us from now on. This is pretty darn similar to the production rules we've talked about in the past.
+I may also refer to this as yax grammar. Yax given a proper yax grammar file outputs a complete parser for our language.
+Token description and back us nor form grammars are not the only thing these files contain of course but they're actually really similar in their format.
+We'll start with the lex. At the start of lex's input we have percent open bracket, percent close bracket.
+In these brackets you have C code that's pretty much copied directly at the beginning of lex's output.
+Then you have macros and options and then you have percent percent followed by percent percent.
+In between these percent percent you have token descriptions and corresponding C code. At the bottom of the file you have C code that's copied directly to the end of lex's output.
+Okay now for yax input file at the start you have the same percent bracket C code percent close bracket.
+After that you have token names start symbol that's the symbol of the top of our parse tree and the left right non-associative presidents of tokens.
+I should explain that. If you have an input source code of A plus B plus C there's enough ambiguity in that to have multiple parse trees to describe it.
+That's really bad. We call this an ambiguous grammar. To resolve this conflict we give left right presidents to particular tokens.
+If a token has a left presidents the symbol to its left gets resolved first. As a right presidents the symbol to the right gets resolved first.
+After that in the act file we have the same percent percent followed by percent percent.
+In between the percent percent we have back us in our form grammar and it's corresponding C code and they're synthesized attributes.
+At the bottom of the file you have C code that's copied directly to the end of yax output much like how it is in lex.
+So let's give that description. Let's define some tokens.
+The calculator needs numbers so let's have a number token. We'll call that num. The calculator also needs to do stuff.
+Let's have operation tokens plus sub and malt div.
+Since we're describing tokens first we have to write a minimal yak grammar since that's where the token names come from.
+I prefer you to figure A in the show notes. I highly recommend you look at figure A but if you're not looking at it figure A looks like this.
+Percent open bracket, percent closed bracket, percent token num plus sub malt div, percent start line, percent line, colon num, semi colon, percent percent.
+Now I know exactly what you're thinking. Seek Club, what's with start and line grammar.
+It's to produce a minimal file. Yax won't compile without a start symbol. Now if we have a start symbol we need some grammar so we insert some junk grammar.
+Let's save this whole thing to gram.y. We generate our parser like this. At the command prompt type yak space dash d space gram.y.
+What this produces is y.tab.c which is our parser and y.tab.h which is a c macro definition of our tokens.
+Now let's write a minimal lex token description. Seek figure B in the show notes. Figure B looks like this. Percent open bracket include y.tab.h, percent closed bracket, percent option, no y y wrap, percent percent percent percent.
+Lex is a lot less picky and we don't need token descriptions to compile. Percent option, no y y wrap tells lex that once we encounter it end of file that's it. There's no more input.
+We are not going to wrap to another file that's what y y no wrap indicates. Let's save all of this to lex dot y. We generate our lex planalyzer like this. At the command prompt type lex space lex dot l.
+What that produces is lex dot y y dot c which is the lexical analyzer. You'll notice that we've included y.tab.h in the beginning of the c code. That's so we can refer to our token macros.
+If you straight up try to compile our parser in lexical analyzer together like this at the command prompt again gcc lex dot y y dot c space y.tab.c
+You'll find it airs out telling us that there's no main or y y air. It's pretty simple to resolve this problem. We simply put main and y y air in our gram dot y file.
+At the bottom where c code gets copied to the bottom of our parser our main looks like this.
+It's main open print void and print open bracket y y parse open print and print semicolon close bracket.
+That starts our parser which drives our lexical analyzer with y y legs. Our function y y air looks like this void space y y air open print char space
+asterisk s close print open bracket print def syntax air close bracket. This gets called very parser encounters an air or an unexpected token stream.
+From now on we'll just output syntax air when this happens.
+Now if at the command prompt we type gcc lex y.y.c space y.tab.c we produce a dot out. That's our calculator.
+While not yet first we need to describe our tokens. Lex as a token description language is pretty easy to pick up.
+Whatever character you type is directly matched with the exception of some rule characters like asterisk.
+Our asterisk matches zero or more ours for instance. You can also nest these rules with friends and have brackets to describe character classes like open brackets 0 through 9 close bracket.
+Since our main token is number let's describe that first. Take a look at figure c.
+I'm not going to say figure c just take a look at figure c seriously because it's a log one.
+0 or 1 followed by 1 or more 0 through 9s or 0 or more 0 through 9s followed by dot or 1 or more 0 through 9s.
+There's some redundancy there so let's replace 0 through 9s with macro d.
+So now our lex input file looks something like figure d. You can see we've added brackets. That's where our corresponding c code goes.
+And that's what gets run once our description is matched. There are two ways lexical analyzer communicates with the parser. One is by returning a token number.
+The other through is through a value or a union or structure. For example we're going to say communicates through a value.
+This value is stored in a variable called yylbow and gets defined in our gram dot y file by a c macro defined yy s type.
+We'll define this as a float. The way the lexical analyzer communicates with this corresponding c code is through a character called yy text.
+Yy text contains the actual text of the matching string.
+Given all of this, the c code inserted into the brackets looks something like this.
+Scan, open print, yy text, comma, quotes, percent, f, and quotes, comma, address of yylbow and print, semicolon, return num.
+This converts yy text into a floating point number using the scan f in libc and stores it in yylbow and returns the token number num.
+Our complete lex dot l file looks like the gear e.
+Notice that sometimes we return characters. That's because the token number is just an integer that can be really anything we want.
+Some characters works just fine for token numbers.
+So now let's complete our gram dot y file.
+Most of this is already there. We just need to define left associativity to the operators as not to grade an ambiguous grammar.
+We do this with percent left plus mult subdivide.
+Then we define line as producing expression plus new line.
+Line, colon, expression, new line, open bracket, close bracket.
+Notice the brackets. This is with the c code or synthesized attributes go.
+Then we define expression as producing all manner of things.
+First thing it produces is num. You can also produce expression, multiply or plus or subtract or divide expression.
+Lastly, so we can have nested expressions. It also produces open print, expression, close print.
+Now we complete the grammar, which looks like the gear f. I'm not going to say the gear f. Just need to look at the gear f.
+Now to fill the brackets. This is where y y all val comes in.
+Each symbol in a production rule has a value associated with it.
+This value is referenced by dollar sign and some number.
+This number is the symbol number from left to right in the production rule.
+If a symbol is a terminal, that number is gotten from its y y all val.
+If it's a non terminal, it's gotten from the previous rule declarations through dollar sign, dollar sign.
+For example, take the production rule, expression produces num.
+Number is of course a terminal, so it's y y all val is referenced by dollar one.
+What expression is is referenced by dollar sign, dollar sign.
+So an expression produces num. Our synthesized attribute is dollar sign, dollar sign equals dollar sign one.
+If we follow these rules for every production run, where expression produces, we get figure g.
+Our last production rule is line produces expression num line.
+If in our parsing we come to this rule, we're pretty much finished with all computation.
+So the point of this line is to print out the final product, c figure f.
+And that is our complete calculator.
+It's a compile this whole thing to add this at the command prompt.
+Yac space dash d gram dot y, return.
+Lex space Lex dot l, return gcc, space dash o, calc, space Lex dot y y dot c, space y dot tab dot c, return.
+This compiles our calculator.
+To perform calculations, echo them into standard in of the program cult, which we just generated.
+For instance, echo quote 1 plus 2, pipe, calc.
+And there you go, and that's it. That's our calculator.
+Thanks for listening everyone.
+In the next episode we're going to talk about the back end of a compiler.
+Take care everyone. Bye-bye.
+You have been listening to Hacker Public Radio at Hacker Public Radio.
+We are a community podcast network that releases shows every weekday on every Friday.
+Today's show, like all our shows, was contributed by an HPR listener by yourself.
+If you ever consider recording a podcast, then visit our website to find out how easy it really is.
+Hacker Public Radio was founded by the digital dot pound and the economical and computer cloud.
+HPR is funded by the binary revolution at binref.com.
+All binref projects are crowd-responsive by linear pages.
+From shared hosting to custom private clouds, go to lunarpages.com for all your hosting needs.
+Unless otherwise stasis, today's show is released under a creative commons,
+attribution, share alike, lead us all license.

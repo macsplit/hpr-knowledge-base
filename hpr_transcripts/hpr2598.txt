@@ -1,0 +1,293 @@
+Episode: 2598
+Title: HPR2598: Calculating planetary orbits in Haskell
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2598/hpr2598.mp3
+Transcribed: 2025-10-19 06:22:19
+
+---
+
+This is HPR Episode 2598 entitled Calculating Planetary Orbit Sympathical.
+It is hosted by Tutoto and is about 29 minutes long and currently in a clean flag.
+The summary is Tutoto talks about Calculating Planetary Orbits.
+This episode of HPR is brought to you by AnanasToast.com.
+Get 15% discount on all shared hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's honest and fair at AnanasToast.com.
+Hello and welcome to the HPR.com. I'm your host Tutoto and this show will be a
+part of HPR15.com.
+The program I'm talking about here is based on the guide by Paul Schleider.
+This link to his webpage in the show notes.
+I recommend you to check that out because that has a good explanation of these things.
+It's also a bit more atoling on the show notes on the Wikipedia about the terms that
+I'm going to use.
+I'll try to explain them here, but the Wikipedia articles are probably a lot better.
+So first, build about coordinate systems.
+In general, fixing a location of an object requires a reference point or a regga.
+And since everything in the space is moving, there's many, many different coordinate systems
+to pick from.
+And in a given problem, a correct sort of coordinate system makes calculations health easier,
+for example.
+And nothing prevent you from switching from one system to another and as the need arises.
+For example, if we were to travel from Earth to Mars, we probably would start from the
+Geosynthetic system, the system may be the only place around the Earth.
+And at some point, when we leave the Earth, switch to the Heliosynthetic system, the center
+is the Sun and planets are moving around it.
+And when we enter into the orbit of the Mars, we would switch to the Mars center system
+at the Mars center.
+Because less than moving things, rather funny moving things, the easiest is to do the calculations.
+And this does not even take account that you have to move on the surface of the planet.
+You have yet another set of coordinate systems.
+Next about orbits that we are going to calculate.
+So we are going to calculate how the planets are moving in the space.
+But the orbits of the planets are elliptical and they are slightly tilted and they change
+slowly over time.
+And there are six orbital elements that can be used to define shape of the orbit in
+location of the planet on that orbit.
+And the first one of those is the X and X in the recipe, as I said, orbits are elliptical
+and X and the recipe is just how elliptical they are, how they are completely circular
+and they are really very squished.
+And if the L-L-R, if X and the recipe is high enough, that means that the orbit is in
+the elliptical anymore, it's a parapoloid, parapoloid, meaning that the objects are
+just swings past, for example, some, and then it comes back.
+Next one is semi-mature axis.
+This is a sum of periapsis and apoapsis divided by two.
+And periapsis and apoapsis are the points on the orbit that are closest and farthest away
+of the body that we are orbiting around.
+And this, basically it's the, if you take the elliptical, the longest possible one you
+can inside of it and half it is the semi-mature axis.
+Next one is inclination, that tells how till that the orbit is, because the orbits aren't
+completely on the level, interrequact to the restaurant's plane, I mean, they could be
+but they usually are, this tells, tells how much, how many, how many decreases till that,
+which means that when there's an inclination, the planet is sometimes over the reference
+plane and sometimes under the reference plane.
+And a reference plane in this case, when we are talking about the planets orbiting the
+Sun, is the elliptical plane, which is defined by the plane that the Earth is rotating around
+the Sun.
+So actually the Earth has a zero inclination.
+Next one is longitude of the Asken node, this tells where the orbit transfers from below
+to above of the elliptical plane, because not all the ellices aren't.
+And in the same direction, with the long tail pointing to the same direction, this defines
+where exactly, if the ellipses are rotated.
+And last one is the Asken node last one, next one is the argument of periapsis, sometimes
+this is called the argument of perihillion, or argument of peri-k, dividing on what you're
+orbiting, but periapsis is the general term peri-k is when you're talking about objects
+orbiting around the Earth and perihillion is when you're talking about objects orbiting around
+the Sun.
+But this one defines the rotation of the ellipse on the orbital plane, like you can imagine
+this by sticking the stick on your center of the orbit and rotating it slightly, this
+rotates the ellipse on the plane that is defined by the orbit itself.
+Last one is the true anomaly.
+This defines the position of the planet as an annual orbit and some given special time
+called epoch.
+And I have linked a Wikipedia article that has a nice little drawing about all these elements.
+I recommend you to check that out because it's a lot easier to see the picture and understand
+how good this is, how the angles and axes relate to each other.
+It's rather difficult to explain it while speaking.
+And because we're dealing with the computers, we're dealing with the radians.
+We have a trigonometric function that has to use radians.
+I think you need of the angle.
+So I had to write a couple of helper functions to convert the two and from radians.
+I'm basically between the decrease and radians and then there's a little helper function
+that clamps the decrease into 0 to 360 degrees.
+That's not really...
+Well, that isn't really needed, but it makes a output of the program slightly nicer
+because it's easier, at least for me it's easier to think that there's a handle of 10 degrees
+and the angle of 370 degrees.
+It's a super big difference to the result of the calculations.
+But in any case, I made one that was suggested by the slide anyway.
+Slide, sorry.
+And then, like I said, the orbital element change over time.
+So we need a time.
+That is expressed as a fraction of days since the 31st of December 1990.
+Okay, now we know we're talking about...
+I can start going through the actual calculations.
+I'm not going to read out the equations or even try to explain how they do the different transformations
+for that it's a good idea to check the tutorial that I linked.
+So I made this as an experimental program.
+I have written this in several times with various languages.
+Now I wanted to try to write it in Hasker and see how the type system can be used to enforce calculations
+to use the correct type.
+There's a plenty of different coordinates, plenty of different angles.
+And I wanted a type system that makes sure that I don't mix for example positions in different coordinates.
+This is... this kind of, of course, done with pretty much any subjectly type language.
+So I started by defining sound earlier than Mercury.
+I just argued, I'll get write data files without any parameters.
+So I'll just say that something is sound earlier than Mercury.
+And then I defined a type class orbit that you see.
+That has no name, such as defines orbital parameters.
+This has two type parameters, sender and body.
+This way I can express on a type level that Mercury is rotating sound and Earth is rotating the sound.
+And if I were to try to calculate how Mercury moves in relation to the Earth,
+I would mix up all those various numbers.
+I would be able to calculate location in sound coordinate system of the Earth in respect of the sound.
+And Mercury in respect of the sound and then translate them and get the location of Mercury in respect of the Earth.
+That's why I defined this with two type parameters.
+And this requires turning on the multi-param type X classes and flexible instances and flexible context extensions for the hospital.
+I did not 100% sure what all those actually do.
+I know that multi-param type classes is needed to be able to define path classes with two parameters.
+But those later on, I had to turn on to get the program to compile.
+As you might have guessed, I'm not technically good at the hospital.
+It's more of a hobby of mine where I play with that now.
+So in this type class, orbit has functions that are used to calculate those orbital parameters that I mentioned earlier.
+With a given date, given day.
+So if I were to compile longitude of ascending node and give that to two parameters, Earth and Sun,
+and some date, that would give me the longitude of ascending node of Earth orbit around the Sun on that given day.
+And return values of all these functions are also...
+Also, I can track data lives with two parameters.
+So the longitude of ascending node that is given me actually encodes that this is Earth's longitude of ascending node around...
+On an orbit around the Sun, and it has this value.
+Same with the inclination of eclipse argument of periaxis.
+Same with major axis eccentricity and mean anomaly.
+It just makes it easy to deal it in the Sun, you have a bunch of angles floating around.
+And as I mentioned, Haskell uses radians, like pretty much, I suspect, almost every programming language.
+And I cannot visualize radians that easily on my head.
+I have a rotor, I have an algorithmic data type decrease, that can wrap anything,
+and type class decreaseable, that is type class with a single parameter, and single function to deck.
+So if I create an instance of...
+If I create an instance of...
+For example, mean Anna of that decrease, that means that any mean anomaly,
+where for any orbit, I can turn into decrease.
+It's just simplified saying to deck, and the value of the mean anomaly.
+And it actually wraps the mean anomaly value into decrease,
+algebraic data type, because this changes the type,
+so I don't accidentally use this converted value somewhere laid on the program.
+Anything that isn't wrapped into decrease is radians, and anything that has been wrapped to the decrease,
+cannot be used in the calculations.
+So now that we can calculate our orbital elements, in respect of give and date,
+because they slowly wander around, we can start working on the position on the orbit.
+And this is first, we need the eccentric anomaly.
+This is why to research what this actually is, but I couldn't figure it out.
+Then I'll test the three major...
+There's three anomalies, eccentric anomaly, mean anomaly, and true anomaly,
+that all relative to the angles on the orbit.
+And the true anomaly is the location of the planet as an angle.
+And the mean anomaly is a sort of mean value.
+Like, if the planet were rotating an orbit in a completely circle out plane,
+the whole asteroid orbit, then the mean anomaly, and true anomaly,
+would give the same answer, I think, you better understand.
+But anyway, first we need to calculate this.
+We have a mean anomaly.
+This is convenient mathematical angle, I think, to all.
+But we need to turn that into a true anomaly,
+so that we know exactly where the planet is on the orbit.
+And we do that by first calculating the eccentric anomaly, anomaly,
+which needs the mean anomaly and the eccentricity,
+how is this the orbit is, and for example, the eccentric anomaly,
+and with this, we can combine with the eccentricity again, get the true anomaly.
+So this gives you the angle of the planet is on the orbit.
+And then we calculate the distance of the object.
+The object we are orbiting around, and the object that is doing the orbiting,
+which uses the eccentric anomaly, eccentricity, and semi-major axis,
+and produces distance between these two objects.
+Again, distance is an algebraic data type,
+so it actually states that this is a distance of, for example, sound and memory.
+It is pretty convenient.
+Yeah, it's a pretty convenient.
+And with this two numbers, we have to fix the relative location of the object.
+Of course, this is in a polar.
+No way.
+I think it's a polar coordinate system.
+And it's on a orbital plane.
+So we know the distance, and we know the angle between our reference point
+and the angle that the planet is currently.
+But this is, like I said, it's an orbital plane.
+It's a plane that is defined by the...
+Basically, basically, it doesn't take the inclination into the account.
+And for this, we want to rotate our coordinate into ecliptic coordinates.
+This is the coordinate system that is defined.
+For example, with sound in the orega, and with a three-dimensional grid.
+You come on x-watched coordinates.
+And if I can move correctly, the set axis points to the upwards of,
+from the ecliptic airplane, as much as the upwards in the space.
+I think it's a node.
+I think it's defined that the side that has the node, both of the Earth, is the up.
+And the x-points do the vernal equinox.
+But that's not so important when it comes to this episode.
+We just want to rotate into a three-dimensional coordinate called ecliptic coordinates.
+And from here, we need the Ruanomali distance,
+because this is the location of the planet that we are.
+The location is what we are rotating.
+Longitude of ascending node, which...
+And argument of periaxis and inclination to ecliptic.
+And with a bit of three-conometry, we can rotate our orbit
+or our location on the ecliptic coordinates.
+And if we want to calculate where the stuff is,
+when viewed from the Earth, this is not yet enough.
+Of course, there was this information to the Sun.
+If we were standing on the surface of the Sun, then we could use this.
+Continued using these coordinates, but we are not standing there.
+So we need to translate there.
+We need to transfer the order equal to our coordinate system from the Sun to the Earth.
+And this we do by calculating the location of the Earth.
+Actually, the tutorial uses the system later that treats Sun as orbiting around the Earth.
+But it's just a matter of point of view, basically.
+But we calculate the location of the Earth.
+We have the location of the aadat planet, Mercury in our example,
+and then we just end the boat of the Moon using the same coordinate system
+as we just subtract those coordinates from each other.
+And we end up with the Mercury's location,
+on the Earth's center of the ecliptic coordinate system.
+This is starting to get where we want.
+But this is not all yet.
+The three-dimensional coordinates are not that easy to issue a point from the Earth
+or are they contain extra information we don't need.
+So we are moving things to the equatorial coordinate system.
+And this you can imagine that you will slice the Earth from the equator.
+From the latitude of zero degrees.
+And the plane that is defined by that is the equatorial plane.
+And on this coordinate system we express things in a right-ascension declination.
+The right-ascension tells the direction on the plane.
+And it's given in hours, actually.
+Because the Earth rotates around in 24 hours.
+So the plane is divided to 24 hours,
+and those are divided into the minutes and seconds.
+And declination is the how angle of the object from that equatorial plane.
+So zero degrees is on the plane and 90 degrees is at the zenith.
+So somewhere really close to the polaris.
+And for this we need the ecliptic coordinate,
+coordinates given in respect of the Earth, not on respect to the Sun,
+and currently we can calculate the location of the planet in the equatorial coordinate system.
+And this is now at the point where you can go outside and point to the sky and say that,
+okay, my computer program says that that pride dot all the day is Mercury.
+So this concludes our calculations for now.
+There's a future improvement that could be added,
+like you could translate into the horizontal coordinate system,
+which takes into account your location on the surface of the Earth.
+Because we are not standing in the middle of the Earth.
+We are standing on the surface of the Earth.
+So we will need to rotate things yet again and take day of the time of the day into account.
+So we could get our angles in respect of the horizon of the local position.
+This would make it even easier to find whether planet is on the sky.
+And another thing I might add later is to calculations for perturbations.
+Because these equations are used so far.
+I assume that there's only two objects.
+The thing that we are opening around and then the thing that we are opening in.
+So they are nice and clean and easy calculations.
+Very easy when you copy them from the net.
+But there's nine planets in the solar system.
+All of them are packing each other constantly.
+All of them are opening.
+There's some huge translate Jupiter and Saturn.
+So every time those planets swing by,
+they are messing up with the opposite of another planet.
+So the opposite, the opposite wobble somewhat.
+So we would have to...
+It's not too difficult.
+It's not too difficult.
+But I haven't written that part yet.
+But we would have to take into account how those big planets change the opening of another planet to get into even that accuracy in these fault places.
+These are really enough that you can really go outside and point at.
+That's the pride of this.
+This is the planet I'm interested in.
+But that concludes this twist of episodes.
+If you have any questions or comments,
+please let me know or even better record your own episode.
+See you later.
+You've been listening to Heka Public Radio at HekaPublicRadio.org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out how easy it really is.
+Heka Public Radio was founded by the digital dog pound and the Infonomicon Computer Club,
+and is part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly,
+leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released on the Creative Commons,
+Attribution, ShareLite, 3.0 license.

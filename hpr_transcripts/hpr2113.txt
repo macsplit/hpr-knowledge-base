@@ -1,0 +1,158 @@
+Episode: 2113
+Title: HPR2113: sqlite and bash
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2113/hpr2113.mp3
+Transcribed: 2025-10-18 14:28:50
+
+---
+
+This is HPR Episode 2113 entitled, SQLite and Bash.
+It is hosted by first-time host Norris and is about 15 minutes long.
+The summer is using cron, SQLite and Bash to find directory rows.
+This episode of HPR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code, HPR15, that's HPR15.
+Get your web hosting that's honest and fair at An Honesthost.com.
+So I'm going to talk real quick about problem, I needed to solve and some tech that I used
+to solve it.
+I work for a company where we let users add content or upload files and we also have some
+processes that create files and the file system was getting a little out of hand and I was
+having to work kind of hard to keep it trimmed.
+I wanted a way to track down directories or files that were growing and be able to track
+the growth of some files and directories.
+So I started working on the problem, I went through several sort of processes and first
+I thought I could just have a list of directories I wanted a monitor and that could come up
+some way to loop through that list and figure out the file sizes and I figured out how
+to do this using Python and it was terribly inefficient, it's not that Python's fault.
+It's just, I didn't do a good job, it's not a good method to start with a list of files
+and to loop through the list and individually calculate the files out of it.
+So I had this, I had written this Python script and it didn't work real good and it didn't
+do what I wanted, it didn't run it often enough so it was just kind of bad.
+So the next thing I wanted to try was doing everything in BASH instead of Python so I knew
+the EU command so I sort of thinking was I could do some similar loop through a list
+of files, run a DU on every one of those files or directories, make some output, it was
+having trouble coming up with a list of files and you know I knew that if I was a static
+list that if someone added something new that it wouldn't pick it up so I was just, at
+some point I was in the directory that I wanted a monitor and I just typed DU without
+me real arguments and I realized that whenever you just ran DU that it listed out every directory
+in that directory so it listed out every sub directory.
+It basically walked down the directory tree listing every directory and it saws and it was
+sort of a little aha moment that I had that I didn't need to loop through anything, I didn't
+need to give it a list, I could just run the DU command and it would print out every
+directory that I wanted a monitor and it saws.
+So when I finally figured that out I didn't know how I would compare things week to week
+yet but I knew that I needed to at least start recording these file sizes and then I would
+figure that out later so the obvious way to run this was from a cron job so I set up a
+cron job to run weekly to basically just run the DU command so I would give it the dash
+M flag so a DU dash M and then the path to the sort of the overarching melt point where
+all these files that I wanted a monitor were located and then I would send that output
+to file and I would name the file based on the date.
+So just a quick diversion, I feel like there's not even episodes on brace expansion and command
+substitution and I use command substitution to get the date and to output the file to
+a file name that included that date so I'll try to put some example commands but you'll
+see if I'm able to do that you'll see where I have the date command.
+Okay so now what I've got is once a week I've got a job that runs and gives me a list
+of all the directories I want a monitor and their sizes so I need to figure out how to
+put a couple of those lists together and figure out what the difference is you know how
+much you know I've got one file path one week it's the size and the next week it's
+the size okay what's the difference and is it growing or shrinking and which ones are
+growing the most so I went through I don't know a few different things to try I tried
+to use in a the diff command and that I mean that would find differences but it doesn't
+really do anything other than on differences and it's really what it's for so I thought
+about how I could loop through these files and say you know read read the file one line
+of the time and get the file path and the directory size and then try to match that
+up with the file path and directory size and another file and this is sort of the looping
+process like I started out writing it and it just got it became you know a loop within
+a loop and came hard to keep up with what was where and then I had to figure out how
+to do the math to figure out what was what and then you know I had to figure out a way
+to do the math to figure out the difference between you know the you know the first file
+the second file and how much the growth was and then figure out how to sort it and it
+just got it got complicated fast and I was thinking of myself if I could just get this
+information into a database I know enough SQL to do to run a query and get basically the
+output I'm looking for and it seemed kind of silly to set up a database just for this
+and I really considered it making you know setting up a my SQL database and basically making
+a new either a new database or a new table every week and looping through the you know running
+the manually running the SQL and getting a lot of the information I was looking for but
+I really I knew that if I had to do it manually at some point I quit doing it and I forget
+about it so I wanted a way to automate it and I knew at some point I remember picking
+up that SQL light has a in memory database so you can use SQL light with a file obviously
+you can come back to the file and run commands in it but it also it it's really light and
+really fast that was a bus it's really light and really fast if you can do everything in
+memory so when I started experiment with is taking the output of a couple of these DU files
+and loading them into my SQL light tables and then figuring out the query to give me what
+I was looking for you know what what what directories grew the most over the course of a week
+I came up with some SQL that would do it that would load the two files into their own
+tables so I created a table called old and a table called new and then I would load the
+older file into the old table the newer file into the new table and then I could execute the
+SQL and you can do math in the SQL so you can if you have the old size of the new size you can
+make SQL light you know calculate the difference for you just by doing you know new size minus
+old size so that the query that I ended up running is basically select the file path and old
+size minus new size and I would natural join the two tables and when you do a natural join in
+SQL light it looks for two fields with the same name and if it can find two fields with the
+same name it will put those rows together you know the two fields the field in the old table is
+has a size and a path and the field in the new table has a size and a path and the old table
+is the sizes called old size and in the new table the size field is called new size but the path
+is called path and both tables so when you do the natural join it will put put those two fields
+or put those rows together matching them on the path so if there's a row in the old table with
+a path and a row in the new table with the same path it'll put those all in the same line and then
+if you do old size minus new size it will give you the different so also in the query I had
+to where old size is less than new size so it only showed me the paths that grew so if a
+directory shrank for whatever reason I don't care and then order by the size difference
+descending so the query would give me a path it's old size it's new size and the difference I know
+it listed by difference and it would only show me the ones that were growing okay but that
+process was still a little manual because I would have to well manually execute that SQL
+every time and each time I would have to substitute in the when I imported the files into a table I
+have to substitute the most recent I'm gonna have to stop it a little bit it's loud so I figured
+out that you know to run this thing manually I had to know the names of the files and substitute
+them in and then load those into the tables and then execute the SQL and it worked great
+wasn't definitely not automatic so to automate it I wanted to write a script that would
+create the database load the file it's execute the SQL and then email me the results
+that way it could just be automatic and I wouldn't have to think about it and once a week there
+would be the report I'm looking for in my inbox so one one problem I ran into now I wasn't
+expecting in hindsight it makes sense but at first I would just try to execute these SQL
+light commands you know to create the tables and to run the report sort of a single line at a
+time in bash and it didn't occur to me that whenever you know you invoke SQL light and you don't
+give it a file name it automatically uses an in-memory database so you run SQL light give it the
+command to create the table and then SQL like what exit well then that in-memory database would be
+gone so when you open SQL light you got to do everything at once all at once if you're gonna do it
+in memory or it just goes away so when I had the bash script do instead of executing these commands
+one of the time was echo the commands out to a file and then runs SQL light and give it that file
+file name and then it would SQL light there's one SQL light command basically just open the file
+looping through looping through all the commands in that one file and then outputting it to a CSV
+so the way that looks is it's just a bunch of well first is a variable that
+first there's a couple variables that set the name of the files and because I use the date command
+when I created the files back when I had the cron job I can use the same date command to
+set the name of the variable and the file names and so I do that with you know with today's file
+and then in the script I call it yesterday's file but it's actually last week's file and you can
+when you run the date command you can give it a dash dash date equals and in this case I give it
+in quotes seven days ago so when it prints the date it'll print the date as of a week ago which was
+convenient because that's the last time I ran the command to generate the file list so then
+after I set the variables there's just a bunch of echo commands that sort of build one line at a
+time the SQL file and then once that's once the SQL file is built I just run the SQL
+like command and send it the file that I created and then it spits out a CSV the last thing in
+the bash script is to mail me the CSV file so I do that with a malex command so malex dash a you
+can give it an attachment so do malex dash a dash s with a subject and then my email address and
+that that bash script runs in a cron job just a few hours after the first one so that way I know
+that's a the job that creates the file runs at three o'clock in the morning and the job that
+sends me the script runs me runs at eleven o'clock at night summarise all that sort of all those
+rambly bits that you just heard I have a cron job that runs the DU command the output of the
+DU command the output of the DU command is ultimately a list of files and their sizes a list of
+directories and their sizes separate about tab so I do that every week the next step is to
+the next thing I do is run a bash script the bash script basically just builds a SQL file
+the SQL creates two tables one for the old one for the new imports the old file and the new file
+sets set the couple variables so that'll output a nice looking CSV and then
+runs the query to give me the list of directories that have grown
+and orders it by the amount they have grown and then finally in the bash script after it builds
+the SQL executes the SQL it emails me the resulting CSV I feel like I just made the worst episode ever
+and if you're hearing this obviously sit it in anyway hopefully there'll be some hopefully
+there'll be some pretty decent notes to go along with it so you can maybe read along and see
+what up done I've got a handful of other topics in mind so if you didn't think the background noise
+was too annoying or if my rambly style of explaining things not very well was too bad let me know
+maybe I can cover cover a few other things I know there's a list of requested topics and there's
+probably a few on there I could do you guys have a great day
+you've been listening to hecka public radio at hecka public radio dot org we are a community podcast
+network that releases shows every weekday Monday through Friday today's show like all our shows
+was contributed by an hbr listener like yourself if you ever thought of recording a podcast
+and click on our contributing to find out how easy it really is hecka public radio was found
+by the digital dog pound and the infonomican computer club and it's part of the binary revolution
+at binwreff.com if you have comments on today's show please email the host directly leave a comment
+on the website or record a follow up episode yourself unless otherwise status today's show is
+released on the creative comments attribution share a live 3.0 license

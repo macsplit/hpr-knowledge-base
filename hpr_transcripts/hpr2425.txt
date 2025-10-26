@@ -1,0 +1,362 @@
+Episode: 2425
+Title: HPR2425: Intro to XSL
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2425/hpr2425.mp3
+Transcribed: 2025-10-19 02:47:22
+
+---
+
+This is HPR episode 2425 entitled Intro to XSL.
+It is hosted by Klaatu and is about 42 minutes long and carrying a clean flag.
+The summer is a brief introduction to XSL and XSL deep rock.
+This episode of HPR is brought to you by an Honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15.
+That's HPR15.
+It's a web hosting that's Honest and Fair at An Honesthost.com.
+Hey everyone, this is Klaatu.
+You're listening to Hacker Public Radio.
+Back in episode 2378, I talked a little bit about Doc book and why you should love it
+and why you should use it and why it's better than everything else.
+And in that episode, I really kind of, I think, I hope I haven't really listened to it lately,
+but I feel like I pushed Pandoc on people as kind of the easy entry into styling your XML documents.
+So if you just learned Doc book and have thrown a document together and then want to see it in
+EPUB or PDF form or plaintext or HTML or anything, then just use Pandoc because it's really,
+really easy and it has quite reasonably attractive and sort of modern looking styles.
+And so I wanted to emphasize to people that that was available to them because I think it's
+important to know that that's out there because a lot of people are put off by Doc book's
+requirement for a fairly foreign style sheet that people aren't really accustomed to.
+Now, of course, the advantage of Doc book is that it is XML and its intent is that you are
+probably going to convert it into some other format, which means that you can put it out to HTML.
+And if you're a CSS wizard, then you can take what Doc book spits out for you and modify it just
+with straight CSS. So not a big deal. You can get around any kind of need for XSL.
+But in this episode, I want to talk a little bit about XSL because while it is really complex,
+it's also very, very powerful. It's not, you know, needlessly complex. It's really,
+you get a lot for, if you learn it, you get a lot in return. And I kind of like that. And I'm not
+by any means an expert at XSL quite yet. But it is something that I've been using for a while and
+the more I use it, you know, the more tricks I try with it. And eventually you kind of start to
+know a little bit, a little bit about it. So I want to share what I know in a little bit of an
+introduction into XSL. So let's start at the beginning. We've already covered Doc book in
+episode 2378. If you haven't heard that one, you probably ought to listen to that. If you're
+going to, you know, to get the most out of this episode. But we'll just say, okay, Doc book. It's
+a markup language. It is, or it's a schema, rather, for marking up text. And it is XML format.
+So if you know HTML, you kind of know, you've got a foot in the door, let's say, for Doc book,
+because you're already familiar with identifying the fact that maybe, oh, I'm writing a paragraph right
+now, I should tag it. And instead of tagging it with just bracket P, close bracket, it's
+bracket, para, close bracket. So a little bit different than HTML, but same concept. Okay, we got
+that. Like I say, more information, 2378. So you got that. So you're not going to usually
+probably just deliver Doc book to people. You're going to say, here's my, my thing. You can look at
+it now. It would look really foreign to most people and kind of messy. Lots of tags are hard to
+read the actual text and separate the tags from the content. So what you, what you generally do is
+you transform it into some other text. And that is done by a tool called, well, as I said,
+in the previous episode, Pandoc, you could do it Pandoc, but we're doing the manual away now.
+So that would be done with a tool called XSLT proc, which I think means XSL transform
+processor or something like that. And that's one tool. There's another one called XML2,
+that's XMLTO. As in, you can transfer this from XML2 and then whatever. So XML2 is quite easy.
+It's a really nice front end. I think it's written in Perl or something. It's pretty neat. It's
+pretty cool. It's got a lot of options to it, but it is just a front end. So it's not, it's not
+doing all the processing itself. So we're just going to go ahead and get, we're just going to go to
+the barebone sort of basic tool set. So we've got XML that we've written in some text editor,
+Emax. And then we've got XSL that we've written in some text editor and then XSLT proc to transform
+all of those things into, into some other format. So that's the expected workflow, really,
+from Docbook. And like I say, you might have different tools. You might have something that
+transforms it for you and applies styles for you, but we're going to do it all manually right now.
+So if you are in front of a keyboard, lucky you, you can follow along. If not, I will try to be as
+descriptive as possible. In front of me, I have a monitor. I have Emax full screen split into four
+panels. You start out your XML document. We don't even need to go into Docbook so much for this,
+because this is really just about how you have XML markup and how you take it and sort of
+process it through this XSL style sheet language that I'm about to discuss. So we'll just
+drum up really, really quickly, a really kind of basic sort of semi-docbook, semi-free wheeling
+XML. So I'm just going to make a tag or an entry called XML and then I'll do a version,
+then equals quote 1.0, close quote close bracket. That's our opening. And then we might as well
+just go ahead and close that as well so we don't forget. So just bracket slash XML. Yeah.
+All right. So in between those two tags, obviously, we'll do a para. That's bracket P-A-R-A,
+close bracket. And we'll do my name is, and then we'll do author, close bracket,
+and then we're just going to put foo and then close the author tag. So, and then close the
+para tag as well. So I'll tell you why we do foo a little bit later. I'm going to demonstrate
+something for you, but right now I'm just going to put foo. So let's call that a placeholder,
+but it did, it works. And then we'll do another, another paragraph, maybe para. And then we'll
+just type out your listening to, and then we'll do emphasis space role, R-O-L-E equals quote bold,
+close quote close bracket hacker, public radio, close emphasis tags, and then close para tag and
+close XML tag, which we've already done. Just hanging there at the end. So we'll save this. I'm
+going to just save it as the remarkably descriptive XML.xml file. Okay. It's pretty simple. So that's
+our sample XML document. It's got the opening XML tag, the sort of declaration. It's got two
+paragraphs. And in the paragraphs, it's got an author tag. It's got an emphasis tag with the,
+and the emphasis tag has an attribute on it of role, which we've set equal to bold. Okay.
+So now we're going to go down to a new document. I say down because I have another buffer open
+within this, this window. We'll make this our xsl style sheet. So we'll, again, kind of just
+keeping this basic. We'll just open up a thing that says xsl and then colon style sheet. So,
+and then we have to do the XML in s colon xsl equals quote HTTP colon slash slash www.w3.org slash
+1999 slash xsl slash transform. We could probably squeak by without doing that. Oh, we shall
+also do a version equals 1.0. I forgot the quotes, quotes around 1.0. Okay. There we go. We could
+probably, we could, we could squeak by without doing that, to be honest, but it's kind of good,
+good practice to make declarations like that because some things will complain. But I guess
+more important, even than that, is this xsl colon style sheet thing. And you may or may not know
+a whole lot about XML, but XML has something called namespaces, which you've probably heard of,
+whether you've, you know, whether you program or not, there are such things as called
+as namespaces. And they essentially define, they qualify, let's say, they qualify what certain
+commands mean or what certain key words refer to. So if I have an imaginary programming language
+or markup language for that matter with the keyword foo in it, and another, and then someone
+programs a module or a plug-in for that same language, and they have the keyword foo in
+their module or their, their plug-in or their library, whatever. Then now we have two foo
+keywords that might dwell in the same place. That would be a problem. The interpreter, whatever's
+interpreting these two things, would not know which foo to use, were I to tell it to use foo.
+So we have namespaces, and then we can say, well, there's a clatu foo, and then there's this
+gort foo. And when clatu uses foo, he will say clatu colon foo. And if clatu is using gort's foo,
+then he'll write gort colon foo. Or possibly, depending on how things are structured,
+maybe we'll just default to clatu's foo. So we'll just say foo. But if we're saying,
+oh, we want to use gort's foo, then we'll do a gort colon foo. So that's the concept of a name
+space. And you see that in all kinds of places, C++, Python, and XML. So we and other places,
+but those are the ones that I'm familiar with. So in XML, the name space is indeed defined with
+colon. So you have XSL colon style sheet. And that way, it knows exactly which, you know,
+what library or what definition to go to when we say, oh, here's a style sheet. Because maybe
+something else has a style sheet. It wouldn't know the difference. So now it knows that we're talking
+about an XSL style sheet. Okay. So we've got the XSL declaration there. And then let's just do
+something real simple. And we're going to we're going to convert this XML that we have
+to HTML essentially. And we'll do it a little bit. We'll do a sloppy transform, but it's fine.
+So we'll we'll make a new tag here and we'll call it XSL template, XSL colon template,
+space match equals para, match equals quote para closed quote closed bracket. And then we're
+going to do a para bracket P bracket. And then bracket XSL colon apply dash templates.
+And then we'll just do a slash bracket to close that. It's sort of a self-standing one. And then
+we'll do a bracket slash to close the P tag. And then we'll do a bracket slash to close the XSL
+colon slash colon template. Okay. So it looks very much like HTML. You know, you're closing your tags
+just like an HTML, for instance. I'm saying bracket slash because I have emax auto fill the
+thing, the tag, you know, the the latest unclosed tag. So okay. So the next one we'll do is an
+XSL colon template space match equals quote emphasis, quote, quote, close bracket. And then we'll do a
+bracket I, XSL colon apply templates, close the bracket I, close the XSL template, and then close
+the XSL style sheet. All right. So that is our very basic XSL transform page or sheet style sheet.
+Now if you look at it, you may be able to predict what's going to happen. But let's talk about each
+one really quick before we reveal how it works. XSL declares itself as XSL. That's good. And then
+it says XSL template. Okay. So a template is a phrase or a clause, I guess, in an XSL style sheet.
+It's a little bit confusing because a lot of people, if you said, oh, here's a template to them,
+that means it's a template, like a set of templates. You know, I think for someone who's coming from
+like a word processor, like Libre office or something, they might say, oh, cool, a template. That's
+great. And they'll just think that the template has everything in it, you know, how sideboarder and
+it'll have styling for the fonts and, you know, the whole whole nine yards. And that's not how templates
+in XSL work. The quote unquote template is the style sheet. And within that, that style sheet are
+actual template templates. So the templates are rules. So this first template that we create
+is XSL template. And then we say, okay, well, we want to match, that's the word match, equals, quote,
+para, closed quote. So obviously what we're doing, you can probably divine from this. We're saying,
+okay, here's a rule, a template, for any element that matches para. So whenever XSL, T proc,
+or whatever we're using scrubs, our XML file, when it hits a para tag, that template gets invoked.
+So what happens? Well, what happens is that we tell it what to output. So we do the
+bracket P, close bracket. And then we say XSL colon apply templates. And then we close the P tag.
+So essentially, all it's doing is saying, whatever was inside those para tags, first give me
+a P tag, an HTML P tag for which is paragraph, and then put the contents, concatenate the contents
+into this space, and then do another thing, bracket slash P bracket. And that's all I want you to do.
+So we could put anything in there, really. I mean, we could put a span in there as well, if we want to,
+it doesn't matter. So now I've got a P span, XSL apply templates, close span, close P.
+And the same thing for emphasis, okay? All right, so save that as, again, the marvellously
+descriptive, XSL.XSL, and then we'll apply it. How do you apply it? Well, you need XSL, T proc installed.
+It should be in your repository. It may not be called XSL T proc in your repository.
+I'm not sure. I mean, obviously, I wouldn't be sure. I don't know what you're running. But you know,
+just kind of look around it. It'll be somewhere. It might even be, it's already included in your
+distribution, if you're running Slackware, for instance. But yeah, just look for it. You'll find it.
+Sometimes I guess it might be in some kind of like, you know, XSL Udels type of thing or something.
+I don't know. But the name of the executable that you will be running is going to be
+XSL T proc. So look for that and install it. Okay, once that's done, you can run XSL T proc.
+And I'm assuming now that you're open to a terminal, you're open, you've got your terminal
+open to the directory where your XML and XSL files are saved. So XSL T proc and then the first
+argument is the style sheet. So that's XSL.XSL. And the second one is XML. So that's XML.XML.
+So that's the page or the document that you want to apply, you know, you want to process along
+with that style sheet. You want to apply the styles to this. So we'll hit return. And the default
+action is to just dump it out into the terminal. So we can see the results pretty quickly.
+And what you should see is that you've got a little document here.
+And it starts with not a paratag, but an HTMLP and a span tag. And then my name is Foo,
+close span, close P. And then the second P tag and you're listening to and then italics,
+which is bracket i, close bracket, hacker public radio, close i, close P. So we've essentially,
+for all intents and purposes, a little bit sloppy, but you know, in real life we would want to
+append a bunch of header information and stuff, but let's just go with this for now.
+We've essentially, we've transformed XML into really hasty and fairly old fashioned HTML.
+Cool. All right. So now let's go and do some more stuff.
+And we're not going to, I'm not going to get too deep into the really cool stuff yet.
+Bear with me. It's coming. It's happening. So one of the cool things about this,
+and this isn't going to impress you if you know CSS, you're going to be like, oh, CSS can do that too.
+And it's true, you can. But what we can do is we can qualify, I guess,
+which, for instance, what kind of emphasis tag gets what kind of transform apply it to it.
+So in our second template here, in our style sheet, in our XSL one, we've got a XSL template match
+equals emphasis. Well, if you, if you remember in our XML, if you look at that, we had,
+we had a emphasis role equals bold. So really what we wanted was hacker public radio to be bold,
+but instead the emphasis thing made it its halix. And that's kind of, that's, that's not what we
+wanted. We wanted it to be bold. So what we ought to do, I reckon, is tell our style sheet here,
+our XSL style sheet, that if there's an attribute on this thing that dictates that it should be
+bold, then we should make it bold instead. So how would we do that? Well, here's how we would do it.
+So rather than getting rid of the current one, I'm just going to copy it the template.
+Because frankly, that's working pretty well for the emphasis. Actually, it's not. So I'm going to
+change the bracket I to bracket EM. And then the closing bracket I to bracket slash EM,
+because that's the modern notation for that. So what we'll do then is copy that block and paste it.
+So now we've got three templates, templates in our style sheet. And one of them is
+for real italics, for italic italics. And this one's going to be for for strong. So what you can do
+is you do it match equals quote emphasis, and then square bracket, and then the at sign roll equals
+quote, single quote bold, close single quote, close square bracket, close quote.
+So we've got the emphasis match, but we've stated after emphasis in square brackets that if it's got
+the the roll attribute and then notation for that is the at symbol, and then the word roll equal,
+that's easy to understand to remember because attribute. So at roll equals single quote bold,
+close single quote, because we already have double quotes around all this, and then square bracket quote.
+So that should set this thing, such that if it says bold up there, we're going to make it strong here.
+Strong. And that's the modern version of bold in HTML. I think that's everything there that I
+yeah, I think that's all I wanted to do there. So let's just try that out. So we go over to our terminal again,
+and clear it out a little bit, okay, and then xsl t proc space xsl.xsl space xml.xml. So it's the
+style sheet and then the the file that we want to apply it to return. And here we go. So now we've got
+the once again, we've got our HTML or studio HTML documents, p span, my name is foo, close span, close
+p, and then p span, you're listening to strong hacker public radio, close strong span. And of course,
+if we had italics in there somewhere, let's let's put let's just put emphasis around the word name,
+for instance, and do that again. And sure enough, now if you've got if you've done that, then you've
+got my em name, close em is foo, and you're listening to strong hacker public radio. So we've got
+essentially we've we've got a way to to to dictate how we transform things based on attributes
+on individual elements. There are a couple of different I mean they're well there I say a couple
+there are like I don't know 10 or 11 different patterns that you can match so that you can
+determine what kind of transform you want to do. You can do like a you can just do does the thing
+have an attribute, you know, so if it was just emphasis at role, if it has a role at all, then maybe
+we'll make it something else. You can as we've done here, the attribute equals a certain value. You can
+do you can do or is like emphasis or strong, you know, if it's if it's either an emphasis tag or a
+strong tag, not that there's a strong tag in doc book that I can recall, but whatever, you know, so if it was
+two things that you've decided need to be applied a certain way, then that's where the pipe symbol.
+So you do do a match equals emphasis pipe strong or whatever. So yeah, there's a there's a
+couple of different pattern matches that you can do within xsl and it really makes it a lot more
+sort of flexible, I guess, is what it does. And like I said, you can do that sort of thing in
+CSS3. So if you're you're really familiar with CSS, you are not impressed yet. That's fine.
+So let's do something a little bit fancier. So you'll you'll call that we've got
+this role or rather this author tag, which we put the word Foo into. That's kind of not that
+impressive, but Foo, it's a placeholder. Well, okay, how do we change what's in the author tag?
+Well, this is where xsl gets kind of fun and it has it has all kinds of things really. But one of
+the things that it has a sort of a switch or a case statement kind of it's called the choose actually.
+And then along with that obviously or you would imagine that that there would have to be some
+way to detect a value so that you know what to base this choice on. So it's got essentially a test.
+So let's do that. Let's make one. So we'll we'll go in here and we'll make another template in our
+style sheet. So xsl colon template and we'll do match equals quote author, close quote.
+So that's again the tag that we've used. We tagged Foo as author. So we were just matching the
+the tag again. But in addition to that, we're going to do a space name equals host,
+close quote, close bracket. So now we're in our template. So now we'll do xsl colon choose,
+close bracket. Now we're in our choose block and in that we'll have two choices. We'll do an
+xsl when that's WHE in space test equals that's TST equals quote dollar sign host equals single
+quote clatu close single quote, close quote, close bracket. And then we'll do xsl colon text. So we
+haven't seen this one before. You may be on you may be getting what I'm doing, but but I'm not
+going to say yet. So then I'll take clatu and then close the test the text tag and then close
+the when tag. Now we'll open up another when tag. So it's the same block really when xsl colon when
+space test equals dollar sign host equals SQL quote, gort, single quote, double quote, bracket.
+And then xsl colon text gort, close xsl text and close the when and then close the choose
+and then close the template and then close the style sheet. All right. So just kind of describing
+it to you again, we've got the new template and the template is matching the tag called author
+and then it has this other thing that we don't know about yet called name equals host. And then
+we've got to choose block and in that choose block, we have two when statements and one when
+statement tests to see if the host is clatu and the other one sees if the host is equal to gort.
+And either way, it sets the xsl colon text to either clatu or gort. And then we close the when,
+we close the choose, we close the template, we close the style sheet because we're done. All righty.
+So now we go back over to the shell and we type xsl tproc. Wait, don't type in what you think
+you're going to type in. I know you think you're going to type in xsl.xsl. You're not going to
+yet. You're going to we're going to use an option. We're going to use an xsl tproc option. So it's
+dash dash string program that's str i in g p a r a m space host the word host and then space
+quote clatu close quote and then xsl.xsl that's the style sheet and then xml.xml that's of course
+our document and then we'll hit return. And now what do we have? Same old thing html again p
+span. My name is wait a minute. It's not through. It's clatu and then you're listening to hacker
+public radio. And of course, if we just repeat that command, but instead of clatu and we feed it gort
+as the host parameter, then sure enough, we have my name is gort instead of clatu and you're
+getting it. You're listening to agrival. So as you can see, xsl has a couple of tricks up its sleeve.
+It can do sort of not if then statements, but you know more like a case or a switch, I guess.
+It can it can actually detect parameters that you feed it either dynamically or maybe somewhere else.
+I mean, you could put them in a couple of different places to be honest, but but in this case,
+we're doing it dynamically. And it's adjusting the very contents of our document based on what
+it finds. And I mean, we did the cool one or I think it's cool because we're swapping out actual
+text. I think that's just magical. To me, that's like amazing. Just wait a minute. You can you can
+detect the stuff between the tags and then change it. That's amazing. That that blows my mind.
+But I mean, you could you don't have to use it for that. You could say, hey, if the host is called
+clatu, then make the font style or make the font family, you know, junction. And if it's gort,
+make it orbitron, whatever. You can you can do all kinds of things based on on these matches.
+It doesn't have to just swap out the text. But it's really, really handy and it's really,
+really fun and pretty neat. So that's your basic introduction to SSL. I could go on,
+but I wouldn't really know where to stop, frankly, because there's just so much. There's so much
+that you can do in SSL. And yeah, it's all XML based and the more you know about X-Path and XML
+in general, the better. And it really is highly dependent on what you're outputting to as well,
+to where you're going, what you're outputting to. Yeah. So if you're going out onto paper,
+you're going to have kind of one set of templates, you know, or or or stylings that you would want
+to do. Whereas if you're going out to HTML, then it's a completely different matter. So it does,
+it's it gets complex and then on that complexity, you heap more complexity. To be fair,
+so does anything else, right? I mean CSS, you you can style CSS. But if you if you wanted to do CSS
+properly for printing, you would have to use the CSS print attributes rather than just the normal,
+you know, the usual CSS more or less. So there's there's there's a little bit across over there.
+And yeah, it just kind of depends on what you what you're planning for. But
+that said, if you kind of dig around enough into XSL, you kind of get an idea for
+for what things you can change and how you change them. And you can kind of take it from there.
+So it's it's it's it's it's pretty cool. Now finding out the information about XSL
+is a little bit trickier to be honest. It's not not super tricky, but it's tricky.
+The best place to start from my money is either Norm Walsh's
+web page where he does a tutorial on XSL. That is in Walsh that's in as in Norman in Walsh.com
+slash docs slash tutorials slash XSL slash XSL. Yes, I said that twice because it's in there twice.
+slash frames dot HTML. So that's that's a really good one. I had no complaints about that one.
+And then another one is well, there's certainly a book from O'Reilly called XSL-F-O,
+which is about making XML look good in print. So if you're in the mood to to purchase a book on
+the subject, you're certainly welcome to do that. The source for most of that or the
+I don't know if it's a source, but a lot of that same content is on dp or dpossin that's d is in
+delta pa wsln.co.uk slash XSL. He's the I think he's the author of the O'Reilly book yet is
+the O'Reilly book. So a lot of that sort of content is on his page in the I think the XSL FAQ I think.
+I don't know the site's a little bit out of date. So it's probably not it's not probably the
+best one to use, but it is really good. The stuff that is there is quite good. But yeah, either
+of those two sites are really good. The one that you'll find through internet searches a lot is
+sagehill press, which is not it's great. It's not bad. It's just it tends to be almost cookbooky.
+You know, it kind of tells you exactly how to do certain things and it doesn't necessarily at
+least at least in my opinion, it doesn't necessarily explain everything all that well.
+So I feel like that one's a little bit I mean it's a great site. It's fantastic and it's got a
+lot of information on there. It's just not like an explanation of everything or it is, but then
+it doesn't really cross reference itself and it's difficult to follow if I have found.
+And then finally last but not least I reckon there is a pretty good working example of all of
+this stuff and what you can do in this document that I released and I'll put a link in the
+show notes for this as well. But it's it's over at dmsgild.com. And if you just do a search for
+doc book, then this will come off. It's the adventure template for doc book XML. And I helped out
+on this and what we did was we took the official Dungeons and Dragons, I guess, contributor,
+you know, what is it called? Yeah, contributor stuff. Like anything that you contribute to,
+to Dungeons and Dragons under their official Dungeon Master Guild logo or whatever,
+imprint, I guess, they've got they had published an official template for that. And so
+we sort of took the official template and reproduced it in doc book XML. It's a little bit of a work
+in progress, but the the the source for that, well you can certainly just get it from dmsgild,
+but you can also get it from GitLab. And the source of that should be fairly fairly enlightening
+because there's a bunch of stuff on in there that well there's just a in the style directory,
+if you go to the GitLab in the style directory, there's my style and I think I call it rejo.xml,
+which registers all of your system fonts for for XSL to use. And then you can apply it
+different fonts to different elements. And then my style does a bunch of styling on stuff. And then
+the GNU make file is quite useful as well because it shows at least for the PDF output,
+which is the default output as much as it pains me to admit that, but it's kind of what that
+community expects. It's it's got a bunch of parameters in there that I left in the GNU make file
+because I wanted it to be easy to alter. For instance, the redistribution text in the footer by
+default is the standard dungeon master guild sort of all rights restricted type of thing or
+all rights reserved, whatever. And I am using this myself and I didn't want those kinds of
+restrictions. So I said it so that you could make, you know, you could do it, you could release it
+under a creative commons, a variety of creative commons licenses as well. So that one's super helpful.
+Another one that that I imagine might be variable very frequently is the paper type. And the page
+with page height, little things like that, you know, things that I figure, well people might want to
+change this frequently. So I'll leave it here so that they don't have to go through the style sheet
+and change it there, but you know, change it once here and that way it gets changed. You don't
+have to change it several times in the style sheet. So that's what I did there. So if you want to
+look at that, you're certainly welcome to it. It's free. You can just download it from either
+GitHub or from DMs Guild. And yeah, that's a pretty good example of a bunch of different
+principles. And some of it is a little bit, it's going to be a little bit snakey to try to figure
+out what exactly it applies to. There are a lot of different attributes sets and rules and
+templates that get applied. So it is a little, and this is obviously, as I say, this is very
+specific to going out to print. So it is very specifically building what's called F-O,
+formatting objects, which is required for going out to a printer. So yeah, it may be over complex
+for something that you're doing. It may not. But either way, it will show you kind of some of the
+the things that you can do with it. Maybe it'll be educational. Maybe it'll just be confusing.
+Who knows? One cool thing in there too that seems to impress people who see it is that you can
+do double column stuff really easily. And that's baked in there somewhere. I don't remember if it's
+something that you, yeah, column widths, you can do, you can set that a couple of different ways.
+So I have it as a double column by default, I think. So that's kind of cool. Apparently,
+that's not super easy to do. And something like latex or later. Later. That's how Dave Morris told
+me I was supposed to say it. Okay, so that's, yeah, that's XSL and XML and how they relate. So hopefully
+that was helpful. I don't know. I mean, it's really just to taste her sort of a teaser. If you're
+really interested in it, like I say, you can find out more about it. And then just dive right in.
+That's the best way to do it. The default dockbook style sheets are pretty ugly. They're, I mean,
+they're functional. They're super functional, but they're pretty ugly. So even just going in there
+and just changing the font. Just doing something simple as a font change is a huge difference. Or maybe
+giving a little bit of splash of color to your headings. Little things like that huge difference.
+And it'll make your dockbook output, your manual dockbook output without resorting to, for instance,
+pan dock, you can just kind of do it yourself. And it'll look really, really nice.
+And the more you do that, then you kind of build your way up to something that's completely,
+like, how did they make this? How did they even create this at all? So yeah, hopefully this was
+somewhat informative and helpful. So thanks for listening and I'll talk to you next time.
+You've been listening to Hecker Public Radio at HeckerPublicRadio.org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast and click on our contributing to find out how easy it
+really is, Hecker Public Radio was founded by the Digital Dove Pound and the Infonomicon Computer Club
+and is part of the binary revolution at binrev.com. If you have comments on today's show,
+please email the host directly, leave a comment on the website or record a follow-up episode yourself,
+unless otherwise stated. Today's show is released under Creative Commons,
+Attribution, ShareLife, 3.0 license.

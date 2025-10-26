@@ -1,0 +1,410 @@
+Episode: 2483
+Title: HPR2483: Useful Bash functions - part 4
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2483/hpr2483.mp3
+Transcribed: 2025-10-19 03:59:39
+
+---
+
+This is HPR Episode 2483 entitled Useful Mash Function, Part IV and in part of the series Mash
+Crypting.
+It is hosted by Dave Morris and in about 40 minutes long and Karim and exquisite flag.
+The summary is a Mash Function for Parsing lists of numbers and ranges.
+This episode of HPR is brought to you by archive.org.
+Arch-Universal Access to All Knowledge by heading over to archive.org forward-slash-donate.
+Hello everybody, this is Dave Morris.
+I've got a fourth show in the series about useful bash functions for you today.
+When I was putting it together I was thinking it probably going to be the last one.
+But if I come up with anything else and I have a general idea of another thing to do
+then I might squeeze in another show.
+I've only got one function to look at this time.
+The concept of it is simple but it's fairly complicated and because of the way in which
+bash works, the script works, it needs quite a lot of explanation I think.
+But some quite long show notes, the long notes are pretty big and I suspect just starting
+out that it's going to be a long show.
+So that's really a warning if you want to, if you want to, oh no, I can't listen to that.
+He turned it off now but you might find it useful.
+You might find that the notes help more than me talking about it but I'm going to give
+you both options.
+I've put in the overview section of the notes that as I usually do they'll be interesting
+to receive any feedback on this function because I've achieved perfection here at all.
+I've just managed to make something that works for my needs.
+I tried to make it a little bit more resilient to other uses but I'm not going to have got
+it all right.
+And of course if you are writing functions or any bits of bash tool and you like to talk
+about it as an HPR show then that would be much appreciated I think.
+So the function that we're dealing with this time is called range underscore paths and
+the purpose of it is to read a string containing a range or ranges of numbers and turn it into
+the actual numbers intended.
+So for example if you give it a range like one hyphen three that means the numbers one,
+two and three.
+And I use this a lot.
+It's square a few scripts that I've written that call upon it.
+It's really helpful when writing something where you want to select from a list.
+The script can show the list with a number against each item and then ask the user of
+the script to select which items they want to be acted on, deleted, moved or whatever
+of the things about.
+For example I manage the podcast I'm listening to using using this in a couple of scripts.
+I usually have two or three players, MP3 players like Sansa Clips and that type of thing
+and they have playlists on them and I'm listening to them until the battery gets low and needs
+charging and I pick up another one and continue listening to whatever's on there and I have
+a script that knows which playlists are on which player and it asks me which episode
+I'm listening to by listening all the playlists and I answer with a range.
+So I might be part way through episode five on the first player and episode ten on the
+next player and so forth.
+And it also knows what episodes I've marked as being listened to in the previous iteration.
+So it will offer me a list saying which of these can be deleted and then it will delete
+them from the from the disk where the captain also from the playlists that held in a
+database.
+So this business of parsing collection of ranges is not particularly difficult and even
+in bash which is not the ideal programming language.
+It gets more complicated when you're dealing with the side issues but we'll be going into
+that in some detail later.
+So the function range pars takes three arguments.
+The first one is the maximum value allowed.
+The minimum is always one.
+You can't give it negative numbers.
+So that's really to the list that you've presented, your user has got ten items in
+say so you want to prevent them from typing in item eleven.
+Then there's the string containing the range expression itself and I maybe should explain
+that it's meant to be a comma separated list of just numbers or of these ranges number,
+hyphen number.
+And the third argument is the name of a variable to receive the result of expanding this
+range expression thing.
+So I've given an example here of how you might use it which is preempting stuff a wee
+bit but it starts off by sourcing the file containing the function.
+There are various ways to do this.
+You could embed it in the scripture writing.
+You could embed the actual code in there.
+You could put a source command in there or you could put it in a library which you source
+into scripts and so forth.
+I do the final one, I have a library of these things.
+Then having sourced it so that it's known to bash, this is on the command line, in this
+particular example, then type range pars because functions are just like commands once
+they've been defined.
+Each pars space 10, space in quotes, 1 hyphen 4 comma 7 comma 3 comma 7, close quotes,
+space parsed, B-A-R-S-E-D, that's the name of the variable that's going to receive the
+result.
+Then simply echo dollar parsed following and the answer comes back 1, 2, 3, 4, 7.
+So there were two sevens in that list but the thing doesn't care.
+So 1 to 4 includes 3 and then 3 is there again.
+That also is not a problem.
+The result is simply a string because this can give numbers separated by spaces which you
+could use then in a for loop or you could put it into an array.
+There's all sorts of things you could do with it.
+So I've mentioned the algorithm.
+The reason I did this is because if you really didn't want to get into the guts of the
+function, maybe you just want to use it.
+You don't want to hear all the stuff about it but you can just stop after I describe
+the algorithm because I think you might find that interesting.
+What we do to process a range is step 1, we take in the range string and strip any spaces
+from it.
+Just then check to ensure the what characters it now has are only digits, commas and hyphons.
+If that's not true then the function ends with an error because you've got your expression
+wrong.
+Then it loops selecting commas separated elements 1 by 1 and elements consisting only of
+groups of digits in other words numbers are stored away for later.
+If the element contains a hyphen then it's checked to make sure that it consists of two
+groups of digits separated by the hyphen.
+Just in case you typed something like hyphen 3 without a 1 or some of the number in front
+of the hyphen.
+It's split up and the range of numbers between it's start and end is determined.
+So one hyphen 3 turns into a thing that makes 1, 2 and 3.
+I'll be talking about that when we get to look at the script itself, the function itself,
+and the result of that expansion is also accumulated.
+So each time around this loop whatever's been done by picking off an item from the
+commer separated list expanding if necessary is accumulated.
+Then accumulated elements are checked to ensure that they are each in range.
+So if the maximum number is 10 and you'd sneak to an 11 or something greater in there
+then that needs to be checked this stage.
+It's not done at the sort of separation out stage but it's done afterwards.
+Any that are not are rejected and an error message produced showing what was rejected.
+And finally all the acceptable items are sorted, so it's removed the 11 if there was one
+for example.
+And any duplicates are removed that's how we got rid of the two threes and the two
+sevens in that example earlier.
+And the list is returned as a string, so it's just the numbers in sorted order with spaces
+in between in a string.
+If any errors occurred in the analysis of the range and the function didn't immediately
+abort but at the errors like rejecting numbers outside the range then the function returns
+of false value to the call otherwise it returns true.
+Now that's really to allow it to be used where any sort of true false value is expected
+such as in an if statement.
+You can do that if you wish.
+It's not mandatory but it can be useful if you want to do it that way.
+So that's the basic algorithm.
+That's pretty simple.
+I think it is logically it's quite simple.
+Maybe because it's written in bash which is not the best language, it's even a language,
+best way of writing something like this, it's a bit more complicated than that.
+We have a hundred nod line function here including comments so it's less than a hundred I think.
+So what I've done is I've pasted the script itself, the function itself into the notes
+and it's got numbers longer the left so we can refer to them.
+But let's dive in and start looking line by line at what's happening.
+So if we start with line 11 that's the thing that starts function range pars.
+I just made the note that there's two ways of declaring a function in bash.
+You can either just write the name of the function range pars followed by pair of parentheses
+and then the body of the function and that's the thing usually enclosed in curly braces.
+I will talk about functions and defining them and stuff in another show.
+The alternative is that you start with the word function, then the function name.
+You can put parentheses if you want and then you put the function body.
+There's no significant difference between the two.
+There are some very subtle differences but we'll leave that for another time.
+Now lines 12 and 13, the first two arguments for the function are then stored.
+On these lines stored in variables called max, the maximum permitted number in the range
+and range the string holding the range expression to parse.
+In both cases we use the parameter expansion feature that I did in other,
+that I've done in other functions which holds the script in the error message
+if these arguments are not supplied so they're mandatory and you can say so in the the thing itself.
+Next on line 14 we have something which we haven't seen before.
+We've got the declaration local space hyphen n and it's creating a variable called result
+and this holds the name of the variable external to the function which will receive the result
+of parsing the expression.
+Now using this hyphen n option makes it a name ref and a name ref is a reference to another variable.
+I've chopped the definition from the the bash manual quoted it here.
+Whenever the name ref variable is referenced it says,
+referenced or assigned to unsaid or has its attributes modified,
+the operation is actually performed on the variable specified by the name ref variables value.
+A name ref is commonly used within shell function to refer to a variable whose name is passed
+as an argument to the function.
+Now there's more to talk about with regard to name ref variables.
+I plan to do and more about these in other bash episodes further on.
+So we'll leave it to that now but the basics of it are that you hand in the name of a variable
+and the function then goes through this name ref variable in order to access that external variable.
+It's a type of redirection if that means anything to you.
+Line 16 there are some other variables local to the function which are declared here.
+And in this case exit code one of the variables is given an initial value of zero.
+Now on line 21 there's an expression in which range is being processed and saved back into itself,
+the range variable and along the way its entire space is all spaces are being removed.
+Now I did talk about this way back when in one of the bash series that I've done.
+I can't remember if I've referenced it in this particular show but look back through some of my
+bash shows if you want to dig deeply into what that actually means. Now it works.
+Now next lines 26 to 29 consist of a test and if statement and the range variable is here being
+checked against a regular expression and I want to do a show on regular expressions in bash very
+soon and this one consists only of the digits 0 to 9 a comma and a hyphen. These the only characters
+allowed in a range list as I mentioned in the algorithm section. If the match fails an error
+message is written and the function returns with a false value so it says invalid range shows you
+the range and then exits with value one which if you're looking for that you can say you messed up
+so try again. Now this next chunk gets into some of the complexity it's not that complex but when
+you look at it you go well I would go and you're like wow on earth is this all about so I'm going
+to try and explain this and I'm we'll go into some detail here. We're looking at lines 36 to 61
+and this is a loop it's an until loop and it is testing every time round the loop whether
+the variable range is zero empty zero length. Now this loop is actually chopping the range list
+up into its component parts based on the commas. Each time it errates a comma separated element is
+removed from the range variable and so it grows shorter and that and that test whether it's
+empty will become true when the whole lot has been sliced up and there are probably other ways
+you could do that I mean you could you could probably chop it up and put it into an array and then
+iterate through the array. I didn't when I wrote this this is old this code just originated quite
+some number of years ago maybe ten years ago something like that I didn't know about a raising
+bash it wasn't completely sure that they existed I'm not sure they existed then don't know but
+they certainly weren't on my radar so that's partly why it works this way but it's it's it's okay I
+think it's a valid way of doing it so lines 40 through 46 here we've got a thing that checks to see
+if the range variable contains a comma it does it with a regular expression and if it does so it's
+an if else type thing it fills creates a better the variable item which was declared earlier
+now the variable item is filled with the characters of range up to the first comma it does that by
+using the slicing capabilities of parameter expansion again which I've discussed earlier you
+can be years ago maybe now and then range is set to its previous contents less that bit has been
+chopped off now if there was no comma in range that means there's only one element there so there's
+only one element there or we're down to one element after doing series of chopping so we just put
+what's there into this item variable and set range to empty lines 51 to 59 is a test where we've
+now got something in element it got an element in items so I'm going to get my names mixed up
+we've got we've got an element a bit between commas in the item variable and it's either going
+to be a plain number which is easy we don't need to do anything else or it's a range expression
+of the form number hyphen number now there's an if statement and another if statement afterwards
+inside it the outer if tests to see whether the item contains a hyphen and if it is if it does I
+should say then the inner if is invoked now when I was rereading these notes ready to to work
+to do this recording so you realise that that seems very bizarre why would you do that because
+there's some of this is old and I sort of semi forgotten why I did what I did so I put footnot here
+explained why did I do it this way I did a double take while preparing these notes wondering why
+I had organised a logic here in this way the first part of the loop is concerned with getting the
+next item from a commas separated list at that point the contents of item the variable item
+is either a bare number or a number hyphen number range but a differentiator between the two is
+a hyphen so checking for that character allows the complex regular expression on line 52 to be
+emitted if it's not there so it's it's just for efficiency really so I've written here if you
+can think of a better way of doing this please let me know in the comments or by email so let's go
+to line 52 if we've got a hyphen in there this compares the contents of item against a more
+complex regular expression this one looks for one or more digits a hyphen and then one or more
+digits and if this is found then the item is edited to replace the hyphen by a pair of dots why
+yeah well this is inside braces as the argument to an echo statement if you've given the range
+one hyphen five in item the echo will be given open brace one dot dot five close brace you'll
+recognise that from an earlier show in this in this in this series of bascripting it's a brace
+expansion expression so echoing this thing now the complexities of brace expansion are that
+it has to be a command on the command line but it's not if you just do an echo at this point
+because inside the echo there's a parameter substitution and once the parameter substitution
+has finished the brace expansion that is yeah the the contents the brace expansion contain
+the result but it won't then be executed so you have to put the whole thing in in a vowel
+statement so you're building a command for a vowel and the command for a vowel is echo and then
+number dot dot number and then it will work so if if you if you gave it one dot dot five in braces
+then the result should be that item gets filled with the numbers one two three four five if the
+regular expression doesn't match then this isn't a valid range so this is reported in the else
+branch invalid sequence it says and the item variable is clear of its contents we don't want it
+also because we want this error reported to the caller we say exit code to one and we'll see
+that being used later on so what we've got is that if if an invalid range is given it's rejected
+but the loop keeps going and then on line 60 there's a variable called selection and that's
+accumulating the successive contents of item on each iteration we're using the plus equals form
+of assignment to make it easier to do it to do the the accumulation that there are the ways
+of doing it but bash allows you to do this plus equals again when I first wrote this I don't think
+I knew about it or maybe it didn't exist I'm not sure it's hard to know which which of these
+are so anyway notice that when adding to selection item gets a trailing space put on it and that
+means that none of the numbers collide with one another in the string so line 61 is the end
+of that particular loop so let's look at lines 66 to 97 this is a moderately sizable chunk
+I've actually detailed it's almost a page full of stuff in the notes apologies for this it's
+hopefully the notes plus me talking about it will help you understand what I'm trying to do here
+so on on this particular line 66 there's an if statement ends at 97 obviously and it's checking
+to see first of all if the variable selection actually contains anything you could well have
+handed this function a range expression which contained nothing that was valid so it will have
+been thrown away and selection will contain nothing so we need to to check that there's an
+important working on an empty thing line 71 to 77 is a loop and it cycles through the numbers
+in the selection variable now it's a feature of this type of loop for i in dollar selection that
+it accepts a list of space separated items you see instances where people do this with a
+result of an LS command or with all those things which return lists of stuff space separated
+and of course the selection variable contains a list of numbers separated by spaces so inside this
+loop there's an if statement from line 72 to 76 this if statement checks each number to ensure
+that it's in range between one and whatever's in the variable max if it's not in range and the number
+is appended to the variable E R R I suppose you'd pronounce it if it is in range it's added to a
+variable SEL selection so it's stored away as an error in the first instance or it's stored away
+as one of the numbers in this selection that's basically what it does it's just filtering out
+the good from the bad in the the list that's been constructed lines 82 to 87 is another if and
+this is determining if there's anything in the E R R variable if it contains anything then there
+have been one or more errors so we want to report them and there's a problem there's a sort of
+oddity here the test that's being used here is weird and it's the result of failing to do things
+the way I would have expected them to work and searching around for alternative ways of doing it
+now I set up an explanation section which is down below in the in the notes there's an expression
+dollar open brace E R R plus open double quotes dollar open brace E R R close brace close quotes close
+brace it's also in line 93 which we look at shortly and it's a very very odd expression the
+conclusion I've drawn is that there's a bug in bash that's causing this not to not to do what
+you would expect it to do that that's not my conclusion necessarily it's what others have
+commented on and it might be fixed I don't know in a later iteration of bash the reason
+there's an issue is because in all of my scripts I use the line set space hyphen O space no unset and
+there's an equivalent which is set space plus U what this does is it treats the use of unset
+variables in prouder expansion as a fatal error it's a good way of catching yourself
+writing code which we forget to initialize stuff and then go and use it but the problem here is
+that either the E R R or the SEL variables might be unset in in this particular function in
+in some circumstances and it will result in the function stopping with an error so it should be
+possible to test a variable to see whether it's unset without crashing the function but it
+doesn't seem to be the case in this particular arcane expression achieves what what's needed here
+the expression is actually a case of the parameter expansion which is usually written as dollar
+open brace parameter colon plus word close brace but you can remove the colon and it changes the
+meaning slightly the expression used on line 82 returns a null string of the parameter is unset
+or null or the contents of the variable if it has any and it does so without triggering the
+unset variable alarm whatever you in that to call it there's a set here I don't like resulting
+to magic solutions like this but it seems to be a viable way of avoiding the issue I guess just
+at the moment hopefully that particular problem will be resolved at a later stage you should just
+be able to say is this variable empty where is the variable empty means if it's not even set well
+then it must be empty it's declared in this in this code so it's not as if bash doesn't know
+that it exists it exists as an entity we just unset if there are no errors for example so you
+shouldn't have to you shouldn't cause an error if you say tell me if this this thing is unset
+or if it's empty because really the two things are the same in certain contexts some context you
+might want to separate the two out it's a very esoteric point and I apologize for it but
+it's a way of getting run this particular issue so if we look at line 83 having passed by this
+so basically we're saying is there anything in the ERR string and if the answer is yes we go
+on to line 83 where the variable MSG is filled if I'm writing these names and they're completely
+unpronounceable is filled with the list of errors and the way we do that is why would you do this
+you might be saying we'll come to in a minute this is done with the command substitution expression
+whether a for loop is used to list the numbers in ERR using an echo command and these are then
+piped into the thought command the thought command makes what it receives unique and sorts them
+numerically you'll notice if you look that says sort minus UN or hyphen UN try not to say minus
+the U means make it unique and the N means do numerical sorting otherwise it will do string
+sorting where 1 and 10 sort above 2 so that's the way in which we get rid of duplication and also
+sort stuff into the right order now why why are we doing this stuff sort doesn't work on
+one line you can't just give it one line of stuff and say sort that because it is designed to work
+on a series of lines in a file so this command substitution here is a bit of trickery which takes
+each thing put it into echo and echo produces a new line at the end of each thing that it
+echoes and it sends that stream of lines to sort and the result comes back as the various numbers
+that are then sorted and made unique each separated by a new line in one string line 84
+because of all this new line jiggery pokery that is used to strip out all the new lines or replace them
+by spaces now there's another piece of strangeness here it's not a bug this is a clever thing
+but it needs a bit of explanation i made a sort of digressive explanation here because otherwise
+it would make this nested list thing that i've constructed so horrible to read so i should have
+made it a footnote because you can jump to a footnote and jump back again i'm discovering this as
+i'm actually scrolling through my notes now the issue is the expression dollar single quote
+backslash n single quote what this is is an example of what's referred to as ncc quoting if you
+look at the canoe bash reference manual and i've got a link to it about ncc quoting it'll explain it
+in a bit more detail than i'm going to hear the constructs got to be written as this dollar followed
+by a single quoted string and it's expanded to whatever character in the string with certain
+backslash sequences being replaced according to the ncc standard so this allows you to put in
+stuff like new line backslash n casual turn back slash r and even stuff like unicode characters
+so for example echo dollar single quote backslash capital u 2192 closed quote produces a thing
+called a right arrow which i chose that one because there's loads of unicode things i tried to
+do the pile of poo one but i couldn't get it to work this one works in a browser and on the
+command line i think it's a terminal emulator dependent actually but it does it does work
+definitely in the notes so something that might be of interest to some people who want to
+use these characters in various contexts so jumping back to line 84 now we've got this MSG thing
+properly formatted and made unique and sorted and new lines replaced by spaces and would print it
+out on line 85 line 85 printed out using a print f command where the messages value bracket s out
+of range and then we substitute in the string that's in this MSG variable finally we set exit code
+so what will happen is if you have provided a lot of values which are erroneous then
+we'll get report then lines 92 to 96 we are rebuilding the selection we removed any errors from it
+now i'm going to prepare it for output as a as a final result so we've got another one of these
+first of all we set selection the variable selection to we emptied on line 92 then we check to see
+whether there is anything in the cell variable and then we do the same trick of a for loop echoing
+stuff into sort which makes it unique and sorts it in the correct order then we take the result
+of that store it into the variable selection then we take selection and we strip out all the
+new lines that have been added to it so but the time we've been through lines 92 to 96 we have
+reformatted the list of selected numbers so line 102 we are happy with this selection variable so
+we simply save its contents into the result variable that we we got in as an argument and that
+writes the result back to the the variable that we handed in in the first place because it's a name
+ref remember line 104 then returns from the function and it returns with whatever is in exit code
+if if no errors have been detected this will be zero that it started out at but if if an error
+has occurred then it been set to one so I made a list of possible improvements there's probably
+a lot more actually it's funny thing when you're you're looking through this stuff trying to explain
+it you you actually see issues and shortcomings even then even though I've looked at it so many
+times over the years I still see things that are deficiencies but I made a made a few notes about it
+I started doing this in the 2000 I can't remember when exactly but I certainly a bit before I retired
+2006 2007 something like that and since then I've been using it in my own projects and even in the
+product during the process of getting this ready for for this show I've made some improvement here's
+three points that that sprang to mind anyway the initial space removal removal process means that
+something like seven comma one hyphen five and seven space comma space one with lots of spaces
+one hyphen five the two are identical as far as the algorithms and that's good but it also means
+if by accident you typed four space two when you forgot what a comma between them then it will
+the two numbers will be squished together to make 42 that might be a problem not sure I can solve it
+but they're their potential potential problems but very least you might go huh I typed four
+oh no I didn't type four come to do oh that I got 42 back oh what's going on I don't know the command
+substitution which the sorts the list of numbers and and all that stuff to make them unique
+using the sort command I'd like to avoid using external programs if I can but trying to do this
+type of thing in bash which is possible I think but it's hell of a convoluted so it's not really
+an improvement there's something in me that wants to make that change but it would be stupid to do
+so because sort does a fine job final point the reporting of all the numbers which are out of range
+could lead to somewhat bizarre error report so if you if you accidentally typed in
+arguments such as 20 space quote five hyphen 200 where you you meant type five hyphen 20 and you
+accidentally added another zero then you're going to get a report that reports all the numbers
+between 21 and 200 as being out of range so we could do with something changing the function
+so it's a bit cleverer perhaps when the number of errors is exceeds some value we we simply
+put the the first and last values and and put three dots in between or two dots or something
+to show everything between 21 and 200 is an error so I've got some examples of use of this
+I am not going to read these out I think you can you can probably work through them yourself but
+but there are three command line usage things which is probably not the way you'd use this anyway
+but just to prove just just me proving that it does certain things and how it doesn't if you give it
+a sequence which is in the wrong order doesn't care because it's it's going to sort them at the end
+anyway it doesn't care if there are overlaps we already looked at this if you do ranges and single
+numbers will range it to ranges that overlap one another then it's it's not going to be an issue
+because the duplicates will be removed by the sort minus u and business it also doesn't care
+about empty items so if you give it one comma comma to there's an empty item between there but the
+empty items will they will actually be processed but at the end of the day they won't be they won't
+make it through to the output it does there's an example with with an out of range item which is
+flagged but it it continues because we're not testing the result in this particular case it doesn't
+cause any any issues really it's just it is emitted from the final list so I I made it a little
+demo script to run this thing and I've made it downloadable I call it range underscore demo dot
+sh you can download it and play around with it if you want to the idea was that this is a script
+which calls range parts and it you give it you give the script to two arguments the first two
+arguments to range parts and then it provides its own third argument and then it reports what
+it did it also does a test on the result so if you run it as dot slash range underscore demo dot sh
+then a ten space one comma nine hyphen seven comma two it comes back and says success and then
+it says pause list pause list colon one two seven eight nine so it was partly just I was using this
+to test it make sure it works and stuff but if you're interested you could mess around with it
+yourself so if you test it and find any errors then please let me know I just I would appreciate it
+so I think I finished hopefully that was not too boring and it was useful to you in in some form
+or other get back to me if you'd like any further explanation or anything if I didn't explain it
+very well feel free to do so I've given you some references here to the canoe bash manual and
+this ncc quoting in particular canoe bash reference manual is an excellent source of information
+you can type man bash on the command line but boy finding stuff in that huge man page is not easy
+the reference manual is indexed and so forth so it's a lot better plus also you can do searches
+through it and it just seems to be a really well put together document so I definitely recommend
+that if you want to get deeper into bash stuff okay that's it then bye now
+you've been listening to hecka public radio at hecka public radio dot org we are a community
+podcast network that releases shows every weekday Monday through Friday today's show like all our
+shows was contributed by an hbr listener like yourself if you ever thought of recording a
+podcast then click on our contributing to find out how easy it really is hecka public radio was
+founded by the digital dog pound and the infonomicon computer club and it's part of the binary revolution
+at binrev.com if you have comments on today's show please email the host directly leave a comment on
+the website or record a follow up episode yourself unless otherwise status today's show is released
+under creative comments attribution share a life 3.0 license

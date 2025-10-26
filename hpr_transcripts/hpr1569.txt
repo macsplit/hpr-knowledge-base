@@ -1,0 +1,219 @@
+Episode: 1569
+Title: HPR1569: Many-to-many data relationship howto
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1569/hpr1569.mp3
+Transcribed: 2025-10-18 05:11:15
+
+---
+
+This episode of HBR is brought to you by AnanasThost.com.
+Get 15% discount on all shared hosting with the offer code HBR15.
+That's HBR15.
+Better web hosting that's Honest and Fair at AnanasThost.com.
+Hello and welcome to Hacker Public Radio.
+My name is Mike Ray.
+In this show I'm going to explain the best
+why think is the best and possibly the only way
+to implement a many-to-many relationship
+in a database.
+This has been triggered by some discussion between Ken and Dave
+about many-to-many relationships in databases which
+has been seen and heard on community podcasts and emails.
+I believe there was some discussion, some good nature
+ribbing between them about the way in which Ken
+implemented a many-to-many relationship in some mechanism
+to do with the website.
+One of the first tasks in designing a database
+is the identification of the entities which will be contained
+and managed by that database.
+And more often than not an entity will have its own table.
+There will be a one-to-one relationship between an entity
+and a table in a database.
+Exceptions to this rule will be where the software demands otherwise.
+Sometimes for example there are e-commerce systems
+which are designed using object oriented technology and
+they demand a greater degree of granularity in the data
+and that might give rise to a situation where a single entity
+could occupy more than one table.
+What do I mean by entity?
+If you can imagine designing a database for an e-commerce
+or a sales ledger, some kind of mechanism by which you're selling
+products either via a website or by more traditional means
+your database will probably contain such things as
+customer data, invoice data,
+invoice line data because an invoice can contain more than one entry.
+Products and other related things, each of these is an entity.
+When you've identified the entities in a database
+they are often represented on a diagram by a diagram which contains
+rectangles, one for each entity, they contain a label.
+For example there will be a rectangle with the word customer
+inside it which represents the customer entity.
+Perhaps another box which represents the invoice entity
+and whatever entities exist in a database will be joined together
+by lines which join the boxes.
+These lines indicate the nature of the join between the tables.
+For example a customer, a single customer can obviously make more than one
+visit to a website or a shop and make more than one purchase.
+One customer could give rise to many invoices.
+The relationship between a customer entity and an invoice entity is a one to many
+relationship and that is represented on the diagram by
+line drawn between customer and invoice and at the invoice end which is the
+many end. The line splits into what is generally known as a
+crow's foot which is a little three-pronged
+shape just like the foot of a crow or chicken
+and that touches the box which contains the entity
+of which there are many. In fact there could be just one row in the invoice
+table because of course a customer at some point will make his first
+purchase so a one to many could be more
+correctly described as a one to one or more
+relationship. You could also describe a one to many
+relationship as a many to one if you're looking from the other end if you're
+standing if you like at the invoice and looking towards the customer then
+what you have is a many to one many invoices
+a collection of invoices can have or will have the same
+customer ID. If you find that in your database you have
+a one to one relationship then there is probably an error
+with your data analysis. The rules of database normalization
+state that all of the entries all of the columns
+in a single row in a database relate to the primary key
+the primary identifier of that entity so a customer
+obviously has a name but the name is often not unique so the customer is or is
+issued with a customer ID and then the customer name
+customers gender age. Not a number of other things related to the customer will
+be stored against or keyed by that index and if you have another table which
+is a one to one relationship with a customer it probably belongs
+in the customer table and combine two tables into one.
+So what about many to many relationships? Well these are not
+as common far less common than a one to many relationship
+one example and an actually example I use here is in the implementation of
+a music database. In this case the database contains
+two entities an artist and a genre. Now it's
+obviously there's going to be multiple artists and multiple genres
+and it's conceivable that a single artist may appear
+in more than one genre and it's absolutely certain
+that a single genre will probably have more than one artist so this gives rise
+to many to many relationship but in defining a many to many relationship
+in the database we do not and cannot simply join the artist
+and the genre table and have a crow's foot at both ends of the line which
+joins the tables and the reason for this should become clear
+when I explain about foreign keys and
+trying very hard not to violate the rules of data normalization.
+A foreign key is a column contained in what is often called the child
+in the relationship so in this in the case again for a customer
+and the invoice the customer it can be sort of as the parent
+entity and the invoice as a child entity
+and an invoice row will contain a column which corresponds to the
+customer ID and this is indexed not uniquely indexed but indexed
+and contains the customer ID of the customer making the purchase
+which is recorded by the invoice. This column the custom ID column in the
+invoice table is known as a foreign key to the customer
+table. Now if we were to try to join two
+tables together and have a crow's foot at both ends of the line
+and join artist and genre in a many to many then
+this would suggest that the genre table will contain a foreign key
+for the artist ID and the artist ID and the artist
+table will contain a column which is a foreign key
+into the genre table. This is nonsense and it's a mess
+because it absolutely busts wide open the rules about data normalization.
+Because now the artist entity the artist table contains a column
+a data item which does not relate to the artist
+doesn't identify the artist okay identifies a genre to which the artist can
+belong but it does not identify the artist
+and that breaks kind of creating this kind of circular
+relationship it just breaks the rules of data
+normalization so hard to explain but it does so how do we
+generate or represent a many to many relationship in a database.
+Well if you can visualize for a minute the two tables
+artist and genre joined together by a straight line
+with a crow's foot at each end now cut that line in the middle
+and plop another table there and then spin the two halves of the lines
+through 180 degrees so now you've got
+custom at the central table the table in the middle is called a cross
+reference table and I always suffix these tables with
+x ref shortfall cross reference so in a worked example
+there would be an artist table a genre table
+and an artist extra artist genre x ref table
+so the artist now has a one-to-many relationship
+with the artist genre x ref table
+and the genre table has a one-to-many relationship
+with the artist genre x ref table
+what does the artist genre x ref table contain
+It simply contains two columns, an artist ID and a genre ID, and these two columns are not
+permitted to contain null, so they're defined as not null constraints in the data definition.
+And there is a single index which is a compound unique index using both of those columns,
+so you would create an index, give it a unique constraint and use both of the columns
+in the creation of that index, and what that does is to ensure that there can only be a single row
+where an artist and a genre are contained. Now this is all getting a bit
+esoteric and a bit abstract and confusing, so in the show notes you will find all of the code
+which implement this real world example of artist and genre in a partial music database system,
+implementing many to many to many to many relationship, and what I have used as an RDBMS
+in this case is SQLite, that's SQL ITE, which is the world's widest most used RDBMS.
+That's a very grand claim, but it's a claim which is perfectly justified because if you have a
+smartphone, not a Blackberry Android phone or an iDevice in your pocket, or if you have
+a satellite TV receiver or a TV over at home, then chances are each of those
+devices containing an embedded operating system, big at some flavor of Linux or
+whatever the Apple operating system is or Windows CE or whatever Windows phones now contain,
+they will probably use SQLite, in fact they almost definitely do, so that's why SQLite can
+and does live up to the claim that it's the most widely used RDBMS in the world.
+Now SQLite is very easy to install on Linux. In fact a lot of packages are contained or installed
+on a Linux platform will already make use of SQLite, so you probably have SQLite libraries and
+development libraries, but you may need to install the interactive prompt. On Arch Linux it's called
+SQLite 3. I can't remember exactly what it is on Debian or Ubuntu, but it's in the show notes anyway.
+So once you've installed SQLite 3 you then have an interactive prompt which you can enter,
+create the database and merely create and populate tables and run queries.
+The show notes contain all of the files which I created to simulate the many-to-money
+relationship, data definition language, CSV comma separated values data to load into the three
+tables that we're going to create, load scripts, SQL scripts to select data to demonstrate how to select
+artists in given genres or supersets of genres and scripts for dumping those results sets to
+other CSV files. So I have a good look at the show notes, it's very, very comprehensive.
+As I say all of the files that I used in generating the example are there.
+In each case each file is topped and tailed with the string dash, dash,
+snip dash, dash. This is because in a SQLite SQL command or query file,
+two dashes begins a line comment, so dash, dash, dash will not affect the contents of the file.
+The only example where you don't need to take out the dash, dash, dash, dash will be in the
+CSV data files because of course you need the data to be there on its own.
+I've included a couple of artists which appear in more than one genre.
+An Irish folk rock band called Horselips which crosses from the description,
+both into folk and rock, a Scottish band called Runrig that also belong in folk and rock.
+There are some artists there which belong only in rock, a couple which belong only in folk
+and a couple of classical artists just for good measure.
+And all of the mechanisms that you'll need to test or demonstrate the workings of a many to many
+relationships. But to emphasise again, I've written or I've been involved in the design and
+implementation of some quite large client server, Oracle and MySQL database systems and it's been
+my task to implement many to many relationships on several occasions and I have never found a better
+solution than this, a better solution that does not compromise normalisation or lead to an
+even worse situation which is where you need to drag big record sets back across the network,
+probably containing recorders that you will ultimately drop because that's wasteful in bandwidth
+and it's wasteful in client side processing cycles and as for doing things like
+putting comma separated lists of fields into a single column in a database.
+Oh no no no no no don't do it, it's bad, you know who you are.
+So there we are, I sort of concluded it's been a probably a difficult explanation to follow but
+look at the show notes because the show notes are very very comprehensive and as I said they contain
+a complete worked example implemented with SQLite3 which despite being small and compact and fast
+is an exceptionally powerful RDBMS for its size and for its
+it's not even, I don't think it's even GPL, it's just free, it's just in the public domain, it's
+free as a bird, it's a very realistic, very realistic till don't use it if you intend to
+write a relational database system which is going to have multiple concurrent users if you're
+going to start an airline and have booking clerks all around the world who need to access the
+database at the same time. SQLite ain't going to do it, SQLite really is more suited
+to single user embedded systems or small one-off programs embedded inside a software program
+for use by only the programmer or by only by use for use only by the person who is using the
+software at the time. In fact there's one really good feature of SQLite which is the ability to
+create a database in memory. That's a database that does not exist on disk. If you name the database
+colon memory, colon, it exists only in memory and then it's possible to define tables and columns
+and relationships, perhaps into which to load the contents of an XML file or a bunch of XML files
+or JSON files or whatever in order to make blisteringly fast queries of configuration data
+which if it's changed in any way can then be dumped back out to an XML file at a later time.
+I think that's it. Long and long-winded boring technical difficult to grasp just by listening to
+what I'm saying. It's really one of those things where you're going to need to look at a diagram or
+Peru is at the very least a textual diagram in order to be able to understand exactly what
+these relationships are and exactly how the mechanism works but trust me this is as far as I can
+as far as my experience tells me the only way in which to implement many to many relationship
+in a relational database system.
+You've been listening to Hacker Public Radio at HackerPublicRadio.org. We are a community podcast
+network that releases shows every weekday Monday through Friday. Today's show, like all our shows,
+was contributed by an HBR listener like yourself. If you ever thought of recording a podcast
+and click on our contributing to find out how easy it really is. Hacker Public Radio was founded
+by the Digital Dove Pound and the Infonomicon Computer Club and it's part of the binary revolution
+at binrev.com. If you have comments on today's show, please email the host directly, leave a comment
+on the website or record a follow-up episode yourself. Unless otherwise stated, today's show is
+released on the Creative Commons Attribution ShareLight 3.0 license.

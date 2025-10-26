@@ -1,0 +1,123 @@
+Episode: 2617
+Title: HPR2617: Exposing a Raspberry Pi database through a REST API
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2617/hpr2617.mp3
+Transcribed: 2025-10-19 06:38:17
+
+---
+
+This is an HBR episode 2617 entitled Exposing a Raspberry Pi database through the REST API.
+It is posted by me using it and in about 20 minutes long and carrying a clean flag.
+The summary is in this episode I discuss how I use Python to make my speed test later available across my network.
+This episode of HBR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+Hello hacker public radio fans. This is easy once again.
+Going to go a little different this time a little less formal.
+Talk about a project I've been working on recently.
+It's a Raspberry Pi project a couple of episodes ago.
+Well, it's a couple of my episodes ago. I talked about using lots of Raspberry Pi to do lots of different things.
+Mostly using them as servers and one of the projects I do and I still do on a regular basis is every hour on the hour.
+I run speed test CLI and store the results of that speed test in a little SQLite database where it has just a couple of fields.
+It has the date, the time, the upload speed, the download speed and the URL to the PNG that is produced as a result of running the test.
+The PNG is just a file that shows what the screenshot looks like if you would have went to the web interface for speed test and the results page what that looks like.
+On a little side note, on a separate Raspberry Pi project, my daughter has her own Raspberry Pi and we did a project together following one of the instructions of another host to make a Raspberry Pi temperature monitor.
+My daughter and I did that together. She's six. We did that and then we used Python and Pysereal and some other stuff to visualize what that data looked like in our house.
+I don't remember who the host was of that episode but thank you for your episode on how to use a Raspberry Pi as a temperature monitor because we followed your instructions and they worked great.
+Anyway, back to the show. I wanted to just go over briefly what I've done.
+I've been taking this data, I've been storing it for forever in a SQLite database.
+What I've had to do is I've had to either access it into that machine and run SQL queries on that little file or I've had to copy the file to my local computer and then either run Python or R.
+Python or R on it to visualize what the data looks like.
+That's fine but I can do once that better. I'm a web developer nowadays. I could probably develop a little app around this.
+I didn't build a web interface for it but I did build a RESTful API. It's quasi-restful.
+The idea is that I can go to a URL or a couple different URLs and get JSON data back and the JSON data will be the speeds every hour on the hour.
+Just a little history, REST stands for the representational state transfer. It is, as Wikipedia says, an architectural style that defines a set of constraints to be used for creating web services.
+Anyone who is my age or older and has been doing web development might remember SOAP web services.
+It's something that I won't still use but something that preceded REST.
+There are other API or application program interfaces that exist now but SOAP was one of the grandfathers and it was really unwieldy.
+You had to deal with XML data and authentication was always weird. I don't know if it had to be proprietary but I was using it in a proprietary setting and I always seemed opaque and hard to use.
+REST is more of a standard and every SOAP interface is going to be different. REST is a different approach to try to make a standardized approach to creating an interface to share data between systems.
+It uses basic HTTP methods for doing this and those methods are get, post, put, delete and also to a lesser extent patch.
+Those are the same things that you would do in any data driven application which creates, read, update or delete information. That's what CRUD stands for.
+What I decided to do was I can probably do one of these around this application. I can just go to my Raspberry Pi hostname slash speed slash slash all and I should be able to get all the data and then I made a couple other inputs.
+One is slash slow and that will give me all the slow and then I also did a slash slow slash latest and now it will give me all the latest slow and I also did a just a slash latest and now it will give me all but in a certain date range.
+So that's the basic idea of what I did. What the app actually looks like is that's a single file. That's the great thing about Python and about the framework that I chose to use which is called bottle.
+It's a simple interface to and I wouldn't use it in production for big application but I've used it to some either prototype rest API or to use as like instead of using and testing.
+I've mocked out what a database for some external services is possible like using it just so that I can get real requests coming back.
+And I've used internally to do a couple different things sometimes with the front end on it but usually just with just using it to make requests and making Jason come back to me.
+And so in this case, I am, where is this? Oh, yeah, it's there. So in this case, I am, I'm just making a simple app and I'm not doing a full card. I'm only doing a read.
+So the only request that will work is a read a read request or get request.
+And I'm just looking at that app now because it's pretty simple.
+And I'm just going to explain to everyone what it is and how it works.
+So a little architecture overview is that I'm using Python and the bottle framework and the SQLite driver, the Dalton SQLite driver for Python to query the data and send out, send it out of the bottle application in Jason format.
+And Jason format is not familiar with it. It's a semi-structured text format that is easier to read than XML.
+It's more, it's more of, well, it stands for, I think it stands for JavaScript object notation, something like that.
+But the idea is that you squiggly lines to represent a squiggly brackets to represent an object and inside there you can have different data types like you can have a list which is inside of square brackets.
+You can have strings which are inside of double quotes and you can have ints and floats and stuff like that that are just, you know, the baron numbers without the quotes around them.
+And it's a way of, you say like key colon value, key colon value comma key colon value comma, and that's how it's structured.
+You can have a key colon array of values or you can have a key colon and then inside there another object with squiggly brackets, key colon value key colon value.
+And so it's a way of structuring, of doing a semi-structured data format.
+So that's what the output is and then to make it, let me just look at this with S.
+So the whole app is only, how many lines is it? 60 lines, including all the spaces and stuff.
+And there's an endpoint. So I made a simple function that just serialized the data because I'm not using a nor a RAM or anything to do serialization.
+So I just made, I made it really simple where I have like a SQL statement that I'm always going to do a select star from speeds, which is the table name.
+And then I do a pattern at the end of that for a wear clause. So if, if I'm just going to the all endpoint, that's it.
+Select star from speeds. If I have a work, if I have a slash and then something after that, I'll add a wear clause to that and it's just building on that string.
+So I take all those, since I know the data structure, if this was a small app that I know the data structure for, I would say, select this item and that item and this item and that item.
+And then serialize those individual items too. Because I know this is my database, I made it up, I just hit select star.
+And then I just say, all right, I'm going to serialize it, which means I'm going to turn that, that tabular data into JSON format where I'm going to put like date, colon, then the date, time, colon, the dime, download, comma, the download speed, upload, comma, the full speed and link.
+So colon, the link to the PNG. And like I said, they have a couple different endpoints and an endpoint is where you want to send what your value or look up to get to the data.
+So slash speeds is just all, it's just actually instructions on how to use the service.
+And it says, you need to hear the endpoints that you can use all latest slow or latest slow latest slash slow.
+And so then I have slash speed slash all and that is all the data slash speeds that slow, which says anything where the download speed is less than 10 or the upload speed is less than five.
+And then latest slash an int would be that int represents the days. So I say where the date is with as, you know, ex many days away.
+So if you say it's slash latest slash 90 would be less 90 days. And then similarly slash latest slash days slash slow would be just the latest 90 days of slow network traffic.
+And I'm running all that out to port 8000. That's important to understand because then I have to use a Python module called, well, I don't have to use this one, but I have to use a whiskey server.
+In this case, I'm using micro whiskey to then serve that information to NGNX, which is my web server.
+And a whiskey server from it from from what Wikipedia says is a web server gateway interface and it's a simple calling convention for web servers to forward requests to web applications or frameworks written in the Python language.
+And so it's similar. I think it's similar in concept. Yes, it is. It's right here. It's similar to CGI.
+That I think Pearl uses CGI.
+But the idea is that NGNX expects web requests or a web server expects requests to work a certain way.
+And it's not necessarily what your programming which does perfectly. So you have a translational layer to translate what your application does to what NGNX or your web server expects to do.
+And I might explain that very well, but it's probably 80% of what I know about how whiskey servers work.
+So you're not missing very much based on what I know about how they work. But it's basically like a little where between your application and your web server.
+And so you have to configure a web server to listen to and you're going to use basically make it.
+I guess it's considered a proxy to listen for requests coming from that port and turn those over to whatever port you're running applications from a web server.
+Usually that's port 80 or port 4 for 3 if it's HTTPS.
+And so that's what I've done. I made a simple NGNX configuration where I say listen on port 8000 for this application and serve it through port 80 to the outside world.
+And the outside world in this case really just is my internal network.
+So that's all it does. And then I made a simple system D service to start that the application on on boot. So on boot NGNX automatically starts up because that's part of the scripts that we install something on.
+Then we install NGNX on Ubuntu, which I'm using Ubuntu server arm on this Raspberry Pi. But it'll start it up automatically. It's not the same thing for.
+For Sino S and Fedora, I think you have to enable it there. But and and Debian and Ubuntu it's automatically enabled. Pretty sure that's right.
+If not, don't worry about it. You can enable it if you it's easier enough to enable the system D service if it's not enabled when you start.
+And then after that, I did a similar thing for for my app, which I say go run this whiskey app. And the whiskey app just says how many workers I want to use to handle the requests and where the app.py file is to make the app work.
+And after all that, I tend to use either R or Python. And if I'm using R, I'll be using the HTT R or the json light libraries to read the requests. And if I'm using Python, I'm definitely using like I will use your lib if I have a requirement to not install any other software.
+But if I can install other software, I use the request model. Just because it's easier to understand. And from the command line, I use a tool called HTTP. And it's also in the Python packaging.
+The repository, IPI, but it's also installable from Debbie and and actually I think it's Debbie and Fedora and end of into just by saying, you know, app install or DNF install HTTP. And it's a nice interface for it basically just wraps the request library.
+And on the command line, I can just say HTTP get the name of that, the name of that server slash speed slash slow. And then enter. And it'll do like a colorized nice looking output of all that data.
+So if I'm I use HTTP every day for my job, I don't know what I do without it. I people use postman and things like that. I find those things cumbersome when I can just go to the command line because I can do everything you can do post requests, you can do has plugins. So you can do even like AWS off or all off like all those all these different types of authentication methods. You can use directly with it. You can add your own.
+C a search. It's it's pretty powerful command line tool. So I use it every day.
+But yeah, I and sometimes I'll just use that and another command line utility called JQ, which is a way to parse J, Json data on the command line. So I'll just go, HTTP, this thing, pipe that in the JQ and then look for this thing.
+And you know, that's just a little bit of how I like to hack around on my computer. And you know, a lot of these things are across a lot of these tools, these tools that I use, I use in my job now.
+And a lot of these a lot of these, the way of thinking is the most important part. And that is is, you know, find out the most simple way to do something and do it that way first.
+And then, you know, it's obviously it's important to understand your requirements and gather all the information. But there's there's a guy who has probably my favorite.
+URL for any for any website ever and it's simple as better than complex.com. And I think that is the best thing in the world to say.
+So that's how I build applications and sometimes they get really complicated, but they they didn't start that way.
+Simple is better than a good bus.com. There it is. Yeah, and they do Python tutorials.
+But yes, if you have any, if anyone has any requests for me to go further into either Python or web frameworks in Python or even if you have questions about how to make the same app,
+or how to make the same application and go, which I could probably do, or want to know anything more about how HTTP requests work.
+Let me know and I'll might do an episode on that too if there's interest in it.
+And one other side note is if anyone has any, I'm planning on writing this talk that I'm supposed to be giving in the next six months about data driven web development for medical, medical laboratories and life sciences.
+Because that's what I've been doing for the last, I don't know, 15 years. And how to do it using opposite software and how to do it from scratch. And so I want to give the talk here first.
+So if you don't hear, we do another episodes on hack public radio.
+But if you don't hear in the next couple of months, an episode for me about this topic, please shoot me a line and say, I thought you said you're going to do this.
+And hold me accountable to do that because I want to deliver to you guys first.
+So thanks for being a great audience. I love the feedback that I've been getting from both the show notes and the show comments and also in the monthly roundup.
+So continue to keep responding and every one I implore you once again, I know it's summer time and people have other things to do.
+But get on there and to an episode yourself submit it. And as always, keep packing.
+You've been listening to hack public radio at hack public radio dot org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HBR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out how easy it really is.
+Hack public radio was founded by the digital dog pound and the Infonomicon Computer Club.
+And it's part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+On this otherwise stated, today's show is released on the creative comments, attribution, share a life, 3.0 license.

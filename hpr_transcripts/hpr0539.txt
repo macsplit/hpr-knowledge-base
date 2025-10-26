@@ -1,0 +1,214 @@
+Episode: 539
+Title: HPR0539: Little Bit of Python Episode 7
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0539/hpr0539.mp3
+Transcribed: 2025-10-07 22:43:32
+
+---
+
+music
+Welcome to a little bit of Python, episode 7 on Unladen Swallow with Brett Cannon, Steve
+Holden, Jesse Naller, Michael Ford, and myself Andrew Kushling.
+So should we cover real fast what Unladen Swallow is?
+Yes, we should.
+Unladen Swallow is a branch which started out as I believe a branch of the 2.6 code may have
+been the 2.5 code and what they're trying to do is to introduce selective speed ups into the
+interpreter. So with it be the idea behind making it a branch was that it should be relatively
+easy to integrate and the original intention was to integrate it back into the Python 2 series.
+So what they're doing is they're adopting just entire compiler technology and I think they're
+targeting the LLVM virtual machine which is a virtual machine that's previously been used for
+other language systems in which has I understand just arrived at the stage where the LLVM
+compiler can compile itself now. It was something I seem to remember reading this week but
+they were all right okay that was an LLVM based project I beg your pardon but anyway it's
+technology that's currently actively being worked on and the interesting thing is that
+the Unladen Swallow developers who's worked by the way has already been used inside Google
+because most of the original team were Googlers I think it was Thomas Faltes and Colin Winter wasn't it?
+So they're already putting the code into practical engineering using Google but they are now
+proposing to merge the results into Python 3 which has resulted in some very active conversations.
+It's very active so yeah the original team was Thomas Wooters, Colin Winter, Jeffrey Askin and
+then they've added a few people read who I believe is an LLVM maintainer if I'm not mistaken.
+So the team has definitely grown and like Steve said, Unladen Swallow made a bit of a splash
+at last year's Picon in 2009 by basically walking into the virtual machine summit and saying
+we have branched Python 2.6 and YouTube is now using it. So it's been in production use
+often on inside of Google for some time and if you check the mailing list archives for Unladen Swallow
+you can see the other people and companies have actually been putting it to actual use
+since the project is started. Now some people's response to Unladen Python Unladen Swallow has been
+to treat it like snarek oil I think would be a fair summary because they've seen early results
+where the I suppose the execution time benchmarks have been shall we say indecisive although certain
+benchmarks have definitely reported speed up but I think some people have focused on the much
+larger memory requirements of the interpreters using the branch code. When the Unladen Swallow guys
+started and they announced that they were integrating a just in time compiler into Python which
+is very sexy technology and everyone wants a just in time compiler into in Python and they said
+our goal is to get Python five times faster and then I think they found that the the LLV
+and the parts of the LLVN that they were using were actually parts that weren't much although the LLVN
+is is used massively it's used by Apple and their Apple sponsored developments of a lot of it.
+Those parts weren't the parts that the LLV and Swallow guys were using weren't used quite
+so well and more than as quiet as good as shape as they thought so the proposal that comes
+the table with it will let's say it's not certainly not shown five times performance improvements
+on most of the benchmarks so some people are quite disappointed but as I think will come out in
+the conversation that the proposal that they've just that they've put on the table is very much
+the start of making Python much faster it's technology that really paves the way for us getting
+a much faster Python. The key thing is as Michael said it paves the way they've made sure from the
+beginning that the design was such that it was extensible and easy to build on top of so a big
+part of only in Swallow was to get some initial speed ups yes but also to build the foundation needed
+to continue to improve the performance as time goes on and people get no ideas on how to speed
+things up and add things etc etc. It really is a foundation yeah there are a few things that are
+controversial about the proposal I mean the first one is that the Pat 3146 which was announced
+very recently merging unlabeled swallow back into CPython so this is happening soon that's
+the idea how soon is anyone's guess but the things are first of all they tell getting Python 3 and
+not Python 2.6 the memory uses is a lot higher the startup time is slower the binaries are bigger
+we're going to have C++ in the code base in the Python CPython code base for the first time
+so it's not an controversial proposal on the other hand it is important that we bring these
+issues on to the table and talk about them how much larger memory usage is unacceptable
+for example or how big an improvement does there need to be for it to be worthwhile and can we
+come to a consensus on that but does memory usage matter if you can turn it off I think Java's
+proven memory memory usage is not a big issue for a lot of people and also I think the reaction
+from Python dev has led the unlabeled swallow developers to take a second look at their code and
+to find omissions so for example when you turn off the jit they realized that they were still
+initializing all of the jit data structures even though they're never actually used and so the
+memory usage is therefore a bit artificially high when you're not using the jit at all
+and I'm sure there are going to be other minor bugs of this sort that will turn up
+well and that's kind of the point of proposing it inside of the pep is to kind of scroll these
+things up no one I don't think anyone involved or talking to Colin or anyone anyone at all was
+under the impression this would just be a you know oh look we're going to merge it done
+there's certain things there's certain requirements that have to be met I mean Colin and the rest
+of the unlin swallow guys have done exactly what Andrew was saying which is oh you know we've
+proposed the pep we've gotten feedback like we have to be able to completely disable this if we
+don't want this and they've gone out of their way to kind of say you know we're going to go back
+we're going to fix these bugs we're going to make memory usage better we're going to decrease
+the binary size and a lot of these have actually been bugs so and it's also important to note that
+the way the pep is structured is the first thing is going the first thing that would happen is
+that they would basically be merged into the python subversion or material tree whichever comes
+first and they would have their own private branch at which point more bugs would be kind of
+fixed and scrolled out you know and resolved and then eventually once those bugs are fixed
+and once it is met you know the high standards that python core does have it would be merged into
+pie three so it's not it's not you know it's not a shoe in it's not going to happen overnight
+but it's it's really setting the foundation for a much faster python in the future and also I mean
+to Michael's point we will have C++ in the code base however you don't need to use it so while
+it's there it's important to remember that LLVM and UnLatin Swallow work on the byte code level
+so developers who want to add features to python won't actually need to work within the constraints
+that UnLatin Swallow adds or work within C++ they will be able to work on the same interpreter
+they know they love later on if they choose to add the optimizations in C++ inside of the UnLatin
+Swallow Jit system so you're saying that it's it's actually going to be fairly effectively ring
+fence as far as other developers are concerned there's farza more yes that's good the python's
+API would continue to be pure C functions and C header files it's farza more yes now I could be
+wrong the relationship isn't always clear but you will be able to write and add features to the
+language in regular old C and then later optimize them using P++ and UnLatin Swallow's work that's
+that's definitely true the only issue is that as if you're using the version of the python if
+you're linking against the version of python that uses the UnLatin Swallow parts then there may be
+issues around using two different C++ runtimes because that can cause issues in some projects
+but by default it's not going to change the way you develop but I think there is going to be
+some careful consideration about how is this going to affect C++ projects that currently embed
+python who might want to embed the version that includes UnLatin Swallow and I think on a lot of
+platforms that's not a problem because you'll just be able to use the same version of the C++
+runtime to compile the whole thing but I think it may be an issue on some of the more obscure
+platforms and it will run on Windows yeah that that was an issue a while ago the LLVM didn't project itself
+didn't have many Windows developers although they they claim support for Windows it wasn't very
+well tested but the UnLatin Swallow cars are said to look with the current code we've got
+with all the fixes that we've pushed back into the LLVM all the changes we've made
+all of the python tests and all of the UnLatin Swallow tests all part on Windows
+so Windows supports with UnLatin Swallow is currently good which is good news.
+On the C++ note there's actually a section inside of the pepset called the addition of C++2C
+Python and it's just really briefly highlights it says ease of use of LLVM's full powerful code
+generation and related APIs convenient abstract data structures to simplify code and the C++ is
+limited to limited to a relatively small corner or corners of the C++ on code base and then it says
+of course the low lights a C++ style guide would have to be developed and enforced and developers
+must know two related languages C and C++ to work on the whole range of CPython's
+internals so it is going to be sandboxed pretty well yeah it does make more demands of a developer
+who wants to integrate fully with Python then doesn't it I mean it brings some interesting
+questions out about just how important execution speed is I know for example there are some
+people who work in the financial world where their predictive algorithms your speed is absolutely
+everything and they they will quite happily expend huge amounts of money on on extremely fast software
+extremely fast hardware to get the maximum amount of it obviously they're going to be quite
+happy about paying for increased speed with additional memory but that's not everyone of course
+and the problem that the developers have is trying to strike a compromise that's suitable for
+everybody that's happening it keeps everyone happy well and that's why we have the flags to be
+able to disable it right I mean it's it's being able to get it out of your way when you don't need
+it is going to be just as critical having it when you do yeah I think it's important to keep
+a perspective that the lean swallow speed ups are not going to be for everyone as it's obviously
+been said there's memory pressure there's speed up cost I think it's going to be to do something
+kind of like Java is on the server it's something for those long-running processes where over time
+the amortized upfront cost is going to be completely blown away by the long-term speed up
+but for stuff when you're launching like some command line to one python it's not going to be
+the version you're going to want to use bingo I think there are a lot of people who do care about
+python performance though and as you can tell by interest in projects like cycle and why people
+are so excited by um by unleavens well I think there are a lot of people who want python to run
+faster and there are projects where they don't or can't use python that they would like to use it for
+sure at the same time if if the interpreter start up takes a lot longer then people who typically
+run short scripts um end up paying a penalty for that but like I was saying it's it's important for
+the short-lived you know one-off scripts you can just pass the flag that says don't enable the
+jet but for those of us who are running on longer-running server processes this is pretty much a very
+large boom for us um especially in the web app space where a lot of your processes may be extremely
+long-lived and you know just dealing with network damans where you'll have something that hopefully
+fingers crossed will run for maybe years and the unleavens swallow developers are aware
+that there are people who care a lot about start-up time and one of the more impressive things about
+their project is they've done a lot of work on benchmarking for the case of start-up they actually
+have a full set of tools that they try like for example I think they're using recurrent bizarre
+as tests so how how long does it take to fire up a bizarre process and print a help message
+the resulting set of benchmark tools is I think going to be really useful for other applications
+in future as well I it's already it's already very useful the i and python guys are just starting
+to use the unleavens swallow performance benchmarking tools and the pypava guys are already
+using them because a lot of the other python benchmarks that we have are all micro benchmarks
+which don't tell you very much about actual application performance and the unleavens swallow
+benchmarks are sort of real well this is the sort of thing you really do with your python code I
+mean they're focused on the things google does with that python code which is stuff like jango
+templating and and that kind of stuff but it's a decent set of real world performance benchmarks
+which is a great thing to have for listeners who want more information about this I strongly suggest
+going to read the pep pep number three thousand one hundred and forty six because it's a really
+interesting document they talk about the original rationale for the project and their history
+and how the project got deflected into fixing bugs in lvm and in improving the ability to debug
+and profile jitter code and it lays out a lot of the issues being faced here this this is my
+favorite bit from the pep it says we explicitly reject any suggestion that our ideas are original
+we sort to reuse the published work of other researchers wherever possible if we've done any
+original work it is by accident and people have said similar things about python that it's not a
+research language that innovates it consolidates features i think if you're looking for that kind
+of innovation then pypy is the place to go because they're really trying to do innovative new stuff
+particularly on the jiffrums and it'll be nice when python has two good working fast efficient gyps
+my final thoughts on that are cahn and the rest of the unlaimed swallow team have been very very
+pragmatic which is you know one of the great things about the python community it's always very
+pragmatic about the features we add what we do how we approach things i mean real world benchmarks
+you know what can we accomplish you know what can we do rationally and you know keep things working
+and i mean much like Andrew said read the pep read the discussion on python dev because it's
+very very grounded in you know re solving real problems and not you know doing some sort of bizarre
+architectural astronaut we're going to create something all new and all knowing it's very much grounded
+in pragmatically what can we do to speed python up now i mean we've talked a lot about the the
+problems with um that unlabeled swallow faces and that it's in the process of overcoming but i
+think the future for it is very bright they're already showing at you know at least 50 percent
+performance improvement on a lot of those those benchmarks almost twice as fast on some of them
+and there's a lot of stuff that they're not doing yet they're not unboxing the primitive types
+like integers and floats so i mean there's an obvious big improvements to be had when they
+start looking at these kind of optimizations they're not yet doing tracing um one one possibility
+that's been talked about it is taking the the jissids um cut the native code that's generated
+and actually possibly being able to save that out separately as as a dll or as an so file
+so that you you can um you can basically take prejudiced code and as we start to look at those
+perform those sort of optimizations none of which are massively innovative they've all been
+been done on other platforms so they're all well within the bounds of possibility but there's all
+sorts of interesting uh things that could happen in the future if you're thinking about unlabeled
+swallow i mean like we said like we said in the beginning this is a foundation for a much much
+faster python they've only touched the tip of the iceberg when it comes to the optimizations they
+can do and as time goes by we're just going to keep adding or they they and all of us in python
+core are going to learn and we're going to keep adding optimizations it can only get faster
+so i mean i guess that the the VM summits and the language summits coming up on a one of the places
+this is going to be discussed in detail but do we have any idea any rough framework of the sort
+of time frames we're looking at are they talking about getting it into python 3.2 or python 3.3
+i don't know off the top of my head of which which exact version they're targeting the merge
+pep has to be accepted and then we have to i suspect the pep's going to be accepted personally
+i mean the the unlearned swallowguides have pretty much addressed most of the issues and
+they've made it clear that if you compile if you compile python without the L of the jit support
+it will be pure sea and that basically it's an opt-in solution and if you opt out it's not going
+in any way impact your system so honestly i'm not seen as in any way negative so i suspect it
+will get in it's just a question of how many people use it and who really gets into trying to add
+new speed features compared to adding new language features and just how that kind of plays out but
+i see it happen in personally the great thing is is we get their developers everybody everybody
+involved in lln not llvm but everybody involved in the mean swallow comes to python core for free
+which is you know in my in my book you know the more the merrier and the schedule for python 3.2
+calls for the first beta release in september 2010 it might be a little tight but it seems
+at least feasible to envision this going into python 3.2 i've talked to cologne he seems pretty
+positive that it will actually happen i mean i think the guys get to spend time to do it
+as their job at google once it gets accepted so i think they're going to start fairly soon and
+they should actually be able to get it done i think i have faith great so the future is bright
+this has been a little bit of python episode 7 with brachanan michael ford
+steve holden jessie naller and myself andru kushling please send your comments and suggestions
+to the email address all at bit of python.com our theme is track 11 from the headroom project
+is known python available on the magnitude label
+thank you for listening to half the public radio hpr sponsored by karo.net so head on over to
+cbr0.18 for all of us

@@ -1,0 +1,166 @@
+Episode: 2496
+Title: HPR2496: Making a Raspberry Pi inventory
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2496/hpr2496.mp3
+Transcribed: 2025-10-19 04:07:55
+
+---
+
+This is HPR Episode 2496 entitled Making a Raspberry Pi Inventory and in part of the series
+Bash-Cripting.
+It is hosted by Dave Morris and in about 11 minutes long and carrying an Ecclicit flag.
+The summary is how to collect identifying information about API devices.
+This episode of HPR is brought to you by archive.org.
+Find universal access to all knowledge by heading over to archive.org forward slash donate.
+Hello everybody, this is Dave Morris for Hacker Public Radio.
+So today I'm talking about Raspberry Pi's but really it's a talk about Bash in the context
+of Raspberry Pi's so I've labelled it as part of the Bash series.
+So the title is Making a Raspberry Pi Inventory.
+Inventory.
+Never know how to say that.
+I've got quite a lot of Raspberry Pi's, maybe too many, there's one or two that are
+not even in use.
+But the ones I have are sometimes lose track of which is which and so I need to recall
+that Raspberry Pi 5 is such and such a model, such and such a memory, etc etc.
+So I want to be able to easily get hold of that information and make an inventory of them
+all.
+And so I wrote a little script which you can run on any Pi which will report what I considered
+to be useful information about it.
+I don't know if you know this, if you're into Raspberry Pi's but each one has a unique
+serial number.
+When you look it up it says the Raspberry Pi site says it's randomly generated so there
+may be a few collisions but it's as close to unique as you can get without being actually.
+There's also a revision number stored in the firmware which encodes various bits of information
+about its release date model, PCB revision and memory size.
+And my script codes this and produces something readable.
+So I run a Wikimedia instance on a Pi I have done for years and years and I use this script
+to record details of my Pi's and store it there and I have a page per Pi and go on about
+what I've done with the Pi and what projects I'm planning for it and so forth.
+So it's useful because my memory is awful so I need to write everything down.
+So this episode is really talking about the script.
+I'm not going to go into tons of detail about it, I'm not going to do a lambda line breakdown
+of it but I will talk in general about it.
+I've called it what Pi, what underscore Pi, it's a bad script as I've said.
+There's a copy that you can download in conjunction with this show but that's going to be a static
+copy and it's a bit of a work in progress so I may well be fiddling about with it.
+Though it hasn't had any work done to it since April and 2017 but there's also a GitLab
+repository which I've pointed to.
+So if you want to grab a version you might be wisest to get that one, maybe grab the repository
+and keep pulling from it perhaps.
+It depends on you, I think it's worth having that's wasn't it?
+But you might want to mess around with it, you might want to hack on it as well.
+So I'm going to talk about the script.
+So what I've done is I have included a listing of the script in the notes using the capability
+I have within the PANDOX system I used to generate notes of producing a numbered listing
+and I'm going to just refer to a few bits.
+It's a moderately long script, it's 197 lines long but it's a fair bit of comments
+in there and stuff.
+So how do you convert the revision info that you get from the pie itself into more useful
+information?
+Well it's done by searching a table of data.
+The table comes from a website which is, and I want to have a good reading out URL's,
+but it's in the script, it's in the notes, but basically the last bit is RPI underscore
+hardware history and it's from elinux.org.
+And somebody there is maintaining this and it contains information about all pies up
+to date.
+So all I've done, now I could have got clever about this and scraped the site with the fancy
+script, but I haven't done it that way, I have done it by simply cutting and pasting
+the table.
+There's a nice HTML table in there, cut and pasted it, copied and pasted it into this script.
+This means that if new pies are released, the table in your script will be out of date.
+So it would be necessary to repaste into the table.
+Made the note here that if you do that, then you need to make sure that the tab characters
+which are part of the stuff you get back from doing a copy and paste, because you just
+get the data out of the HTML table if you do that.
+It contains tabs as a field delimiter, so I have made sure that they are in the script
+because they are using as a field delimiter by the script.
+The searching of the table and the display of results, actually done by using AUK, and
+it the script writes the program into a temporary file that the script has created and then executes
+that program against the table, which has also been stored in a temporary file, different
+temporary file.
+You'll see that on lines 163-181, that's the code that's doing all of that.
+The information that's used to do this is extracted from the pie from a virtual place called
+slash PROC, slash CPU info.
+You see that lines 156-1557.
+So I've sort of started in the middle here, but the script starts off by checking objects
+declared a bunch of functions.
+Then it starts off by checking to see that the device it's being run on is a pie, because
+you couldn't run this on your desktop or whatever, but it, in fact, I have done that, and
+anyone, why is it not working?
+Oh, I'm not on a pie at the moment.
+You've got one terminal SSH to a pie, another one not, then it's easy to make that mistake.
+But it tries to determine whether it really is Raspberry Pi, and it will exit with a report
+if it's not.
+But this code's only been tested against the the kid that I have, which is not very varied
+just a laptop and a desktop at the moment.
+So it might not work for you, so if it fails, let me know.
+The script is worth mentioning that lines 107-109 consist of a bit of code that creates
+temporary files.
+It uses the command MK-Temp to create a file, and it then uses a thing I haven't talked
+about in any of my episodes about Bash.
+It uses a thing called Trap, and Trap is a mechanism which allows you to perform a task
+when certain events happen, and the events that this is being set to trigger on is stuff
+like the script being killed or exiting.
+And what it does is it deletes these files, so there's no garbage left around.
+They're in the slash temp, but I like to just clean them up because it's good practice
+to do so.
+It calls a function in the script called CleanupTemp with the names of the two temporary files.
+I will be talking more about Trap.
+I've got it planned for one of my later Bash scripting episodes, but I haven't got the
+details sorted out yet, so it's a way off yet.
+So it's not a huge lot to say about the script otherwise, and I could go into massive detail
+about it, but I said I didn't want to do that.
+I'm sure you don't want to hear it.
+There are two other functions called network info and settings info, which pull various
+other bits of information out of the pie, so it reports stuff about the network.
+It may not be as general as it could be, so again this has just been tested what I have.
+You may have more esoteric setup, so it might not work entirely for you, and if that's
+the case, then it would be interesting to know about it so I could improve it.
+Indeed, if you have suggestions about improvements, then please let me know, and you can do that
+by submitting a pull request to the GitLab repository.
+The settings info was a suggestion, I think, from Ken Fallon, and it does stuff about the
+video settings on the machine, which is not a thing I'm particularly bothered about personally,
+but I did it because Ken suggested it, and it seemed to be something others might want
+to know about.
+What does it look like?
+What does the output look like?
+Well, there is an example running against one of my pies, which I call pie 2, RPI 2.
+And you can see that it's in the show notes.
+You can see that it reports the various bits of information that it's pulled from the table,
+so you can tell that this is revision 10, I assume that's a 10.
+With the release date of the third quarter of 2014, it's a Model B plus, and it's 512
+megabytes of memory.
+It has a serial number.
+I've blanked it out because I don't know how sensible it is to put your serial numbers
+out on the web, so I thought, I better not.
+There are various configuration details reported, including the CPU temp at the moment.
+The device is sitting on a shelf just above my head, so I'm just now with another device
+on top of it, so it might be getting hotter than it should.
+I don't know if 39 degrees C is exceptionally hot.
+Don't think it has a heat sink on it, so maybe that would be a smart move.
+And then the network information, the host name is RPI 2, it's got an IP address, it's
+got a MAC address, so I changed the MAC address as well.
+But you can download that if you want to.
+I'm not really sure what you want to, but if you want to check out the script on the
+PI of your own, you'll get a report similar to that.
+Hopefully, if not, let me know.
+That's really all I have to say.
+I hope you find it useful.
+It's a simple thing.
+You can just cut and paste the report, stick it somewhere or other, where you want to
+keep the information about your PI.
+And if you can think of enhancements or improvements or bug reports or whatever, then let me
+know.
+That's it.
+Okay.
+Bye.
+You've been listening to Hecker Public Radio at Hecker Public Radio dot org.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contribute link to find
+out how easy it really is.
+Hecker Public Radio was founded by the digital dog pound and the infonomicum computer club,
+and is part of the binary revolution at binwreff.com.
+If you have comments on today's show, please email the host directly, leave a comment on
+the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released on the creative comments, attribution,
+share a like, 3.0 license.

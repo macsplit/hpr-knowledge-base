@@ -1,0 +1,170 @@
+Episode: 1672
+Title: HPR1672: Systemd for Learner Drivers 
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1672/hpr1672.mp3
+Transcribed: 2025-10-18 06:44:54
+
+---
+
+This is HPR episode 1672 entitled system for learner drivers.
+It is hosted by Steve Smithersd and is about 21 minutes long.
+The summary is how to drive system without crashing the vehicle through arguing with your passenger.
+This episode of HPR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR-15.
+That's HPR-15.
+Better web hosting that's honest and fair at an honesthost.com.
+This is Steve Smithersd for Hacker Public Radio.
+Today I'm going to talk about system D.
+Now it's a subject that attracts some controversy,
+but I'm not today going to be controversial, I hope.
+Many Linux systems are moving away from system 5 in it and adopting system D instead.
+Both Linux is that I use Fedora and Mint have adopted system D,
+and we understand that Debian has now fought to allow both sides of the argument to have their way.
+I'm not going to get into the debate here.
+My personal stance is that I see both sides of the argument,
+and I'm going to continue to approach myself firmly on top of the fence
+until system D either proves itself or fails to do so.
+In this HPR I'm going to try to fill a gap that I have seen in the system D discussion.
+That is how to operate it.
+I'm not an expert on system D, I have just tried to work it,
+and in doing so I have fished around in my file system and in documentation.
+If you want to know what I've found then keep on listening.
+By way of opening I will remind myself and you also of what system D is replacing.
+This 5 in it D works with run levels, the most common being run level 5 for graphical multi-user networked system,
+run level 3 for command line multi-user network, run level 1 for a single user,
+run level 6 to reboot and run level 0 to halt.
+In moving to a run level, unwanted services are shut down and wanted services are started up.
+For most users, on most systems, the most appropriate default run level is 5,
+giving multi-user, GUI and networking.
+Services can be started and stopped on demand by INetD.
+Now system D works quite differently, it has target units.
+For most users, on most systems, the most appropriate default target is the graphical target,
+which does a similar thing to run level 5.
+Units are configured by unit configuration files.
+These files may start other units and stop other units. They can impose sequence and dependencies.
+There is a lot of cascading going on with unit launching unit launching unit.
+Units also can be stopped and started on demand by system D.
+The term unit refers to a resource that system D is taking under its control,
+but are 12 types of unit. SystemD.Service.
+This type starts and stops demons. SystemD's socket. This type activates network connections.
+SystemD device that activates kernel devices. SystemD mount. This controls mount points.
+SystemD auto mount. This provides on-demand mounting of file systems. SystemD swap.
+This does for swap. What systemD mount does for file systems? SystemD scope.
+That starts and stops external processes. SystemD target.
+That seems to group units together rather like run levels. SystemD snapshot.
+This saves and restores the momentary state of the computer. SystemD timer.
+These trigger units based on some data or time event. SystemD path.
+These trigger units based on changes in file system objects.
+And lastly, systemD's slice. This organizes units in a hierarchical tree of C groups
+for resource management purposes. I have yet to get my head around C groups. I can't really say
+a lot about that. The files that systemD uses live in four locations.
+Unit files called by systemD live in slash Etsy slash systemD slash system.
+But these are mostly symbolic links to real unit files stored in slash user slash lib slash
+systemD slash system. There is also a parallel slash Etsy slash systemD slash user structure,
+which doesn't actually seem to do anything on my computer. So for now, under pretend it's not there.
+And finally, there is slash run slash systemD slash system. This structure appears to contain
+runtime configuration files with names like session dash 1234 dot scope, where 1234 is the session
+number. Scope units are the type that control external processes, but the files don't seem to
+contain much data. The next thing we need is directives. The unit configuration files contain
+directives to start and stop units and directives that cascade to other unit configuration files,
+but also start and stop dependent units. Directives may impose conditions on whether or
+when to call a unit. There are a whole bunch of different directives listed in the man page for
+systemD dot unit. What I'm going to tell you about is just a few. First, there is the requires
+directive. This gives a list of units required to start. If any of these required units fails to
+start, then this unit abort. The next directive is conflicts. This is a list of units which are
+required to stop. The after directive and the before directive give the ordering which units are
+supposed to start. And then there is the wants directive. This is a list of units also required
+to start, but if any of these fail, then this unit continues on anyway. As well as wanted units
+listed by the wants directive, there may also be a wants directory below the unit directory.
+So the unit conf file slash Etsy slash system D slash system slash default dot target will cause
+to further unit conf files to be read in from the slash Etsy slash system D slash system slash default
+dot target dot wants directory. Each required unit and wanted unit from the directives as well as
+those in the wants directory are added to a job queue. If directives cascade to other unit
+files containing more directives, then all of these dependencies are also added to the job queue.
+A directive may start or stop another unit or may change the detail of a job already in the queue.
+All directives ultimately cascade down to a starting or stopping one of the base units listed
+in slash user slash lib slash system D slash system. To get a feel for how all this pans out in
+practice, I'm going to walk us through the cascade of unit files from boot up. First the default
+target is activated, which are my system is just a link to graphical dot target. The unit configuration
+file for graphical dot target contains a unit section with the word unit in square brackets
+and a list of seven directives. Description equals graphical interface. Documentation equals
+man colon system D dot special bracket seven close bracket requires equals multi dash user dot
+target. After equals multi dash user dot target conflicts equals rescue dot target. Once equals
+display dash manager dot service allow isolate equals yes. The effect of these directives is to start
+multi dash user dot target to start display dash manager dot service and to stop rescue dot target.
+Also we have a once directory slash Etsy slash system D slash system slash graphical dot target
+dot once and this starts the accounts deep dash demon dot service for logging and the RT kit
+dash demon dot service for real time scheduling. The graphical target cascades also to multi dash
+user dot target which its unit configuration file contains the word unit in square brackets
+followed by description equals multi dash user space system documentation equals man colon system D
+dot special bracket seven close bracket requires equals basic dot target conflicts equals rescue dot
+service space rescue dot target. After equals basic dot target space rescue dot service space rescue
+dot target allow isolate equals yes. This has the effect of cascading to the basic dot target unit
+and to stopping the rescue dot service unit and also to start bringing again the rescue dot target
+unit which was previously also stopped by the graphical target. In addition to the wants in multi dash
+user dot target there is a whole shed of more wants in the slash Etsy slash system D slash system
+slash multi dash user dot target dot once directory including a vahi, crondi, corpse, network manager,
+nfs and loads of others. Graphical dot target also cascades to display manages dot service
+which is not present on my system so I guess I don't really need it. I'm not going to continue reading
+aloud any more of the config files they're mostly the similar structure to those of redder already.
+Now I'm just going to tell you which units to be started by each of these targets.
+So multi user dot target cascaded to basic dot target which is self cascades to
+cis init dot target sockets dot target time as dot target paths dot target slices dot target
+and firewall D dot service. Basic dot target also cascaded to cis init dot target which is self
+cascades to local f dash fs dot target swap dot target dm raid dash activation dot service
+iSquizy dot service lvm2 dash monitor dot service and multi path d dot service which looks like
+all the file system demons being started. Now we start approaching some of the end points.
+These are system d dot sockets system d dot timer system d dot path system d dot slice
+system d dash fs 10 dash generator. By the time all of that is finished if I type in the command
+system control space lists dash units space dash dash type space service.
+I see that there are 58 services listed as running. If you're going to work with system d
+you must be able to give it instructions in system d parlance and active service is running
+currently in use. And a loaded service is enabled available for use. These terms crop up
+in the output from commands. Many instructions are given to system d by the system control command
+spelled s-y-s-t-e-m-c-t-l. Now to compare some system five init tasks with their system d
+equivalent. If you want to check the status of for example the Bluetooth service in system five
+we type service space Bluetooth space status in system d we type system control space status
+space Bluetooth. If you want to start the Bluetooth service in system five we type service
+space Bluetooth space start in system d we type system control space start space Bluetooth.
+If we want to stop the Bluetooth service in system five we type service space Bluetooth space stop
+and in system d we type system control space stop space Bluetooth. Now we have a bit of a change
+that you want to enable a service in some run levels for example NTPD on levels three and five
+we would type check config space dash dash level space three five space NTPD space on
+then in system d we would type system control space enable space NTPD
+likewise to disable NTPD in system five we would type check config space dash dash level space three
+five space NTPD space off whereas in system d we would type system control space disable space NTPD
+which has been said about the desired ability or otherwise system d's binary log format
+but we are given these so we better know what to do with them. Journal instructions are given
+to system d by the journal control command spelled J-O-U-R-N-A-L-C-T-L here are some of the commands
+to view all log entries in one go we type journal control now this is a verbose output mine came
+out at about 9000 lines and you may want to be a bit more specific so to view from a specific date type
+journal control space dash dash since equals quote 2014 dash 05 dash 07 close quote
+to view all the kernel logs type journal control space dash k
+to follow a log in real time type journal control space dash f once you there you can press
+control C to quit to view log entries associated with the given pit type journal control space
+underscore uppercase p id equals then the process number to view log entries associated with the
+given service for example bluetooth type journal control space dash u space bluetooth now if
+you only really scratch the surface of telling system d what to do there's a whole load more commands
+and there's a load of technical detail that are really ought to get my head round just to mention
+a few extra bits of how to get information out of system d you can get or set system information
+a bit like the you name command but more verbose using host name control spelled H-O-S-T-N-A-M-E-C-T-L
+you can get and set time zone and time date information with time date control T-I-M-E-D-A-T-E-C-T-L
+if you want to know what service units system d has available to it we type system control space lists
+dash units space dash dash type space service space dash dash all this gives us a list of all the
+services available to system d on the system if you want to know which services are currently
+active you type system control space lists dash units space dash dash type space service
+these two last commands are equivalent to ls space slash etsy slash init.d to get a list of all the
+services available to system five and check config space dash dash list to see which
+service are configured to run at each run level in compiling this guide I've referenced
+man pages from system d system d dot unit system d control and system d journal and there's a bunch
+of other man pages that are listed in the see also section of the man pages just mentioned
+other sources I've used I've listed in these show notes so go and take a look at those
+okay I hope this has been useful to anybody trying to get the head round system d
+this is Steve Smithers for hacker public radio I'll see you again soon bye bye
+you've been listening to hecka public radio at hecka public radio dot org we are a community
+podcast network that releases shows every weekday Monday through Friday today's show like all our
+shows was contributed by an hbr listener like yourself if you ever thought of recording a
+podcast then click on our contributing to find out how easy it really is hecka public radio was
+founded by the digital dog pound and the infonomicon computer club and it's part of the binary revolution
+at binrev.com if you have comments on today's show please email the host directly leave a comment on
+the website or record a follow up episode yourself unless otherwise stated today's show is released
+under creative comments attribution share a light 3.0 license

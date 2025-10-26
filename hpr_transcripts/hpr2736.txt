@@ -1,0 +1,270 @@
+Episode: 2736
+Title: HPR2736: Response to show 2720
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2736/hpr2736.mp3
+Transcribed: 2025-10-19 16:00:14
+
+---
+
+This is HPR episode 2,736 entitled Reponster Show 2,720 and is part of the series Bash
+Cripting.
+It is hosted by Dave Morris and is about 18 minutes long and carries an explicit flag.
+The summary is some suggestions on how to improve a Bash Cript.
+This episode of HBR is brought to you by An Honesthost.com.
+At 15% discount on all shared hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's honest and fair at An Honesthost.com.
+Hello everybody, this is Dave Morris, welcome to Hacker Public Radio.
+Today I'm doing a show that I've not done before.
+I'm responding to show number 2,720.
+This was a show that Ken Fallon did on January 4th and he was talking about a script which
+he'd written to download YouTube channels using RSS feeds.
+He offered up a Bash script called youtuberss.bash and talked about how it worked and stuff.
+And I thought it was very cool.
+I've not done this sort of thing myself but I've sort of fiddled around in that particular
+region of things.
+So it was quite an interesting lesson I found.
+So one of the things I do, which is, I don't know if it's good or bad, might be irritating,
+is when I see a Bash script I just find myself looking at it with an eye to rewriting stuff
+to make it fit better with the stuff that I've been learning while I've been doing this
+series of Bash tips that I do.
+I think it's a useful thing to do because it's a way of understanding a script.
+It's also sometimes people have much better ideas than ones I was going to offer so I
+can learn from them.
+And it's also useful when it comes to my own scripts.
+I've been writing Bash scripts since the 1990s when we had Bash on Unix systems, I'll
+trick so I think it was.
+So I'm always looking at my own scripts thinking that was really, that's not a good way of
+doing it.
+I could improve on that.
+So I do a lot, do this a lot, okay?
+So looking at Ken's script, it's needless to say I saw some areas for improvement and
+I thought that making a show about it would be a way of sharing my thoughts about them.
+As we're quite low on shows as I'm putting this together, it's also motivated me to do
+a show rather than just write comments to Ken's show or send him an email.
+So in general, there are a few uses of wild loops in the script that I would be inclined
+to rewrite.
+And I'll probably say a little bit more about them a little bit later.
+But since the script works as it stands, then that's, it's more advisory than me saying
+you really should change that.
+When I did was I grabbed the YouTube RSS script and put it into VIM.
+And there I have a tool called Shell Check, which is being run by another tool, which
+whose purpose is to examine bash scripts I've mentioned this before.
+And quite a lot of issues were thrown up.
+Most of them are quite trivial, but a few are a bit more serious.
+And in order to give you some sort of taste of what this might mean or how this would
+be represented, I did a screenshot of an editor session, which I've turned into an image
+for this show.
+There's a thumbnail, which you can click in the long notes, which will take you to a picture
+of part of the file and the error messages that Shell Check is producing, errors and warnings
+really.
+So it's worth maybe looking at a few of these.
+I could spend ages going into this in depth, but even I'm not that keen to do that.
+I'm sure you're not keen to listen to it.
+The first one is on line 34.
+And Shell Check doesn't like the expression, open, double quotes, dollar, open curly bracket,
+log file, close curly bracket, close, double quotes, dot, dollar, open parenthesis, slash
+bin, slash date, etc, close parenthesis.
+What Ken's doing here is taking the log file variable and he's concatenating that with
+a full stop, a dot and the result of running the date command with date stamp, year, month,
+day, a minute, second type thing.
+Great.
+I do these sort of things a lot.
+It's really good.
+But Shell Check doesn't like it because it's working on the principle that what comes back
+from date could have spaces in it, in which case the shell will pass the whole string and
+will say, oh, there's spaces in there, it might well split it up in whatever context
+it's been used.
+If you adjust it to put the quotes around the whole expression, then it's perfectly happy.
+Now, think about Shell Check.
+I'm going to do a show on it a bit later in any way, but it will be saying things.
+It's very clever, but it's not as clever as a human, and so it will be reporting things
+that just look like they could be a problem, but aren't necessarily this is not in itself
+a problem.
+Personally, I fix these things in my own scripts just to shut the thing up.
+Second point online is 3948.
+There are instances of the read command, but it doesn't use the hyphen R option.
+Hyphen R is recommended because it prevents any backslash characters and input from being
+mangled.
+Not quite clear exactly what happens, but anyway, it's recommendation.
+And so Shell Check moans about that.
+I found just going and adding them into my copy of it made it stop.
+Also, on the same two lines, 3948, there are these wild loops.
+And the wild loops are of the form, something or other that generates data, a series of commands
+or something, piped into wild.
+And then after that, the body of the loop and done.
+I've said this in some of my other shows on the bash tips heading.
+But if you do that, it means anything that you change in the loop body, that any variables
+that you change in the loop body don't get passed back to the main script.
+And that can catch you out.
+So in general, I avoid loops of that structure.
+Now, in tense case, there's no need to do that.
+But I'm just saying, and I normally turn them into a wild, read, et cetera, body of the
+loop.
+And then at the end of the loop, I put a process substitution, which generates the data
+for the loop.
+And in that case, you're not going to have issues with passing variables back to the main script.
+Now, it's not a serious issue with Ken's script.
+It's just a thing that's probably a wise habit to get into of not writing loops in a way
+that they can't catch you out as they stand in Ken's script that it's not an issue.
+But if he were to come back to it at a later stage and put up some some accumulator in there
+or something or other happening in there, they wants to use in the main script, he would find
+it wouldn't work as the thing structured now.
+So it's a good idea just again that I think you may think differently, but it's just about
+some hints and tips that I found on my journey.
+So I wanted to look at three instances of things I would be inclined to rewrite.
+Again, I've referred to them by line within the script as it was downloaded from Ken's show 2720.
+First off, it's line 50.
+And in this line, Ken's doing an if test.
+And the test is in square brackets.
+And it consists of, in quotes, the command substitution which uses grep.
+And it's comparing a variable called this video with log file.
+Log file is a file.
+It's going to look for the string this video in the actual file.
+If it gets anything back, well whatever it gets back will be counted in a pipe with the WC command, WC minus L,
+which will count the number of lines that come back.
+So there could be no lines or it could be one or possibly more.
+And this expression is then compared with zero.
+So this is very convoluted, I would say.
+I think I did cover some of these sorts of things in some of the other shows I've done.
+What I would do with this is I would rewrite it.
+And my rewrite would be to use the fact that grep will return a true false value.
+And you can tell it not to return any lines of data.
+It's normally grep will pull stuff out of the file that matches whatever you're trying to match.
+If there are matches, that is.
+That's what Ken was trying to do and he was counting the number that came back.
+So you would do if, and you don't need to put this in square brackets at all,
+you would use an exclamation mark to invert the result of the grep test.
+Then it would be grep space hyphen q.
+That means that grep is to not producing output q for quiet.
+Then the variable this video in quotes and then the log file name.
+So if this video is found in the log file, then the not in front of it,
+the exclamation mark will turn that to false if it's not found.
+Then it will return true.
+So in other words, it's doing the same thing.
+It's looking to see if the string in this video is not in the log file.
+I think Ken was trying to determine whether he'd already downloaded something on it.
+Moving on to line 68, we've got another rather convoluted if statement.
+And this particular case is complicated by the fact that the downloadable version of the script
+has got a variable called skipCrap, which I think is a great name.
+And it's been commented out.
+So you're going to find that shell check is going to say,
+well, there's no variable called scriptCrap.
+How come you're doing using this?
+And I imagine it's sort of waving its hands in the air and running around in circles.
+But that's just me.
+I reenabled this.
+This was Ken's plan to check for certain nonsense in the titles of videos coming back.
+So what he has here is in double square brackets.
+He has a not an exclamation mark.
+Then he's got hyphen Z and then the variable skipCrap in quotes and curly brackets.
+Because sometimes that's a good idea.
+So he's checking to see if the skipCrap variable is zero length.
+And then he's reversing the answer.
+So he's actually asking to whether it's non-zero length.
+So that's a bit, that's a bit back to front, I reckon.
+I replaced that with hyphen N and then the variable skipCrap.
+That's then followed by double ampersand.
+So he's looking for the case where skipCrap is not empty, actively,
+because otherwise it's not pointing to the rest of the test.
+And the original uses another command substitution dollar open parenthesis.
+And here Ken echoes the title, which will be the title of the current video that is being processed,
+into eGrep with the hyphen i option,
+are using variable skipCrap as the string to compare.
+So what that's doing is it's telling eGrep to compare the contents of skipCrap,
+which is a regular expression.
+It's a bunch of words separated by vertical bars, but it's the type that eGrep can handle.
+And comparing that with what comes in on its standard input, which is title,
+which has been echoed to it by the previous command in the pipeline.
+Then if anything comes from, what everything that comes from back from that is counted with a WC minus L.
+And on the completion, the closed parenthesis, the completion of that,
+command substitution, there will be a value, which is being compared with zero.
+It's a not equal to zero.
+So I did a first rewrite, which again echoed title to a changed eGrep,
+because shell check was complaining about it.
+There is no eGrep command officially anymore.
+eGrep is actually Grep space hyphen capital E.
+So if you do them, if you look up the man page for eGrep,
+you don't find one, it takes you to the Grep one.
+Then I told it to be quiet with a hyphen Q, then Ken's hyphen i,
+and then the variable skipCrap.
+So I changed that.
+And I did it outside of the double square brackets, because it's just a pipeline,
+which is doing some stuff, and it's returning a true or false value.
+So this is a somewhat more tidy.
+Well, it's certainly not doing the thing where you're getting Grep to output some stuff,
+and then you're counting it, and then you're comparing the result,
+the number of lines with a value, because we just want a true or false out of it.
+I've already said some of this, so I'll repeat myself.
+And so this actually works.
+Then I thought, well, really, what's happening here is the string in title
+is being compared with the string in skipCrap using a regular expression match,
+except it's using Grep or eGrep to do it.
+So I thought, what would happen if you use bash as regular expressions?
+So I wrote a version of this with everything in the double square brackets
+which you have to do for regular expressions, and replaced the pipeline
+with dollar title equals tilde dollar skipCrap.
+I'm not a great one for the curly brackets, or I don't need them,
+but it's up to you how you do that.
+So I did a little test.
+I copied Ken's skipCrap string into skipCrap on the command line,
+created a title, the best bets in the world.
+And then I ran the little test against the test string, the regular expression test.
+If it matched, it was to echo Crap, otherwise it echoed non-Crap.
+And then Ken was looking for best bets stuff, then it worked.
+The downside with that answer is that the test is case-sensitive,
+whereas with Grep, the hyphen I made it case-insensitive.
+But there's a way around that, and the way is to make sure that both title and skipCrap
+are forced to lower case just for the test.
+So I gave an example of how you would do that, and that works fine.
+If I changed the case of the title in my experiment, I didn't put this in the notes,
+then it also matches, it matches whatever the case is.
+That was what I was intended to do.
+The last one, line 88, Ken has a massively long line,
+which starts with cat, and then in double quotes, dollar log file, underscore to-do.
+This is the case where he doesn't need the curly brackets,
+piped into the YouTube DL command with all of its various arguments.
+I shall check complaints about this, and says it's what it calls a useless cat,
+and the full message are copied into the notes here.
+It says useless cat, consider command less than file, piped into something rather,
+or command file piped.instead.
+So basically it's saying that you can probably replace where you should be replacing that cat,
+because all cat is doing is taking a file, squirting it out on a standard out.
+So it's caught by the thing down the pipe on its standard input channel, and then processed.
+Now I don't know YouTube DL that well.
+I would be surprised if you can't give it a file as its argument,
+but in the assumption that you can't, and there's expecting stuff on its input channel,
+when you can write the string or using YouTube DL to start with, and with all its arguments,
+and then at the end of it, use redirection, a less than sign, and the name of the file that you're going to be reading from.
+So that would do it. The other way you can do it, and it's perfectly legal,
+but it's the thing I personally never do, is to start the whole line with a less than the name of the file,
+and then YouTube DL, et cetera, et cetera, et cetera.
+There's a Wikipedia article on the use of cat, and there's also a reference to the page UUC,
+which stands for useless use of cat.
+There was, I think there was some sort of competition for an award for the most useless use of the cat command in Unix.
+I'm not sure if it's still alive, I think it's referenced in the Wikipedia article.
+The process of removing useless cats is called demogification,
+which I'm told is the Britishism, because we tend to call cats moggies,
+and I don't know if that's specifically British or what, but that just amazed me.
+So, in conclusion, Bash is powerful, but does some things in a secure way.
+We know this very well.
+She'll check helpful tool, helps you catch scripting errors,
+but it can be a little bit of an irritant when it nags about things.
+You can shut it up in various ways.
+I'm preparing another HPR episode about its use with VIM,
+and the use of it with other checkers.
+It's really powerful, so I thought people would be mildly interested in that.
+Finally, apologies to Ken if it seemed I was making excessive criticisms of his script.
+It was meant to be constructive criticism, of course.
+And as I said at the start, Ken was asking for constructive criticisms.
+So, there we go.
+Anyway, I hope you found that useful, and catch you next time.
+Okay, bye.
+You've been listening to Heka Public Radio at HekaPublicRadio.org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out how easy it really is.
+Heka Public Radio was founded by the digital dog pound and the Infonomicon Computer Club,
+and is part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly,
+leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released on the creative comments,
+distribution, share a light, 3.0 license.

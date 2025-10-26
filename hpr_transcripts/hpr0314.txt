@@ -1,0 +1,289 @@
+Episode: 314
+Title: HPR0314: LVM2
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0314/hpr0314.mp3
+Transcribed: 2025-10-07 16:04:47
+
+---
+
+😋
+Hi there. My name is Kevin Benco and welcome to Hacker Public Radio. I wish to discuss
+a brief and basic overview of logical volume management or LVM. Please note some disclaimers.
+First off, I'm coming from a Debian Genial Linux frame of reference and there is a possibility
+that some of the command line details and some of the commands that I'm going to discuss
+may differ slightly in other distributions. Also note the current LVM package is LVM2 and
+when I use the term LVM, I am indeed referring to LVM2. What is logical volume management? LVM is
+to paraphrase it in my own words an abstraction layer between the real live actual physical device
+partitions and the GNU Linux operating system. When I say it's an abstraction layer, I mean to say
+that you've got the real live physical partitions and your LVM is a set of tools that allows you to
+create and manipulate, let's say, virtual partitions on top of these physical partitions and the
+operating system sees and mucks around with the virtual partitions plus the term virtual and
+virtualization is kind of trendy now so we'll stick with that definition. For a brief overview
+of our brief overview, with logical volume management we must first consider the physical
+partitions on the real live physical device. Now each of these real live physical partitions to be
+used in LVM must be identified in the partition table as an LVM partition. Each real live physical
+partition must be prepared as an LVM physical volume. Now an LVM volume group is composed of one
+or more LVM physical volumes and each LVM volume group consists of zero or more LVM logical volumes.
+Each LVM logical volume is a container that the GNU Linux operating system will view as a
+device partition onto which a file system can be created. And for all intents and purposes,
+to the best of my knowledge, an LVM logical volume can be treated as if it were a real live
+virtual device partition. It will become clear hopefully as we go on. Let us consider the
+process for setting up LVM on an existing GNU Linux system. Personally I have no experience
+setting up LVM during install and since I run Debian I don't foresee ever having to do a
+reinstall on my system until the heat death of the universe. But I really can't conceive
+that it's any more difficult to set up LVM on an install than it is to set up LVM on an existing
+system. And given today's installers that come with the distributions it might be a little easier
+to set up LVM on an install. Anyway, for examples here I am going to use what I've got going
+on my system to some extent. First we need some partitions on real-life physical devices to mess
+around with. On my particular setup I am using the following partitions for LVM
+slash dev slash HDE2 slash dev slash HDE3 and slash dev slash HDF1. So by using FDISC
+when I create these partitions in the partition table I need to set the system ID flags for these
+partitions to be LVM partitions. And with FDISC that's 8E. So using FDISC I set these partitions
+to be identified as 8E Linux LVM partitions. Then I am going to use the PVCreate command
+PV stands for physical volume. I am going to use the PVCreate command to initialize the partitions
+for LVM. I would guess that the PVCreate command amongst other things makes entries into some sort of
+LVM database that identifies or notes or records the drive and partition specifications in some
+manner. Back about two years ago I borked my LVM stuff to some degree when I was messing around
+with it and I had to actually go in and edit the database file manually and thank God for text
+files. Anyway the syntax of the PVCreate command is PVCreate followed by a list of one or more
+physical device partitions. So in this particular case I enter the command PVCreate
+slash dev slash HDE2 slash dev slash HDE3 and slash dev slash HDF1. I then need to create some volume
+groups. As I said earlier each volume group consists of one or more physical volumes
+and each volume group also contains zero or more logical volumes. We may, if we desire, have a volume
+group extend across physical volumes on more than one physical device. Physical hard drive
+isn't that cool. I will be creating two volume groups for my example. In an astounding
+flash of creativity and divine inspiration I've decided to call these two volume groups LVM
+group and alternate LVM. Let me give you a moment to settle down from this blinding flash of
+creativity. Thus to create the first to create the volume group called LVM group I enter the
+command VG create space LVM group, space slash dev slash HDE2, space slash dev slash HDE3.
+This creates the volume group called LVM group and it contains the physical volumes dev HDE2
+and dev HDE3. Any other for the other volume group I use VG create alternate LVM dev HDF1.
+These commands have created the two volume groups LVM group and alternate LVM. Right now all I
+have is a pair of volume groups with nothing in them. All about all I can do right now is use the
+VGS command to query the volume groups. I enter the VGS command amongst other things the
+command will tell me the number of physical volumes composing each volume group the number of
+logical volumes in each volume group the size of each volume group and the amount of free space
+in each volume group. Let's face it you might not in a particular volume group you might not
+want to use all the the free space available for your logical volumes. So there's this pool of
+free space that you can give you as you will amongst the logical volumes. Now let us create some
+logical volumes to actually do something with going to be using the LV create command and the syntax
+is LV create dash dash size followed by the size of the logical volume dash dash name followed by
+the name of the volume and the name of the volume group you're you're putting this logical volume in.
+Now in my particular situation in my particular in this particular example I wish to create
+logical volumes named swap home and music in the volume group called LV group and logical volumes named swap
+and source in the volume group named alternate LVM. So I enter LV create dash dash size 1G name swap
+LVM group. This creates a logical volume named swap of a size of one gigabyte
+in the volume group called LVM group. Similarly LV create dash dash size 13G name home LVM group
+creates a volume group sorry create a logical volume called named home in the volume group named
+LVM group and it's 13 gigabytes big and LV create dash dash size 47G dash dash name music LVM group
+creates a logical volume named music in the volume group named LVM group and it is 47 gigabytes big.
+Similarly into the commands LV create dash dash size 1G dash dash name swap alternate LVM
+and LV create dash dash size 1G dash dash name source alternate LVM. This is going to create the
+appropriately named logical volumes in the alternate LVM group and both of them are one gigabyte big.
+So as of right now these logical volumes are just containers they don't have any file systems in
+can't do squat with them. So we've got physical volumes that refer to physical partitions on devices.
+We've got one or more physical volumes grouped together to form a volume group
+and inside this volume group we've got several logical volumes. Now as far as the computer
+or as far as the operating system is concerned these logical volumes are the same thing as
+partitions and right now these partitions these logical volumes don't have anything in them so they're
+just un-initialized partitions right now. We got to throw some file systems in there.
+Now since each of these logical volumes is considered as a partition by the operating system
+we can refer to the logical volumes the same way we refer to partitions in the following manner.
+Slash dev slash the name of the volume group slash the name of the logical volume.
+So for example my home the logical volume named home I used my example I can I will refer to that
+as slash dev slash LVM group slash home that's the name of the partition as far as the operating
+system is concerned. Now using the examples above we're going to create the appropriate
+file systems in the above logical volume containers as follows. First a disclaimer and don't laugh at
+me. I am using EXT2 and EXT3 exclusively and swap partition stuff exclusively. I'm not going
+to mess around with the XT4 yet. I don't use riser file system. I am old fashioned EXT2,
+EXT3. So once you're done laughing at me I'll continue. So we're guys since I've got two logical
+volumes set aside for swap partitions and use the make swap command on both of them. MKSwap slash dev slash
+LVM group slash swap and MKSwap slash dev slash alternate LVM slash swap. This as expected creates
+swap partitions in creates swap file systems like this inside these partitions.
+Man using our example and continuing with our example above I'm going to throw some or create
+some EXT3 file systems on the remaining three logical volumes. Make MKE2FS dash j dev LVM group home
+make E2FS dash j dev LVM group music and make E2FS dash j dev alternate LVM source.
+So inside of our logical volume containers I've created an appropriate swap file systems and
+EXT3 file systems. Next we need to mount the logical volumes in our directory tree by making
+the appropriate entries in the Etsy FS tab file. I'm going to assume that because you're
+screwing around with logical volume management and partitions and whatnot that you're pretty okay
+with editing the Etsy FS tab file. I would like to make one note on something in the FS tab file
+with respect to logical volume management with respect to logical volumes actually.
+In the field where the first field in the Etsy FS tab where it we put down the name of the
+partition. I've seen it done two different ways and it's probably at least a third way to put
+it to denote the logical volume partition. I don't see any difference between them with regards to
+how the operating system deals with them so it probably doesn't make a difference but I'm not too
+sure. Now the first way I've seen it designating it and designing the logical volume is to use our
+example above using the home logical volume slash dev slash LVM group slash home. I've also seen
+it used the noted as slash dev slash mapper slash LVM group dash home. I've used them both I don't
+see any difference they both work. Additionally one can use UID numbers in order to designate the
+logical volumes in the Etsy FS tab file. UID stands for universally unique identifier.
+Sadly in my unworthiness I have very little experience using UID numbers in the Etsy FS tab file and
+if you use UID you know more about it than I do I'm sorry I am unworthy I suck. Thus far we've
+created the I've created the abstraction layer that allows us that has allowed us to create
+several logical volumes in several volume groups. We've also created file systems in these logical
+volumes and we have the ability to create mount points at the Etsy FS tab file and to plug our
+or to mount our new file systems into our directory tree. Now as an aside my own personal reasons
+for even getting into logical volume management were that once upon a time in the days of your
+I partitioned my hard drive using regular plain old physical partitions and I set up a partition
+for my home directory and everything was good and then I started accumulating
+audio files and I was in danger dreadful danger of overrunning of running out of space in my
+home partition. For a brief point for a brief piece of time I for brief period of time I even had
+public directory in the root file system to put on my music in but that was a bad idea I think
+that the throw extraneous crap like that in root partition. So I needed some solution and I sat
+down and I tried to figure out a way to partition my hard drive so that this kind of thing wouldn't
+happen again. I asked myself well how would I partition this hard drive that will allow me to
+have enough space to do anything I wanted that it would allow me to flex ability to
+or if I accumulated started messing around with video and stuff like that like my wife does.
+It would allow me to with my car with a to set it set up a set of partitions that would
+be always be big enough no matter what and you know I just couldn't think of any way to do it
+and that's how I and I remember hearing with this LMV stuff and what the hell is this LMV stuff
+so I looked into it and that's why I'm using LVN because it gives me the the flexibility
+I wanted to grow at first my home partition and also shrink other partitions to make room for
+the larger home partition so in order to give myself this flexibility I eventually basically LVN
+most of my my file system. I still have to real live hard drive non LVN partitions that's my boot
+partition and my root partition but I've got LVN set up for two slot partitions on two separate
+drives and I have got LVN set up for one of my local backup on the on my local backup that I do
+my hourly backups for my home directory on the physical hard drive my I have a public directory
+in under a home directory and I got a music partition and audio books partition a podcast
+partition the partition in which I do all my compiling my wallpapers I even got LVN set partitions
+for my temp directory my usr directory and my var directory yeah maybe I'm a little crazy with
+that but it gives me a lot of flexibility to screw around with partition sizes and resize things
+and since I'm kind of crazy and I don't think he's sort of crazy so some kind of weird about
+also for some reason I really haven't figured out yet I keep my logical volumes all with about 90%
+capacity this gives me some free space left over in the volume groups that I could mess around with
+if I need to if I need to slap a quick gigabyte on this partition real quick I can do that
+if I need to grow a particular partition by a few hundred megabytes or a gigabyte or so
+I can do that without worrying about it because I got in a free space left over in the volume groups
+how do you both set up works for me it allows me the flexibility to shrink and grow partitions
+to suit my own evil purposes the way I got this set up with keeping all my partitions
+at all my LVN partitions at 90% capacity requires that I check available
+file system sizes are the available space I got on the file systems and the available space
+I've got in my volume groups but hi that's okay for me this sort of thing might not be to anyone
+else's liking you might decide that if you use LVN you want to have a more oh conservative setup
+than I've got whatever LVN allows you the flexibility to do all this kind of stuff
+now I've been referring to shrinking and growing logical volumes and file systems without mentioning
+the process yet in a normal non LVN setup where all my partitions are just partitions on devices
+if I wanted to shrink a file system I'd have to use the first up to shrink the file system using
+the appropriate resizing command resize to ask yeah resize to FS for EXT2 and XT3 then I'd have to
+resize the partition by way of FDisk write the changes to the partition table and hope it worked
+similarly to grow a file system I'd have to use FDisk to make the changes to the partition table
+and then use the resize command to grow the file system up to the size of the partition
+seems to me one of the shortcomings of this is the fact that I will be needing in order to grow a
+file system I need there to be some unused or unallocated space between the partitions
+even using a graphical tool like g-parked I'm sure we can really quick think of
+circumstances in which we don't have the unallocated space between partitions or between the
+partitions that are going to let us directly grow that partition or we do have an allocated free
+space somewhere else and we've got to do the whole juggle shrink and grow thing and you know
+what I don't I can just think how that could be either not possible or not easing logical volume
+management makes this process of resizing logical volumes and file systems really much more flexible
+with how VM when we grow a file system first we grow we make the logical volume larger
+then we resize a file system up to the size of the logical volume when we shrink a file system
+we first resize the file system down smaller to where we want it and we resize the logical volume
+till it matches the size of the file system I'm going to mention this several times
+you must be extremely careful when shrinking the logical volume if you shrink the logical
+volume to be smaller than the file system you will cry ask me how I know this
+more notes sorry I'm like I said I'm coming from an EXT2 and EXT3 frame of reference I'm old
+fashion here if I have an EXT2 file system in a logical volume if I want to grow it or shrink it
+I need to unmount the file system run a file system check with a dash f flag on the logical volume
+before I can do anything to file system so if I got EXT2 need to unmount
+do a file system force a file system check on it before I can before I can even think about
+resizing things if I have an EXT3 file system inside of a logical volume I can grow the file system
+in line without having to unmount or file system check or anything however if I want to shrink
+an EXT3 file system my first have to unmount do a file system check or force a file system check
+and then shrink it and again I have to mention if you shrink the logical volume to be smaller than
+the file system you will have a bad day continuing with our examples above suppose I have just acquired
+a large number of org files containing yodeling music
+and I want to add that yodeling music to my music collection which has its own partition
+but you know suppose my music my home public music partition also known as
+slash dev slash lvm group slash music suppose that partition is too small and you know I really
+want that yodeling music I need to grow that partition by one gigabyte because you can never have
+too much yodeling music can you so first thing I check that my volume group has no free space to
+let me grow it using the VGS command I check using the VGS command I check on the free space and say
+let's just suppose I do have a gigabyte of free space available so growing and growing an
+EXT3 file system enter LV resize dash dash size plus one g and the name of the logical volume
+slash dev slash LVM group slash music so I've resized the logical volume the container to be
+one gigabyte bigger than it used to be then I resize a file system up to the size of the container
+using the resize to FS slash dev slash LVM group slash music of note with the LV resize command
+my size can be plus some size minus some size or just a plain old size and if I just enter a
+plain old size it will be that absolute it will resize it to that value in this particular
+in this particular example I use my size of plus one g basically saying add a gigabyte
+if for example however I had um EXT2 file system on that music partition first I don't
+mount it to a file system check enter LV resize resize e2 FS and then remount it but because I'm
+using LV at EXT3 don't worry about unmounting things to grow a logical volume or a file system
+this is good for suppose I'm making some changes and installing a bunch of packages and I've
+got my usr directory on its own partition and I notice that while I'm running out of space there
+I can if I got the XT3 on there if I have an XT3 file system in there I can enter a quick
+LV resize command and I'll resize e2 FS command and if I type quick enough I can get those things
+resized up to something bigger that I can fit my stuff on new stuff on anyway back to our example
+suppose I have noted that my free space in my volume group is insufficient to grow that music
+partition but I really really really want that yodeling music so I need to check if I have any
+extraneous free space in any file systems that are in logical volumes in that volume group
+so that I can reallocate some of that extraneous free space into the volume group is
+unallocated into the volume groups free space so that I can have enough free space left over to
+grow the music partition so I check the file system sizes by doing a df-h or capital H actually
+to see if I have any file systems with extraneous free space and suppose I note for example that I
+have oh five gigabytes of free space in my home file system my slash home file system and then I
+recall in an amazing fit of sanity I've deleted my three gigabyte collection of LLCAT pictures
+why because I realize that no one needs three gigabytes of LLCATs no I need three K of LLCATs
+whatever so I can free up that extraneous free space in the file system shrink the logical volume
+to fit the file system and I'll have that reallocated space that a new space back in the volume
+group free space pool to let me grow some other file system for example or to let me grow some
+other logical volume for example and I need to mention if you shrink the logical volume to be
+smaller than the file system it will screw up your day oh some notes first if you shrink if
+you're shrinking file systems the df command if you're displaying the size of the file system
+and human readable format it's going to do some rounding take this into account please also
+for as I know most file systems okay let's say the only file systems I know are the EXT2 and the
+XT3 and these file systems set aside a default of 5% of the file system for the root user don't
+forget to take that into account so when you're resizing a file system the df command rounds off
+when you're in human when you're displaying it in human readable format and don't forget that 5%
+that it's been set aside for the root user and now let us resize a file system down let us shrink
+a file system first we unmount the file system and if we have other file systems mounted on that
+file system we need to unmount those also then we force a file system check on that file system
+let's say we do e2fsek-f slash-lvm group slash home then we do a resize then we resize that file
+system down so we say resize e2fse slash-lvm home slash home sorry slash-lvm group slash home
+let me enter some number call it new size right new size then we do an LV resize
+LV resize dash dash size and we enter that number we used that size we used for the resize to fs
+then we enter the name of the logical volume slash-lvm group slash home
+important when we use an LV resize command we need to double check a few things
+when we're shrinking a logical volume LV resize will warn you that since you're shrinking the L
+logical volume you could screw up your file system have I mentioned that if you shrink the
+logical volume to be smaller than the file system you will cry so please please please please
+double check first that when you resize the file system it resize successfully if it didn't
+resize successfully because it ran out of space you got to get it to resize successfully so you
+got to start yutzing around with it until you get it to resize successfully so there's enough
+space to resize it down to so you make certain that when you resize that file system down when you
+shrunk that file system it did it successfully next double check the value you entered
+for LV resize but the size of the logical new logical volume is the same exact value you entered
+for your successful resizing of the file system again double check when you shrunk the file system
+was it successful and the number you the size you entered to shrink the file system had better be
+the same size that you enter to shrink the logical volume have I mentioned that if you shrink
+the logical volume to be smaller than the file system you will cry so if you double check this
+and you're absolutely certain that your logical volume is going to be resized no smaller than
+your file system enter you enter yes or enter y for yes and it'll and LV resize will do it
+note that the size of a logical volume defaults to be a multiple of four megabytes I think
+thus the LV create command will always will if necessary round up to the nearest multiple of four
+megabytes if this happens LV create will inform you of this so you might have a couple extra
+megabyte you know so when you enter the LV create command it'll say oh that around up to the nearest
+four megabytes and not being one to waste disk space I'd hit it within a I'd resize the file
+system again once I resize the logical volume to get pick up those anywhere between zero and
+four megabytes extra that it rounded up to oh when I'm all done remount what I had just
+unmounted and everything's happy also of notes suppose you've got a file you've got a
+you know Linux a junior Linux setup we've got some logical volume management going on you've got
+a bunch of logical volumes and for some reason you need to use a live CD to oh do some rescue
+or something now some rescue CDs will have LVM functionality this is good however depending
+on the setup of a particular live CD even though it has the LVM functionality when your live CD
+came online it might not have bothered to identify any logical volumes you've got laying around
+for example I'm going to like a two-year-old canopics CDI use sometimes when I break things it has
+LVM functionality but it doesn't bother to check my logical volumes when it when it comes online
+so I need to use the command VG scan to scan for volume groups now I just enter I just enter the
+command VG scan things where things spin things grind a little bit and it recognizes the volume
+groups and then I can mount them in the appropriate mount points and walk around with them if I need to
+well you know I think that about does it form my attempted basic and brief overview of logical
+volume management hopefully from the examples I've given it can sort of see how LVM is
+pretty powerful and flexible tool for managing partitions for creating and managing virtual partitions
+shall we say please note I've only brushed the surface I've really scratched the surface of
+the flexibility in LVM as there are many more commands and many more command line options
+that'll allow the system administrator a lot more flexibility in creating and managing
+physical volumes volume groups and logical volumes well I guess that's about it my name is Kevin
+Benco and this was my attempt at hacker public radio thank you for your time and have a swell day
+thank you for listening to hacker public radio hpr responses by ferro.net so head on over to car0.18 for all the

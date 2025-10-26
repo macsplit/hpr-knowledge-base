@@ -1,0 +1,281 @@
+Episode: 3289
+Title: HPR3289: NextCloud the hard way
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3289/hpr3289.mp3
+Transcribed: 2025-10-24 20:15:26
+
+---
+
+This is Hacker Public Radio Episode 3289 for Thursday 11th of March 2021.
+Today's show is entitled Next Cloud in a Hard Way.
+It is hosted by Ken Fallon and in about 32 minutes long and Karim and exquisite flag.
+The summer is a private next cloud instance on a pi4x8 with less encrypt and wired on VPN access.
+This episode of HBR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HBR15.
+That's HBR15.
+Better web hosting that's honest and fair at An Honesthost.com.
+Hi everybody, my name is Ken Fallon and you're listening to another episode of Hacker Public Radio.
+Today installing Next Cloud the Hard Way.
+The reason it's the Hard Way is because I met some decisions that made it hard for myself.
+I also ran into some stuff that I was just unlucky enough to run into, I guess.
+One of the first decisions that I made was that I would run my next cloud instance inside my
+behind my firewall. Not I have three different networks but this is on the Wi-Fi network
+that the kid's Chromebooks and more Wi-Fi laptop and the general house Wi-Fi network connects to.
+Which means it doesn't have a public facing IP address. That's not to say I didn't want
+their mobile phones and other devices to be able to connect to it when they're out on the road
+but that was the thing number one that was going to cause me a problem.
+Thing number two is that I'm not using a pre-built Docker image or pre-built
+SD card image of Raspbian or something dedicated to running Next Cloud.
+I deliberately am doing this because I want the computer that I'm running it on to be my computer
+that I understand what's going on. It's as much a learning exercise for me as anything else.
+So without further ado let's start. Thing number one that I did was I ordered the harder.
+And I got a four gig, sorry an 8 gig Raspberry Pi 4 and 128 SD card, SSD card and then a 64 gig
+SD card that I had learned around to burn the OS image. And the idea here is you burn the
+Raspbian image on the SD card and then you clone it over to the SSD flash drive.
+Some gotchas that I had was that the SSD solid state device that I had
+wouldn't wasn't recognized and James A Chambers has a good right up there and how to get them
+recognized. Eventually it was recognized as a regular USB attached storage which would not be
+as fast as other options that are available but it still gave me faster speeds than I would be
+having a SD card booting plus it's also more reliable storage so that's the reason I went on
+there. Links in the show ones to that. Second link I'll point you to two is the steps that are
+necessary in order to boot your Raspberry Pi 4 from USB SSD solid state drive. That's from Tom's
+Harder. When I did my HPR 2356 safely enabling SSH with a default Raspbian image and then
+subsequently the Ansible show I already had updated my, I downloaded my image and updated it
+with Ansible and installed all the tools that I want installed and not default Raspbian install
+within the house. So a lot of these steps were necessary for me but what Tom suggests is update,
+full upgrade and Raspberry Pi upgrade and then do a Raspberry Pi E-POM update dash DA and do a
+Raspberry Pi config. Well when I checked all this I had the latest E-POM. He will go through the
+steps there to show you how to boot from that and then you select boot from a USB drive in the boot
+options. You don't reboot at that stage, you exit the Raspberry Pi config tool after you select
+USB boot and then you use the SD card copier which is in accessories. You first plug in your external
+solicit disk and then you do the card copier and that'll be from Dev MMCBLK 0 to the Dev SDA
+probably. You do not select new partition new UIDs so that everything's just copied over nicely.
+So that all works out swimmingly once you shut down your computer you power it off then you take
+out the SD card and hopefully it'll boot from the external solicit drive. The only thing you'll
+notice is that it's faster. So now we have the hardware installed. Now we need some software in order
+to serve up next cloud. Next cloud is a PHP application so we need a web server that supports that.
+I chose Apache, you might choose Engine X and it also needs a database. You can use SQLite but
+you are strongly advised not to. So the most supported one that I could see was MariaDB and that's
+the option that I chose to go with. If you check the show notes you'll find the installation
+commands that I used in order to install it. But to be honest I would probably follow the
+Tecropublica article how to install next cloud 20 on Ubuntu Server 20-04 as it gives a simpler
+overview than what I'm about to do. So the steps are to install Apache 2, MariaDB Server,
+some Libba Apache 2 mod PHP, PHP modules and some additional zip modules, XML etc. that are needed
+for that. I went to the additional stage of installing PHP MyAdmin as well in order to
+be able to use a graphical tool. As I'm not going to be on the internet with this I wanted
+just a little bit more convenience and PHP MyAdmin does that for me. One thing that I did do was run
+my SQL secure installation which will give you the option to add a new password. So I did that
+and added that to my password manager which is keypass xc and then in the Tecropublic article they
+show you how to login, create a database called next cloud, then they created a user called
+next cloud with a password. They granted privileges to that user and then they flush privileges
+in order to enable us an access. I did exactly the same thing but instead of doing it that way
+I did it via PHP MyAdmin. No major change really. I used system control stop Apache 2.service,
+system control start, Apache 2.service, system control enable, Apache 2.service and system control
+status, Apache 2.service. These things you use for regular all the services as well so you can
+also use it for MariaDB and the like. So the next step then was to download the next cloud
+zip file which I did and I verified the signature of it and the install goes into
+VAR WWW HTML next cloud and it would actually advise you to follow the Tecropublic article here
+how they did it. They created an next cloud config in sites available with some settings and then
+they created the used A2EN site next cloud to enable us. A2EN modules, so Apache 2Nable modules,
+rewrite header and durr and mime and they changed the PHP memory limit. I did the same thing but in
+more roundabout way one of the things I did run was creating a backup of the next cloud config file
+in the next cloud directory which made it more difficult to update the next cloud config because I
+got an error occurred while checking server startup startup or it may have been when a backup
+during the upgrade the backup process failed because there's no permissions for that file because
+that file was created by the reach user and not the WWW-data user but I'm probably confusing you.
+So just doing the diff of the original that I kept somewhere else and what it is now I see that I've
+added the hostname, you know the local hostname of my next cloud server. I've added the IP address
+and I've added the fully qualified domain name that is accessible on the internet.
+But can you say if it wasn't accessible on the internet we'll get to that in a minute.
+Some other things that I've been that I added later on was memcache.local which is OCE Memcache
+ACU which is one of the error messages or one of the recommended improvements to increase caching
+on the on the system that you get later on. I also took the opportunity here to
+increase the php.i and i instead of 512 from what they have done there from up to 512 I went from 128
+up to 2 gigabytes so 200m I didn't go to 056 because when I did that that particular value
+not anything lower or higher causes a bug whereby they are occurred while checking server setup.
+So when I did that it proved to be okay. So I changed the max upload size up to 2 gigs so 2048
+make and then I restarted all the services system control restart Apache 2 service system control
+status Apache 2 service and that's doing restarting Apache that way actually caused me some problems
+later on. So I believe the best way to restart Apache is user espn Apache 2 control
+start stop or restart. So Apache 2-T will test the file more about that unknown.
+So at this point I have Apache running I have MySQL running and I got php my min running
+I've got the next cloud configured installed in the next cloud directory and all you need to do now
+is connect to the server IP address forward slash next cloud and you'll be greeted with a
+create admin user account username and password and you'll select the location for your data store
+and you'll be following the database user database password and database name and once you
+do that you can install recommended apps calendar context talk mail and collaborative editing
+and you can press finish setup. So the database user and password we've already created earlier on
+and then you'll greet it with next cloud. So everything is working honkydory up until that point.
+So when you log in you'll be faced with a dashboard and up at the top you've got files, photos,
+activity, talk, mail, context and calendar and under your icon on the top right hand side you have
+settings and these are the settings for both you personally and because you're an administrator
+you as a new administrator. Under on top right hand corner under your profile name you will also
+have users. So this is where I went in and created a user for myself and I made that user admin
+so I then have two admins. I then created additional users for everybody in the house
+and that was pretty much that for now. Then going back into profile and settings I went to
+the left hand side there's an administration overview section and what that does is it checks
+your system for security issues and if you had any updates this is where you would find them.
+One of the main issues that it was complaining about was the lack of an SSL certificates
+or TLS to be more correct. This is the thing that gives you the HTTPS in internet traffic. What it
+does is it encrypts traffic between you and the websites using root certificates that have been
+distributed are well known and have been distributed onto your operating system by whoever it is
+that you're running. Be it Linux, Windows, Mac or Android. So that actually means that
+as my client base I don't own all the devices, some of them are school laptops and some of
+the more work laptops from my wife. I don't have access to put my own self-signed root certificate
+on there so that is not the way to go. The obvious answer is to use a let's encrypt certificate.
+Now let's encrypt allows you to put an SSL cert on your website and they have an
+update script that runs on your website that sends a challenge that requests a new certificate
+and requests updates to the certificate and there requires two-way interaction either over
+HTTPS or over DNS where they can verify that both parties are who they say they are when requesting
+this certificate. Unfortunately as I'm behind a firewall remember I said it was making more
+difficult for myself. This is not going to be a possibility for me. However there was a little
+bit of light at the end of the tunnel because I saw that there was the option to renew your
+certificates using DNS challenge and what that meant was that instead of putting something on
+port 80 if you didn't have access to port 80 you could in fact do it using a special TXT entry
+in your underscore acme-challenge dot and then the path to your domain. So what that would do is
+during the certification process you would request your cert and let's encrypt would tell you
+okay in order to prove that you own the domain that you own I want you to put this key into that
+text field. Once you do that you want to the next part and then it will verify that so there's
+then having verified that you at least own the DNS for that domain therefore you own the domain
+then both parties know and trust each other. So this turned out to be the best option for me at
+least because I do have access to DNS for the domains that I'm running. I didn't want to be running
+this website out on public but I do have access to the DNS. So I installed a thing called Certbot
+which is provided to generate let's encrypt certificates and I ran that with the
+cert only dash-manual space dash dash preferred dash challenges is DNS and I needed to add an
+email address. I read the terms and conditions which are hard and too bad. I agreed to it. I then
+decided whether I want the ff to be able to spam you or not and then I told them the domain name
+where I was going to challenge. So for example nextcloud.example.com and I had to verify that my
+IP address is going to be publicly logged which is kind of which is kind of important. And then
+I told me that I needed to deploy a dnx text record with the following name underscore acme-challenge.example.com
+which I did and I pissed it in the key that they gave me. And then once I had that done I could press
+enter. And once I had that done it's a congratulations here are your certificates. They're in let's
+and ETC let's encrypt live nextcloud.example.com for sashfulchin.pem and the key file was that key
+privki.pem and your search is going to expire in three months. Now unfortunately there's no way to
+renew that. So I'm just going to set up a nextcloud reminder that in three months I will delete the
+certificate and then run through the exact same process again. And I can delete it by doing
+searchbot space certificates will show me the search and searchbot space delete will allow me
+to delete the certificates. And it allows me which one I want to delete and I'll do that and then
+I'll just rerun through the process again and I'll need to add that text file. In order to
+verify it I typed dig space dash t for the type capital letters txt space and the domain name
+underscore acme-challenge dot nextcloud.example.com and then I get the section and in the answer section
+I get back they hack me thing with time to live and the key. And it's probably useful to do that
+before you press yes on the previous tool just to make sure that everything works okay.
+So then in the Apache setup it was incredibly difficult to find instructions on how to set it up
+either it was on a Fisher price toy level or on a degree in molecular physics level. There
+didn't seem to be anything in between about how to set up your own certificates. I did find
+an Linux size where they used a let's encrypt certificates the guts of what I needed.
+In addition the wiki on mazilla pointed me to the ssl-config editor which gives the
+recommended settings for an ssl cert on Apache. So that was handy because at least I knew
+what settings I needed but and the Linux size post allowed me to know where I needed to put them.
+So I needed to put a rewrite rule in the default.conf and I needed to put the ssl certificate file
+just pointed directly to the let's encrypt live path that I got and the ssl certificate key file
+in let's encrypt live that I got area from that tool. I was then able to change protocol
+to htp2 and there as well the other recommendations. So when I tested it using open ssl s
+under client like the key will be in the or the description will be in the show notes. It showed
+that there was an error there was no certificate installed the handshake didn't work it basically didn't
+and after several hours I'll bait my head against a wall I did a patchy to control restart
+so not system control a patchy to restart a patchy to control restart right different command
+and that did the business that reloaded the certificate for me. So everything worked perfectly
+accepted it didn't but that did was it got rid of the ssl error when I was browsing here locally
+on my machine to this device. So now next cloud was saying everything was okay. As I said before
+I wanted this server to be internal so I had a non-rotable private IP address in the 192168
+range assigned to my next cloud dot example dot com domain name. So try as a might I was not
+able to get DNS to resolve internally on my own network and the reason for that is because DNS
+rebinding is an attack that's used to take a domain name and then put private IP addresses in it
+so that you can access information you can trick people into accessing internal company websites
+and redirecting the information out to an external website. So that's blocked by default
+on my router. You can go into your DHCP settings and go look for rebinding protection or discard
+upstream rfc1918 responses and in there I was able to do that on my two firewalls
+and I found that I was able to use to disable it just for one domain name which is what I did.
+So I added an exclusion for next cloud dot example dot com and then from that moment on I was
+able to access my I was able to resolve the IP address the internal IP address from an external
+DNS hostname. So to recap what we have at the moment is we have our Raspberry Pi,
+running Apache, PHP, MySQL, or sorry MariaDB, the alternative version for MySQL.
+Running next cloud, everything's up to date, everything's now running on SSL. If you do a
+resolve my hostname externally you'll get the internal IP address. If you're internally you can
+then directly access the site but if you're external say you're in school or something and you
+want to be able to check your agenda then you're going to run into a problem and the solution to
+that problem is to install wire guard. I hope to be able to refer you to a tv's excellent show
+on wire guard if he pulls it. I've already got the text I just need to hear the audio
+but I took the short way out and I used the pivpn.io script which also supports wire guard
+and follow the steps through in that. I need to open one port on my ISP router to allow access to
+the server and then it was as simple as I had to command pivpn on my Raspberry Pi and when I
+went pivpn add, I added my phone, I added all the kids phones, my wife phones, each of us have our own
+peer-to-peer setup and then I installed it on eftroid and hit the plus sign on my phone,
+pointed it at, brought up the QR code using pivpn-qr, pressed the QR code button on the wire guard
+application and that was it, it simply worked from then on. I got my peer address and the direct
+connection in. So now everything is working. Within next cloud itself I created a new context,
+I created a generic account for the house and there I imported all the contacts that are shared
+among everybody, the aunts and the uncles and the cousins etc. I grouped them in there and then
+under that settings you will get a context. So I renamed that using the 3 button mouse, I renamed it
+to house underscore context. Then I clicked the share button and I added the family group which I
+created earlier for the grouping of everybody on this account. In the calendar section I renamed
+the house calendar to house calendar, no surprise, from calendar to house underscore calendar and then
+I shared that as well with the family. So then I logged in as each of the people in my family and
+I renamed their counters and their contacts to with their first name. So Ken's underscore calendar,
+Ken's underscore context. So it makes it just a little bit more simple to know what's going on.
+So then the idea is that everybody has access to the shared calendar but they've also got their
+own calendar. Everybody's got access to the shared contacts but they've also got their own contacts
+the same for tasks. So once that was done I was quite happy with that. I then installed next cloud
+link in the show notes to where it is on the eftroid. Then installed DAVX which is a DAVX
+5 CalDAV card call synchronization and client. Open tasks to keep track of your tasks and goals
+and wire guard as well on each of their machines. So once I set up next cloud I created an account
+for them, made sure that they had access to the house shared files. I also shared the files for
+the house and there I keep the latest version of the proprietary apps that I download on one phone
+that's got a connection to the Google Play. I then using APK extractor to extract those
+and put them on to the latest apps folder which is shared to everybody so you can download
+WhatsApp for example from there and run it. I've got the latest maps there where they open the
+street map files are available. I set up the application to undistivise auto upload from their
+folders. So any new photos that they make and screenshots that they take are automatically
+uploaded. So that's within the next cloud application itself. The DAVX one is where the majority
+of the phone actually occurs so I created an account in there as well for each of the people
+and then you go refresh address book list. It'll pull down the addresses so you'll get
+house contacts. In my case, Ken's underscore contacts. Under caldav I'll get the house calendar
+and my own calendar as well as the contacts for the birthdays. So at this point we now have
+phones that are available when I turn off my Wi-Fi and I turn on roaming or I go to another
+place if that were possible in these lockdown times. I would then be able to access my calendar
+on all these devices. I also now have any time they take a photo or that's automatically synced
+up as well. I'm able to if they want some music from the NAS I'm able to put that into their
+folder and they're able to pull that down. So theoretically there should be no information on
+the phone itself. It's a standard lineage install and now all the information is stored on the
+next cloud up here which yet I need to backup. One last thing that I wanted to do was now that we
+all have a shared calendar. I wanted to add this to my magic mirror and with the help of Dave,
+I was able to do that by adding a calendar section. He covered that in his show which was
+episode 3039 making a Raspberry Pi status display. So what I did was I changed the I modified the
+calendar section there. Now I had some problems trying to find out how to export an iCal from the
+calendar and the solution that I found was if you go into the next cloud section in the case of
+so I'm logging in as that house here and going to the house calendar onto the calendar section and
+then I go on the menu bar copy private link. So that copy private link will bring you to the web page
+so it'll give you a personal personal calendar shared by blah blah blah. If you put a question mark
+and export behind that that will take that calendar and convert it to an ICS file.
+And what I was able to do was use WGET to pull down that file and thanks to a trick from Dave,
+I saved that into magic mirror modules and I created a directory called dot calendars and I
+saved it in there so I've got the home calendar going in there and I've got the birthday calendar
+going in there. So then I wrote a cron job that runs every 15 minutes that runs a bash file and
+that will go use WGET quietly gets the document to the dot calendar's folder as a temp file and then
+it'll use the dash s to check to see if the file exists and it's not empty. If both of those
+conditions are met it'll overwrite the old one with the new one by renaming the file from temp
+to regular ICS and it does that for for both of them. And the last piece of the puzzle was thanks
+to Dave and he pointed out that he was able to load calendars locally without having to use
+external URL. For example hacker public radio calendar settings has got the name
+a HPR community news recordings. URL has got HGB colon, port search, port search, hacker public
+radio.org, port search, HPR underscore community, underscore news, underscore schedule dot ICS
+and he used the little trick of localhost colon 8080 modules dot, port search dot calendars,
+port search home underscore calendar dot ICS and that displays my family calendar and it's got
+a symbol calendar check and the color and I do the same thing for the other calendars, the
+birthday calendar and I also downloaded the recycling calendar schedule as well. So that worked
+out quite well. One thing I did notice that was when I created a special account for the magic mirror
+so that it didn't have read and write access to these calendars. I noticed that the birthday
+calendar sync didn't work out. So in order to fix that I went into var ww h email next cloud as
+root data sudo space dash u space www dash data and run php space occ space dav colon sync dash
+birthday dash calendar and then that said starting birthday calendar sync for all users and that
+generated those birthday calendars. I think that's a task that runs overnight or at various different
+times. So after that mammoth show I will call a halt and say thank you very much tune in tomorrow
+for another exciting episode of hacker public radio you've been listening to hacker public radio
+at hackerpublicradio.org. We are a community podcast network that releases shows every weekday
+Monday through Friday. Today's show like all our shows was contributed by an hbr listener like
+yourself. If you ever thought of recording a podcast then click on our contributing to find out
+how easy it really is. Hacker public radio was founded by the digital dog pound and the
+infonomicon computer club and is part of the binary revolution at binwreff.com. If you have
+comments on today's show please email the host directly leave a comment on the website or record
+a follow-up episode yourself. Unless otherwise status today's show is released on the creative
+comments, attribution, share a light, 3.0 license.

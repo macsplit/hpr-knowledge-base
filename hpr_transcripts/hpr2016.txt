@@ -1,0 +1,119 @@
+Episode: 2016
+Title: HPR2016: Echoprint
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2016/hpr2016.mp3
+Transcribed: 2025-10-18 13:20:59
+
+---
+
+This is HPR episode 2016 entitled Echo Print.
+It is hosted by India and is about 13 minutes long.
+The summary is, I share what I learned about the Echo Print Music Identification System.
+This episode of HPR is brought to you by an Honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15.
+That's HPR15.
+Better web hosting that's Honest and Fair at An Honesthost.com.
+This is Leandere for Hacker Public Radio, recording Friday, April 25th, 2016.
+I'm going to be talking today about the Echo Print Music Fingerprinting System.
+Earlier this year, a message went out to the mailing list asking about possible ways of
+identifying whether recordings uploaded to Hacker Public Radio had had the intro prepended
+and outro appended or not, and if it was possible to automate this.
+This got me thinking about how audio is identified and specifically music, and I'd
+remembered reading some while back about the Echo Nest and Echo Print projects.
+So I'd throw that out there as a suggestion of something to look into, and wouldn't you
+know it?
+You suggest doing something and pretty soon you end up doing it yourself.
+Now I never was quite able to get good detection of the HPR intro and outro, but I did learn
+a lot about the system and found it pretty interesting, so I thought I would record an
+episode and share in case someone else is interested in it.
+So first of all, the Echo Print project has a website, it's echoprint.me, and there's
+a pretty high level overview there of how it works under this, how it works link, slash
+how is the URL.
+Now when I first started, I assumed this was going to be like most other fingerprinting
+systems, just sort of a hash that I could just do direct comparisons to.
+So I downloaded a few audio files, including the Hacker Public Radio, Intro and outro,
+Black versions, then I re-encoded those to AUG with the idea that I could run the fingerprinting
+over both and compare the two, and hopefully we'd get a match.
+So I downloaded the code generating part of Echo Print, and they have the source code
+for it on GitHub, it's at github.com slash econist slash echo print dash code gen.
+The code is MIT licensed, and I was able to compile it with no problems on my Raspberry
+Pi, and so I ran the fingerprinting on both audio, it uses FFMPEG to do the audio decoding,
+so there were no problem handling both formats.
+I learned pretty quickly that it's not just a matter of using the code generator to get
+hashes and then comparing them.
+First of all, the output of the code generator was JSON, and that included what looked like
+a base64 chunk, which was the hash itself, and they didn't look the same at all, and
+they weren't even the same length, so I needed to dig a little deeper.
+So the first thing I did was try decoding the base64, which turned out it was actually
+a URL safe version of base64, where the plus and slash are replaced by a hyphen and underscore,
+and then I just got this big binary blob, and at that point I pretty much knew I was in over my
+head, but I decided to keep going. So I did a little more searching around on their website,
+found a mention of a white paper, and through a little googling was able to find that,
+and that gave a little more information about how the algorithm worked, and
+why I wasn't able to just direct compare these things. So I'll give a link to the white paper
+in the show notes. It's at www.e.columbia.edu. Slash till the dpwe slash pubs slash lswp11-ecoprint.pdf.
+And it's co-authored by Daniel PW Ellis, who is with the laboratory for recognition and
+organization of speech and audio at Columbia University, Brian Whitman from Econest,
+and Aleister Porter, who is from the Center for Interdisciplinary Research in Music Media
+and Technology at McGill University. So I'll try to summarize for you what I learned about the
+fingerprinting algorithm from the paper. You start with the audio, they do a little bit of
+pre-processing to get everything in the same format, and then they chop the signal up into eight
+frequency bands from zero hertz up to about five and a half kilohertz. I assume that something
+just sort of like a Fourier transform just to get the signal into those eight buckets.
+Next, they in each bucket go through and they detect what they call onset events.
+From what I could figure out, that's basically just places where the volume increases,
+trying to find the beginnings of notes or beats.
+They take those onset events in groups of four, and then for each pair from that group,
+they generate a hash. So all possible pairs for a group before,
+keeping the pairs in order gives six pairs, so six hashes.
+And then those hashes are stored along with the time they occur.
+So at this point, I at least knew what the fingerprint represented, so now I just needed to deal
+with the format. What was very helpful for that was actually looking at the server code for the
+echo print project, and that's at github.com slash echo nest slash echo print dash server,
+and that is licensed under the Apache 2 license.
+So looking through that code, I found that the
+JSON payload that gets sent to the server was base 64 encoded, and the binary blob that I was
+getting after decoding that was actually gzip compressed, but with no gzip header.
+So I took my samples that I generated, pre-pended a gzip header, and decompressed it.
+And what I found was essentially just a long string of hex digits.
+And the early ones, it was pretty obvious that values were getting repeated, and they were
+five digit hexadecimal numbers. And each five digit number was repeated about six times
+throughout the first part of the file. And then in the second half of the file, there
+didn't seem to be any repetition at all. The numbers seemed much more random.
+And the reason I found that out is, or the reason for that, is that all of the lengths
+are listed first, and then all of the hashes are listed at the end of the file. And the advantage
+that that gives is you get better compression, because each length is repeated six times,
+once for each of the six pairs for that group. And since those are all together,
+gzip is able to find those repetitions and compress them very well.
+So I needed to take the file, split it into half, and split each half into a five digit length
+for the first half, and a five digit hash for the second half, and then pair those up.
+The next thing that the server does to compare two fingerprints is it compares all of the hashes
+from sample A, and matches them up against hashes in sample B wherever they're equal.
+Then it calculates the minimum time offset between each pair of matching hashes,
+and does a histogram. So it counts how many times a distance between two hashes occurs.
+And then it takes the most common times, and uses that as a score. The count of the
+number of occurrences of that time distance. And that essentially allows finding two matching
+pieces of music that are just shifted by a time offset. So rather than looking for occurrences
+at exact times, they just check to make sure that the time difference between
+two hashes is pretty constant throughout the sample. So I wrote some conversion to go from the JSON
+through the base 64, pre-pen the gzip header, decompress, split the text up into pairs of five
+digit hex numbers, and then wrote an ox script to try to score the difference between the two files,
+essentially trying to duplicate what the server was doing. I never did quite get it worked out well
+enough to be able to consistently identify the HPR intro and outro. And I think in the process,
+I learned that a major reason for that is with this kind of fuzzy matching,
+it works pretty well for audio identification. So let's say you have a large
+database of pre-computed fingerprints. Like the Ekonass project does, they use I think it's the
+million songs database. It's pretty easy to say which of these songs does this new sample match
+most closely, which gives very good results, but it's harder to say given any two samples,
+are they the same song? It's pretty easy to say no, false negatives are pretty rare,
+but it's rather hard to say yes, you know, how close a match is close enough.
+So I didn't really get what I was after, but did learn quite a bit, and hopefully it was in
+interest to you as well. Tune in tomorrow for another exciting episode of Hacker Public Radio.
+You've been listening to Hacker Public Radio at HackerPublicRadio.org. We are a community podcast
+network that releases shows every weekday Monday through Friday. Today's show, like all our shows,
+was contributed by an HPR listener like yourself. If you ever thought of recording a podcast,
+then click on our contribute link to find out how easy it really is. Hacker Public Radio was
+founded by the digital dog pound and the infonomican computer club, and it's part of the binary
+revolution at binrev.com. If you have comments on today's show, please email the host directly,
+leave a comment on the website or record a follow-up episode yourself. Unless otherwise status,
+today's show is released on the creative comments, attribution, share a life, 3.0 license.
+You've been listening to Hacker Public Radio at HackerPublic Radio at HackerPublicRadio.org.

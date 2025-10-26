@@ -1,0 +1,181 @@
+Episode: 4144
+Title: HPR4144: Running a Self-Hosted Mail Server
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4144/hpr4144.mp3
+Transcribed: 2025-10-25 20:12:54
+
+---
+
+This is Hacker Public Radio Episode 4144 for Thursday the 20th of June 2024.
+Today's show is entitled, Running a Self-hosted Male Server.
+It is hosted by Lee and is about 12 minutes long.
+It carries a clean flag.
+The summary is, Experiences Using Iard Male and Male Co.
+Hi, my name is Lee.
+The subject of today's episode will be running a self-hosted male server.
+So why might someone want to do this?
+Well one reason would be so that you're not relying on the third party to manage your
+data.
+This is an entirely true because you still need a server provider and a domain name registrar.
+But there is freedom from the potential for restrictions and data harvesting by the
+free email providers that are most popular today.
+You can set your own limits for storage size and the number of mailboxes.
+It pretty much depends on how much storage you've got on your server.
+You can use your own domain names and there's unlimited potential for customization and
+integration with other systems.
+So why might you not want to do this?
+Well for one thing, it might be technically challenging.
+There's no help if you break it really.
+The email relaying depends on other servers, not just your own.
+So as an individual, as it much you can do if other servers won't play nice with you.
+For example, the IP address of your server could be blacklisted.
+There are things you can do about that, but as I said, as an individual, there's a limit
+to that.
+The software may be free and open source, but the infrastructure is still cost money.
+So what are the prerequisites?
+Well as I've said, you need a server.
+This is most likely going to be a virtual private server and you'll be running a Debian
+or a Red Hat Linux derivative probably.
+You also need a domain name that you've registered and to be able to modify the DNS for that
+domain name.
+So what choice of software do you have?
+Well, in principle, you can roll your own, i.e. install any sort of packages you like
+and connect them together to workers, a cohesive mail server.
+However, this approach is like to involve lots and lots of configuration troubleshooting.
+So it's probably easier to use an integrated suite like MailCow or iRedMail.
+So what are the main components of a mail server system?
+Well, you have a mail transfer agent like PostFix that sends email to and receives email
+from other servers.
+You probably have an iMap or POP server like DoveCot for downloading mail to a local mail
+client on your PC.
+You have a web server like Apache or EngineX to provide any web interfaces.
+You have WebMail software like RoundCube or SoGo that presents email for a browser.
+The server will probably need a database like MySQL or PostgresQL for storing various data
+involved in now sending receiving emails and there's likely to be various security tools
+to prevent spam viruses and network attacks that you need.
+So over the last five years or so I've run two different self-hosted mail servers.
+The first one was iRedMail on CentOS and I've used that for about five years for the
+WebMail it ran RoundCube although iRedMail can also run SoGo.
+And then for a bit less than a year I've now used MailCow on Ubuntu instead.
+And this runs in a Docker container and the WebMail is through SoGo.
+Now although I've tried both I can't really recommend one over the other because it wouldn't
+be a fair comparison by instilled iRedMail a long time ago and I didn't properly figure
+out how to update it regularly.
+I noted that iRedMail was quite pushing a premium version this might get in the way when
+you're reading documentation knowing what tier it applies to, what features are available
+on each tier.
+Things that I like about MailCow is it runs in the container so it's fairly easy to manage
+and it can be updated to the latest version fairly straightforwardly although I'm sure
+iRedMail can too if you know what you're doing.
+So my experience of self-hosting, first what I use it for, I don't use it as my primary
+email.
+For that I use a popular free WebMail service and I use that only for contact with people
+who actually know what work with.
+I can't really afford to lose work emails due to any technical issue in my mail server.
+The self-hosted email server I use for companies and organisations such as an online store
+or a service that's likely to send marketing or such as a utility company or if it's
+a one off interaction.
+So I use a different email address with its own mailbox for each organisation.
+Sometimes I'll share an address between companies, for example if it's for electricity bills
+I might use the same address even if I change energy provider.
+Typically I don't monitor any of those mailboxes day to day.
+So how have I customised it?
+So actually I've done a bit of customisation on my server running MailCow and I've done
+the similar thing with the one running iRedMail.
+So this is what I have.
+I have a script that generates a new email mailbox every time I sign up to something.
+So just typing what it is like Linux magazine for example.
+It will generate a randomised email address which also contains an indication of the date
+which is useful for knowing when I signed up to something.
+The email address would be something like Linux hyphen magazine hyphen D37 hyphen 0624 at
+mydomain.com.
+The script will also generate long and complex random password.
+And although it's a slight security no-no, typically I'll use that same password for both
+logging into whatever their website is as well as logging into the webmail interface for
+that mailbox.
+Although I can always change my mine later and change the passwords if I think I need to.
+The script saves a new email address and password in my password manager because I don't actively
+monitor those mailboxes.
+I also wrote a script that runs in the cron job to create a digest of all recent emails
+in all the mailboxes.
+This just has the sender mailbox, subject date and first few lines.
+So it's easy to glance through this digest every now and again and see if anything jumps
+out at me as requiring attention.
+So now talk about setting up mail cow.
+Now set this up in the terminal, logging into a fresh event to instance.
+I haven't made detailed notes and my shell history doesn't go back that far, but I will
+look at the MailCut website as a reminder.
+Firstest and preliminary to do, to start with they want you to sort out whatever file
+we're using so they're required ports are open.
+Then they suggest making sure the time is set up properly on the server so you'll be
+using NTP for that probably.
+Then sorting out DNS, I would have set up DNS with my domain registrar that should
+be at least an IP4A record and an MX record and they also recommend auto discover or
+an auto configure records because these help when setting up a mail client and then some
+extra text records are recommended for SPF and DKIM which help prevent email spoofing
+and it means your mail actually gets delivered rather than ending up in spam.
+So once all that is out of the way, mail cow can actually be installed.
+First job is installing docker if it's not already there.
+I guess podman might have conceivably been used instead but I was pragmatic and used the
+container systems specified in their documentation.
+The next step is cloning the mail cow's dockerized repository and finally running docker composed
+to bring in dependencies and start the various components.
+With that and any troubleshooting it would have been up and running.
+There would have been some work to do on the web interface to set things up and I imagine
+I also had to sort a few things out to get lets encrypt to work properly so I could log
+in directly over the web rather than having to forward a port over SSH.
+What was fun was creating a script to put everything out via redmail and then put all
+the same data back into mail cow.
+So then there's updating it and with mail cow they provide an update shell script that's
+run manually and it has a few options as to what it does but assuming there's no problems
+the script handles everything and at the end mail cow is fully up to date.
+So what you actually see with mail cow when you navigate to the web interface on your
+domain you can log in and then add mailboxes and you can even handle multiple domain names.
+I have this web interface protected with second factor authentication with the ubiky.
+There's also a link on the front page that opens the webmail which I mentioned is called
+SOGO and there is possible to log in to a particular mailbox and read emails and also send
+emails.
+I haven't bothered to set up a mail client on my local pc and I always just use the
+webmail and in fact I've deliberately blocked the iMac ports they're not being used then
+it's best to have them closed.
+How well is all this worked?
+Well in terms of junk and marketing on the plus side that don't have to manually sift
+for an inbox of bills and marketing just to find the emails that actually need my attention.
+I think this due to Google's anti spam as well as the European general data protection
+regulations which have made companies a bit more disciplined in how they carry out email
+marketing.
+But leaving my personal email aside in terms of the mailboxes on my self hosted server
+having all the different utilities and services compartmentalized certainly helps to hide
+all the clutter that generally fills up most people's inboxes.
+I admit there are other ways of achieving the same thing for example Apple devices nowadays
+automatically offer to keep your email address private and provide a forwarding address
+to give to companies instead.
+Also there are a number of email services both free and paid that provide email aliases.
+As I mentioned at the start there are a number of reasons for self hosting and unlimited
+alternative mailboxes is just one of them.
+So in terms of reliability for the most part once properly configured their mail server
+just runs itself and does so reliably.
+It was true of iRedMail and it's true of MailCow.
+I did have a few issues with receiving certain emails a few years ago.
+For example the ones Apple used to provide two factor authentication.
+This was quite a pain because I couldn't verify something to do with my developer account
+which put things on hold and required me at the time using my clients to developer account
+instead of my own.
+Apart from that I've not had many problems with self hosting and even that issue has
+not been a problem since.
+Other issues related not directly to iRedMail or MailCow but have come about with my own
+scripts and customizations on the mail server not working sometimes and requiring debugging.
+So it's probably less hassle to use third party plugins directly designed to extend the
+mail server in some way rather than having to create and maintain your own.
+So that's all I really have to say in summary I've talked about reasons for self hosting
+email and generally what is involved and what my experiences have been.
+If you want to find out more about the particular mail server suite so I've mentioned they
+can be found at iRedMail.org and MailCow.email.
+I hope this is something you found interesting and maybe you've tried it before or maybe
+we'll try in the future.
+You have been listening to Hacker Public Radio at Hacker Public Radio does work.
+Today's show was contributed by a HBR listener like yourself.
+If you ever thought of recording a podcast and click on our contribute link to find out
+how easy it leads.
+HBR has been kindly provided by an onsthost.com, the internet archive and our syncs.net.
+On the Sadois status, today's show is released under Creative Commons, Attribution 4.0 International
+License.

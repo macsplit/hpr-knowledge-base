@@ -1,0 +1,161 @@
+Episode: 2134
+Title: HPR2134: Shutdown Sequence Systemd
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2134/hpr2134.mp3
+Transcribed: 2025-10-18 14:44:30
+
+---
+
+This is HPR episode 2,134 entitled Shut Down Sequence System D. It is hosted by Klaatu and
+in about 15 minutes long.
+The summary is Klaatu demonstrates how to seek one's system D shut down processes.
+This episode of HPR is brought to you by an Honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15, that's HPR15.
+Bet your web hosting that's Honest and Fair at An Honesthost.com.
+Howdy folks, this is 5150.
+If you're going to attend the Ohio Linux Fest this weekend, October 7th through 8th, be
+sure to seek out the Linux podcasters booth.
+It is a collaboration between Hacker Public Radio, the pod nuts network, ChronoPanic
+oncast, Linux oncast, and your other favorite shows.
+Joe Hatt of the new single board computer and virtual private server show is graciously
+providing swag in the form of mugs, stickers, and t-shirts.
+And I am bringing an unwarranted t-shirt from Kansas Linux Fest 2015, an upgrade year.
+That's going to be first come, first serve, under the desk so you're going to have to
+ask for, and some stickers.
+And we'd love to meet all our fans in Columbus.
+See you there.
+You will listen to Hacker Public Radio.
+My name is Clay too.
+We're going to talk about System D script order.
+So System D, as you know, manages the startup and shutdown of most distributions that
+are being released right now, I would say.
+And by most, I mean the bulk of the major distributions, Fedora, Sintosh, Red Hat, Debian,
+and I think, Zeus, and I think Arch by default, well, by default, everything's by default.
+So System D is something that you encounter if you're messing around with how your computer
+starts or shuts down.
+And I did most of this because of some Raspberry Pi projects that I've been working on.
+I wanted the Raspberry Pi to start up particularly quickly.
+So I pruned a lot of the startup services out because I didn't need half of them.
+I was kind of treating the Raspberry Pi as an Arduino, you know, it's kind of an embedded
+system rather than a computer.
+And then I also needed the Raspberry Pi to launch a custom demon that I had written in Python.
+So I had to write a startup script for that to happen, which turned out to be really,
+really easy.
+So I started getting familiar with it on the Pi and then on a Sintosh server that I manage,
+System D is there as well, Sintosh 7.2.
+So I got familiar with it there as well.
+And it came up in a forum online that someone was trying to make a System D sort of set
+up a System D scheme where a very particular service executed before the shutdown service.
+This was obviously not on a server, well, not obviously it just, it wasn't.
+So the thing about System D is one of the big features of System D is that all of its
+startup services and scripts, they run in parallel.
+And that's why you've got the ostensibly faster boot up time or faster shutdown time.
+Time is a little bit different for System D. You don't tell System D to run A and then
+B and C. What System D does is that it runs A, B and C all at once, but it does not allow
+C to complete until B has signaled that it has been completed and B won't execute,
+won't complete until A has been successful.
+I mean, assuming they're dependent upon each other, assuming A, B and C are dependent,
+that you've defined them as dependent upon one another, then yeah, that's how it would be.
+C wouldn't complete until it got an exit zero from B and B wouldn't complete until it got a
+return zero from A, exit zero, return zero, whatever. And that's how System D sees things.
+So it sees everything as happening at once, but things not completing until some condition is met.
+That made sense. Okay, so here's the proof of concept. I've run this kind of scheme on
+syntax 7.2. So you can follow along if you want to. The proof of concept we'll do will require about
+four different files. We'll need two service files and two shell scripts. It'll be pretty simple
+and you can do this. You do this at home safely. It's not going to be destructive at all. So we'll
+make a new file. We'll make a temporary sort of fake shutdown file because we don't actually
+want to shut the computer down just to test this, this process. And we'll call it fake halt and
+fake halt dot service. Actually, we'll go in slash lib slash system D slash system slash fake halt
+dot service. And in a service file, there are different blocks or or stanzas. The first one being
+unit. So square bracket unit with capital U closed square bracket description equals fake halt
+service. That's just a human readable comment that you'll see in your D message log. And then we
+need to tell it explicitly what service we want it to run after that is going to depend upon.
+So we'll say after equals fake dot service and requires equals fake dot service. So that's
+really important because it's saying that this service should not run until fake dot service has been
+found and has been run. And furthermore, it should not complete. It requires fake dot service to be
+successful in order for this service, this fake halt service to actually go ahead. So that's kind of
+the, that's the main, that's the meat of this of this system of getting fake halt to run after
+fake dot service. You need that after and then requires next block is the service block. And
+that'll be a square bracket service with a capital S closed square bracket. And then we'll call
+the we'll give it a type of simple. So type equals simple. I forget what that's opposed to you
+can look it up online. There's a couple of different types, but we just needed this to be a simple
+service. It's not anything that be forked or anything like that. It's just a simple one-time
+service exact start equals slash user slash slash slash usr slash local slash bin slash fake halt
+dot s h. So that's what to that that's what this service actually executes when it gets triggered
+is this new skirt that will create together in slash usr slash local slash bin slash fake halt dot
+s h. Now that will actually fail to actually that won't happen until fake dot service succeeds.
+So since that's going to we know that's going to fail we expect it to fail. So we need to give it
+as an another exec line called exec reload. And for the exec reload we'll give it the same path.
+So exec reload equals slash usr slash local slash bin slash fake halt dot s h. And that one
+eventually will succeed. So essentially we're kind of brute forcing the service we're just saying
+we know that you're going to try to launch this service from the moment we tell you to launch
+the service, but we want you to fail until you get a successful signal from fake dot service.
+And that's all there is to that that's that would be this is our temporary pretend shut down
+service like this is this would be the thing that we want to happen in the very at the very end of
+of our of our chain. Now let's create the script that we want to execute before shutdown happens.
+So this would be the reason we're doing this at all. And we'll call this fake dot service.
+And we'll stash that and slash lib slash system D slash system fake dot service.
+This is even even simpler script or service file. The unit block is description equals,
+I don't know, a fake service. And then before equals fake halt dot service. So we're just telling
+it you're going to run before fake halt dot service happens. And then in the service block,
+we give it a type of simple again. So type equals simple. And then exec start equals us slash usr slash
+local slash bins slash fake dot s h. So there you go. That's that's all technically that's required
+to get service a to run before service b where fake halt is b and fake a is fake. The service a
+is fake dot s h. So to create a script now that will run when these two things occur. The first one
+will be our fake halt script. So that is slash usr slash local slash bin slash fake halt dot s h.
+So we give it a headline slash or hash exclamation mark slash bin slash s h. And we'll tell it
+to sleep for three seconds. And then we'll do a cat slash temp slash fake dot test. And we redirect
+that to slash temp slash halt fake dot test. All right. So now you're probably scratching your
+head because you're like, well, what's slash temp slash fake dot test that that's not a file that
+doesn't exist. Well, that's exactly the point, my friend. What should happen here is that if we
+ran fake halt dot service, it should fail because there is no slash temp slash VM fake dot test yet.
+So we've just set up the script for failure. So now let's set it up for success. And that will be
+our fake dot s h. So in you slash usr slash local slash bin slash fake dot s h do a shabang slash
+bin slash s h. And we'll do test equals quote one close quote. And then we'll sleep 21. And then if
+square bracket x quote dollar sign test close quote equals quote x one close quotes close square
+bracket semicolon then echo quote success close quote redirect that to slash temp slash fake dot
+test exit zero else exit one. And then close the if block fi. So here's what we're doing for for
+three seconds fake halt dot sh will sleep. And then it will attempt to cat the contents of a
+non-existent file to a new file. And it'll do that seven times because for 21 seconds are fake
+dot sh is sleeping. Once it is slept for 21 seconds, it will then create that file. It'll just
+say success that that'll be the only text in the file. And that file will be located at slash
+temp slash fake dot test. And then that service will exit with a signal zero. At that point,
+our fake halt dot sh will detect that that file, you know, it'll look for that file again. It will
+find that file. It will cat the contents of that file into our into our new file. And then
+the whole process is complete. And you can test that simply by doing a system CTL space start
+space fake halt. Well, you should to model those scripts as executable first, but do that. And
+and you should find that for 21 seconds, fake halt dot service is an active service. It'll just
+kind of like if you do a system CTL status fake halt, it will show it as an active service for 21
+seconds. Even though it's only a three second long service, it'll it'll be active for 21 seconds.
+And then at the end of those 21 seconds, it'll go away. And and if you look in your slash temp
+directory, you should see a halt fake dot test file and a fake dot test file. And I don't remember
+what the timestamps are going to tell you. I don't I don't recall what, you know, how granular
+that is. I guess if you really worked hard at it, you could probably figure something out running
+the date command within a shell script that is being run by system D is a little bit wonky because
+I believe that the date will get resolved successfully first. And then and then the script
+sort of will hang and then the and then when the script actually succeeds, it's still using that
+old variable from your your timestamp. So I think that hard coding a timestamp in there is a
+little bit weird, but certainly the non-existence of a file. And then the existence of a file ought to
+be proof enough. So that's that's the that's the proof of concept. That's the theory. Like I say,
+I've used this on a couple of things with a syntax server. And it it it seems to work pretty well
+for me. The the person in the form who sort of triggered this this response couldn't get it to
+work, but the the use case was very unique to what my use case is. So I don't know if that's just
+the user not doing it right or if it's just the the fact that the use cases were so unique
+from from one another. I think it's good to know about at least because certainly it can be
+frustrating if you're used to sort of scripting by hand and then sort of coming up with the order
+by hand that that might get a little bit annoying at some point. Yeah, it's not too bad. It works.
+You just have to kind of understand the logic behind what what system D is actually doing. And
+the I think the key is to keep in mind that everything pretty much gets executed the moment you
+tell it, you know, in the moment you say fake halt that service because they're dependent upon one
+another or because in real life the targets they're all members of the same target. They're going to
+get they all get sort of called up at the same time and then they kind of sort themselves out.
+But if you're writing this stuff then you need to know how to how to define dependencies
+yourself so that things can be sorted properly. So I hope that's informative. Thank you for listening
+and I will talk to you next time.
+You've been listening to HECKOPOPLEGRadio.org. We are a community podcast network that
+releases shows every weekday Monday through Friday. Today's show, like all our shows,
+was contributed by an HBR listener like yourself. If you ever thought of recording a podcast
+and click on our contributing to find out how easy it is, HECKOPOPLEGRadio was founded
+by the digital dog pound and the infonomicum computer club and it's part of the binary revolution
+at binrev.com. If you have comments on today's show, please email the host directly, leave a comment
+on the website or record a follow-up episode yourself. Unless otherwise stated, today's show is released
+under Creative Commons, Attribution, ShareLite, free.or license.

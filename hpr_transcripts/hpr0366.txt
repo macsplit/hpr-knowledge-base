@@ -1,0 +1,1192 @@
+Episode: 366
+Title: HPR0366: The Open Source Data Center
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0366/hpr0366.mp3
+Transcribed: 2025-10-07 19:07:46
+
+---
+
+music
+The Utah Open Source Foundation is proud to help open source grow in Utah and the
+Intermountain West. Watch for upcoming announcements about our expanding regional efforts.
+The following presentation, the Open Source Data Center, was given on Wednesday, May 13, 2009,
+by Dan Hanks at the Provo Linux user group. Visit their site plug.org. The bandwidth for this and
+many other presentations is provided by Center7. Visit their site at center7.com.
+A little bit about me, Dan Hanks. I graduated from DOIU in Computer Science.
+This has been since 98, mostly Linux and Solaris. I tried to word Windows as best I could.
+I started out on-line back in 1997 with a local ISP here with around 20 servers. That's where I cut my teeth on-licks.
+Back in the summer of 98, when fun things and cool things are happening with Linux.
+This is interesting, those years in school. I think my grades tended to suffer a little bit because of that.
+So anyway, after even that, I took a little internship out in Nevada with an engineering company,
+going to some Windows programming for three months. That was nuts convinced I never wanted to work with Windows.
+So I didn't. So I came back and got a job with the then North Sky, which is a little internet startup web
+posting. That subsequently got bought by about.com, who subsequently was bought by Premier yet,
+who subsequently sold the web posting division of about.com over to United Online in 2004.
+And so in that slot, we had maybe around a couple hundred servers. So we kind of stepped up
+in order of magnitude into that operation. Back in 2008, May, it's almost been a year now,
+or has been a year now, United Online closed the web posting division,
+or whether it ain't closed the whole division, they closed the office of the ranit and took
+operations themselves from California. And so I moved over here to Amateur.
+That's moved a couple of buildings over in the campus to where we have around 15,000 servers that
+I work with. I don't manage them all myself. We have an admin team that helps to manage all those.
+But again, another quarter in magnitude up. And I suppose maybe next, I have to move to Google to get
+the next word of magnitude, what I want. So anyways, actually then on the earnings call for Amateur,
+they just had, the number was 19,000 machines. If you look, I suppose all the divisions of the
+company were probably around that. So big operations, lots of interesting challenges. At this
+scale, you get very, very interesting problems to solve. I had one very patient wife and four very
+mentioned some kids. As I was telling the guys earlier, family life and preparing presentations
+replied, this don't seem to mix. And so it was up to 230 last night trying to polish this off.
+And anyways, before you get started into this, though, I want to ask, what do you, obviously,
+you're here for some reason. I want to get kind of a fill for what you're hoping to go home with
+tonight. And I'll try and tailor what I say and what I share to maybe what you want. So by
+a raise of hand, if you have any questions, I'm open. Yeah.
+If it's a big deal about automation or how you expect, I mean, you would mean you're not
+doing a lane walk around and monitor and manage something through.
+Right. So I'm okay. Yeah. I'm wondering what kind of tools you can use to
+track and manage configuration on that in the surface, because I've got a system myself
+that's up to 300. And then start to be a major endpoint.
+Right. Okay. Okay. Yeah.
+I have a very small operation. I want to know what I'm going to do now.
+I want to preserve the management already with programming in the big sense.
+Okay. I don't want to do it here, but this is always something I can't come to.
+Did you like that? Did you either want to tell me to ask these questions before you started?
+We'll take care of the payments afterwards outside.
+Okay, Jay. So I was obviously a white failure with your stuff.
+I don't want you in self-free and there what you learn to learn
+Okay. So I don't know what we had there.
+I know you've owned up a lot of stuff that you'll know. Now that you're here,
+what have you scrapped that you're owned and how many of something that was already open
+so worse was been better? Okay. So as opposed to what I would rewrite from scratch,
+what would I use? It's already out there. Okay.
+Well, I still rewrite from scratch. Probably as little as possible.
+I'm just going to look, you know, how there are ones where it's open or where I think the tools
+will just work. Okay. I'll answer that question up front.
+Most of the pieces are out there. It's the interesting thing.
+Although what you do run into a lot is it with a lot of tools are out there.
+They'll build to manage maybe a few hundred servers or in some cases even up to a few thousand.
+But when you get to that next sort of magnitude, the tool sometimes starts to break
+again and they're not built for that kind of scale. And you kind of have to hack them or call them
+together, federate them, shard them, whatever in case maybe. So in a lot of the the glue parts
+of gluing all this stuff together and where a lot of the effort goes into it.
+You know, I'm not sure a lot of it's PHP, a lot of shells and Python.
+And trying to get some parole in any other questions.
+All right, then we'll move forward. Good questions.
+And grants that I've only been a lot of extra four or a year.
+So a year's exposure to 15,000 machines is not equivalent to 10 years exposure to 15,000 machines.
+So I'm still learning. There's still a lot of people around here.
+So what I have will share freely that I can share.
+So again, the open source data center,
+playing open source software into patterns of data center operations.
+How did this all start? Okay. So back at United Online, we went through a number of
+painful and tedious data center migrations. So every now and then we'd have to, you know,
+pick up the shop and move it somewhere else. And every time you did that, it was kind of a mixed
+bag, right? It was always a pain in the rear to do that because you have to internet things and
+try to deal without going offline ever or having, you know, minimize your outages.
+But at the same time, it's a good opportunity because each time you got to go to the news
+place, you kind of got a chance to rebuild. And so you can kind of fix all the mistakes that you
+had run into that always tend to creep into systems of this size over time. But as I would do
+that, we'd go through each of these moves and each of these build outs and acquisitions,
+that kind of stuff. And began to see certain patterns of the basic set of operations or the
+basic set of services that were needed to run, you know, a data center operation. Like in our case,
+it was a web pushing operation or could, you know, be some sort of web application or something.
+Anyways, there was a bunch of patterns that I began to see. I kind of started, you know,
+making a mental list of that. And that's kind of what this presentation grows at with that
+mental list. And then we'll talk about the different open source offer that's out there to be able
+to plug into this pattern. Let's see. And so what was interesting to me, so yeah,
+too many data center migrations and build outs, what was interesting to me is when I went from
+United Online over to Amateur, I saw a lot of those same patterns. So it was really gratifying that,
+okay, this is all making sense, right? Even a smaller scale to a larger scale, there's a lot
+of the same patterns going on. Obviously there are things you have to do differently at this kind
+of scale, but there's a lot of the same kind of patterns. At United Online, the patterns are a
+little bit smaller, at least in our division. United Online itself was really quite actually a large
+operation. There's several thousand machines there, but similar patterns just at a larger scale.
+So that's what we're focusing on tonight is those patterns of what you do in these kind of scale
+operations. So there's kind of three areas we can talk about. The physical infrastructure,
+hardware, switches, racks, cooling, all that kind of stuff, there's your actual application,
+whatever lives on top of that. This thing in the middle here, this operations infrastructure,
+this is what we're going to focus on tonight. The stuff in the middle that kind of glues all
+your components together and provides the foundation so that you can run your application on top of
+that. In my dreams, it would be this easy to build up your data center. You know, you fire up a
+little curl script, make sure you use warnings, e-stricts, so you're doing well, but then you
+have this nice little data center module and you tell everyone build a web application with
+some infrastructure for that. So you didn't stand to your data center, you have to get in San Jose
+and use it with an extra vendor and just, you know, assume a bunch of really good defaults.
+You know, maybe it could be even this easy. We don't have to specify any defaults because it's
+really, there's a lot of good defaults, but if you have seen Daniel and Conway's talk about
+sufficiently advanced technology, space around the quote, the sufficiently advanced technology is
+indistinguishable from magic, right? So if your code is advanced enough that you use some really
+good, sensible defaults and you don't just simplify things quite a bit. But until we get to that
+point, and I'll pick that point up at the end of the presentation because we're getting closer
+with all this cloud stuff. Anyways, until we get to that point, we're going to use some patterns.
+And these are these patterns that we'll talk about tonight. There's anyone who could sneak out,
+got me a glass of water. So I don't sound like a frog. I'm starting to get dry mountation.
+Okay, so you can patterns. Pedal number one, system imaging and provisioning. Essentially,
+this is, once your bare metal is installed in the rack and powered up connected to your network,
+how do you then lay down the operating system and the basic configuration
+for one machine, for 10 machines, for 1000 machines, 20,000 machines, how do you do that,
+right? What tools are out there in the open source world to help us do that?
+So again, you're operating system, some applications. I'm obviously a postgres bigot.
+Whether it's a few handful of machines or if you have lots of machines, how do you do that?
+So in the Red Hat world, you have something like Kickstart. How many of you are familiar with Kickstart?
+Okay, Kickstart is a system used by Red Hat that where you specify a bunch of basic stuff about
+your hardware. These are the partitions I'm going to have. This is the set of RPM packages I want
+to install. Thank you. I'm trying not to spill that with the keyboard there. Okay, so these,
+we're in the Kickstart file, you specify what kind of packages you're going to install,
+what your network configurations should look like, and any other kind of scripting and stuff that
+you want to read. This file gets fed to the machine as it's booting up and the machine follows
+the instructions, lays down the operating system and solves the packages and does any configuration
+that you want to do. So that's really helpful in the Red Hat world. Same sense to ask being
+a derivative, all the Red Hat derivatives, I even saw Kickstart for Ubuntu. Kickstart? Kickstart?
+Kickstart. Kickstart. Okay, so...
+Did you give it a pre-seed? I don't have my tailored in a little bit. Ubuntu pretty much has some
+functionality. Kickstart, they call it a Kickstart. Okay. Kickstart. All right, so Kickstart for Ubuntu.
+There's another one out there called Five for Debian. I haven't used that in production
+environments, so I can't say too much about it, but it's out there, so you're aware of it.
+Auto-East, Pursuit, Jumpstart, Pulsularis. There's a system out here called Rocks that's tailored
+for high-performance computing clusters that pretty much allows you to lay out an entire cluster of
+machines, all with the same kind of image. There's another one called System Imager that works more
+on a golden image sort of model, where you create a golden image. This is what my machine needs to
+look like, and then it'll burn that onto a number of different machines. Some challenges here
+is maintaining your images. So, that's pattern number one is, and what tools are available there to
+get the system out there. Now, operating at scale, so there's some prerequisites for that,
+the kind of stuff for Kickstart, for example. Some infrastructure that needs to be in place prior to
+using Kickstart on a big scale, of course, if you have one or two machines, with Kickstart, you
+can go pop in a CV or Kickstart that way, but when your data centers that that thousands of miles
+away, you have to do things a little bit differently. So, you have things like Pixie, which is a
+pre-execution environment that when a machine comes up, the BIOS will make a DHCP request,
+the DHCP circle hand-back, and I key address, so it will start talking on the network, and also
+hand-back a little bit of information about where to go next. And so, it'll fetch a TFTP image
+and start the process up, we'll fetch the Kickstart image, start following those instructions,
+you'll need, so it'll need DHCP server, basic network services, either maybe DHCP FTP or NFS
+to serve up the distribution contents, the DNS server, so it can do some resolution.
+So, that's what you're going to need to be doing the provisioning and the Kickstarting.
+A new tool that's recently come out, which is really interesting, kind of combines a lot of
+that's called Cobbler. Combines Kickstart, DHCP, Pixie, DNS, and also management of your
+younger repositories. So, a really nice tool, if I were going to start again, maybe asking
+Jason, to go back to Jason's question, in the beginning, what would I keep, what would I,
+you know, use that's already out there, back at night online, I kind of built up a server that
+served out all these things, and I probably look Cobbler really closely because it does a lot of
+that for you, putting it together. So, the challenge comes when you're operating at a large scale,
+you've got multiple environments, how do you serve up, for example, your DHCP request,
+over large subnets, do you segment, do you have a server in each of your segments,
+each of your network segments, how do you maintain the configuration images or your Kickstart
+images across all of these different environments. So, there's a challenge that you have to think
+about once you start getting up to large scale. So, pattern number two, a system configuration,
+once your machine is up and running, how do you maintain the configuration on the machine?
+If you've got something like system imagery, you have to re-image each time, and it's not
+necessarily a bad thing, in some cases it's faster to re-image and build from scratch, and then
+it doesn't kind of forget what's wrong with the machine and fix it. Especially when you're dealing
+with thousands of machines, you just don't have time to try and debug every last little thing,
+and sometimes it's faster to just pull out a rotation, re-kickstart it, re-image it, and get back,
+and then get it going again. So, what tools are available here? There's one called CF engine,
+that the basic model of CF engine is you define a policy on a master server,
+and then that policy is then spread out to a number of other machines, and they read that policy,
+and then adjust their system configuration according to that policy. And CF engine allows you to
+control things like, I'm just trying to think of some of the built-ins in a little while,
+we don't use CF engine, it's on this year, so it's been a while, but you can, it'll allow your
+run different scripts. You can tell what set of packages need to be installed on a machine,
+so you can use the first pattern of kickstarting to lay down the basic OS image,
+and then you get CF engine installed probably as part of that kickstart process,
+and then you see CF engine, and then you see CF engine to specify what packages should be in place,
+what configuration files need to be in place, maybe I need to make a modification of my
+anti-host file, maybe I need to throw something in the Apache config, or maybe I just need to
+distribute some files altogether, and you can distribute files through CF engines a little bit,
+you kind of have to bolt it on yourself, but other tools will do that for you, so Publits
+one that's come out recently, it was written by a guy named Luke Congays, I think that's how you
+pronounce it last night, I'm not sure, but it was kind of written in a response to CF engine,
+he tried Luke work with CF engine for quite some time, I had kind of a lot of gripes about it,
+the lead developer CF engine listened to a key on some of the changes, Luke went and makes
+Luke kind of went out on his own, using Ruby, he built a system called Puppet, which is very
+similar, but in my opinion it fills a lot more polished, a lot easier to use, it's written in Ruby,
+and he uses a domain-specific language that allows you to declaratively specify what your system
+should look like, so in your configuration on Puppet, not your master, your Puppet master,
+you can define, so for the web servers they need to have these users on, and they need to have
+these crime entries, they need to have these file permissions on this set of files, and Puppet
+also provides a file server service, so you can create a set of basic files that need to go out
+to this class of machines, and so the machines when they run through their Puppet config,
+they can fetch back the files and sort that are served up through the Puppet master,
+the master server, and be able to then apply that config, and I see as you can apply templating
+to this as well, so you can say use this template, and then when you get on this host apply these
+rules to fill the template according to whatever it is needed on that host, so really quite a nice
+system, and if I were going to start again from scratch, I probably wouldn't do the CFN
+generator out, I'd probably do Puppet, it's a little more feature rich in my view.
+See, another nice thing about Puppet is it has a hardworks during an OS abstraction layer,
+one of the difficult things in working with CFN is you have to do things a little bit differently,
+in your configuration, depending on if you're working on solaris, if you're working on macOS,
+or if you're working on Linux, Puppet has this nice OS abstraction layer, so you just talk about
+generic things like services, I want Apache to come up on boot, Apache needs to be running it all
+times, and then this abstraction layer does the right thing depending on whether you're working on
+solaris, depending on whether you're working on macOS or Linux, so it's really nice that way,
+you can just work in generalities, these users need to have accounts, set their passwords with
+this value, that kind of stuff, and there's a lot of different types there that you can
+configure on your system, macOS, if you can put chronicries in place with this, you can create
+different configuration files, make sure different services are running, make sure they start up
+a boot, there's some others that a little less well known, like BCF G2 developed the Argon
+National Laboratory, I haven't used that so I can't say much about it, likewise for LCFG,
+LCFG's design, they're similar in design to Puppet and CF Engine, LCFG's designed for large
+installations, there's a group at the Lisa conference each year, large installation system
+administration, let's talk about system configuration and some of the authors of these generally tend
+that kind of stuff, another option that you have is arcing a lot of glue, start with some kind
+of master server and is arcing the stuff out, and maybe run some scripts, you know, that becomes
+tedious after a while and can become problematic, but it is an option, you know, depending on the
+sizing network and what your needs are, another one that's recently come out just recently,
+called Chef, I don't know too much about it, it's been heavily influenced by Puppet, it uses
+for its definition language, it uses Ruby itself as opposed to a Ruby like language used in Puppet,
+so just another one to keep your eye on, okay, so what's that? Yeah,
+so Ryan's question for the people in podcast land is what people are actually doing right now,
+so yeah, let's open this up, one of the systems that you make files,
+what recommendations have you gotten from the author, from the community around Puppet,
+I'm curious, that's something I've heard too with Puppet is you get to large scales, you start to
+run in problems with the mastering and you keep up with the load and your stuff like that.
+Yeah, master of Puppets, master of Puppet, master of Puppet, master of Puppet,
+master of Puppet, master of Puppet, master of Puppet, master of Puppet, master of Puppet,
+master of Puppet, master of Puppet, master of Puppet, master of Puppet, master of Puppet,
+you're supposed to be at this other position of your big time meeting today and you can't
+still last minute, so you've also, I'm just going to share with you how I did it,
+he's only like one of the four major podiums that I've had in the last one,
+but here I'm just going to get him adopted, we can probably get a presentation for him,
+so he's like, that's a different kind of action, wow, actually we have that work,
+we have one, this is a different tool, that's a different tool,
+it's a different tool, it's a different tool, it's a different tool,
+yeah, it might have been reducing parts, arcing a lot and come to go,
+because the guy with the four major podium is counteractored,
+and so I'm basically replacing everything with Puppet and Puppet,
+all the tools that I need to get it, but I don't have, you know,
+we're looking about trying to do a certain thing here,
+I don't know how to do a jump, I don't know how to do it,
+currently I'm going to use Kickstart,
+and after Kickstart there's a script that gets run on each machine
+that does all the configuration magic, and then I'm using Cobbler,
+I would love to try that out, well, Cobbler and Puppet and that kind of stuff,
+so once it's up, we have, and Ryan can step in and tell me if I'm
+disclosing too much information, once the machine is up,
+we use Unnush, familiar with all the internals, we have a script that
+pushes configurations and files out on a mass scale,
+homegrown solution, and that's work for us,
+there's a lot of rough edges and dark corners, I'd love to go and clean out,
+my role hasn't been in that specific area at all in a true at this point in time,
+but there are days when I wish I could have something like CF
+Engineer or Puppet, and it brings the screen for us.
+But yeah, that kind of stuff can work and can grow you to this kind of size,
+so, but yeah, if I were starting out again from Bare Metal,
+I'd be using one of these, probably Puppet.
+Well, yeah, one interesting point, the file installer that I mentioned for Debian,
+can tie into CF Engine, which is not interesting,
+tie in there. Going back to the questions of automation,
+and tracking and managing configuration, again, that's where all this would
+fall into, it's those, how you automate all that, how you track all the
+configuration. At Omniture, we have to be really careful when you get to this guy,
+you have to be really careful about how many
+machine types and how many builds you have,
+because that can scale out of control really, really fast, we're very, very
+strict about our hardware configurations, very, very strict about
+what new software will we deploy, where, what goes on our images, that kind of
+stuff, you have to be just careful, otherwise it can scale out of control, and
+the complexity just becomes so huge. So, it's time to keep in mind.
+Let's see. So yeah, a lot of these systems in common thread is they're
+declared versus procedure, which I like a lot.
+It's a what versus how, what should my system look like, as opposed to
+run this series of steps you get there, which is kind of nice,
+a danger with these kind of systems, particularly in large scales, and it's
+really easy to hose your system. To hose your entire system, if you
+misconfigure something, if you put in an inadvertent R&M or an inadvertent
+remove this file, and if you're wrong file, you're
+end up removing a director, your code director, something like that.
+Bad news. So, my recommendation there, we'll talk a little bit more about that,
+just have a really good staging and QA environment that mimics all of your
+production operations so that you can run through these configuration
+changes in that environment, and work out the bugs, and that's it,
+in that scenario first, and employ good change management practices, and we'll talk
+about that in pattern number 12.
+Head number three, software and patch management. Once you have your systems up,
+how do you keep up to date with all these patches? How do you keep your
+young and your app repositories up to date? How do you know which patches to
+take in from upstream, and which not? How do you manage all that?
+Obviously, we've got the tools, we've got young app kits.
+The interesting one that I don't think we've heard about too much is our path,
+being a string to one to look at. They've kind of
+gone RPM, squared kind of thing, and having all sorts of stuff going on there.
+R sync. You use that to push stuff out.
+Questions, package or not to package. You want to use an packaging system like
+or Yum, or just build everything from source and deploy it all to use your local.
+And just have a golden belt. It's another question you have to consider.
+There's pros and cons about each way. I'm a packaging person myself.
+Let's see, the main challenge here is how do you verify that every one of your
+20,000 machines has the same software set? How do you ensure that all your
+web servers have the exact same set of software that they need to run their
+code correctly? How do you make sure that all of your mail servers are
+all of whatever server have like all the right curl modules that they've got?
+So stuff like Puppet and CFNs, you can have ways to handle that,
+saying these are the set of our pins that should be or these
+set of packages that should be installed on this server,
+and take corrective action if you don't find them there.
+That's definitely a challenge.
+That number four is monitoring. And as I got, was preparing for this talk,
+there's kind of some ambiguity in what's meant by monitoring,
+what's meant by data collection. I'm going to define monitoring as essentially
+availability and performance. So let's talk a little bit about performance first.
+I'd recommend in talking about performance to look at the slides that Kerry Millsat gave
+at the recent Percona conference that was held in conjunction with my scale
+conference. A big thing to look for there is response time.
+Focus on response time. We can measure all the layers of the stack, but in the end,
+what our users are experiencing is we're in red and butter come Trump.
+So let's see. And then of course availability. So performance
+want to measure how fast it is, how well it's performing, how
+performance under load availability is available or not. There's a couple of other types of
+facets of monitoring. You have external monitoring, meaning what does our site look like to the
+rest of the world as it up as available as a performance. And internal monitoring is my SMTPE's
+are they all responding like we expect them to, or is my database responding like they expect it to.
+Is my QAing system accepting messages in the queue or that kind of thing.
+External monitoring, there's a lot of different services out there and these are not open-source.
+Some are cheap, some are free, some are very expensive.
+Keynote Gomez is a really expensive. These allow you to essentially synthesize web transactions.
+Some of them have little script recordings where you can go browse to your website and record
+that script and then replay it from different nodes all over the world in their network of
+nodes, monitoring nodes. And then they can give you graphs and reports about how things are
+performing. Now there's your website, Bullseller site.
+Mon that it toward US is actually a free one. They do have paid versions but it is a free one.
+I think they've got, I can't remember how many nodes are monitoring.
+The England is another interesting one that I thought was pretty good when I tested that
+outside uptime.com. Some of these are just focused on uptime. Is my site available or is it not?
+I'm going to buy everything. Others actually go into response time and give you detailed
+information about how long did it take to do the DNS look up on particular request. How long
+did it take to request the first byte? Once I sent that first byte across how long did it take
+to actually get the rest of the content? It'll break down your connection by that. It'll break down
+by each object on your page. How long did it take to fetch this graph? How long did it take to fetch
+this flash object? All that. It'll break it down by that and give you a connection statistics on
+all of that. So those tend to be really expensive too. And the price, based on the number of nodes
+you're anything from, why your nodes are located, how often you run the tests, what kind of tests
+they are. We just fetching a single URL or are we fetching an entire page of objects or
+several or walking through transaction and several pages on our site? It's important to do this
+because you want to drink internally from saying agios or something like that or nauseos.
+Raising has quick serve of hypernases and agios. Nauseos? Okay. Just curious.
+Let's see. Nauseos? I'm trying to talk good. Anyways, but yeah, internal monitoring can only
+go so far. It's good to get, you know, your transactions are in the entire stack coming from
+someone in Russia. How are they? That's not an interesting thing is, you know, when you've got
+data centers that are just located in the United States, for example, how are people in Europe,
+how are people in Russia, how are people in China? How is their performance compared to some in
+the United States that's, you know, a couple hops away from your data center? Depending on where
+your audience is, that can become very important and who you're trying to reach and how well you're
+trying to reach, what kind of market penetration you're looking for, that kind of thing.
+Internal monitoring, you want to monitor any system that will impact the quality of your service
+that can become unavailable. So you kind of have to be really thorough and proactive about this.
+But as outages come, you can use those as opportunities to patch up holes in your monitoring.
+Why didn't, if this outage happened, why didn't we know about it beforehand and take
+measures to make sure that we're alerted well before that happens in the future?
+Well, before the district feels well before we saturate the network, well before we, you know,
+run out of query capability in our database. And go just beyond checking the poor. A lot of these
+systems make it really easy just to, oh, poor 80s responding were good. Well, no, you got to go
+beyond that. Fetch page. It calls a transaction to happen on your web server, deliver a message to
+your S&TP systems, set a value in your memcastee, any of those kind of things.
+So make sure that you're, every aspect of your system is functioning as it normally ought to.
+There's a lot of tools out there that can do this as far as uptime and availability.
+Nagios obviously is a very popular one. Zavis is another one that's come out recently in
+the last few years. Looks pretty. It looks like it scales really well. A lot of these are agent
+base models or can use agent base models where, as opposed to just hitting something from outside
+your server, you can actually run an agent on your server and it will collect data there and then
+send it back from home kind of thing. Send it back to a centralized point where you can aggregate
+that data. HyperX, another one, open NMS. Let's see. HyperX gives you auto discovery, which is
+really a nice tool of large environments. So as you bring machines up, I guess how this auto
+discovery works and you can install an agent in your provisioning process and when that comes
+up it will start sending out responses. Hey, I'm here, I'm here and that will just show up in your
+and your centralized monitoring system. Let's see. Open NMS is another one written in Java.
+Let's see. And all these will find they have different feature sets. Some of them do just
+monitoring. Some of them include a little bit of inventory and asset management, data visualization
+and collection. Open NMS is three focuses are on service pulling, pulling your services for
+the data, collecting that and then it also can do event and notification management. In other words,
+there's something down, tell me about it. Mon is another one, pretty simple one. Monit,
+it's billing is it's feature that it tells is being able to monitor and do corrective action.
+So if you've got something happening on your server that triggers a certain threshold,
+it can take corrective action that you've predefined. Reconoier is done by the guys at
+METI, I don't know how you pronounce that. They are a slosh negligent in a good book called
+the scalable internet architectures. Smart guys, definitely something worth looking at. They focus
+on ease of admin, efficiency and scale, delegated deployment and applying policies of large
+future service. That's an interesting one I'd like to take a closer look at. Another one called
+Irma that I hadn't heard of before I got ready for this, called the extremely reusable monitoring
+APIs developed at Orbits, the travel company. How many of you knew that Orbits is an open source
+company? Anyways, they've got some really good open source software that they have provided for
+the community. This one again is a monitoring tool. Lots of jobs are going on with Irma.
+Next pattern is system data collection and visualization. There's a lot of crossover between
+pattern form, pattern fact. There's another one that is jump onto the scene, just seen off.
+Oh yeah. Yeah.
+It's pretty interesting. We've been working a little bit. Do we think about doing something
+like that? Open source conference where we actually have a bunch of different ones displayed?
+That's one of the ones that they're providing. If I'm missing any of these, please,
+this is an open source presentation, so let me know and we'll incorporate it.
+I like Nogges. I like the object model that Nogges uses. It's got an object model where it defines
+you've got hosts, you've got services, you've got escalations, you've got schedules,
+and it all flies in really nice. I'm kind of a data person. I'm at DBA in my past life,
+so I like its object model and it wouldn't be too hard to put the Nogges object model into a database
+and story configuration there. I would generate your Nogges config.
+I like Nogges, but I don't like so much about Nogges is that the interface is built from
+memory and C, and so it makes it a little bit harder to extend and integrate that if you want to.
+But the core monitoring, everything, is pretty nice to plug into. Easily to plug in your systems.
+Again, if I'm missing things on this list, let me know. I'd love to add these to the presentation.
+Let's see, so system data collection visualization, there's a lot of overlap between monitoring and
+this, because essentially number four is another sort of data collection visualization.
+There's a ton of these. You've got CAC diodes, both in PHP. It's front-end around R&D tool. A lot of
+people using it. It can do graph templating, so if you have all sorts of different graphs, you want
+to create that you can have templates that do different kinds of graphs based on a theme.
+The only thing I really like about CAC diodes ability on a given graph, you can draw a little
+box around and it'll zoom into that graph, expand that section out, and so you can kind of dive
+in deeper into a particular event if you're interested in what happened there.
+Gameplay is probably my favorite on this list. It was built for high-performance computing clusters,
+and so it scales quite well. It uses multi-casts underneath. You've got all these agents running
+on your box, it's called G-Mondi, and they're running home to a G-meta-D, which is an aggregator,
+and they can use multi-casts for not clogging your network so much. Really a nice tool.
+It can monitor, just about anything you can produce with a script, so if you have a script that
+can spit out some kind of value, then Gameplay can take advantage of that and spit that phone
+back from your servers to the master. It has a PHP front-end. It can aggregate data by cluster,
+so if you have a web cluster and you want to see how overall is my web cluster performing,
+it can show you what's the average load across this cluster of machines. What's the average
+disk usage across this cluster of machines? It's really nice. I really like that aggregation feature.
+Very, very helpful. You can sort the data out of it in XML to plug into other systems. We did
+that in the United Online. It uses RID to store its information. Rebooting is another one. It's
+another agent-based system where you've got an agent running on your machines that's written
+in Chrome. It uses RID, easy to write plugins. A lot of these have a common thing that they have
+plugins. If they're set of plugins that they provide a monitor, a particular aspect of your
+system, just don't quite have what you want. You can write your own plugins monitor. Whatever it
+is about your system that you want to monitor, that's your key performance indicator.
+Zavix, we mentioned that one. Collect the system's statistics collection team. This one's really
+cool as I was reading about this one. Again, it runs on your servers. You gather stats.
+It's written in C. It's intended to be extremely lightweight. It's pluggable. It's got
+binding so you can write your own plugins in C, in Perl and Java. Communicate with it via Unix
+domain socket or it'll detect binaries for you or scripts. You can do SNP for you. They've
+also added simple monitoring like Nagios with a notification and thresholds. You can plug its
+data into Nagios. I've got a plugin that will do that for you. I like it because it's really
+simple. It's kind of like it's really good glue piece in your system and very simple. It does
+one thing. It doesn't really quite well. It doesn't generate grass, but you can use it
+to do so. It's been in the RRE or whatever. Any kind of graphing system you want. It can do high
+resolution statistics. The default is 10 seconds without putting too much load on your system.
+It's really good. They're targeting it for embedded systems like your WRT router here.
+So you want to run on that kind of thing. It has a data push model using IPv6 and multi-casts.
+Again, so it doesn't clog your network or you can use IPv4 and Unicast if you want.
+Again, with multi-casts, you get this auto discovery network because your nodes come up with these
+agents running on them. They're kind of home. You don't have to in your configuration on the master.
+You don't have to list out all your 1000 machines. They just show up in your as they start
+spreading their data back home. So that's a really nice tool there. Collectible is kind of a
+command line tool. It's kind of like VMStat and IOStat and all those different stack commands
+kind of rolled into one and you can format what I want to see CPU and compare it with network
+compared with my memory usage and those all stats and you know scroll amount as they come.
+Yeah, that one's written in purl. It can really nice about collectible as it can do sub-second
+resolution. So if you need to collect really fine-grained data, you know less than every second,
+you can do that. It takes the time higher as module and purl to do that. It can give you
+command line output. You can run it as a demon. You can send data over UWP if you didn't
+do ganglia. You can output as aid and plot format if you didn't do a new plot or open office.
+It has an interactive mode from the command line. You can do a record mode so you're sending the data
+to a file. You can read data from a file into it and look at it, play it back for you.
+You can output it to output trade arbitrary socket. So if you want to write your own demon
+to harvest all the data, it can send whatever it's collecting while it's running instead of
+some socket. Again, it's another tool. It's just easy to integrate. It's a nice little foundation
+block in your environment. It's new stuff with it. And it can do stuff that's above and beyond
+your basic, what SAR will give you. SAR is another one that's not on this list.
+Collectible can do stuff like NFS stats. If you're using the Lester cluster file system,
+it will grab stats from that. Interconnects stats, slab data. Again, this is a tool that's
+really easy to integrate in your environment. The one's de-stat that's written by the guy who
+does the DAG packages repository. It's your placement for VMSAT and IOSAT. It's kind of a lot
+like Collectile, except it's written in Python. So interesting is you find for recent language,
+you find a tool that's similar to that's written in a different language. Go figure. It's also
+easy to extend plugins. It's out that there are no time shifts when the system is stressed.
+You can export a state of the CSB. R&E tool, of course, a granddaddy of all this stuff.
+It uses a cyclic databases. They're really nice to you about R&D graphs and data as it stores it.
+Our files where you can set a specific file size, you never have to worry about that database
+growing. You can say, I'm going to collect this much data and as it fills up that database,
+it just starts writing back to the beginning. Assuming that data that is old, you're going to be
+less likely to want to look at it and it'll kind of aggregate older data into more or less and
+less granular time slices. It's used just about everywhere. You can produce graphs. You can
+put just about anything into it as long as it's time series data. MRTG is the same author that wrote
+R&D tool, used for graph and traffic from routers and any other device with S&P support.
+It's written in Perl. Graphite is another one that came out as done by Orbits,
+the travel company. This one was really, really cool. It's very, very similar to R&D tool,
+except it fixes a couple of the problems that they ran into when trying to scale R&D tool out
+to a huge number of machines. It's an enterprise scalable and real time graphing.
+Designed be horizontally scalable, storing data for thousands of devices. You can add machines
+to increase throughput, real time graphs even under load. Equal from the website at the time
+this writing, the production system at Orbits can handle approximately 160,000 distinct metrics
+per minute running on two Niagara 2 sun servers on a very fast sand. So that's pretty good.
+Written in Python, Cores S&MP, a lot of devices run S&MP. You can query the devices,
+a lot of routers, network equipment. You can run S&MP on your servers and gather data that way.
+DRR is a graphing tool that you can use to graph R&D graphs. Supermod's another one.
+I don't have a lot of data about that one. Let's see, moving on though.
+Item number six, ticketing. Once you get a big enough staff maintaining what has happened
+in the network through post-its-on-your-wonder-doesn't-scale very well. So you want to have some kind of
+ticketing system whereby people can submit trouble tickets to help request that kind of stuff.
+There's a ton of those out there if you look for them. I like RT. That's about all, say about that.
+One thing I don't like about RT, unfortunately. Well, RT is written in Perl, obviously,
+like that. One thing I don't like about RT is rendering the page when you have a huge ticket,
+takes way too long. I wish they didn't end cash if I had a thing make it faster.
+Right, right. But I'm a lazy sys admin, right? If someone's already built it.
+But that would be the lazy admin I agree with.
+Right. That's nice about RT is.
+Nice part about RT is it does have an online interface so you can interact with it that way.
+Good stuff. And it's very extensible being crawled. You can plug templates into it. You can do all sorts
+of the extension of it. It integrates well in your environment.
+Let's see, pad of number seven, centralized user account management. Once you have all these
+machines, how can you log in to all of them? How do you maintain password changes?
+A couple of possibilities. LDAP, there's number of LDAP, open source LDAP, sure,
+where's out there. You've got open LDAP, you've got, which is okay. If you bet if you're going to
+scale it up, make sure you don't need the Berkeley TV as you're back in because that tends to get
+corrupt and frequently. As like season nodding heads in the room, the people have probably
+sweated over that in a couple of times. Another question if you're using some kind of centralized
+directory system is what do you do when your directory is down? Do you have a set of escape
+accounts that you can log into to manage machines? Or are you toast? When you do there, Kerberos
+and other, what we did at the night online is we used CF Engine to distribute password files.
+It was a very, we tried all that for a little bit in the internal environment,
+this ran out all sorts of problems with it. And so, decided we were going to use
+CF Engine with distributed password files. Worked really nicely. Public can do the same thing,
+although you don't have to select files and run it with puppet. You can just use a little
+snippet of the puppet code and say define these users. You need this account. You can templatize it
+all. What about users' home directories? If they log in, are they going to expect to have a
+certain set of files there? How do you do that? Do you amount to be an NFS and deal with all the
+issues that come with NFS? But when we happen to have 10,000 NFS clients for server, you know,
+everyone to server what do you do? Do you have a regular R-Sync that pushes the contents, maybe
+a specific set of contents out to all these machines on a regular basis? You know,
+these are questions you have to ask. Again, there's lots of tools that you can do that with.
+I like the idea where you have something like CF Engine or Puppet that's pushing out.
+Well, there's a simple server where all the users who have a login of the server can log into
+and they can put, I want this set of files to be on all the machines. I'm going to do something
+like CF Engine or Puppet to push that out. So that I have all of the nifty little tools that are
+in my bin directory are on each machine. That's what I would do. I wouldn't use NFS just because once
+you scale the 10,000 machines, you'll cripple your NFS server. Yeah, yeah, so just like that. So it works well.
+Any other suggestions? What have you guys done that works well for you?
+Yeah, and it could depend on your environment. It could depend on your security policy.
+It may be some places where you don't want shark tools lying around, you know,
+for wouldn't be attackers to get into. Yeah.
+Other than the fact that you know, like different shells and that sort of thing, it's probably
+having to do it. What's that?
+It's just something like that works for you probably.
+Yeah, it's just a thing, right?
+Yeah, I would say it's like other than that. So it's narrow where you want to specific
+figurations that it's looking for problems, but otherwise it isn't, you know,
+if you have a small team or you know, you can probably get what up in certain areas.
+This is the thought.
+Yeah, great, thanks. Okay, so next pattern, DNS. Inside this environment you're going to need
+some kind of DNS services. You're going to want to have external DNS services.
+So the world asking for your website can do it and want something scalable, stable.
+But you're also going to need internal DNS services. So you're going to have some kind of local
+resolvers. There's a number of different DNS servers that are out there open source.
+You've got the venerable bind. Very capable. Very can be complex if you want it to.
+My DNS isn't it is one we use at United Online. It's actually really quite simple.
+There hasn't been a whole lot of updates. The code base, you know, quite a while,
+but it's still pretty stable. Basically what it is, it's a DNS server that's back in by
+mySQL database or a PostgreSQL database if you want one. And so at United Online we had about
+millions of resource records in there, probably 80 to 100,000 domains that we hosted inside there.
+And you can update it just like update any DNS updates or just a database update.
+So you can write your own front-end tools for it.
+DJB DNS is another good resolver. If you can deal with Dan Bernstein's code and his philosophy,
+I don't prefer it, but that's all I'll say. There's lots of others out there,
+lots of other DNS systems. But somebody think about you want internal services,
+you want external services. You know, can we see that? It's a little bit of a DNS wisdom here.
+As you're building your environment, as you're writing your code,
+don't hard-foot IP addresses into your code. Because every time your database is going to change,
+whatever server you're connecting to is going to change sometime. And it's a royal pain in
+the rear. You have to do a code rollout to change that for that. So instead,
+you see names. Just write a building to be. It never has to change. You never have to change
+your code if your infrastructure or your environment changes. Create a C name and DNS.
+You have to request infrastructure. Change the DNS. Start thinking back up. You're done to change it.
+So this is suggesting one way of going about that. It's been nice.
+The Cnex pattern is mass execution. It comes a time when you've got thousands of machines,
+and you want to run the same thing on all those machines. Maybe you haven't got your collection
+system on, and you want to know the value of dirty butters in crock-mimminfo on all of those
+machines. And so how do you gather that information, or maybe I've got a file update I need to make,
+or whatever you have to do across 20,000 machines. You don't want to be SSHing in 20,000 machines,
+make that change. So there's a lot of different options here in the open search world, too. You've
+got CFRN, which is a piece of CF engine, and it kind of ties in with CF engine, so that based on
+whatever classes you've defined in CF engine, you can say, run this command if it's part of this
+machine's part of this class. Funke is one that's really quite cool. Rent and Python,
+fairly relatively new, allows you to, you can either use it from the command line, or it's got
+library, so you can incorporate it in your script. So you can write scripts that do stuff across
+all your infrastructure. Really worth looking at, SSHing expect is another way to do that,
+at the United Online, we had this lovely little tool called Massos. It was built on SSH,
+and the Expect Pro Module worked okay, had its warts, but I don't know if I'd use it again,
+but if I had given these other C3s, the set of tools built for high-performance computing clusters.
+Capastron was one of those, comes out in the Rails community, Ruby,
+Distributed Shell, Fabric, I'm going to do too much of these, but they're out there available.
+Python number 10 is Time Synchronization. Once you get up to a number of machines, you're going to
+want to have some way of keeping them all in the same clock so that all the things don't happen
+because your DNS server is at midnight when the rest of them are at 6 a.m., fun things happen
+when that happens. So you use NTP, that's pretty much the main thing out there. There's a book out
+there by A Press called Expert Network Time Protocol, and in there they talk about having to account
+for relatively, when you use relativity, if we have like some interplanetary network, right,
+and you have to do it with Einstein in effects with your time-sinking. So when we get to that scale,
+just keep that in mind, you'll have to worry about it. I don't think we're there yet,
+maybe NASA has to, I think NASA has to do with that kind of stuff. What's that?
+I'm sorry.
+I don't know. It'll be interesting to find out, but I assume NASA has to deal with these kind of
+things, right? Time shifts with, I don't know, as you accelerate your rockets to fast enough,
+you've got to deal with your time dilation. Anyways, pattern number 11 that I noticed is having
+some sort of internal messaging or IRC system. You want to have an easy way of being able to talk
+with people that I can get, or email, or even emailing. At United Online we had an internal chat
+server, an Almnature, same story. It was really interesting when I came to Almnature, and I started
+to see all these same things like my first day there, I saw all of these similarities,
+even 4,000 emails from Nagios were there in my inbox the first day. It's like,
+boy, I'm right at home. This is great. Get those filters set up really quick.
+Anyways, there's a bazillion IRC demons, a matching number of clients and bots. Have the bots
+that you're right for your system do interesting and useful things, like have little commands that
+can query the status of certain host groups. If you want to get really fun, you know,
+tie this into your mass execution stuff and be able to, from your IRC channel, send out
+commands to your system. I don't know. All sorts of things you can do, because we're open-source,
+we can tie all this stuff together. You've got an endless supply of LEGOs to play with here. So,
+you know, if you want your Nagios alerts to come through your IRC channel, you can do that too.
+All sorts of stuff you can do with the IRC and your bots.
+Yeah, send the start key messages to your boss when it's late, and the machine's gone down.
+Make life fun, to make your bots fun, do fun things. But better than 12, change management
+and auditing. With recent years in Starbucks, servings Oxley, and all sorts of stuff like that,
+depending on your environment, you have to worry about this. One recommendation, read this book.
+This is a lot of handbook. Really, really good book. And it defines a good change management system.
+Eventually, you're going to need to get to the point where you need to know what's changed on
+the system. If something goes down, you don't want to have to be going big and through servers,
+which you'd rather do, is go throughout a lot. What change has been made that might have triggered
+this. Go there first and be able to find that. Interesting quote out of this, I'm going to read.
+He says, a high-performance organization. So, essentially, the authors of this book did a bunch
+of research on corporations and companies and organizations that said, which ones have the most
+effective IT organizations as far as change management? And they said, the high-performance
+platform organizations can effectively handle extremely high volumes of change often
+responsible for successfully implementing hundreds or even thousands of changes per week.
+They sustain high-change success rates of over 99 percent as defined by changes that are
+successfully implemented without causing an outage or an episode of unplanned work.
+That was the quote that caught me attention in that book. I started reading it. It sounded
+kind of like, you know, a high Uber ITL speak and that kind of stuff. But then I saw this and
+this really caught me in my eye because, you know, the Ben working where, you know, something changes
+and you spend hours trying to fit to clean up after that change. So, this book describes all sorts
+of patterns that these high-performing organizations do. And depending on how it's implemented,
+it can be either a royal pain in the rear or it can be, you just have to the way you approach
+and the way that you do a change management. It has to work with you, but, you know, these kind
+of statistics really get my attention when I see that. So, good change management can make or
+break your organization. Next pattern, number 13, there's no pattern 13. As I remind you,
+there's a lot more magic to these machines than we want to admit. So, pattern 14, project management,
+there's a number of tools out there. Eventually, you're going to have want something to
+organize your projects, whether that's, you know, I don't know, a wiki or a Microsoft project,
+maybe not, I don't know, that's not an open source. MrProject.project. There's a number of
+those out there. Pattern number 15, interim mail handling. Your systems generate mail. When
+Cron, some happens in a Cron execution, you're going to get mail. There's all sorts of events
+you're going to generate mail. You're going to want to have something that's going to catch all
+that and get it into a place where you can look at it. Maybe a bunch of proctomy rules or something
+to follow that. Weed out all the important stuff out of your interim mail handling. You want it to
+be nice and redundant. Number of tools, again, postrics, XMQ mail, XMTP is an interesting one. It's
+a SMTP demon written in Pearl. It's got this pluggable architecture so you can kind of hook all
+sorts of stages in the SMTP dialogue to do different things. So, yeah, again, catch emails
+there by Cron. If you have systems that are delivering mail to your customers based on certain
+events, maybe you've got a science event that triggers you need them off to them. Maybe they've
+forgot my password kind of thing. You don't want your customers waiting for three hours until they
+get their, you know, they're, they're forgot my password and they get, oh, wait, what did I do?
+Anyways, so, yeah, you want a good internal, solid internal mail system that can handle that.
+Pattern number 16, internal log harvesting processing. Depending on what you're doing,
+you're going to generate copious amounts of logs, be those Apache logs, mail logs,
+sys logs. One tool here that's useful is sys log ng. You can have a master sys log server.
+And all of your nodes, you can configure them and your sys log d.com to log to a centralized log
+post. You can also get, there's a lot of networking devices that can do the same sort of thing where
+you can specify a sys log host to capture all this stuff. That's you want some good tools to
+be able to capture all that and aggregate it and analyze it in a good way for you. One thing
+you might look at is Hadoop, who here's familiar with Hadoop. Hadoop is an open source implementation
+of the MapReduce system that's in use at Google. It's Yahoo's got a really huge Hadoop close cluster,
+I think like 10,000 nodes in which they process and crunch logs. If you want to play around with
+Hadoop and MapReduce, Amazon just announced, I think they call it elastic MapReduce, so there's
+a cloud service where you can instantiate a MapReduce cluster and play around with it if you want.
+Facebook just recently started using Hadoop, crunch a bunch of data that they have and they built
+this layer called Hive, which they've open sourced. Hive produces a SQL-like layer on top of MapReduce,
+so it takes your SQL, converts it to a MapReduce kind of function, sends that into Hadoop,
+holds results back. Really good for kind of data warehousing and real-time query, touch that.
+One of the things that nodes need to have with our syslog, which actually has a database back in,
+what's that called? Our syslog, it's actually the newer version of syslog.
+Okay. Just like the, I think, our syslog.
+Yeah, our syslog, it's a data diagram and most of the red add systems, like all of your syslogs,
+and then you grow syslogs, I don't have it. Basically it has an option for a database back in, I think,
+my SQL-hand cluster has been supported in several others, so it actually supports the ability to
+database it, and then you can integrate that into a SQL warehousing.
+Okay. So, could I stuck there?
+Cool.
+I think our syslog problem will come in over between week-weeks and week-weeks.
+Yeah, okay.
+I've had a problem in three days and seven, where we are through a lot of complicated traffic
+logging through syslogs, and our messages are getting on all of our new meetings.
+Right.
+So, we implemented our syslogs, change our rules, and week-weeks, and then some of our messages.
+I'd really like to see, like, a comparison of how the performance of the syslog in G for syslogs,
+and those sorts of environments, because there's a lot of value in being able to dig into the code,
+or dig into the block itself, and find out what's interesting about trends.
+Yeah, I was reading a book today called The Art of Capacity Management.
+One of the guys at Flickr, who said that they feed their syslog data into some kind of system,
+and they're able to watch, for example, the number of messages that they see
+during a given time period.
+So, they can see if you see a flood of messages coming to your syslog, you can be alerted to that fact.
+I don't know if you were brought by them around.
+Yeah, so spread is a messaging software that uses multi-cast,
+and what it claims is reliable order delivery of messages over multi-cast.
+And there is a module that they wrote, the same guys that Omniti, the guy who did the reconnoiter,
+Theo Schloshnagelenko, they wrote a module called Modlogs Spread for Apache.
+I don't know if there's been a whole lot of development work on it,
+but essentially what it does is it allows your Apache logs to get sent out
+over this spread communication channel.
+And the presenter, I saw, I think it was Theo, but I saw the Apache con,
+and there were years ago, talk about how they are able to doing this,
+watch their traffic real-time, watch their logs coming off the machines real-time,
+being able to subscribe to different events and see what was going on there.
+It's a really kind of cool stuff.
+But...
+Also, with a lot of watch here,
+where should we listen to a little swatch?
+Swatch.
+And I've just done a couple of people on when I was teaching them.
+I mentioned that, and it basically will learn you to get them.
+That's like, people like, you know, I watch, we'll tell you what I grew up with.
+Swatch is a, we'll watch the monitor and tell you what's happening right now.
+There's a big problem.
+Here you go.
+Next pattern virtualization is important to learn your data center.
+There's a lot of different virtualization.
+You want to use it for consolidation, where it makes sense.
+United online, we had a lot of benefit here.
+We started virtualizing a lot of things.
+We're able to consolidate quite a bit.
+And one of our data center modes, we had this, I don't know, 40% reduction in footprint,
+which, you know, equates a lot of power savings, a lot of cost savings,
+to have less rack space that you have to contain, because we had a lot of systems
+that were, you know, we built back in 2000, 2000 area machines
+that were able to consolidate on these monster quad cores with lots of disk and stuff.
+So where it makes sense, don't go overboard with it,
+but where it makes sense to consolidate stuff, the risk you run with the virtualization
+is when your host node goes down for whatever reason, it affects a lot more systems
+than just the one that it used to be before you virtualized it.
+And also, virtualization is really useful for replicating your production environments
+on a much smaller scale to be able to replicate every aspect of your production environment
+in a controlled setup.
+So you can practice all of your CF engine changes, all your puppet changes,
+all your remote mass execution changes.
+You can practice all that stuff and make sure you don't have that inadvertent RM-RF
+that's going to wipe out all your code or whatever it caused mass havoc in your production system.
+So just a really, really useful tool to be able to replicate your entire production environment.
+It's also a really good exercise because then you get to know what's in your production environment.
+Sometimes when you scale out to these massive things,
+and your company's been going through 10 years,
+you've got all sorts of dark cores that who knows what's going on?
+As some developer wrote that 10 years ago,
+I don't know what it does, it just does.
+Right?
+And so, virtualizing going through this exercise is a virtualizing your environment
+that makes you go through and explore those dark corners and figure out what on earth is this thing doing.
+So it's just a really good exercise to go through to be able to have that experience
+and that knowledge of every aspect of your system, every cron job,
+how it sort of runs likewise, obviously on a smaller scale,
+but every process that you have in your production system
+replicated in a virtualizing environment.
+A QA or a thing.
+So again, there's lots of open source tools.
+You've got Zen, virtual box,
+by Sun, OpenVZ, by the virtualizer guys.
+KVM, SolarZones, VMware,
+not open source, but yeah, it's there.
+Penal number 18 is a well-staff knock.
+Once you get to a certain point,
+it lets your system have a life.
+It requires, however, very well-documented systems
+and very well-documented procedures.
+But again, it's really nice to have a frontline staff that handles all of the minutia
+and allows you to focus on your core business and your core products
+and focus on getting real work done in theory.
+A number 19 is some kind of internal knowledge base.
+Maybe a wiki, maybe some docs and CVS or some kind of version control.
+The important thing is lower the barrier to entry.
+If it's a pain in the rear to use it, nobody's going to use it
+and it's going to lose its value.
+The easier it is to use it, the more intuitive it is to use it,
+the less documentation you have to write to explain how to use it,
+the more people are going to want to use it.
+But again, as you're deploying new systems,
+document them as you find out problems
+as you, you know, patch holes in your monitoring.
+Oh, we found that document, what happened?
+Keep a daily log of what you're doing
+so that if you go back and say, well, what happened?
+How did I fix this particular problem?
+You can go back and say, yeah, that's, you know,
+these magic incantations that I had to use that time to fix this problem.
+All in a good knowledge base.
+Item number 20 is inventory and asset management.
+Once you get to a large number of machines,
+it becomes interesting trying to keep track of all that hardware.
+When you have 20,000 machines, it's really easy for hardware
+to get lost or to fall through the cracks or whatnot.
+You want some kind of system that makes it easy
+once you unpack that thing and rack it up to get it in your inventory management.
+We got a system where we can barcode,
+we'd slap a barcode on a machine with a laptop
+that's got a USB barcode scanner, scan it right in,
+it goes into the system, gets into that asset management.
+Some of these systems that are available out there,
+we talked about in the monitoring, the data collection system
+that they kind of double duty as that is in OSS, OpenCurion,
+XCAT, OCS Inventory, NGI, Classify,
+RackMonkey, RackTables, give you Rack Diagrams,
+where you can build your own.
+Back in the United Online, I built my own system
+called the Host Data Base.
+And essentially this asset management,
+and it tied in a bunch of stuff with Kickstarter
+and all sorts of things.
+And with all these open source tools,
+you can then begin to tile this stuff together
+into this Uber system.
+Pattern number 21, again, we talked about staging beta and QA,
+whatever you want to call your stages,
+maybe it's development, maybe it's alpha beta live,
+whatever you want to call it.
+You've got to have some kind of system for going
+from development, which you absolutely don't want
+development, doing stuff out on your production servers.
+I remember a free server, which is where
+what the main product, the United Online,
+one of the hosting products, one of their brands that we had.
+Back in the day, when they were North Sky,
+the developers would develop on Web Server number one,
+and the poor folks on Web Server number one
+had to live with whatever code happened
+to get pushed out by the developers there.
+And they went to work on Web Server one,
+we pushed it out to the rest of the servers.
+Probably not the best way that you want to do that.
+But again, you want to have kind of some kind of
+development environment roped off,
+carefully, so nothing makes its way out to production.
+Oh, that's an interesting story there.
+Probably, if you've ever been in Oracle DBA,
+you've been bitten by this at least once upon a time.
+Oracle has, when you're in Oracle database,
+there's this little program called the listener.
+And it's what handles incoming TCP connections
+and follows those connections onto the database.
+The listener has a configuration
+in which you specify the Oracle SID
+and you specify the host configuration.
+And it gets really easy to copy those TNS
+to the listener configuration around.
+And so one day, I remember I had copied the listener configuration
+from the production environment
+into the development environment,
+stopped the listener on that machine
+and also then I got production alerts
+that the database from the production database was down.
+Well, that listener had the capability of being able to reach out
+to whatever IP address was in the configuration
+and shut down the list remotely.
+So a nice way to shut down any production database
+when you didn't intend to.
+So it's often a good idea to fence off your development
+environment, so that kind of thing doesn't happen.
+Again, having a beta or a staging
+environment that looks a lot as much as possible
+light production that's not development
+for you to then, once you've got development,
+you roll your code out there, test out your changes,
+test out your configuration changes
+and make sure they're working well
+and then push it off to production
+once you're satisfied that things look good.
+And again, all of this is going through your change management
+system, your change in the auditing system.
+So all these changes are tracked
+and you can easily pinpoint where
+when this changes happen.
+Okay, so that's most of these patterns.
+Wow, and I'm glad you're still with me here.
+We talked about those virtually
+since a great help on those.
+Automate the building, those environments.
+If you can automate the creation of all of that
+with your magic use data center script, right?
+That's you're getting quite ways there to wear it,
+instantiates all the pieces, instantiates all your
+kickstart and provisioning, instantiates all your
+puppet configs and everything like that.
+You can really go to town with all that.
+All right, remember 22 backups.
+Make sure you're keeping backups
+with the stuff that needs to be backed up.
+Just a couple of lists there.
+There's probably a ton more.
+Amanda, back a little, it's really interesting
+when I was looking at that one.
+And finally, pattern number 22.
+One tool to rule them all.
+That's this tying it all together.
+Back at United Online, I was telling you about this host
+database. It started out kind of with kind of two facts.
+Number fact number one was that post-gress QL
+could store how to native data type
+from MAC addresses and IP addresses.
+Wow, that's really cool.
+Like, it store host information in that thing.
+And it kind of just blew up from all that, right?
+So I created this whole database schema
+about storing all this information about our system.
+And the fact number two was that Kickstart,
+the Pixie system with Red Hat and Kickstart,
+it can read Kickstart files over HTTP.
+So as a machine would come up,
+it's the HTTP request and in the config
+that comes back with that, it says,
+oh, hey, you'd go fetch your Kickstart file from here.
+Well, that HTTP URL that it would fetch happened to be a CGI
+and it would dynamically determine,
+based on who was asking for it, which Kickstart file
+needed to hand out to it?
+And so it would hand out the Kickstart file
+and off it would go and install CF Engine
+and then CF Engine would take it from there.
+So you'd be able to tie all this stuff together.
+I love putting this stuff together.
+I love integrating all this stuff.
+So let's talk for a minute about,
+if I had, you know, I have this dream
+of this used data center kind of automation tool
+and host management system.
+It's the ideal data center management system.
+And it wraps together all the stuff that we've been talking
+tonight, all these tools that you can use
+to fulfill all of these patterns that we've talked about.
+Now, the architecture would look something like this.
+You'd have some kind of data storage in there at the bottom.
+You'd have course audit trail and versioning.
+You've had kind of an engine that provides modular functionality.
+So if I wanted monitoring or graphing
+or whatever piece of all these pieces I could plug it in
+and it would just kind of fit into that whole system
+with a nice little rest API sitting on top of it.
+So I could write a web UI, a flash UI,
+a command line interface, or a GTK UI,
+or a mobile interface to whatever I want.
+And then I'll plug into that.
+So you'd have an architecture something like that.
+Among and among other things,
+and in no particular order,
+would be able to manage all of our hosts,
+which are our network-connected devices.
+We could be able to specify all sorts of details
+for our hosts, interfaces.
+And please don't make me just specify
+one single IP address from machine.
+No, what I mean here.
+Machine can have multiple interfaces
+and each interface can have multiple IP addresses,
+you know, subinterfaces, that kind of thing.
+Let me manage disks and partitions, memory, CPU,
+motherboard, all the details that I need to store
+about a host, all that very information.
+I should be able to create a timestamp log
+entries about this host.
+I rebooted this guy today.
+I kickstarted this guy today, whatever.
+Keeper running, logged, everything.
+It's happened on that system.
+Oh, I should be able to visualize
+where this host lives in the data center.
+So I should have rack diagrams
+and get auto-generated from this stuff.
+I don't know if we have proximity sensors
+so that when we rack a machine,
+it can automatically phone home and say,
+hey, I live here.
+Maybe someday I down the road.
+Maybe in the cloud, I can make my virtual rack diagrams.
+Anyways, but it should have, you know, be visual
+so I think visiostancels and what my machines look like
+so I can tell the remote hands guy at 2 a.m.
+in the morning, this is where the power button,
+this is where the, you know, the plugs are on this thing.
+Should be able to spit out spreadsheets
+at those rack layouts so I can, you know,
+send them up to the suits, up to my bosses and whatever.
+I should be able to easily modify DNS information
+to be a really nice intuitive DNS configurator there.
+I should be able to add and configure all that stuff.
+When I add a new host,
+it should automatically add DNS records for me.
+And it should help me from shooting myself in the foot
+like adding trailing dots to hostnakes,
+bumping up my cereals when I make any kind of change.
+To me, I'll be able to roll back
+to a known working DNS configuration
+and log any DNS changes.
+Logging DNS changes, that would be fantastic.
+I should really keep track of all the network subnets.
+And when I plug in a machine,
+when I plug in its interface information,
+it should magically show up in that, that subnet view.
+I should be able to auto detect uncatalog host
+on the network and assimilate them into this system.
+I should be able to control a large number of aspects
+of each host since my system is heighted
+a puppet or a CF engine or something.
+So from that command center,
+I should be able to do all of the changes
+and modifications that I could be able to do
+in puppet or CF engine.
+So anything that I should be able to do in puppet or CF engine,
+I should be able to do from this command center.
+I should be able to install and uninstall packages.
+I should be able to enable and disable chronicries.
+So all of this, again, puppet and CF engine time,
+should be able to manage user accounts from this system.
+This guy, this admin's acting up,
+he did some bad luck to save those accounts.
+I should be able to manage file and directory permissions.
+If we've got bad files out there,
+I should be able to get rid of them
+or touch files that need to exist.
+I should be able to control which processes are running,
+control which services need to start up on a machine
+when it boots up.
+I should be able to manage my kickstarting
+and provisioning from this system.
+It should be a let's spit out kickstart files for me.
+I should be able to choose a particular box,
+choose a type of image or a system profile,
+or have a suggest one to me based on the harbor profile
+I'm looking at.
+I've got a Dell 1950, that, and I need a web server,
+you know, go through all the right image on it.
+I should be able to manage machines
+and multiple data centers around the globe.
+So I should be able to gather all my stuff
+and, you know, I've got one in China, I've got one in LA,
+whatever, and we should be able to have granular access
+if you don't want the level one CIS admins,
+you know, having full control, not yet.
+I should be able to manage a system monitoring
+in this system, it should auto-generate,
+my Nagios configuration and spread that out to my Nagios servers
+or whatever I'm using for monitoring.
+I should be able to, for a given host,
+I should be able to see all the grassers associated
+for that host via MRTGR or Ginglia.
+Both at the host level and an arbitrary host grouping level.
+I should be able to group by machine type,
+by OS type, by operating system type,
+and then do configuration changes or see grass
+based on that thing all aggregated up
+into that specific group.
+So if I say I've got a set of customers
+right out on machine day B and C,
+I just want to see the stats for those machines.
+You know, I'll be able to pull those stats
+and aggregate them shown to me.
+I should be able to fire massive execution of commands
+from this machine and have little thing
+where I can say I want to run this
+on this arbitrary grouping post.
+And again, on an arbitrary grouping,
+I should be able to visually see which machines
+my command executed successfully on.
+How many times have you used a mass execution tool
+and only, you know, two thirds of it takes on your system
+and then you got to go chase down
+the one third that didn't take.
+So I should be able to see visually,
+you know, little red and green dots.
+Okay, this is spread out here and all this
+funk has that kind of capability to be able to check
+that, oh yeah, this actually happened on that machine.
+Good set.
+And then our optionally,
+be able to check the command output on a particular machine
+for what happened when I sent that command to it.
+This system should be integrated into our ticketing system
+so that they can give a machine or host on the network
+and should be able to see what tickets are associated with it.
+I should be able to manage virtual machines
+as well as this.
+This should be able to control a cloud-based data center
+as opposed to a physical data center.
+So I'm going to point out an EC2
+or one of the other cloud services.
+Who was it?
+Tim Bray, I think, is working.
+I think it's son developing a protocol.
+It's compatible with Amazon's EC2
+but is a really well designed protocol
+for just this sort of thing.
+I should be able to tag or group machines
+and apply different actions to each tag or group.
+Should have a wiki bail thing to us
+so I've got my knowledge base built into that.
+I managed to have a red glowing orb to remind me
+occasionally who is really in control.
+Again, it goes back to pattern number 13.
+Right?
+Where is that?
+Okay.
+Slide malfunction.
+Slide.
+Sorry, this is going to be so good too.
+There we go.
+Okay, so that's it.
+My red glowing orb there, right?
+But, of course, since we're working on maturity to be green.
+Right?
+But, again, since we're working on maturity to be branded,
+our maturity is always about all about marketing and branding,
+so we've got to make sure it's the right green.
+Okay, my system should be integrating with version controls.
+So I can time shift or roll back for real forward
+to different configuration states.
+That should be able to integrate
+with my change management system.
+So when the Starbucks auditors come in,
+I can point to and say, yeah,
+these changes happen at this point in time by this person.
+I managed to be able to integrate
+with the bug tracking systems that the developers are using.
+I should be able to remotely power cycle
+and line machines from there control aspects of that.
+I should be able to open a remote console through that,
+through like the ILO on HP or through the remote access
+controller on Dell hardware, that kind of thing.
+It should be modular, easy,
+extensible for anything that I happen to forgot today.
+And I should be able to have nice reports
+that I can print out and send up management.
+I should be able to export data from the system.
+I should be able to arbitrarily group host together
+and talk about that.
+And these views should adapt themselves.
+So I'm looking at performance graphs.
+And I want this particular group
+and you should aggregate that data based on that group.
+In essence, the systems should be able to tie together
+everything we discussed tonight,
+fulfill all those patterns
+and one nice user control system.
+It's an easy world.
+Again, it comes back to sufficiently advanced technology.
+But magic, well, we can make it happen
+with all the stuff in cloud computing
+where you're getting closer to this idea
+of using data, use data center and becoming your reality.
+The more we can abstract all the crap away,
+the more we can focus on our business
+and on what we're doing.
+And when data center pops become utility,
+what then becomes possible?
+My deposit that with all the open source tools available,
+this is getting very close to some extent.
+There's always going to be hardware
+that you have to deal with and all that stuff.
+But some other fun things to look at
+and again, these slides will be available on my website.
+Through Terra is an application utility provider.
+They essentially virtualize a data center
+and provide kind of cloud-based load balancers
+and databases and servers, fun stuff.
+Amazon cloud services, right scale, kind of ties off that.
+Thank you for coming tonight.
+My blog's up there.
+I'll be posting the slides on there.
+I Twitter at Dan Hanks.
+There's my email.
+Thanks for staying with me here.
+I hope it's been worth your time.
+I hope you've learned something that you can go home with
+and use in whatever you happen to be doing.
+Thank you.
+Thank you for listening to Hacks of Public Radio.
+HPR is sponsored by Carol.net.
+She'll head on over to CARO.nc for all of us in need.

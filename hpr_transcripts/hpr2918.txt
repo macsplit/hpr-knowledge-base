@@ -1,0 +1,205 @@
+Episode: 2918
+Title: HPR2918: Selecting random item from weighted list
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2918/hpr2918.mp3
+Transcribed: 2025-10-24 13:15:15
+
+---
+
+This is HBR episode 2918 entitled Selecting Random Item from Weighted List and in part
+of the series, Haskell, it is hosted by Tuku Toroto and in about 27 minutes long and
+Karima Clean Flag.
+The summary is how to Selected Random Item from Weighted List using Haskell.
+This episode of HBR is brought to you by An Honest Host.com.
+With 15% discount on all shared hosting with the offer code HBR15, that's HBR15.
+Better web hosting that's Honest and Fair at An Honest Host.com.
+Hello, you're listening to the Hacker Public Radio and this is Tuku Toroto talking about
+picking random items from Weighted List using Haskell.
+As a title suggests, I'm going to talk about how to select random items for Weighted List.
+There is too much of code this time, but it certainly took quite a while to get this working correctly.
+The Weighted List, we have a list of items that have some weight and then you'll see how
+the algorithms will pick one item from the list and those items with higher weight should
+be more likely to be picked.
+An analogy I came up with is that we have a stack of building blocks of different sizes
+and that height of the building block is the likelihood of it getting selected.
+Then you stack them on top of each other or that doesn't matter and then you random it
+show a stick so that its length is minimum of one and a maximum of the heightness of the stack
+and then you put the stick next to the stack and where it reaches is the one that you're going to pick.
+That's what we are going to do and on the code side we have a list of items and those items
+are defined as a Frequence A and the Frequence A is a type that has a wallware constructor of
+Frequence in A so it can be A can be anything and int is that date and since A can be anything
+we can have we can use this algorithm or system of whatever for with any kind of data.
+Of course they have to have to be same for each of the items that you put in the same list
+and the total sum of those weights is the tollness of the stack in the analogy.
+We need to select a random number between one and total. I'm going to look more closely into that in a moment
+and then we have a little help of function called pick that actually does the comparing and picking
+the element but before we look into implementation of this we have to make a quick tickle into the
+random number generators. I talked about them not too long ago but the thing is that they
+in Haskell functions are pure so same input same output always so if you call a function or apply
+a function twice with exactly same parameters you are going to get the exactly same result which
+kind of means the randomness on a first glance is extremely hard but this is sold in a way that
+you are passing in a random number generator and that random number generator is
+but purely deterministic meaning that if you call the same random number generator
+twice it will give you the same answer but it will also give you the new random number generator
+so when you call a random number generator and say that give me a number between one and ten you
+are going to get a number and you are going to get a new random number generator and then you call
+that one again and say that give me number to you one and then you are going to get a different answer
+and yet again and yet a new random number generator but passing around that new random number generator
+and you have to remember which one is the newest one you have to always pass that around the one
+that has been has is the result of the latest computation it gets tedious to pass it around
+and you have to remember to return the correct one because for example if if our
+our picking item from the list wouldn't return the random number generator
+we could call that list and call that a function that gets the item from the list twice
+using the same random number generator and we could get two two same results and that
+amivia current it gets two same results and that's kind of not what I would call random
+so you have to always remember to return that new generator and that gets tedious
+but luckily this solution to this and call monads I'm going to do a tutorial about them
+because while I know how to use them in some context I don't I can't explain them very
+enough and there's so many tutorials that internet already about them that if you're interested
+on that theory behind them you can go and find a suitable one to work on that is
+but I can show what you do what to do with them especially in this case so we have a
+monarch called monadrandom that's a type class and there's a it has several functions
+we are only interested in one in this case the basic idea is the same with everything but there's
+a function called getrandom r that has a type of random a set arrow double of a a arrow ma so
+a is anything that has a random instance basically anything that you can generate random number
+random values of it doesn't have to be a number you could have a function that the
+for example could generate your random booleans you just say that I want random boolean and it
+basically seems to slip so coin which one you're going to get through of all but anyway random a
+set arrow double a a arrow ma is the type signature so a is something that has a random
+instance couple of couple a a is a couple with two values lower bound and upper bound you're
+asking value between these two pounds inclusively and result is ma and ma here is the monadrandom
+r actually it's a run and a is our value so if it gives a it gives you a value between lower
+and higher bound and that value is returned in the context that carries the random number
+of generator so now that you have the not that the m holds the random number of generator actually the monadrandom
+context you can use this one as a basis of a next operator operation when you are when you are
+operating in a within the monadrandom in your computation you can call get random a multiple times
+and you don't have to worry about passing in the random number generator or taking the new value
+with you just kea but the result of the random call and the monad x ke of the
+trading that new random number generator along the computation so we just use just the get random
+and that's it but in the end if you have a big computation doing some randoms but we are left with the
+ma and we have to somehow turn this ma into a and for that there's a function from run run that has
+a touch signature of random gen g sat arou rank kea arou g arou ag
+double ag sorry okay might be a good idea to look into show note at this point what that what
+does this mean is that the g is a random gen meaning that g is something that can generate random
+values for you that has a specific specific functions specific interface random gen is a
+tag class okay g is that so we have when we are calling run run we have to give it a run kea
+this is what we get from the as a result of the computation that uses monadranda
+a is our a is the result that we want a g is that random generator coming from somewhere and
+result is double of ag so we get a couple of the first element is our n's and second element is
+that new random generator so essentially we when we are using that that random r we are constructing
+a computation that results to run kea that is that is that is what we want and then we run this
+computation with run grant and we get double of ag as a result first element is being that what
+we are after and second element is the new random number generator we can also do a eval
+that is similar that has a similar signature it has a random gen g set our grant g a our g our a
+exactly same as previously except that the final that the result will be just a instead of double
+ag so we are getting a value that we are after as a result but we are discarding the new state of the
+random number generator sometimes this is what we want sometimes we need that new random number
+generator so it depends on the case which one to use so if you if you got the well the basic idea is
+that we are using that monocrandom to construct a computation that depends on a some
+something that can generate random values for us and then we use that something to give us
+the final result then leave the trick here is that since that our computation is not necessary
+but it can be usually it is it can be pure meaning that same data goes in same data goes out
+so we can have a really big computation that uses randomness and if we call it with the exact same
+values we get it's the same result that every single one and the only only thing that changes here
+is that runs g that that I'm sorry front random ten g that is the what generates as random values
+so if you use the same random number generator twice to call our computation that ought to run our
+computation we get the same result back okay let's look into actual into the actual implementation
+hopefully this make this will make my explanation a little bit clearer so first we have a
+frequency which is for expressing weight of individual item in a list it's parameterized so you can
+use it with any data you can have a frequency int you can have frequency pool you can have frequency
+your own data data byte so this one works with everything and it's divided as data frequency a
+equals frequency int a and then deriving show it equal so you can have a one-value of a in that
+then next is a little function that is used to determine to determine which item to choose from the
+list based on the wage based on based on the list and the random number generator random number
+that has been already picked so and in case the value is outside of the
+valid range so it's a less than one or it's a
+created and the length of the or the created and the total sum sum of the wage some of the total
+wage some some of the wage then it also doesn't require anything so it returns mapping otherwise
+it returns just a so it always returns something but it can be just a in case where the values are
+reasonable or it can be nothing than some parameter values okay and our definition for that is
+pick has a has a signature of list of frequency a arrow int arrow may be a so given a list of
+frequencies and the number it returns a may be a pick a empty list underscore equals nothing so
+if you calling this with an empty list you are going to get nothing it does nothing you can
+pick from the empty list the more interesting case is pick open patterns frequency x item
+colon xs close burn i so we are deconstructing the parameter and i is the index to pick from or
+then random number to use to picking on and frequency x item colon xs means that frequency x item
+is the first item of the list and xs is rest of the list then there's a five i less or equals
+an x equals just item five otherwise equals pick xs open by an i minus x close by so what happens
+yeah there's a case of there's a this is called card i should explain them more closely but
+hope you you can follow them maybe to a proper episode later i'm doing this is incompletely
+from order apparently so there's two cases one is that the i our random number is less or equal
+to wait of the first item in the list then we are returning i sorry so i is yeah i is less or
+equal to the weight of the first item of the list then we are going to return that first item
+otherwise we are going to pick item and we are so we are recursively calling we are going to
+use pick xs so rest of the list we are dropping the first item of the list and we are
+subtracting the weight of the our first item from the total weight so basically you could
+visualize this as a taking the bottom cube from the stack and shorten in the stick with the height
+of that height of that cube or building block the end result is that you have a
+loose stack where the which has one item less and which has a foot where the stick still reaches
+exactly same point and then this repeats until you find the find the item where the top of the stick
+reaches or if something goes wrong and the stick is longer than the stack you end up with the empty
+list and then the first case pick empty empty list underscore equals nothing gets in and you get
+nothing as a result so this is how this is how you pick the item and then we need the
+finally we need the calculating the total of weights for frequencies and choosing the random
+number and we are using that random g maybe a as a as our pipe here so we might or might not
+get our result for example like I said empty list would complete into the nothing and since we are
+dealing with random numbers and don't want to pass around that random number generator we are
+going to use that monarch that I talk about moment ago monarch random so the signature for our
+function choose this the function that you use to actually choose the random item from the list
+uh that signature is a random chain g set arrow list of frequency a, arrow, and g maybe a
+and two cases again choose empty list equals further on nothing
+this is the in case of the empty list doesn't matter what you what random number you have for
+anything just get nothing as a result I said result and notice that because we are using that
+monarch random and we are not just saying choose empty list equals nothing we have to say choose
+empty list equals return nothing return is a function that rushes out nothing into that rank g
+so it's not a return as in pretty much any every every other languages it's a trap our result in
+is out of the trunk g then the more interesting case choose two items so we have a list equals two
+uh let's total equals some dollar f map uh lambda frequency x underscore equals uh arrow x items
+so what we are doing here we are using a we are creating a random numbers function that
+given a frequency of frequency a will return you the weight of it that in and then we are
+applying that to every item in the list so we get a list of of the free one of the wage and then
+we are using some to add all those together so now total is the total sum of those wage next time
+and left arrow arrow get random a open bar and one comma total close by so here we are using
+that get random ah that I mentioned earlier we are picking a random number between one and the total
+and because we are using a monarch we have to use the left arrow notice so that first line we
+have the same up things that's a that's a regular function called that was let total equals something
+here and left arrow get random ah is a you is using this specific properties or rules of what
+is a often often monatrandom meaning that this left arrow notation causes causes the
+causes the monatrandom to trade in that random number generator so here we are using the random number
+generator even when we are not talking about it and we are also taking it the new random number generator
+and passing it along when we are not mentioning it this is really convenient like we don't have to
+worry about that at all and the last line is return dollar tick items in so we are calling
+how a tick function with all the items and with the random number that we choose and returning
+the value rather into random so that's that's all all that they is so they isn't that much of the code
+but there's a relatively lot of things happening and now we can randomly now we can have a
+weighted list of items and we can randomly choose items from there and for example if we have a
+list of two items one with a weight of one one with a weight of two and we pick 100 times from
+that list we should end up having the one item as 33 and pizza percent of times and the second item
+66 percent of time and a bit because roundings so it probably sounds a lot more complicated than
+the actual list I arrived to the threshold after quite many details like I had a I had a first
+I had a version that just took a random number generator never returned it then I realized that I
+can't just that this a part of a ticket computation without losing the random number generator or actually the state of the new random number generator
+then I had a version that returned the couple of of the value that I wanted the new random number generator
+and that get tedious to pass around so after some reading I found that there's this
+monotrandom that I can use that the front GA to return any value and have to have the systems to take care
+of the passing around that random number generator so it was it just meant that I tried a lot of things
+until I found one that looked reasonable for what it's working and then did quite a cleaning and
+it probably took a couple of months even though I wasn't actively working on it I will
+for the one version and then work on some other stuff and learned new things and then came back and fixed things
+but anyway so it's not it's not case that you just sit down and think that okay I need this kind of function
+and then you write it from starting from the beginning and going to the end you and well at least I
+have to do a lot of trial and error and experimenting and refining refining but now that we know
+how to pick random numbers sorry random items from the way that we can do some nifty things
+but I'm going to talk about those next times I'm going to do some some practical to some values
+of practical things with the choose function so into to fund so what we got here is a choose that
+has a signal signal of random gen g cut out of frequent list of frequency a are all run g may be a
+so we can given a list we can pick one item from there and in the meantime questions comments
+and feedback welcome best way to reach me now this is the email or in the fediverse where I am to
+put about master on social or even cooler you could record your own HBA episode catch you later
+you've been listening to hecka public radio at hecka public radio dot org we are a community
+podcast network that releases shows every weekday Monday through Friday today's show like all our
+shows was contributed by an hbr listener like yourself if you ever thought of recording a podcast
+and click on our contributing to find out how easy it really is hecka public radio was founded by
+the digital dog pound and the infonomican computer club and it's part of the binary revolution
+if you have comments on today's show please email the host directly leave a comment on the website
+or record a follow up episode yourself unless otherwise status today's show is released on
+the creative comments attribution share a light free dot org license

@@ -1,0 +1,764 @@
+Episode: 209
+Title: HPR0209: Speeding Up Database Development with GenORMous 
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0209/hpr0209.mp3
+Transcribed: 2025-10-07 13:56:29
+
+---
+
+One.
+The following presentation from the Utah open source conference held August 28th through
+August 30th 2008 is underwritten by Knowledge Blue. Open Blue ERPCRM solutions, voice
+blue, virtual PBX, call center services, learning blue, learning management
+services, and more. Our mission is to help grow your company. Our whole business
+model is built around your future growth, KnowledgeBlue.com. Streaming and
+podcast hosting bandwidth for this and many other presentations at podcast.UTOS.org
+has been provided by Tier 4. The presentation entitled Speeding Up Database
+Development with Genormous was given by Brian Hawkins.
+We'd like to thank you all for attending the title of our presentation today. We'll
+be speeding up database development with Genormous. Our speed will be Brian Hawkins. Brian has
+a bachelor degree from Weber State University and a master's degree from BYU. He worked
+for five years as a software engineer for Nobel, and he has spent the last two years
+doing web and database design for Lingo Tech. I'd like to remind everyone that this room
+is being sponsored by Nobel's Open Source Technology Center. Please visit the OSTC information
+booth in the Expo Hall. At this time, I'd like to go ahead and turn the time over to
+Brian Hawkins.
+You're too kind, you're too kind.
+Okay, is that good? We've been recorded? Well, all right, so I got to apologize up front.
+I'm kind of on a de-conjession right now on my heads just going, anyway, so I'll try
+and stay focused here. Let's see. So I worked at Lingo Tech. We actually used this Open
+Source project with our software that's in production on a web app, web service application
+to use it to interface with our database. Let's start off here with some bad SQL. Let's
+just kind of back up for a second, hold on a second. So how many is familiar with any
+kind of an ARM solution, like hibernate, anything, hibatis, kind of sort of? Anyway, okay,
+nobody's using ARM. Okay, that's actually interesting. I gave this presentation last week
+to the Utah job user group, and everybody was familiar with something and I tuned the
+presentation differently, and so hopefully we'll introduce you to some stuff. So anyway,
+so here's some code. This is a code I wrote a little, many moons ago. There's just a whole
+horrible nasty way to do SQL code inside the code. There's lots of reasons this is just
+bad way of doing your SQL inside of your Java code. The first one is it's unsafe. Why
+is it unsafe? Yes, thank you. You can inject some nastyness into some of these parameters
+if I were able to compromise the machine. So, lots of proper performance. What is the
+performance problem with previous SQL together like this? We're counting a string in
+every time, but the thing is the database can't store these queries. If we're using a
+prepared statement, if I'm going to go with prepared statements, okay, prepared statements,
+the database can actually cast the query. And so the next time, if it does some optimizations
+on that query, the next time you use that same query, you can say, oh, I've already optimized
+and figured that one out and they can pull it out of its cache. The other thing is it
+becomes very hard to unit test your SQL this way. Your SQL is kind of embedded in the
+nastiness of your code. It becomes very difficult to try and test it out to make sure your
+queries are correct. This is where I came from. I did this a long time ago and I was starting
+to interact more with the database in my current position where I'm at. And I wanted something
+better than just using prepared statements, but I wanted something, I wanted to use an
+ARM to access my database, but a lot of the ARM that are out there have a pretty steep
+learning curve on them and I ended up using one. It was a simple ARM and it was a pretty
+good solution and I liked it except it took too much control away from me and what I
+could do with the database. It kind of limited to me and what I could do interact with the
+database. We'll get into that a little bit more later.
+David, I wanted to write, do you use my own SQL? So why would one of you use SQL at
+all? Why would we want to just go straight on? Why would one of you use our own SQL statements?
+What?
+Do you have any group buys?
+Yeah, you could do group buys, but there's lots of reasons. What is efficiency? If you
+have control over the SQL SQL statements that you're writing, you can actually tune your statements
+around. Just don't do the end. So you actually tune your SQL statements to your database.
+Every database they all work in differently and a lot of them will process their queries
+differently. But if you understand how they can do that, you can actually turn your
+query to that database and know how they optimize so that you can actually get your query done
+in lots faster times. One of the good points of this is, like if you're doing joins, you're
+joining together lots of tables to get a query back. If you can just let the database try
+and optimize the query for you and just basically say select from all these tables and then
+you just put a big where clause that kind of words them all together. But you can also
+do actual joins statements. If you do the first way just by selecting from all these tables,
+the database will try and figure out which ones to join first. And it has a little algorithms
+that they go through and they do a pretty good job of it. But they're kind of guessing
+when they do that. They're guessing at the type of data that's in your tables. And
+sometimes they might guess wrong and they might join two tables first that it takes a
+horrible performance. But if they had to join a third one in first, they would have eliminated
+a lot of the results set up front and then the rest of the joins would go in very, very
+fast. So that's the kind of optimization that you can do if you write your own SQL statements
+is that you can tune that and tune your joins and your statements so that the database is
+optimized for your queries. And also the database specific operations. I was in the class
+or I was a while ago and we're learning about is an Oracle database. They're usually the
+ones that kind of push the envelope of what you can do with SQL statements. They actually
+had a query that we could do that was a hierarchical query. And so you could actually do a query
+that had where you had records that had parent child relationships and you could do a query
+that would go up and down that parent child relationship and gather siblings and ancestors
+in the query statement. Really kind of cool stuff but nobody else can do it but Oracle.
+So there's a reason. I want to do that in my database. Well if I'm using a pre-canned
+or a solution that does everything for me, I don't have that kind of control. I can't
+write my own statement to do what I want it to do. That's some of the frustrations that
+I had as I want to be able to control this at my level. I don't want to give up complete
+control to my own solution. I want to be able to write my SQL. I want to have control
+over that. So let's take some goals that I try to go through when I was creating this
+project. I took some ideas from simple one that had some good ideas and I said well I think
+I can make these a little bit better. And so I took some of these and I want to remember
+I want to be able to use it to find my SQL statements so I can do whatever I want it.
+The framework I wanted to framework for unit testing my SQL statements. So I want to
+be able to make modifications and then run a unit test or something that would validate
+that SQL before I actually put into production or even running in a system test. So I want
+to have an object view of my tables. That's the whole point of the arm is to give me an
+object view of my data that's easier for me to work with within my code. I want to
+simply use confident schema changes. Now that's an interesting one. I wanted to be able to
+change my database schema and be sure that my code is going to run on that change schema
+in my database. And this was one of the things they'd always, you know, I took database
+classes and they were, you know, it's like the big sin was never change your database schema.
+Well, because, you know, if you change your schema you could bust all the code that's accessing it.
+And the reason why was because like that first slide I had a query somewhere embedded in my code
+that was relying on certain tables and columns to be there. If I eliminated those I would
+never find that break in my code until I got it actually hit that piece of code in some
+sort of system test that hit it. So I wanted to be able to change my database and have that
+reflected in my code somehow so that it would break either at compile time, it was just my
+preference, or have it break at any unit test, an easily rat in unit test. And of course
+I wanted to minimize the amount of XML that I used. I don't know if I really got that
+last goal, but let me try it. I tried it. So, okay. So now you want to generate source code
+in the first place. So, yeah. So, genormous stands for generated arm and then I just
+slide on an OUS, genormous. It was fun. I had an echo where it says, hey, because I did
+call it just genorm for generated arm. But he's like, oh, college genormous because he
+just heard that it was just added to the data or to the dictionary. So genormous is actually
+the word now. And in my projects, I thought it was cool. It's well signed up. Okay. Whatever.
+It's just blame the cost minutes and murder. Okay. So, I would want to generate source code.
+I first started doing this when I was working at a previous employer and we had a project
+that was written and see that we wanted to access XML DOM-like objects. But we needed
+to write a bunch of kind of middleware code that would make ease our access to these DOM objects.
+It would ease writing them and reading from them. And so, what I came up with is looking
+into it. We had schema definitions for all of our XML that we were passing around. And I
+found that I could actually write a program that would read the schema, the schema files,
+and then generate source code that would read that particular schema. So, if we had schema
+that defined some XML object, I could generate a class that was tuned specifically for reading
+and writing to that XML DOM object. And it was hugely successful because I could then write
+it because it was very simple. I actually just write this one little bit of template code.
+And then I ran it on all the schema and it generated, you know, three, four hundred class
+objects that were all then used to access and read the schema files. And it was all based
+off the schema. So, it was really successful. It was really easy use. So, what you wanted
+to do is generate source code if you have some sort of a definition file that you have access
+to. Now, in that case, I had an SSD that defined the XML that I was trying to read. Now, in
+this case, with genormous, I'm going to show you we're going to have a little, an SQL file
+that defines your tables. So, we have a definition of our tables, whether that's in an XML
+or actually if you just read the database and figure out what the table structure is, that
+becomes your definition that genormous is going to base off of to generate all these
+objects for you. No one has performance. Now, I talked to some other developers about
+this and I kind of caught up sometimes in performance issues and may I just some of my background
+that I spent a lot of time nickel and diamond little code to get it faster and faster and
+faster. But some other developers said, well, when you work with a database, the slowest
+thing is going to be your database and I'm not sure that's entirely true. A lot of
+database, there's been a lot of research done in database performance and making your
+databases, your relational databases run very, very fast and they do run fast. What I find
+is if there's slowdowns, it's usually in your abuse of the database in your code. One
+of it, I was working on a project just not too long ago and I kind of got brought in
+and it was new to me. I brought in to debug some problems with it and it was interesting.
+One of the, they said, well, this one report, it runs in like, it takes like 20 minutes on
+a large database to run this report and like, wow, that's either you got lots and lots and
+lots and lots of data or else you got some problems in your code. So, it was funny because
+the customer data stopped, that was just usual. Oh, well, yeah, these reports they just
+take forever and ever today and the customers are used to it. They just start the report
+and go off to break and go eat lunch and come back and the report is done for them.
+Well, so I just had a curiosity. I looked into it and I to see what they were doing in
+this report and they would create a table for all the entries in this table, which could
+be, you know, a couple thousand. But then what they do is they iterate through each one
+of those entries, querying the database again for different tables to get different data.
+And they did not do in like three or four queries per entry in the table. So, instead
+of doing, so they do one entry to get the initial result set. And then they turn around
+and do three or four entries per entry and they just explosion of database connections
+and queries that they were running against. And so, you're running all this and it was,
+and I told the guy, I said, you know what, I bet anything I can get this down to run in
+like ten seconds. Because it should all be done with just one, maybe two queries to
+get this data out. And I said, the way it's ran right now, I never had the opportunity
+to fix it, but I was quite certain I could get that data out in just one query or two
+queries and it would just scream. You know, and there's something that they were expecting
+to take like twenty minutes as an old man. No, no, they should not take that long.
+So anyway, back to the experiments. One of the problems with a lot of ARM solutions is
+that they do think in the very generic fashion, you know, they'll, you say, you know, get
+a gift record and they go through and they find, you know, they have to look up in the
+table what record you're trying to go get, they go get the data and then they pick it out.
+The nice thing with generated source code is that you can generate it specific to the
+problem that you're trying to solve. Like my previous example when I look into the
+DOM objects, I could generate source code that would, that would efficiently go to a node
+and get data out instead of having something that would generically, you know, wander the
+DOM trying to find the piece that it needed. Because it knew what was going to be in there
+so it knew where to go to go and get it. It was very efficient. That's a nice thing about
+generated source code is that you can make things that are efficient. It's also really
+easy to maintain. And you know, we'll look at some of the generated source code because
+the generated source code is basically, it's just imagine it's what you would write if
+you were given the task, okay, here's a table. I want you to write a class object that
+interfaces with this table. It lets me, you know, select a record out of that table that
+lets me modify it and put it back in but specifically for that table. What we're doing is we're
+writing generated code that does that specifically but for all the tables. So you need to cut some
+code without all the work because it'll generate all for you. Let's see. So what is
+genormous generated for you? And we'll get into some more fun stuff here. It creates
+two objects for each table in your database. It creates an object for each custom query
+and we'll get into what the exactly the custom queries are. Some utility classes, what
+does, this is really the only piece that's specific to any particular database is it creates
+a create SQL. So based on the table definitions that you give it, it'll actually create an
+SQL file that has all the create statements that lets you create that database that you've
+defined for genormous. This is kind of a useful feature. In our applications, I actually
+have the little definition file as my authoritative source of what my database looks like. So what
+I can do is I, if I change it, then I create the create statement off it and then that's
+how I create my new databases is from that create statement. So that way my authoritative
+source becomes my genormous configuration. It also creates a neat little graph of the
+database. I do this by creating a graph viz dot file and you're made familiar with graph
+viz. It's a great little application that links one to puts graphs together. It's great
+for college presentations and stuff. It creates a little dot file that you can run graph
+viz on and create a database. So actually I show you one here. Here's one. We're actually
+going to look at this. I'm going to be playing with this database throughout this presentation.
+But that's what it does. It creates a little, this little graph viz generated file. And
+we're just representing here is each one of these is a table in our database. And then
+the arrow is point, our show, um, foreign key relationships. So, um, I don't know if you
+can see here. Yeah, the blue, that's the primary key for the particular table. Um, the yellow
+background is represents a foreign key. So in this case, we have two foreign keys to point
+here and one point to this one. Like I point it down to the patron. Um, and you have
+their primary keys. So it's kind of, it's kind of neat so they can show you how to be
+complicated database. It will generate a little graph for you and you can take a look
+at your database. Okay. So let's talk about, uh, now we get started. Okay. We want to
+use ginormous. How do we get start on this? So we got to start with the table definition
+file. Now I, this is where it gets into the XML. And I don't, I wish it wasn't there
+as much as it is, but I can't get away from it. It's XML anyway. Um, one of the things
+I'm working on right now is actually a project called, uh, what I was at, um, a table creator
+or something. It's, it's a little part of ginormous that actually will read a database.
+You just point out a database. It'll read it and generate this file from the database.
+So if you already have an existing database that you want to interact with and you don't
+want to have to write this thing up, you can just point at it and it'll suck all the
+data out and create the XML for you. But basically all this is is just a, it's, it's almost
+like an SQL create statement, but in XML. It's got all the same information in it. So we
+got the name of the table here is book. Uh, we got a column that's title, ISBN, call
+number, uh, the call number is the primary key. Uh, we have a foreign key here called
+check out the references, uh, different, the patron table and it tells the column that
+a reference is in it. I mean, it's pretty much to be anything new if you're, if you're
+used to SQL, think of concepts just thrown into an XML document. See where am I at? Okay,
+so what happens is, you know, it takes that file and you can actually have multiple table
+definitions. This has just got one table to find in it being that multiple tables to find
+in this file. And it's going to take, it's going to grab this thing and it's going to
+generate some classes for you. Um, these bottom two are the ones that it actually generates.
+This top one is part of the genomics runtime. So your class is end up inheriting from
+it. It's kind of a nice way to have some generic features to the code so that you can actually
+pass your, um, any one of your table entries around because you can pass them around as
+one of these general records if you wanted to. And then you can generically interrogate
+some of the information that's on that, whether you can see well, is this entry dirty?
+Has it is a new entry? You can do some kind of generic, um, just get information stuff
+on it. Okay. So now the question is, well, okay. So it creates, first of all, so I have
+a table and I called it, um, the Bob table. Is there any bombs in here? Take it. It's called
+the Bob table. And so what it's going to create is it will create this object which will
+be Bob underscore base dot Java. And then it's going to create a Bob job that's going to
+inherit. So Bob will inherit from Bob underscore base and this will inherit from this guy.
+And then this is where I have a fun logic is in is in the underscore base file. This guy
+is empty. Now the reason why it generates this guy, everything that it hands back will
+be one of these guys. So whoever creates a, or you go and fetch an entry, it'll hand
+it back to you as a Bob object. And the reason for doing that is that this is the one that
+you can customize. It actually is an empty class. There's no methods in it at all. But
+you can add anything you want. You can even override some of the methods that are inherited
+from to add functionality. Say there's a, one of the, the columns you want to get out
+is, I mean, actually, maybe you wanted to add some sort of a derived data. Say it was
+a book in this case. And you wanted to say, you wanted a method that says, is it late?
+Well, you can add that method to here. And then that method could actually interrogate
+some, or use some of the information it gets out of here to say, well, is the date past
+the current date, time, and if so, then return true, otherwise return false. That way
+you can customize this and cut custom features specific to that table that you can then put
+into your class. And this file, once it's generated, doesn't get overwritten. So that way
+you can put your custom code in there. And it just populates along with you. And then
+you've worked pretty good. Okay. So, so what is this guy got in over here? So this guy
+has, it has all your gutters and setters for all your different pieces of data. It's got
+some two strings and some equal stuff, some congeneric stuff. And then it has this little
+a static member called the factory. And the factory is actually defined as an inner class
+inside of it. That's what these are. It's a couple of inner, they've got to define
+a result set in here and a factory object. But the factory is what's got all the, the
+gnarly methods on it to do all your fun stuff like querying and getting object to get
+you ahead.
+Right, quick question. So, what you're saying is that the source that ginormous generates
+is the your object base and your object is left alone so that if you regenerate all the
+code that you have at your object still stays. Okay, so that makes it so that you don't
+lose a lot of your functionality if you change your schema and regenerate.
+Yes, yes. So, the basic question is about these two objects, the base object and the
+derived one, the error object. And if it's not there, it gets created. But that's the
+last time it gets touched. So, if you regenerate your code, it won't, it won't overwrite that
+file. That lets you customize it to your heart's content. Now, this is what presenting is
+a little bit different which you'll find online because I got some good feedback from
+the last time I did this presentation about how to handle these two objects. Online, it
+actually had some getters and setters in here, but I realized it didn't really need to
+be there. They moved them all out. So, if you go online, just wait a little while for
+about a week and I can update all this stuff. So, if you see the link in Consistencies,
+if you go online right now, that's why.
+Alright, so, okay, so this factory has all the fun little methods on it to select objects
+and do other things, and we'll show you these in just a second.
+So, first let's talk about, before we get into that, creating your connection and closing
+and committing. One of the things Jerome does is that it puts the connection onto the
+thread local storage so that you don't have to pass it around, which is very, very
+advantageous, because then it cleans up a lot of your code. You can have code way down
+the bowels of something, access your database without having to pass that connection object
+all the way down to it. So, what happens here is in this gen-armed
+data source begin, that begins the transaction and puts the connection on that thread local
+storage. There are other versions of this begin method that actually take parameters, so
+if you have an application that may access multiple databases, which is one of the ones
+where I work now, that's one of the cases we have. What I can do is actually pass in a parameter
+to the begin and tell it which database to point at, but that's all I have to do is just
+to the begin, I just have to pass it there. All the code that I do inside here, was that
+me? Okay, get some weird feedback. Like silence came into the room or something.
+So, the other code that goes right between the begin and the commit, and you can do whatever
+you want inside there. Let's look at something like a simple create statement. I want to create
+an entry into one of my records or my tables. I want to create a book entry, and this is
+how I do it. So, I start with that static member, that factory. He's got all the fun methods
+on him. So, I say book factory, and I say create. And then I pass in whatever the primary
+keys are for that table. Now, this is kind of a neat thing about genormous, is that if I
+change what my primary keys are, say I have a table that has, you know, they might have
+two or three different parts of primary keys, depending on how my data is laid out. Well,
+this method will change accordingly. And so, if I have two primary keys, it will take
+two parameters, which are those primary keys. This is one of those ways that lets me change
+my schema and find my code that's broken. I have compile time, because if I change my
+schema and then regenerate my code, and I say I did add a new primary key to a certain
+table, well, this method will then break, because it'll say hey, no, I don't have a method
+that was the only signature. I have one that has two. Now, I'll be able to find all my
+spots that I'm using it at compile time. This is very cool. So, what I can do here is
+I just say create, and it creates me one of those book objects, and then I can just say
+set title, set ISBN, set whatever I want. And that's it. Because once this object automatically
+gets attached to the connection that's on the thread, and then when I get to that previous
+slide, when you get that to this commit, it finds all the dirty objects that are on the
+connection, and it just commits them all into the database for me. And then I just close
+it up and I'm done. So, that's how the crazy thing. It's very simple, very, very simple.
+And I know a lot of norms. I mean, this is similar to what a lot of norms do. Well, the
+nice things that's here, I guess it is the, you know, my method signatures are going to
+match exactly what my database is, because this was generated for it. Also, I don't have
+to cast anything when I'm coming off of it. Because again, this code, this factory object
+was written or generated specifically for creating book objects. It wasn't generated,
+you know, created to create generic objects. It's going to create book objects. And so,
+it will pass them back as a book, which is nice. A lot of the other norms that you deal
+with, you end up having to cast off. Because it'll hand you back your object, but it
+hands it back as some generic object that you have to cast down to whatever it is you
+want it to be. Which is, yeah, that went down. Hate that. So, let's look at, here's the
+find. So, again, it's very similar to the front to the create. Again, you write that factory
+object, and we say find. Again, these are the primary keys. Whatever the primary keys are,
+this method is going to have a signature that matches them. It's going to go in there, find
+it. And I can then check to see if I actually got one, whether it's null or not, and then
+call some method on it, say, in this case, I want to set that particular, uh, the check
+out column to null. And that's what I'm going to do on this one. Now, one of the things
+that this, the journalist does, and a lot of norms will do this, but journalists will do
+it too as well, is if I had right down here, another find statement, and I did the exact
+same find, and for the call number, and got another object back for a book. And then
+if I check the, the, uh, the check out field, it'll be set to null. Because what happens
+is inside a here, the first thing it does is it looks on the current connection to say,
+hey, is this object already been pulled out of the database? And it has a little cache
+that it puts it in. And it finds it. If it's there, it just returns the one that you had
+on the cache, so it doesn't hit the database. But if it's not, well, then it goes to the
+database, perhaps it, come, pulls it out. It sets a nice little performance thing, and
+it gives you consistency within the connection. So if you make a change in one place in the
+code, it'll reflect it somewhere else. Um, so the other thing you can do with, uh, the
+journalist is rocking the tree. Now, this is not necessarily efficient, but sometimes
+you want to do this. Uh, I got a book object, but now I have there's a check out column,
+which was the floor and key to the patron table. Well, when journalists generate the code,
+it creates one method. I'll have a, I'll have a check out, or get checked out, which
+actually returned me that ID, but it also generates me one with a left on it, which
+returns me the patron object that it points to. So that's kind of a handy thing. If you
+got one little place where you're in your code, you always want to go and grab that object.
+I can go get the patron, and then modify the patron all I want or do whatever I want
+with it. So that's the accessing your tables. This, which is pretty simple. Um, but now
+what if I wanted to do something a little more elaborate? I wanted to select some, select
+some books from my database, uh, but I wanted to have some sort of condition on that select
+that's custom to what I want to do. Well, ginormous, let you do that too. All we can
+do is we go back to that table definition file. So here's the definition table for, uh,
+for book. And, and right here would be all the little defines my columns and stuff.
+But what I can do is I can add in this bit of XML right here. That's basically I'm
+going to add in a query for the books table. And I give it a name, and the result type
+is either a single or multi, meaning how many records I'm expecting to come back. Because
+based on that, it's going to change my methods and what my methods are turning. I'll tell
+you that in a minute, show you that in a minute. But then I tell you what I have to define
+what my inputs are to that, to this query. And that's why I'm going to pass in a patron
+and, uh, which is his integer. And then here's my, my SQL. And I can put anything I want
+in there. Just go crazy and put everything you want. The only thing that's restricted
+in this case is that I have to, the table that I'm, I'm defining this for, I have to label
+it this. Because what's happening is, is, if you know that there's no select statement
+in here, and ginormous is going to stick in the select statement, because it wants to
+pull out a book entry. And so what it's going to do is it's going to pull out like a book
+had a title. Well, the select statement is going to say, select this dot title and something
+in this dot pspn. That's what the select statement is going to look like. So the only thing
+you have to do is put this on this, on this. So later, the one table that you're in,
+this. What it does is, it lets me actually do a select in those multiple, um, tables.
+Because I can add any other table I want in here to, part of this query. I could join
+tables. I could, whatever I wanted to do, whatever kind of weird thing I could come up with.
+I could put it in there. And the other thing is, is, it's basically a prepared statement.
+And that's how ginormous is going to use it. And it's going to put that parameter wherever
+the question marks appear inside of it. Just like a typical prepared statement. But ginormous
+does all that work for you. Um, so that lets me do that. Good question.
+And, and how do you specify multiple input parameters?
+There are multiple input parameters specified just by putting in, uh, multiple, this line
+just put more of them in. And the order is specific to the order that the other question
+marks are in. So if I had, if I had another thing down here that says, and, uh, title
+equals some question mark, well, then I'd have another parameter in right underneath this
+one that would match up with that one. It's just the order they appear in. Yeah. But
+I guess, I, is many of the ones, sky's limit, just don't mess with it, whatever you like.
+But that lets you customize your queries to specifically your application. And I don't,
+I'm not dependent upon whatever the one can do for me. Um, so what happens is by adding
+this in here, see, I got books checked out is, is an in my query. When I want to use that,
+what happens is this factory object now gets a method called get books checked out. And
+its parameters are the parameters that I specified right here. So I says it appears
+a patron. Okay. The first parameter is going to be the patron ID. So now it, it generates
+that method for me for that query. Now in this case, because back here, we say the result
+type is multi, what happens is then this guy is going to return a book dot result set.
+If it was a single, uh, result query, it would actually just return me a book. Not a result
+set, which is very handy. Because it just eliminates the amount of code you have to deal
+with. You don't have to deal with the result set. You just say, oh, can we do that? Hands
+you the book back. So then what I can do is I can actually move through this result set,
+similar to a result set that you get from the, uh, Java SQL package. Um, the only thing
+is that, that's where the result set, where can you call get record, it returns you a book.
+Instead of a, you know, a result set entry that you have to then pick a part and pull
+the data out of, it's going to return you a book. And this book, you can do anything
+you want with it, like you're doing previously. I could set parameters or it gets stuff
+out of where I could lock and get the patron object or whatever I want from it. And then
+you set your calls result set when you're done. Does that make sense? I haven't lost anybody
+or if I haven't, you're not willing to admit. I'll try not to. Um, oh, yeah, custom query.
+I suppose next. Okay. So now it's time for that custom query. Now, we're back when I said
+the objects that the genomics generates. It generates, you know, objects for each of
+your tables. It generates an object for each of your custom queries. Well, there's
+times, you want to just get data from a lot of different tables and return that back.
+You want to join a bunch of things together and return that as an entry that you want
+to deal with. Now, these are read-only entries, just like the queries are that you make,
+you know, if you make a query that bounds lots of, you know, spans lots of tables, it's
+just going to be a read-only entry, a record that you can deal with. Because I don't want
+to do that. Now, I want to just, I want to, you know, I got some crazy queries that I
+can come up with that joins, you know, five, six, seven tables and pull data from all
+across the database. So that's what a custom query is in genomics. Now, this query, this
+query XML looks very similar to that when we just looked at it was specific to the table.
+But this guy is defined outside of the table definition. It's not specific to any one table.
+What I do is I specify the query and I said, okay, I want to go to the category, I specify
+my input parameters. Now, this one's a little different because I'm going to specify what
+my outputs are as well. My confidence was when I did this was to actually get this information
+from here. But I have, at the time I hadn't found a decent SQL parser that would give me
+that information so you have to kind of manually input it. Hopefully sometime in the future
+I'll be able to glean this information from the select statement, not kind of eliminates
+on the SQL that you have to write. So these parameters are what's coming out of the
+select. And then again, here's my input is again, just this input that shows up right
+down here. So what happens I write this and again, skies the women on the SQL that you
+can put in here. There's no limitation. Just whatever you want joins, butterflies, blue
+whatever, interquaries, go crazy with it. Customize it for your database. So what happens
+here is that that generates, a genormous will generate an object based off that query.
+In this case, it's books with category query is the name of the object. This does tend
+to get a little bit long, so you can't try and keep your query name short because it'll
+make big long names. So it creates this object for me and I can create a new one of those.
+And then I have a couple of methods on this guy, and this one I have run query and we
+can't see it because it went off screen. It's about right there. So these are our parameters
+to it. Now on the query, we had just a category name. So their category name is the parameter
+for it. So that method is based on the inputs you defined in that XML. So what you can do
+is also the other thing too. Sometimes you might write a query that actually doesn't return
+anything. It's just an update or maybe actually write a query or an SQL that doesn't insert
+but it doesn't return anything. If you don't have any return parameters, it changes this
+method. Instead of a run query, it says run update and then it'll return you the number
+of rows modified by that query that you passed in. So what it does is it returns in this
+case, it returns you back a result set and this is just an inner object of our books
+with category query. And it is just like the previous one. I can loop through those and
+do whatever I want with them. But in this case, it's going to return me a books with
+category query dot record. And the record is going to have all of my little get title,
+get call. Get whatever was specified right here is my objects. They're going to show
+up right here is get methods. I can pull those off my object with. And that's all that's
+it. The other thing is unit tests. How do I want to do a unit test? Well, in genomics,
+it generates an object called genorm, general unit test, perform unit, and then there's
+a method on it called perform unit tests. And what that will do is run through all of
+your SQL statements in your code or all of the SQL statements you put in your XML because
+all of those get actually put into the code. If you're looking at the code, you'd actually
+have strings that are in there, which are your queries that it's going to use. This method
+will go through and run them against the database using those test parameters that you specified
+here. No, not there. There. You actually put test parameters in there. It'll take these
+test parameters, throw them in there, and then run it against the database just to make
+sure, because later, checking here is validating that your SQL is well formed. It works against
+your schema. You're not necessarily checking that makes sure the data comes back, right?
+But it's going to test to make sure your SQL is right. This is part of what I wanted to
+be able to, if I change my database schema, I wanted to make sure I could tell them my
+code was, I'm going to work. This will make sure that works. So if I change some column
+and I have a query that's based on that column, well, this will catch it. My unit test will
+just on it. And let's go back to it. So that's how you run your unit test, which is pretty
+simple. And that's it. I'm going to show you how easy this is. Questions. Go ahead.
+I'm here. I'm here for you by required field. Well, what do you mean by required field?
+Well, you can create some fields that start off as long as you don't have that value. Right.
+So if you, but the rest of them, you have that value. Oh, I see. You have a not-null.
+Yeah. No, that would have to take more of a system tested. I mean, you have to write specific
+tests for that one. I mean, it's you. You're actually performing and you're actually creating
+that. No, no, unfortunately. That'd be cool if I could. But you go ahead.
+Oh, yeah. The last thing you showed me that was the query was, uh, uh, yeah, that we got it.
+Okay, lots of work has changed the scheme. And you've got to update this for 20 minutes.
+So what point was that here? Right after I blow my nose.
+So anyway, they have the recording below my nose, but it records the mic on on the ground.
+Oh, yeah. Um, okay. So your question is, uh, okay. So that's I changed my schema and I got this guy.
+So that eliminated this column or something. Yeah. Um, okay. Well, this is part, this one will be ran in part of that unit test thing.
+But it should be this guy here. Yeah, he will. It doesn't right now.
+Because this one is right now, if you look at the code right now, it just runs the table specific queries.
+The ones we looked at earlier. Yeah. This runs all those. I'm going to change it so that it runs these guys too.
+So it'll go through and try to go against the database as well. So that way it's all very easily just to make one line here run all my queries and it was going to crank through them all and run them.
+So what will happen is that if I eliminate this guy and I run this, there actually should be a test parameter on this one.
+I didn't put a test parameter on here just to run into it. It'll run that stick the values and they're running its database.
+And we'll get an exception back and I can see, oh, hey, yeah, I don't have that anymore. And I can fix all my problems before I actually go into a system test or kind of thing.
+Any questions?
+Go ahead.
+If you had any success on the question for the first part of this process for using a still in your phone table,
+and draw your shoe going to and then seeing what he is, that actually returns.
+I haven't actually tried that specific scenario. I have used, which is kind of similar to what I think you're saying, is I've used views.
+I've created views in my database and I've put views inside of my custom queries.
+So anything you could do with a SQL query normally, you could do it here.
+So all the data, I mean, because it's just, this is basically going to be a prepared statement that it's going to throw in.
+And so if you could do it with a prepared statement anyway, you do it right here because this is what's going to be.
+So that's a nice flexibility of it.
+But you're on the phone, if you're always getting technically different deals back, because your month-point change,
+that you're actually going to go to the world and the question, I can't see that it would work.
+Because you're going to do it in your turn, parameters there, you're not able to select the actual people there.
+So if you're doing a rolling 13 months, you're starting with February to January, and you're going to march, you're going to march the February,
+and you wouldn't be able to do that there.
+And maybe once you get a piece of your SQL and you're able to see, you can march by your SQL,
+then that would probably work.
+So I'm just wondering how, like, you think the other thing?
+I'm not quite sure exactly what you're asking though.
+Talk to me afterwards and about it, because I think we can.
+I think I can, but I'm not.
+One of the things that maybe this will answer it, I actually made it a way of passing parameters that are not,
+that are actually substitutions.
+So for example, so you wanted to order it by this, an ascending or descending.
+You can actually do it a little, it's a little stringer place.
+There's like a thing, it's like a percent, something or other, a little token I can put in here,
+and then make that a parameter that I can pass in.
+So I can modify the SQL on the fly by passing in either ascending or descending.
+That's one of the things that you can do with this as well.
+I'm not sure that totally in.
+Let's talk what you're talking about.
+Talk me afterwards, we'll look at that.
+Let's go ahead.
+There's a little more about the architecture.
+So your method, like you get recommended, is overrideable.
+So you can override that to your own implementation.
+And maybe call you base class.
+Just watch me and sort of figure it out.
+Just to some degree, it is.
+Well, you can't really override the methods around the factory object.
+Because it's part of the, you know, it's defined as part of that base class.
+So all the fine and create, you can't really override anything there.
+But you can override some of the, you know, your getters and setter stuff.
+You're just getting information out of the object.
+You can override that.
+But you probably could.
+I mean, it's actually very flexible.
+And I realize I've just kind of tuned it for my application,
+which grant I use it against two different databases.
+And it solves my problems very well.
+But I think it can be very easily adapted to solve more generic problems.
+One of the things I want to do, and knowing some use cases like this would help,
+is let people kind of mix in custom code to the generator.
+So you could say, hey, I want to put this right here.
+And then have it when it generates the code.
+It takes your custom code and throws it into the generated code
+and lets you do some of your own fun things.
+So I'd like to do that.
+So let's, let me run this demo on there.
+Basically, the demo is just going to show you starting with a blank project.
+We're going to show you how fast it is to get this thing up to speed.
+And what we're going to do is actually right here,
+here's looking at my, my, my project.
+I have just a little teeny project.
+I've got a database running that has populated with some of those books and stuff.
+The same database we're looking at.
+The only thing that's in my source tree right now is this Java file.
+There's nothing under my arm.
+And I'm starting from a clean slate.
+And here's my, my, my clean app.
+Crafts file.
+And the only thing I've got in here is inside of my main.
+I call it a knit DB, which is this guy right up here.
+And I'm just creating my SQL connection, my, my, my SQL connection.
+And then I, this sets that in a static member
+so that it can be attached to the thread.
+So I'm taking that data source and sticking it on a someplace where my,
+I begin and end statements can get to it.
+And then down here, so down here what I do is I begin my transaction.
+And then I'm committed and close it.
+So right now it's got nothing, nobody knows nothing.
+And that's all that's in this project.
+I do have in here.
+Here's my table definition.
+I'm trying my tables in my XML.
+And that's what I'm starting with.
+So what you see is what I got.
+So I'm starting with.
+What I'm going to do, first of all, is I'm going to run my,
+this little build script that's going to run.
+And oh, boy, a whole bunch of errors.
+I didn't want to see my goodness.
+Wow.
+Okay.
+Let me clean this first.
+Let's try that again.
+Please work.
+Okay.
+The library bug in here for just a second.
+See what?
+The heck just went on.
+Oh my gosh, it's huge.
+Dude, an exception.
+Okay.
+Butter.
+Actually, I think it's complaining about my table's file.
+Dang it.
+I swear I ran this just like, just before I got here.
+I ran the right directory.
+Wow.
+What happened to it?
+Obviously, we need to work on a little bit of the air handling in my code.
+I think it didn't like this XML.
+But I don't see anything wrong with this XML.
+I'm kind of afraid I might have done like a little typo on it or something.
+That's so weird because I just before I came here.
+Does that make everybody dizzy?
+What do you think?
+That's very strange because I ran this just before I got here.
+Is it trying to pull the dot type definition line?
+You're right.
+Thank you.
+Oh, good.
+Yes, you're right.
+That's a stupid piece of my library.
+Yes, it's the parser.
+You're awesome.
+You get a star for the day.
+There we go.
+Okay.
+Thank you.
+You're awesome.
+Now we can go back to our little project and we can see that it populated a whole bunch of my objects in here for those things.
+I got a book.
+I got a book base.
+There's my own create statement.
+Well, there are some of the utility classes and it's got my Patreon app thing in there.
+We're cranking low on time.
+So let's show you what we can do here.
+Okay.
+So what we can do here now, we can just do like we're talking about, let's say, book.
+Actually, what we want to do is let's see if we can just list all the books in our system.
+So we're going to say this should be, say, result set.
+Factory.
+It's a little keyboard.
+Let's say select.
+There's actually a select.
+So if you want it to, you put a generic select statement right here.
+But we're going to say pass in null.
+And that's going to say give me by everything.
+Fortunately, it's not very big.
+Next.
+And then we just go here.
+And we'll say, oh, let's do this.
+Alright, dot cat record.
+Now, what's actually going to return to me?
+Maybe I should just do this just so you see.
+This is going to turn me a book object.
+And I can then take that guy here to say system outprint line book.
+One of the thing I have to do is close my thing.
+And then I can go back over here and say.
+And it should compile that stuff.
+And if I didn't fact finger anything.
+Dang it.
+That would probably be because I need to start my database.
+Dang it.
+Crazy me.
+Okay, there it goes.
+Let's try that again.
+Try to run, can't find database.
+Now, there it is.
+So, I mean, they can see that was like from start to finish.
+Blake application.
+I've got my alarm up and running.
+I like to see.
+Anyway, try to do that with anything else.
+Okay.
+If you can't believe, I'm okay.
+So this is actually kind of interesting is that whenever
+I go to the two string on one of these things,
+it prints it out in kind of an XML attribute type view.
+So it makes it really easy if you wanted to make XML out of your tables.
+It makes it really easy because the two string kind of gives you a title equals.
+I'll have the last view of the attribute funness.
+But that's it.
+I mean, start to finish.
+There you go.
+Generate out.
+One of the neat things to it.
+I'm going to show you here.
+So we wanted to look into my own.
+Let's look into a fine statement.
+Like for finding my base.
+Here's my create.
+So this is my book factory right there.
+And we'll go down here with my create.
+Let's go down my fine.
+Fine right there.
+So there I pass in my.
+Pass in my my primary key.
+Firstly, there's a crazy little temporary book.
+And it's going to call this.
+This is this is going to check my my cache.
+It pulls off my connection cache to see if that guy's already been pulled out of the database once before.
+And it says, no.
+Well, then there's going to right here.
+And there's a prepared statement.
+It's going to start putting a prepared statement together.
+And pull that guy out of the database.
+I mean, right there within one method call.
+That's another thing.
+It's like you look into those a lot of the orange solutions out there.
+And you're like, oh, man, I need a debug what's going on.
+Well, you look into their fine statement.
+And it's like this black hole.
+You know, you're like 50 later down before it actually starts to talk to the database.
+Nice thing about this.
+It's right there.
+It's very easy to understand what's going on.
+Because it's just one method in.
+And this is all code that it generated for you.
+So that you can actually be inside of your source project.
+You can go in there, take a peek at it, say, oh, that's my prepared statement.
+Oh, yeah, OK.
+I see it set my string.
+Oh, OK.
+Now it's doing the actual execute query.
+And then it's going to initialize my new book object.
+And it's all right there so you can take a look at it.
+So you can see what's going on and manipulate it.
+If you need to tweak something, you can see what's going on.
+Because there's a lot of things that happen.
+I find is that you need to find.
+You've got some sort of weird database anomaly with your code that's taken performance away from you.
+And you've got to go find it.
+And it becomes very difficult if trying to find it involves going to that black hole of stuff.
+This, it's right up there for you.
+You can take a peek through it.
+But I am like shoot at that time.
+I'm not sure.
+Any other questions?
+I'll hang around if you want to talk about some of this stuff.
+But that's it.
+Thank you again all for your attendance and we'd like to thank Brian Hawkins for his presentation.
+You'd also like to thank our sponsors for this room, Novel and the OSTC.
+Please go visit their booth.
+I do have surveys up here.
+If you will, go ahead and fill one out if you'd like to.
+It's certainly voluntary.
+And we hope you have a nice day.
+Thank you for listening to HACCLE public radio.
+HPR is sponsored by Carol.net.
+She'll head on over to C-A-R-O-D-E-T for all of her TV.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.
+Thank you.

@@ -1,0 +1,287 @@
+Episode: 2934
+Title: HPR2934: Server Basics 106: Namespaces and containers
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2934/hpr2934.mp3
+Transcribed: 2025-10-24 13:32:06
+
+---
+
+It's Thursday the 31st of October 2019, and this is HBR Episode 2934 entitled,
+Server Basics 106, Namespace and Containers. It's hosted by Tlatu and it's about 34 minutes long
+and carries the clean flag. The summary is, Tlatu talks about,
+the Unshare and LX Seekmans. This episode of HBR is brought to you by AnanasThost.com.
+Get 15% discount on all shared hosting with the offer code HBR15. That's HBR15.
+Better web hosting that's honest and fair at AnanasThost.com.
+Everybody, this is Tlatu and you're listening to Hacker Public Radio. This is an entry into my
+my series that you probably thought I had abandoned called Server Basics. I think this is
+episode let's say 106 and it's going to lead into unsurprisingly number 107 and I mentioned that
+in tandem here because this is not the end goal. This episode is not the end goal. Like my previous
+series on OpenVPN, I expect there to be two distinct episodes on this topic. Today's the one
+that you're listening to right now is background information, probably not all that useful in terms
+of on-the-ground typing commands on the job sort of stuff but in the next episode we'll talk about
+something that is quite the opposite. It's all about what you could expect to find yourself
+doing if being paid to manage the thing that I'm going to be talking about and what is that
+thing that we're going to be talking about? It's containers. As I was doing the initial five or
+six episodes of Server Basics, someone pointed out to me that a lot of what I was talking about
+really was very basic. So basic in fact that the likelihood of you getting started in a
+Unix admin, cis admin job and finding yourself doing the things that I was talking about, like I
+don't know manually setting up firewalls and things like that is actually relatively low. That's
+just kind of not the environment that you find these days. And I think there's a truth there
+that the modern Unix cis admin, unless they are very specifically called a Unix cis admin
+and they're often their little office just maintaining machines that drive the infrastructure.
+Generally speaking, that's not the job anymore. There aren't multi-user Unix systems sitting
+around driving an entire ecosystem itself. People aren't logging in like they used to with a user
+account and managing things from from their terminal. That's just not what people have set up anymore.
+Some kind of fancy intranet setup and the user accounts are all maintained by the software.
+There are no user accounts, whether there's some user accounts, but there are no general user
+accounts on the server. People aren't logging in themselves to your Unix server checking their
+mail with the mail command and listing files or sharing files with FTP or something like that.
+This just doesn't happen. So the new model being software-based, it requires a different set of
+skills from the person maintaining the server. So one of the major new skills out there right now
+that you can expect to find when you go out to get paid as an admin for a large entity,
+our containers. That's where everything is at now and I've kind of conveniently skipped over
+virtual machines both in content for hacker, public radio and in real life. It was a thing when I
+got started in tech and it's just not a thing anymore. This was back and I don't know, let's say
+let's call it 2009. Virtual machines were driving the startup that I got started in.
+Everything was running on a virtual machine and then as I continued I found that the same was true
+everywhere. There were no physical machines that you would log into. Well there were physical
+machines but there were more machines than we had physical machines when you logged into a
+development environment because it was all just a virtual machine. Every entity was a little
+virtual host on what you could consider more or less as an orchestrator of pretend machines
+and the orchestrator there were lots of different softwares out there for an admin to sit down
+at their computer and see how many virtual machines were running and what kind of resources
+they were all taking into kind of scale each one as needed. But that's sort of a thing of the past.
+You don't really find that anymore and of course I say that and so am I out there. Several people
+out there are thinking well that's my day job so I don't know how you could possibly say you
+don't see that anymore. I'm meaning that you don't see that so much as an emerging sort of going
+forward people aren't turning to virtualization or at least to virtual machines in that sense and
+rather they are turning to this concept called containers. Now I've covered containers before
+very briefly and in a very rudimentary level because that's all I had at the time and it was
+frankly still pretty new at the time. It was episode 1522 how to use Docker in Linux containers.
+You're welcome to check that that episode out. It might give you a little bit of an indication
+of what I'm talking about and why but I did kind of want to cover. I wanted to peel some of that
+back and talk about what it means to use a container, how that happens and some of the basic
+interfaces involved. And then in the next episode I'll be talking about one of the few systems
+that you may actually encounter when you walk into a job and are told you'll be managing containers
+for us or you'll be managing these processes that are being spun up by developers and you'll be
+monitoring those or whatever you might do. So let's get started. Now I should also make one more
+caveat before I do that. This has been part of this has also been covered by me on a recent
+GNU World Order episode. That's GNU World Order.info and it was episode 1339. I talked about the
+NS Inter and Unshare commands. I'm going to be doing that right now. I'm going to be repeating
+really the contents of that episode so you can kind of probably skip ahead a little bit if you've
+already heard that. If you have not heard that then this will be new information. But I wanted to
+repeat it here because it is kind of vital to understanding the difference really between a virtual
+machine and a container because there are related technologies happening here. It's the virtual
+machine is definitely unique and distinctive in itself but there are a lot of similar things
+going on behind the scenes such as KVM and little things like that. So let's talk about namespaces
+on Linux. Namespaces on Linux are like namespaces everywhere else. They qualify something in context
+a some small element in the in a larger context. So in other words we use namespaces in real life
+all the time. Really simple one. If I say I really like the enterprise that could mean at least
+two different things. One it could mean that I'm a really big fan of Star Trek or in another context
+it could mean that I really enjoy using software designed for big businesses of I don't know
+1000 plus people. Is 1000 a lot? I don't know. 10,000 plus people. I don't know how big businesses are
+but those are two valid uses of the term enterprise at least in today's world.
+So to differentiate what I mean in real life I might use what we could call a namespace and
+and there's it's not official but but I could say something like oh I really like the enterprise
+from Star Trek and that has served as a namespace because it's qualified what I mean by this
+shared term and that's what namespaces do. They take shared resources or shared terms or something
+that is is global in in possible nature and it specifies exactly what it's referring to or
+exactly it's scope I guess would be a better way to think of it. What's the scope of of this thing?
+Well here's a namespace to define that scope. You see it in programming languages as well you'll
+see it in well for instance in Python if you do an import of something effectively you've created
+a new namespace so that commands or rather functions that may exist elsewhere are namespaced
+by the fact that you've just imported I don't know beautiful soup for as bs now anytime you use
+bs dot something we know exactly what the something is that it's not it's not a something existing
+in a different library or a different module it is the one that falls under the beautiful
+soup namespace or the bs namespace in a literal sense so those are namespaces and we see them
+now rather recently on Linux you can see this in action yourself with a command called unshare
+unshare launches a process under a namespace other than its default so here's a here's a quick
+exercise to see this in action fire up a terminal and issue the command pit of tcs h unless your
+default shell is tcs h in which case do something else like bash pit of bash right now I'm not
+running tcs h and if I do a pit of tcs h it returns nothing at all you should have tcs h installed
+on your system so all you've done right now is you've you've proven to yourself that you're not
+running some shell and again since I'm doing this with tcs h that's what I'll continue to use
+if you're using something else swap the terms so we've confirmed that tcs h is not running but we
+can fix that we can make it run and we're going to make it run in a different namespace so what
+you can do is pseudo unshare dash dash fork space dash dash pit space dash dash mount dash
+proc tcs h so that's pseudo unshare space dash dash fork space dash dash pit space dash
+mount dash proc space and then the command that you want to run so tcs tcs h in my in my case
+when that launches it dumps you into a new session which is tcs h
+and it seems like nothing's happened well watch this do a pit of tcs h from this prompt
+and it will return that it is pit one now if you're a long-time Linux user you'll think
+to yourself that's atrocious pit one is always in it and you'd be right for instance if you open
+up a separate terminal session somewhere on your system and do a ps space one it will return
+to you that pit one is in it why are you getting two different responses to the same question on
+your system well it's because tcs h is running in its own namespace you can kind of see this
+in a sort of a tangible way if you go to if you do an ls of slash proc slash asterisk slash
+in s you'll see a bunch of namespaces listed there by by pit it won't mean anything to you but
+those are namespaces that that's where all of that information is being tracked so if you do
+from this new session not the tcs h session that you've launched if you do from your your your
+session that you've just done a ps space one in and gotten in it back you can do a pit of tcs h
+and you'll get a completely different number 26814 or 27333 or something like that it won't be
+ps one it won't be pit one in other words and that's because this session sees the the truth
+of of this process that you have unchared it sees where this process was forked from or was was
+is branching off of and you can see it like well you know very literal way by doing a ps space tree
+pipe that to less search for tcs h and you'll see that yeah tcs tcs h is running it's a child
+process of this other bash process which is in turn a child process of something else and you'll
+see it all kind of lined up there in your in your ps tree but from within that namespace when you
+query your the system as as to what processes your system is aware of
+it's only aware of of of the tcs h process that that that has been launched because
+within its own namespace that is the first process that's the only process right now that exists
+in its own namespace the advantage here as you may imagine is that if there's some process
+running in a namespace and you ask that process to do something to I don't know another
+process like process 42 then as far as that namespace knows there is no such thing as pit 42
+that doesn't exist all that exists right now is pit 1 now if you launch something in your tcs h
+namespace then then there will be a new pit within that namespace but the point is that
+within that namespace it has limited knowledge of the system it that it itself is running upon
+pretty fancy stuff and this is the the basis for for for everything that we're going to be
+talking about for the rest of this episode and certainly for the next episode the ability to
+create processes on a system that are are really not fully self-aware as far as they know they are
+the center of the universe they are pit 1 nothing else exists they're running on a computer that
+is imaginary and yet everything that they're running on is being provided by by something completely
+different so if that sounds familiar that's because it is it's the basis for containers it's
+the basis for Docker it's the basis for Linux container project is for the basis for Kubernetes
+and a bunch of these other sort of cloud technologies that you hear about so let's take
+this a little bit farther and this is again like everything in this episode this this episode is
+purely academic this is all stuff that you're not likely to find yourself doing if you're getting
+hired as a as a entry level cloud admin this is not stuff that you're going to be doing probably
+not even stuff you're going to be doing is assist admin this this is kind of
+developery stuff that maybe you would be doing I imagine if you were coming up with some kind of
+new Linux container technology something that you're you know you're basing your work on something
+in a very raw state and developing it up from that but there is a tool that we may as we'll
+talk about and it's it's called LXC which is the it's the Linux container project you can
+read more about it over at Linux containers.org they provide this this base system
+called or this base command called LXC you can install it if it's not installed
+Slack where it comes with it pre-installed so I don't have to install it but you can install it
+on Fedora for instance it would be pseudo DNF install LXC and then you would probably want
+for instance LXC dash templates and maybe LXC dash doc for documentation but the templates
+is kind of important as well on Debian and Ubuntu and so on I think you can just do apt install LXC
+okay so the first thing that you have to do in order for this to really work for you just like you
+did for Docker in episode 1522 or not just like but but rather similarly to what we have to do in
+episode 1522 with Docker you have to create some imaginary network bridges so that you can talk
+to your container because once again these containers that you're creating are going to exist in
+this name space whereas as far as they know they're the only thing that exists so you need kind
+of a some kind of link from your host system to your containerized operating environment you can
+do that on a modern Linux with the IP command pseudo IP space link space add space VR0 space type
+space bridge so you've just created a bridge a bridge interface that can connect your make
+believe network interface on a container that you create to your real life one on your on your host
+system so in order for you to talk to a network interface you need an IP address you can choose
+one yourself I think in the Docker episode if I'm I haven't actually listened to that recently
+but if I recall correctly we just did that in a physical router I think so here we can just do
+pseudo space IP space adder that's ADDR as an address space add as in we're going to add a new IP
+and then space I don't know one nine two dot one six eight dot one six eight dot one six eight
+so local private IP address that I'm choosing I typically use that when I'm doing this sort of thing
+because that's a lot of easy stuff to remember space dev space VR0 so we're assigning that IP address
+to the device VR0 make sure that it's up and running with pseudo IP link set VR0 up
+that's just the old if config up command but done through the IP command so now you've got you've
+got a little pretend network bridge to well frankly a network that doesn't doesn't work that doesn't
+exist yet but that's fine we'll we'll fix that in a moment so LXC is is a baseline technology that
+you'll see being used in other places you'll you'll see it sort of either being mimicked by docker
+or you'll see it being mimicked by this or that Kubernetes project so this is kind of the
+generic way of dealing with Linux containers and I keep saying Linux containers and I guess I
+should probably stop and say okay this is what we're doing now we're we're creating a container
+and what is a container well a container is like a virtual machine so it is it is as if though you
+had downloaded and installed virtual box or vert manager and then you downloaded an ISO to some
+Linux distribution and then you told your virtual machine application your virtual box your
+vert manager that you're going to now create a computer inside your computer and on that computer
+you're going to run this distribution that you just downloaded and as we know by now I think
+in a virtual machine the whole stack is virtualized the computer decides through the software
+that you have a make-believe CPU and you have some make-believe RAM and you have some pretend hard
+drives and with these make-believe pretend resources it installs an Linux distribution and now
+you're running it and you can open up a little screen that shows you the desktop and and you can
+interact with this computer just as if though it was real a real thing but it's it's just virtualized
+this has been around forever at this point and even even before then there's been virtualization so
+it's been around forever I think we're all pretty familiar with it a container is going to feel
+pretty similar to that but the thing to understand is that it's using namespaces it's doing all
+of this stuff through the magic of namespaces and control groups on Linux within Linux such that
+when you spin up a virtual OS rather than virtualizing everything like the CPU and the RAM
+and so on it's using your host resources and it's just running little processes in this containerized
+environment in this namespace kind of cordoned off environment so that as far as it knows it is
+its own computer but you and I will always know that it's actually a process running on our host
+in its own little namespace okay so in order to do that with lxc we need to create a configuration
+file and we can just call it my mycontainer.conf is fine a couple of different lines one will be the
+lxc dot uts name which is going to name the the the the thing that we're creating so we're just kind
+of human readable so we can do that equals hacker public radio lxc dot network dot type equals
+v et h virtual ethernet lxc dot network dot flags equals up lxc dot network dot link equals
+well the the the network that we want to be able to control this through is BR zero so that's what
+we'll use is the network link lxc dot network dot h w a d dr you can just make something up so
+equals some kind of MAC address so for a colon 23 colon or 23 colon 23 colon 23 colon 23
+something like that lxc dot network dot ipv4 you can just give it any ip address you want so
+equals 192.168.168.1 of course I said any but it needs to be an ip address that will you know
+on the same subnet as your as BR zero and you can also do the same thing for ipv6 if that suits you
+and that would be just lxc dot network dot ipv6 equals and then some made up ip address so you can
+save that file most of this stuff is is completely arbitrary and if you're wondering how you would
+ever be able to duplicate that process without me reading off random arbitrary values to you how
+you would ever remember that don't worry there are examples of these configuration files provided
+to you from lxc so if you look in user share doc slash lxc there should be an examples directory
+in there and it'll have a bunch of different configurations available to you so you can just
+copy those modify them as needed and you'll have a container do you have a container yet actually
+yeah you do you can see you can kind of see the I mean you don't have an os in your container or
+anything but you can see that the container exists and that it that it's aware that it exists so
+you can do pseudo lxc dash execute and then space dash dash name basic dash dash RC file and then
+the path to your my container dot cons I just put it in my home directory and then space slash
+bin slash bash space dash dash log file space my container dot log
+now you're essentially inside you're running a bash shell inside your container
+so you can do slash user slash s bin slash ip because your container has no ip command itself so
+you're using the host ip command user has been ip at her show you'll be able to see the the fake
+internet environment or ethernet environment in the container it'll be aware more or less of
+of itself and you can do a you name dash a v and it'll say Linux hacker public radio
+and then whatever kernel it is aware of which should be your host your host kernel
+okay so then you can do you exit to get out of your container and now you can install
+an operating system inside the container and the way to do that probably is to use a template
+I say probably because if you haven't installed these then they might not be on your system it kind
+of depends on how your lxc has been packaged up but if you look in slash user slash share slash
+lxc there should be a templates directory there and there should be a bunch of different
+bunch of different templates that you could feasibly use so if you did an ls on slash user share
+lxc templates you'd see things like I don't know probably lxc dash alpine that's a pretty
+popular one because it's apparently really small footprint kind of specially intended for
+for containerization there could be probably an lxc arch Linux maybe a busy box a syntax
+debian fedora slackware a bunch of different ones to choose from I'm going to use slackware so I'm
+going to do pseudo actually I won't use slackware because I'm already running slackware so
+pseudo lxc dash create space dash dash name alpine sample no I'll do name yeah no I'll do name
+alpine and then space dash dash template alpine if you poke around in a separate terminal you can see
+what's really happening is probably somewhere in var slash var slash lib slash lxc slash alpine in
+my case whatever you're using would be different slash root fs lxc create is setting the root
+of your container to that directory so as far as it knows that's its root file system so I mean
+it's it's generally a mistake to try to find the container in in containers if you're looking for
+a literal container it's kind of your your bound for disappointment there's there's not really a
+nice and tidy kind of like this is these this is the place where all my files and processes and
+things live because that's just not the structure of containers containers as I've already demonstrated
+with unshare they exist in other places that that in the host system you know in the proc directory
+and so on so it's not all consolidated as the name container would suggest but if you were looking
+I guess for the container in the container it would be right there it would be in your var directory
+under the in in this case it would be var lib lxc alpine root fs root fs is as far as that name space
+knows that's slash all right so now once you've got a minimal operating system environment installed
+you can start your container pseudo lxc dash start space dash dash name alpine space dash dash
+rc file space till the my container dot comt now unlike the unshare command I mean this is leveraging
+unshare in a center and well this isn't in a center but it's leveraging all this stuff but
+unlike the unshare command that does not put you into the container it simply starts the container
+so in order to attach to the container you're technically somewhere there in the back end you're
+using in a center pseudo lxc dash attach dash space space dash dash dash rather name space alpine
+so now you are you're you're entering your container now with with lxc dash attach and then the name
+of the container the human readable name so once you're inside your container you're kind of
+well you're in a very very bare bone system there's not a whole lot you're going to be able to do
+hanging around in this empty container what you probably will want to do is install software so
+that your container is serve it can can serve a purpose can run commands because right now it's
+just it's the barest install of linux possible you can do the you name dash a v again and get some
+information about about what your environment sees it won't be all that exciting but but once it's
+installed what once the OS is installed for for whatever value installed serves in a container then
+you'll have tools to its normal to its normal sort of you'll have access to its normal tool set
+so that you can install applications you can run I don't know a web server in the container or
+a WordPress instance or a development environment whatever you wanted to run inside of that container
+that's the point of containers okay so in the next episode in this series and server basics one
+six or seven I will talk about a slightly more pragmatic implementation of what I've covered here
+and that is a system by which to to manage containers in a larger system so obviously you can
+spin up Docker images or or LXC images left and right yourself at home but in the real world when
+you go out into the the big big systems that's not how it's going to happen there's going to be a
+system where you can look at all the containers that are running on on on the host you can make sure
+that they are that that the ones that aren't being used are being spun down and the ones that are
+that are required are being spun up and so on so we'll talk about that in the next episode until then
+thanks for listening to Hacker Public Radio you've been listening to Hacker Public Radio at Hacker
+Public Radio dot org we are a community podcast network that release the shows every weekday
+Monday through Friday today's show like all our shows was contributed by an HBR listener like
+yourself if you ever thought of recording a podcast and click on our contributing to find out
+how easy it really is Hacker Public Radio was founded by the digital dot pound and the
+infonomicon computer club and it's part of the binary revolution at binrev.com if you have
+comments on today's show please email the host directly leave a comment on the website or record
+a follow-up episode yourself unless otherwise status today's show is released on the creative
+comments attribution share a light 3.0 license

@@ -1,0 +1,207 @@
+Episode: 3570
+Title: HPR3570: The Filesystem
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3570/hpr3570.mp3
+Transcribed: 2025-10-25 01:34:33
+
+---
+
+This is Hacker Public Radio Episode 3,574 Friday, 8 April 2022.
+Today's show is entitled, The File System and is part of the series DOS it is hosted by OUCA
+and is about 24 minutes long and carries a clean flag.
+The summary is, we continue our look at the Old Warhorse, DOS this time it is the File System.
+This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+Hello, this is OUCA, welcoming you to Hacker Public Radio and another exciting episode in our DOS series.
+And what we want to do today is we want to talk about the File System in DOS.
+Once you begin creating files after all, both you and the operating system need some way to keep track of them.
+How is this done? Well, in DOS the answer lies with something called the File
+Elecation Table which is abbreviated or acronymED as FAT.
+Now to understand how this important component of DOS functions, let's take a moment to look at how
+disks are organized to store data. And I'm doing this from the standpoint of the what's
+called the FAT 12 file system which is the one that's used for disks in DOS.
+Each disk is divided into sectors. Sectors are 512 bytes in size.
+These sectors lie along tracks which are concentric rings on the disk.
+Now on a hard drive, these tracks have been created as part of the low level formatting process
+and have been done at the factories. If you go back a long ways, we used to do low level formats
+ourselves, but that has not been necessary for a very, very long time.
+Now on an old floppy drive you could conceivably use sectors as the basic unit for storing data
+since the number of sectors would not be that large. On a 360k floppy disk for instance,
+you would need to keep track of 720 sectors. Not a big deal.
+But on one of those large hard drives, like 100 megabytes in size, you would need to keep track
+of 200,000 of these sectors with all the overhead of assigning addresses to each sector and
+storing information about them in a table. Also 512 bytes is pretty small as files go.
+Most files would require multiple sectors to store their information, possibly hundreds of them.
+So the sectors were collected into larger units called clusters.
+Now the cluster is sometimes referred to as the allocation unit because it is the minimum
+amount of space that can be allocated to a file. For example, suppose the size of a cluster is
+4,096 bytes. In other words, it is 8 sectors in size.
+If you have a file that is 3,000 bytes in size, it will be saved using one cluster
+and 1096 bytes of that cluster will be wasted. That is because only one file can ever own a cluster.
+If your file was 5,000 bytes, you would use two clusters, a total of 8,192 bytes,
+and 3,192 bytes of the second cluster would be wasted.
+Now assuming that file sizes are a random number, you can quickly show that on average you waste
+one half of a cluster per file saved. So there is some incentive to minimize this wastage.
+And the best way is to reduce the size of the partition.
+The reason for this has to do with how cluster sizes are determined and that leads to the whole
+file allocation table thing. Now the file allocation table is a place on the disk where the
+information about the files is stored. Metaphorically, it is like the card catalog in a library.
+Well of course we don't have card catalogs and libraries anymore. Now it is all done online.
+But yeah, it is an index. It is all of the information you need to locate that particular sector.
+Now it is a table that stores the name of each file and is a pointer to the place on the disk
+where that file can be found. It also has a few other things. These address pointer entries
+are stored as a binary number and the number of bits used determines the type of FAT and use.
+FAT 12, which is used for floppy disks and for hard disks smaller than 17 megabytes should
+you ever encounter one, stores the information in 12 bits per cluster.
+FAT 16 used in DOS and inversions of Windows prior to the OSR2 version of Windows 95 stores the
+information in 16 bits. FAT 32 introduced to some computers and Windows 95 OSR 2
+and in general the most people in Windows 98 uses 32 bits to store this information. Now why does
+this matter? Because the maximum number of clusters is determined by the bits available to address
+each one. Since each bit is a binary 0 or 1 the formula is based on powers of 2. Note that in FAT 12
+and FAT 16 a few of the theoretically available slots have been reserved for the use of the file
+system itself. In FAT 32 four of the 32 bits in each address have been reserved for other uses
+leaving 28 bits for pure addressing. So FAT 12 you have possible entries of 2 to the 12th power
+that's 4,096. Take out the overhead and what you have is 4,086 because 10 have been reserved for
+other uses. FAT 16 is 2 to the 16th while that gives you theoretically 65,536 but in actuality it's
+65,526. Now with FAT 32 2 to the 28th is actually the way this is calculated. Remember in FAT 32
+four of the 32 bits have been reserved for other uses. So 2 to the 28th is 268 million
+and you know actual entries are about this you know the difference is negligible.
+Now with this information we can be then to do some calculations on cluster sizes.
+On a hard drive formatted using FAT 16 here's what you would find. Note that these numbers are
+approximate since hard drive sizes are stated differently in some cases. As you are probably aware
+you know a binary megabyte is a little bit different from a million bytes. So that's because
+it's using powers of 2 to do everything. So let's take a hard drive. I'll assume 5,000 files on a hard
+drive. Now note that the cluster size has to be in even numbers of sectors 512 bytes each.
+So if you're doing the calculations you'll need to round up to the next even multiple of 512.
+So if the hard drive is 100 megabytes your cluster size would be 2048 that's be four sectors.
+Your estimated wastage on 5,000 files would be 5 megabytes.
+Now let's see you had a 500 megabyte file. I mean 500 megabyte hard drive. Your cluster size
+would be 8192 which is 16 sectors. Your estimated wastage would be 20 megabytes for 5,000 files.
+So your hard drive was 800 megabytes. Your cluster size would be 12,800 or 25 sectors.
+Your estimated wastage would be 32 megabytes. You had a 1.2 gigabyte hard drive. I couldn't even
+conceive of that back in the day. Your cluster size would be 18,944 or 37 sectors and your estimated
+wastage would be 47 megabytes. Now on a large hard drive, a figure of 5,000 files is probably
+a drastic underestimate. I note that you need to throw in all the directories and sub-directories
+each of which also uses a slot and you can see why FAT 16 is just not acceptable for larger hard
+drive sizes. Now structure of FAT. The assuming of a FAT 16 FAT 16 file system, you have 65,526
+clusters available for use when you begin. Of course, installing the operating system is going
+to use up some of those slots and additional programs you install uses up many more. So here's
+how the FAT is structured. Cluster 0 is reserved for DOS. Cluster 1 is reserved for DOS.
+Cluster 2 used to store a small file. Cluster 3 used to store data extends to cluster 4.
+Cluster 4 used to store data extends to cluster 5. Cluster 5 used to store data extends to
+cluster 7. Cluster 6 empty available for use. Cluster 7 used to store data is the last cluster in
+the chain. Cluster 8 empty available for use. So this is a typical thing that you might
+see. You know, if you could look cluster by cluster on a hard drive. So you have a small file that
+starts in cluster 2 and then extends to cluster 3, 4 and 5. Cluster 6 it skips over and then
+cluster 7 is the last cluster in the chain. And then so on. You could have more files, more
+clusters that should go along. Now, in each slot of the file allocation table there is status
+information. If the cluster is free, the value of 0 is recorded. If the cluster contains data,
+but all of the data fits in that one cluster, the cluster number itself is stored. If the data
+extends over multiple clusters, the number of the next cluster in the chain is stored. If this
+is the last cluster in the chain, an end of file marker is stored and that's the hexadecimal number
+fff. Now, ordinarily, you should not have any problems retrieving a file. The file allocation
+table would have a pointer that says your file, myfile.txt begins in cluster 10,793 for instance.
+And would go there first and retrieve what is in that cluster. In looking at the fat entry,
+it would see the number 10,794 for instance. And know that the next cluster in that chain was 10,794.
+And it would go there and retrieve the contents of that cluster and append them to the contents of
+the first cluster. It would keep doing this until it had reached the cluster that had fff
+stored and it would know that this meant it had found the end of the file and could stop.
+Now, two things can go wrong with this. First, you can have a situation where two different
+clusters, each part of a different file, point to the same cluster as part of their chain.
+This is what's called a cross-linked file problem. The second problem is when you have clusters
+that appear to be part of a chain, but the whole chain is not present. These are referred to as
+lost clusters. When either problem is present, your file system is unreliable and must be fixed.
+Now, in early versions of DOS, you would fix this using the external command CHKDSK.exe,
+which is short for check disk. This program would fix the file system by taking the clusters that
+were apparently part of the chain, called lost clusters, and converting them to a file.
+Usually, something like FILE001.CHK. If you see this on your hard drive, you can usually
+delete it safely, since it is probably something you cannot make sense of anyway. But if you want,
+you can try opening it in the text editor and you can see if it contains anything you've been missing.
+Now, if you have cross-linked files, the CHKDSK file will convert them to two separate files that
+are no longer cross-linked. Now, of course, at least one of them must be corrupt, since you cannot
+have two different files used to the one cluster. In later versions of DOS, the utility changed,
+and CHKDSK.exe was replaced with a new utility called scandisk.exe, which does essentially
+the same things. Now, because of this and other problems that can occur, each DOS file allocation
+table is actually duplicated as two consecutive duplicate copies. The first is the normal working
+copy, and the second is a backup copy that is used if the first becomes corrupted.
+Now, a related issue you get at is file fragmentation. We don't pay a whole lot of attention to that
+these days, because we have enormous hard drives. But when hard drives were small, I think my first hard
+drive was 20 megabytes, as I recall, which at the time seemed enormous. But fragmentation occurs
+because when a file is deleted, the clusters it used are marked with a zero to indicate that
+they're available for use. The contents are not removed, though, which is why you can sometimes
+undelete a file if you act before those clusters have been reallocated to a new file.
+Now, when a file is saved, the operating system consults the file allocation table,
+and begins saving the file in the first available cluster. If a second cluster is required,
+the next available cluster is used for that. But the second cluster may be nowhere near the first,
+and maybe a third cluster is required, and it's nowhere near the other, too. This is file fragmentation.
+Now, this can reduce performance since the heads of the hard drive must travel some distance
+between each cluster to load the file. So, what we would do, and this was part of your
+maintenance for keeping your computer in good health, is to periodically defragment the drive.
+And that means to use a utility that moves the data contained in various clusters around,
+so that each file uses a series of contiguous clusters that are not spread out all over the place.
+This also means updating all of the records in the file allocation table,
+so that the file can be retrieved after the defragmentation has occurred.
+Now, DOS has an external command called defrag that can do this, and many utility packages,
+such as Norton Utilities, which was big in the day, had utilities for this as well.
+Now, in each file allocation table volume, right after the two copies of the file allocation table,
+we come to the root directory. Now, in DOS, this is represented by the symbol backslash,
+and of course, in Unix, it is just the opposite, the forward slash.
+This is the top of the directory structure, and is always created when the disk is formatted,
+and FAT is installed. The word directory in this context actually has two different meanings.
+Technically, a directory is a listing of contents, but in common usage, we often use it to denote
+the container of the contents. For example, if you go into a large office building, there is
+frequently a directory in the lobby that tells you where you can find the particular office you're
+looking for, but that directory does not contain the office, it simply tells you where to find it.
+Yet in computers, we often use the word directory to mean the place where a file is located,
+rather than the table where we look up its location. This can get confusing.
+It's better to use the word directory to mean the table, and use a different word, such as folder,
+to mean where a file is located. Of course, on a deep level, these are all metaphors we use to help
+make sense of what the computer is doing. The computer never gets confused. It's just us poor
+carbon-based life forms that get turned around by all of this. Now, if we use the word directory to
+mean the table where we look things up, the root directory is a table that records the location of
+all of the folders on the drive, and of any files that are not in one of those folders. This
+table on a hard drive has 512 slots, and in each slot there is room for a 32-byte entry.
+When a folder is created, that folder has a directory table that also has 512 slots,
+each with a 32-byte entry. It follows that each folder from the root on down can hold a maximum
+of 512 objects, with those objects are either files or other folders. The 32-byte description
+allows 8 bytes for the file or folder name, 3 bytes for the file's extension,
+and additional bytes that describe the attributes, whether it's read-only, a system file,
+hidden archive, etc. The date created or last modified, and so on. In the last 4 bytes,
+is stored the value for the starting cluster number and byte count number.
+Incidentally, the space reserved for the root directory on a floppy disk is smaller, so only
+224 entries are possible. Now, because the root directory can only hold 512 entries, and modern
+hard drives typically hold many thousands of files, it is necessary that the directory structure
+be created. The mechanics of how to do this in DOS is the subject of our next lesson, but it is
+absolutely necessary. Periodically, someone will encounter a problem saving a file, and when you
+investigate it turns out they were trying to save every file in the root directory and eventually
+ran out of slots. Now, with Windows 95 and 98, actually the problem got a little bit worse,
+because they introduced something called long file name support. Now, remember that originally only
+eight bytes were reserved for the file name, and that made sense with DOS. You can use longer
+file names with Windows 95 or 98, but only by using multiple directory entries for each long
+file name. It is not unusual, therefore, to have a directory in Windows 95 fill up when only
+a couple of hundred items are stored if long file names are used. Now, that's the technical reason
+for creating a directory structure. There's also a practical reason, and that is that a good
+directory structure can help you organize your data in useful ways. Imagine a company that
+stored all of its documents in a document room. Every day people would open the door,
+throw in a bunch of documents and close the door again. One day you need to find a particular
+document, so you have to go to this room and look at each document one at a time until you find
+the one you want. This will probably take you an entire lifetime to find, and is a really stupid way
+to save documents. Instead, you would create a file system. Using file cabinets, each divided into
+drawers, and in each drawer a bunch of hanging folders, and in each hanging folder, several manila
+folders, and in each of that a number of documents. Then when you wanted to find a particular document,
+you'd look up in a directory to see which filing cabinet is in, then read the drawer labels to see
+which drawer was in, then read the labels on the folders, and so on until you had the document.
+You might perform this task in only a few minutes if a filing system was logical.
+Well, this is what you want to do with your hard drive. Under the root directory you create your top
+level directories, which are the equivalent of your filing cabinets. Then inside of each of these,
+you can create subfolders, which are drawers, and in each of these subfolders you can create additional
+subfolders, which are the hanging folders, and so on. Then when you need to find the memo you wrote
+to your boss in October of 1998, it will be easy to find it. So with that, this is a hookah for
+Hacker Public Radio signing off, and as always, encouraging you to support FreeSoftware. Bye-bye.
+You've been listening to Hacker Public Radio at Hacker Public Radio. We are a community podcast
+network that releases shows every weekday Monday through Friday. Today's show, like all our shows,
+was contributed by an HPR listener like yourself. If you ever thought of recording a podcast,
+then click on our contribute link to find out how easy it really is. Hacker Public Radio was
+founded by the Digital Dove Pound and the Infonomicon Computer Club, and it's part of the binary
+revolution at binrev.com. If you have comments on today's show, please email the host directly,
+leave a comment on the website, or record a follow-up episode yourself. Unless otherwise status,
+today's show is released on the creative comments, attribution, share a light, 3.0 license.

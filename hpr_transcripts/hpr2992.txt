@@ -1,0 +1,240 @@
+Episode: 2992
+Title: HPR2992: World of Commodore 2019 Episode 6: Introduction to C64 OS
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2992/hpr2992.mp3
+Transcribed: 2025-10-24 14:25:53
+
+---
+
+This is Hacker Public Radio Episode 2992 for Tuesday 21 January 2020.
+Today's show is entitled World of Commodore 2019 Episode 6, Introduction to C64 OS
+and is part of the series, Hobby Electronics. It is hosted by Paul Quirk
+and is about 36 minutes long and carries a clean flag.
+This summer is Greg Natu presents to us his new operating system to the Commodore 64.
+This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+.
+.
+.
+Hello, good listeners of Hacker Public Radio. This is Paul Quirk returning with my sixth episode of my World of Commodore mini-series.
+By the time this podcast hits the feed, I expect those of us in the northern hemisphere are getting pretty sick and tired of winter.
+And if you're anything like me, these podcasts are one of the few things that are getting us through.
+Hopefully, these episodes from the World of Commodore are like little bits of sunshine that will warm up your day.
+In this episode, we get to listen to Greg Natu tell us about his new operating system for the Commodore 64,
+as he details the reasons why he decided to develop this operating system.
+At first, I was skeptical, but after his presentation, I have to admit that he really did a nice job of skilling the functionality of a modern graphical operating system to the Commodore 64,
+while retaining all of the 64's charming character.
+Of course, this presentation is better with visuals, so I have posted pictures of this presentation at my personal non-commercial website at peakwork.com.
+But if you're really interested in this, you might want to head on over to the Toronto Pet Users Group YouTube channel to watch the video of this presentation.
+That's Toronto Pet Users Group, spelled as one word, with the word users as plural.
+A link to this channel will be available in the show notes.
+And so, with no further ado, I present to you introduction to C64OS by Greg Natu.
+All right, so my name is Greg Natu from Kingston, Ontario.
+And today, I'm excited to share with you a project that I've been working on since 2017.
+It is called C64OS, and this is an introduction.
+So, I'm going to give this talk in three parts.
+I'm going to talk about kind of my vision for why I'm doing this and the goals of the project.
+Then I'll talk a little bit about the technicals of it, not something too detailed.
+And then we'll do a demo.
+Okay.
+So, I love operating systems.
+I also love computer hardware, as you can see, but I've always felt that software is what brings the hardware alive.
+And it's an operating system that gives the computer its character and defines its philosophy.
+So, some people think that, oh, the C64 doesn't have an operating system.
+This is totally not true.
+The kernel and the basic ROMs make up the C64's operating system.
+So, the kernel has drivers for keyboard and screen and for RS232 and for IEC communications,
+to connect to printers and storage devices.
+And it also has logical file abstractions for connecting input and input devices together and so on.
+Basic is a programming language, but of course, it's more than that.
+It's also a memory manager and it's got string and math libraries.
+And basic also provides the user interface for C64, which is paired with the kernel's full screen editor.
+So, when I came back to the C64 after a little break, I started studying the kernel and the basic ROMs.
+And again, a much deeper appreciation for how they work, because the parts of an APEC computer are very tightly integrated.
+From the way that PETSKI works, to screen codes, to 6502 off codes, everything comes together with very little abstraction.
+And I actually think it's quite beautiful.
+So, the point is that the C64 has a nature of its own and a character of its own.
+And the risk of making an operating system is that you would damage that character.
+So, we don't want to lose the vitality of the C64.
+So, in my estimation, there have been two main approaches to OS design on the color of 64.
+The first is, let's go on the Mac, except let's do it a whole lot cheaper.
+So, this is basically what Geos was.
+It was, say, 1985, and the Mac had just come out the year before, and the Mac had a mouse, a snazzy, bitmap graphical user interface, windows, icons, and multiply sized fonts.
+So, that's what Geos said to do.
+But the problem with that is that Geos is totally unlike a C64.
+The way that it works completely rejects the way the color-upit machines worked.
+For example, you can't even copy a Geos file using a standard C64 file copier.
+So, this may sound harsh, but basically, C64 with Geos is like a slow Mac of 1984.
+So, the second approach is, let's bring Unix to the C64.
+So, if you're here this morning, you'll get a little taste of that with GeOS.
+So, that basically involves, let's bring preemptive multitasking to the 6502, and then, no, let's make a command line shell, et cetera.
+So, I like to call these projects pearls of technical achievement, because they really are amazing achievements.
+But the problem is that they tend not to get used for a lot because of the limitations of the hardware.
+This is also harsh.
+So, C64 with Unix basically turns to C64 into a PC, but one that's slower and has many more limitations.
+So, for me personally, the problem with both of these approaches is that they try to turn the Commodore 64 into something that it's not.
+So, the goal for C64 OS.
+Rather than replace the kernel and the basic ROMs, the idea is to extend the kernel and the basic ROMs to be able to do more things.
+So, C64 OS does not replace the kernel, the kernel and basic ROMs are still there, but it extends them to add additional core features.
+And it adds a point-and-click user interface with menus, because it has to do something different than a real C64 or there's no point.
+So, additionally, many people, for many people, an operating system is just the foundations.
+But, additionally, C64 OS will provide a suite of easy-to-use applications and utilities that provide an environment that you can stay within and work within, and that you can manage the computer within and launch apps from within, and so on.
+So, for me, the goal of C64 OS is to build an environment that I actually want to use to use my C64 for whatever.
+Okay, so that's it for the visions and the goals. So, some technicals.
+C64 OS adds dynamic memory management, very useful.
+It adds a multi-layer screen compositor. We'll see in the demo how these parts, what this means.
+It adds string math and file libraries. So, again, it uses the kernels files and logical file table, and I highly recommend Jiffy Doss, but it adds a layer on top that makes it much easier to work with files.
+It adds timers. It adds exception handling. So, if you're a developer and you like exceptions, exception handling.
+Okay, this is a big one. It adds relocatable drivers. So, the actual applications load to fixed addresses the way normal C64 programs do, and the dynamic memory manager allows for memory to get allocated around space that's unused.
+But, of course, you have this problem of, well, what happens if you have different hardware, and you want to combine different hardware needed drivers for it. So, the drivers themselves can be loaded in at any time, and can be filled into empty spacing memory that you happen to have.
+They can be loaded and unloaded at runtime.
+And it has runtime chrono module look up. This is mostly important for compatibility with future versions. So, as an application written for version 1, if the kernel gets bigger or new modules are added in version 2, this will help the applications to remain compatible with future versions.
+Okay, so slightly higher level. It is a most based UI, but it's in text mode. And the reason for that is because text mode on C64 is way faster than pushing individual bits.
+But to make it look kind of graphical, it includes a graphical UI character set. It includes a consistent system-wide menu bar along the top, and it has a consistent system-wide status bar along the bottom.
+It also has a system-wide support for text graphics split mode, which is, I think it's a little bit of amiga. It has an object-oriented widget toolkit. So, this is for making it easier to build more advanced user interfaces.
+It has advanced, mostly keyboard events. We can talk about why I say it's advanced. It has an event-driven execution model, which is a lot like the way the web works. And it has universal copy and paste.
+So, these features make using a C64 faster, easier, and more consistent. And it makes it easier to write more user-friendly applications. System requirements.
+It does not require an REU, although if you have an REU, it will benefit by it. So, we don't run on the stock C64. JiffyDos is recommended to get faster drive access.
+Mouse is preferable, but there's a joystick driver, and we're going to driver support Qualpad, and I also have an input driver that will use the Commodore 128's numeric keypad.
+Okay, it requires a storage device with subdirectories. And I'm getting to that in a minute why. But that includes any of the CMD drives, any of the SD to IEC devices, or an IDE 64.
+So, it can use a 1541, but it can't boot from a 1541. Programming details. I am hardcore. So, I've done all the programming on a Commodore 128 with an REU. It's 100% ASM. And the primary development tools are Turbo macro pro plus REU.
+And NOVA text, which is a text editor that comes with NOVA tournament. Of course, I also use various machine-language monitors and lots and lots and lots of notes on paper.
+So, modular reactability. Okay, so before I start with this, what people want to know is, but what is it multitasking? Okay, so the short answer is, no, it's not multitasking.
+But neither is the C64's built in OS. And all of the things that I've just listed and just talked about, they're useful at writing C64 apps without the added benefit or without the added complication and overhead of multitasking.
+So, the problem with multitasking, in my opinion, is that once you introduce multitasking, everything changes. Every program that you write has to be aware of the fact that it is sharing resources all the time, all the IO access, all the disk access, all of zero page, all the stacks basically.
+So, in my opinion, that detracts from the C64. So, if you're used to just writing a C64 program, you normally have control of the whole machine.
+And C64 OS aims to retain that character, where you really have the whole machine.
+So, the charm of the C64 is its simplicity, its hackability, and its familiarity. So, you know, you find these tables in books like the Complete Commodore Interspace Anthology that lists what every zero page address is used for and whatever workspace address is used for below the screen memory.
+So, for starters, most of those addresses are the same addresses, because basic is using them or the kernel ROMs using them. And in some places where I'm not using the section of the kernel, C64 OS will use, you know, it will fit itself in there.
+And then I'm going to just publish all those tables that it's, you know, it'll be like the way it is when you look in a book like the Complete Interspace Anthology and you see all these addresses, you'll know what all the addresses are used for.
+But even with a multitasking, that doesn't mean that there are no concurrency options. So, you can run one utility concurrently with the primary application.
+So, utilities are a lot like Geo's desk accessories, but you can really interact with both of them at the same time, and there is interaction between the utility and the application.
+You can run small relocatable programs in the background. They're limited, but you could use it, for example, to place it or to make an alarm clock, for example.
+And there's timers. So, timers let you schedule time to vent so you can have an animation on say utility that's doing something, but at the same time that you're interacting with the application, the utility is updating itself because it has these time events.
+Okay, so why do you need subdirectories?
+So, rather than just kind of compiling everything into one or assembling everything into one giant thing that you just loaded in, everything instead is blown out into lots of little files that, so some files will have standardized names, but then be parallelized across directories.
+So, the idea is for the user to be able to easily swap out individual components and or edit certain components, because some things are human-editable, and to be able to get as much customizability and hackability without the need to go back and reassemble from source.
+So, for example, the boot process. As it boots up, it loads a boot logo character set from the character sets folder. Then it loads a boot screen from a separate file. Then it loads in a bunch of low-level system components that are specified in a components file.
+And then it does the same for kernel modules for toolkit classes, and then it builds the utilities menu from a human-editable menus definition file. Then it loads in settings, config, mouse, time, toolkit, memory, etc.
+Then it loads in an input driver, it does drive detection, and then it loads in an RTC driver to set your clock. And then lastly, it will launch you into the last used home-based app.
+Well, we'll see in a moment.
+So, same with applications. An application is not just a monolithic binary, but rather an application comes inside a bundle.
+And there are standard components for their standard components that make up an app that are found inside the application's bundle, and the application bundle is installed in a specific place.
+So, this standardized structure for application components allows an intentional documented way for applications to access parts of other applications.
+So, we'll see a utility, for example, can reach into the current application's bundle and pull out the app's icon, or it's help file, and so on.
+Okay, demo time.
+Yeah, so this talk's actually only half an hour, and then I have a separate talk scheduled at 3.30. So, stick around.
+Okay, so that was the food screen that you just saw, and you've probably got a little idea about what's going on under the hood there, right?
+Everything's customizable. That logo is customizable. The order that everything gets loaded in is customizable.
+So, you get taken into one of two, there are two home-based applications. They are the file manager and the app launcher, both very aptly named.
+At the present moment, only the app launcher is substantially developed.
+So, the app launcher manages up to five desktops, and it has, let's you make it, put a custom pet's key image on the back.
+That one's kind of crafty, but you can put your own back there, as well as a custom hint color, and then every desktop can have up to 32 aliases, which are what these things are.
+When you double-click an alias, it will either launch an application, if it's to an application, or it will open a utility.
+So, we can move the aliases, just by dragging them to wherever we want them to be. So, you know, you can organize them on the desktops, and you can also set their colors.
+So, do that, we'll open this colors thing here. So, we'll pick one of these, and change its color. This one, yeah. This one, blue.
+So, you can customize colors like that. Now, of course, what's cooler is that you can make selections. So, you can drag selection boxes around multiple things,
+and then you can drag them at the same time to be able to organize them. And you can also, of course, set their colors on mass.
+So, if you have a selection like that, and you open the color picker, you do that, now they're all one color.
+Now, the other kind of cool thing here, so I said there's a multi-layer screen compositor. So, I can make selections on the desktop behind that floating color picker.
+And the color picker can be moved around, and so it can be put wherever, and we can make selections behind it, and you can even drag selections around behind the color picker that's open.
+So, let me briefly describe the user interface elements. So, the color picker is actually implemented as a utility. So, it's not part of the app launcher.
+It's actually a system component, and any application can open it with a simple call. And then you have the menu bar at the top of the screen here.
+So, the contents of the menus come from a human-editable menu definition file, one per application. And menus have rollovers, and they have keyboard shortcuts, and they're hierarchical. They have little spacers.
+And they're also, you know, they're pretty fast, right? You can just kind of roll back and forth across them. Now, they also have keyboard shortcuts.
+So, keyboard shortcuts involve keyboard modifier combinations, so Commodore A and Commodore Shift A are different.
+Next, we have the top corner. The corner is the utilities menu. So, this menu is built by the system, and it always contains the same set of things. You can customize it, but it always contains the same set of things across all the applications you open.
+So, for example, let's open the about this app utility. So, this is a utility, but it reaches into the application bundle of the currently running app, and it pulls out these details to tell you information about this app.
+So, then we have a standard time over here, everything about it is customizable, and also the menu can be hidden. So, with the keyboard shortcut, you can actually hide the menu in order to use the full screen, if you want.
+Now, we have a status bar down at the bottom. It has three modes. The mode it's in right now is application specific. So, as I make selections, it's telling you how many things are selected. Hopefully, this isn't in the way.
+So, now there are five things selected, now there are eight, now there are eleven, now there are thirteen. Also, if you try to open, so let's say I've intentionally made this alias broken, so if I double click it, it says original not found.
+Now, you can click on the status bar to cycle through its modes. So, it also has a last disk status mode. So, that 62 not found is actually the result of having clicked the broken alias, and that's the real disk error.
+And the third mode is not particularly applicable to the app launcher, but it's the open file path. So, if you're in like a text editor and you're working on a file, that's the file that you're working on.
+Now, in those latter two modes, you have a free memory indicator in the bottom corner. So, that number is in 256 byte pages, and there's kind of a close correspondence between disk blocks, which are more or less 256 bytes, and memory pages.
+You can also hide the status bar with a keyboard shortcut. So, you can really, your app doesn't need to have that menu bar and status bar showing.
+So, we can also double click on the time, and it will open the today utility, which is a cool little calendar, and I'll continue to build that out.
+And you can also double click on the available memory, and you get this cool memory thing that shows you how memory is allocated.
+So, you know also that that memory counter down here was 113, but if I close the memory utility goes up from 111 to 113, because the memory utility needed one page.
+So, now, I'm just going to reload my desktop aliases, just get them back where they were before. So, now I'm going to launch into an app.
+So, this is a little app that I've been working on. This is a splash screen. See the whole splash screen? That happens when you transition from apps.
+So, this is a little app that I was working on earlier, like maybe two weeks ago, to show off some features of C64 OS. So, you see you have totally new menus, but the system, the utility's menu is still the same.
+So, we can open say about this app, and there you go. It's now showing us contextual information for this app, and we can open another utility like a calculator.
+Now, the all the floating point math for this calculator, for example, is actually being done by the basic ROM. So, this is just an example of, you know, the basic ROM is actually still usable, not necessarily to execute basic code, but it's usable.
+So, now, I will open a gallery. Here, let's open sports cars. So, you get some cool metadata. You know, an indicator of how many files there are in these gallery and some notes. But the question is, where's the image? Right?
+So, when the image data is available, you can just drag up from the status bar. This is a system-wide supported feature. There's like a system call to specify where your graphics data is, and as soon as you load your data in somewhere and you call that system call, and then the status bar can be dragged up and down.
+There's also a full screen graphics, so you can click into that. And when you're in, if you click either below the split or within full screen, the mouse is still active, and the mouse events get routed to a different part of the app. So, you can do things like, if I click on the right side of the screen, it'll go to the next image.
+So, we can just switch back and forth between the modes like that. So, then the only thing I'll show is, so I said C64 OS has timers, so you can easily use timers for doing things like, well, I'll make, actually, before I do that, I'm going to say, when you're in this full screen mode, the menu keyboard shortcuts are still active.
+So, I will use a keyboard shortcut to pick another gallery. Okay, so I'm into Starships. So, we can do things like, pick, say, five seconds from our slideshow, and we can switch back into here, take your hands off, and hopefully it'll work.
+Are we home? Okay? Pretty cool? More?
+No, okay. And now we can take the slideshow back to manual, and then when you want to go home, you can just pick from the menu that you want to go home,
+collapses the little splash screen, the icon of the app, and you're back to the app watcher. So, that is C64 OS in a tiny little nutshell, and hopefully that gives you an idea of what sorts of things could be possible with it.
+Okay, so that took exactly 30 minutes. Does anybody have any questions? Yes.
+With the picture viewer, we were like in a split screen between text and graphics, and my other question is, sort of, what was the question?
+Well, I would just, if you're in like a split screen, so the top was actually just text in the bottom of the screen with an RQ to like the graphics mode.
+Yeah, and the text mode is, you can still interact with the text mode, and it'll update like if something, if you change images, like the metadata that changes, changes in the text section, and the graphics change at the bottom.
+And then the other question was, what was the, like, the five second one was doing like through the auto show?
+Yeah. It seemed like it was one of the five seconds, but that was because it was like loading the next image.
+Yeah, that's true. Yeah, the timer actually gets paused while the image gets loaded, so it's five seconds between when it's available to be shown, and when the start of the next one loads.
+Yeah, I didn't want to run it, you wouldn't want to run it in a case where you set a timer really low, and then it had to do something that took more than the length of the time, because you have timer events would start stacking out.
+Yes.
+A little of the individual partitions instead of the CME stuff.
+Sorry, what was the,
+1581 subpartitions, yeah, yeah, they're not supported, but they, but maybe, maybe multiple, I can look into it. They behave a little differently though.
+Yes.
+Just curious what the software license is if there is any.
+Oh, okay, yeah. Well, at the moment, it's, it's not open source. I'm working on it as there will probably be a commercial release.
+Okay, sometime, yeah, I'm probably working with double-sided games, actually.
+Yeah, see how that, see how that fans in. Yes.
+You were saying earlier that you can run an app and utility in a kind of pseudo multitasking.
+Yes.
+Is that running on the interrupt once or 60 seconds?
+In terms of how they, how they work.
+Yeah.
+Well, yeah, so they both get loaded into different fixed places in memory.
+So utilities get loaded way up high beneath the kernel room.
+And the application gets loaded way down low where like a regular C64 program will get loaded to.
+So they, they don't ever conflict in terms of where they're loaded.
+And then the screen compositor allows them to both push layers that will get composited.
+And then as you click on things, it's just event driven.
+So if you click on a button that's on the layer that is managed by the utility,
+the event will get routed to the utility and the utility will handle it.
+And if the utility goes into an infinite loop, well, then everything is in an infinite loop.
+Because, you know, that's, that's what happens.
+So it's, you know, I'm being really close.
+It's servicing the utility.
+Exactly.
+Yeah.
+Yeah.
+Yeah.
+So, so apps and utilities push layers onto a stack of layers.
+And then the layers get drawn in the or in reverse order that they were pushed.
+And then events get, events get processed by layers in their order of priority.
+And so if the utility wants to go modal and not allow an event to pass through to the underlying application,
+it doesn't have to pass the event through.
+Okay.
+So it chooses whether it's going to pass through.
+Yeah.
+So the event automatically gets routed to the topmost layer.
+And then if that happens to be utility, but you click outside the bounds of utility window,
+well, then the utility goes on.
+If you didn't even tap, you didn't, you didn't touch within my bounds.
+So it just passed the event through.
+And then the event will get passed to the next layer.
+And that's usually the app.
+And then the app doesn't really even know that there was a utility that had the ability to stop the event.
+But it just processes it.
+That's why the dragging actually, that's why you can drag behind it.
+Because the utility is, you know, ignores that.
+I hope you enjoyed Greg's presentation.
+It's unique and innovative ideas like this that make the world of Commodore so much fun.
+If you're enjoying this series, please leave a comment at my personal non-commercial blog at peakwork.com.
+And don't forget to tune in next week to listen to Greg tell us how he managed to get full-screen sound and video playback on the Commodore 64.
+Until then, please drive safe and make sure to have fun.
+You've been listening to HackerPublicRadio at HackerPublicRadio.org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out how easy it really is.
+HackerPublicRadio was founded by the digital dog pound and the Infonomicon Computer Club.
+And it's part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise status, today's show is released under Creative Commons,
+Attribution, ShareLife, 3.0 license.

@@ -1,0 +1,303 @@
+Episode: 2448
+Title: HPR2448: Useful Bash functions - part 3
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2448/hpr2448.mp3
+Transcribed: 2025-10-19 03:15:45
+
+---
+
+This in HBR episode 2448 entitled Useful Mash Function, Part 3 and in part of the series
+Mash Crypting.
+It is hosted by Dave Morris and in about 34 minutes long and can in an exquisite flag.
+The summary is a few more possibly useful Mash Functions are discussed.
+This episode of HBR is brought to you by an honesthost.com.
+At 15% discount on all shared hosting with the offer code HBR15 that's HBR15.
+Better web hosting that's honest and fair at an honesthost.com.
+Hello everybody, my name is Dave Morris.
+Welcome to Hacker Public Radio.
+Today I am doing the third show in the series about Bash Functions.
+I think the series will stretch to a fourth episode but no more than that.
+I'm not sure how interesting this is to people.
+If I get any positive feedback I might do more but I suspect that won't happen.
+This one covers three functions I think might be of interest.
+They are somewhat more advanced than the earlier shows I've done in this series.
+You might find that there's things that you can learn from it.
+You might also see some pretty glaring errors that I have missed so feel free to point them
+out and comment on these or criticize them however you see fit.
+These are things I've written for my own use and I use them on a pretty much a daily basis.
+The first one is called read underscore value and it's simple purpose is to inner script
+to output a prompt and read a string.
+You could do that with just a simple read command there's a read command in Bash but I wanted
+to be able to do away with all the fafing around of writing read statements and checking
+their results and so on and so forth so I wanted to simplify it so it nominates a variable
+into which the result is going to be put.
+I've got a typical example of a call you just type you can run these on the command line
+but you have to source them first so it is the command the Bash command is source S O U R C E
+and then the name of the file containing the bit of Bash the function and I've included
+these functions as individual files with this show so you can fiddle around with them
+if you're so minded.
+So given that you've sourced it so that Bash knows this as a function you would simply
+type on the command line read underscore value and then some prompt string in quotes and
+I've put an example what is your name question mark and then the next argument is the name
+of a variable which I've just called name.
+So this will prompt what is your name you type in a name press return and then the thing
+exits you can then echo that variable dollar name and you get back the name that you
+type not not particularly well-chattering it does take a default as well as the third argument
+so there's another example here that shows read value being used to ask the question where
+do you live it's going to put the answer into a variable called country and the default
+is USA so it says where do you live USA and you can delete that and put another value
+in instead.
+So my long show notes is very little in there in the short notes goes into quite a lot
+of detail it shows you the source of this particular function it's not particularly complex
+it's only 38 lines long and there's not a huge lot in it but as with a lot of bash things
+there's quite a lot of subties in the way it does stuff it does have some similarities
+with the functions I've talked about before there was one called yes underscore no which
+I talked about in earlier episodes and I've pointed to those in the links if you want
+to go and check them now this one wants to return a result to the caller but bash functions
+by default can't do that they can't easily return stuff to the level to the script or
+to the command line that you're calling them from when you issue a return command within
+the function you can only give it a number and the usual convention is to return zero
+to show that it was the result was true and return one for false others use other numbers
+to signal other things you can't send back strings this does that but it does it in
+a rather roundabout way you can write your functions so that they always write to the
+same global global variable so you could do something like write a variable called maybe
+read underscore value underscore result or something like that and then you could call
+it and then get back the look at that variable but the trouble is it gets quite messy I
+have worked in in systems where that really was the only way to achieve it there was
+no hand back type mechanism used to write to global variables that were visible after you'd
+run the function procedure or whatever the hell it was that took some management it's
+not impossible but you can do do do better things with bash well it's not entirely obvious so
+like I said the main purpose of this particular function is to call the bash built in command
+read and we want to be able to deal with a default value and if you look at the source of the
+function you'll see that in lines 18 to 20 it's numbered in the listing then you can see
+there that we we set a default value from the default that's been handed to the function if
+there is one so it checks to see if the the variable called default is non zero on zero length
+not empty and if so then it sets it to contain an option to the read command the read command itself
+is performed on line 26 but it's a little bit more complicated is not just a plain read we call
+it in the command eval eval what this does is it allows you to compose a command in a string and
+then it runs that command for you when it allows you to do more complicated things the way that you've
+built that command string so I mean this particular case the string that's being given to eval
+is a read command with a minus r option which controls how it deals with backslashes minus e and
+then if there's a default then that will be minus i in the string that the default value
+was minus p gives you the prompt and then it finishes off with the variable into which the
+the answer is to be written and in this particular case is written to a variable called var so if
+you were just using read on it so you could you could just type these things out but since we're
+trying to run it in a function where some of these things are being handed through to it by the
+function we need to go to this extra length running it in eval if you try to do this without using
+so if you'd written that command in the function read minus r space minus e dollar default minus p
+an enclosed dollar prompt space of r then what would happen is that the contents of default would
+not be parsed by by bash the difficulty is that when bash runs the command there are certain
+strings that it will expect and these in the in the case of the prompt they will have been filled
+by parameter substitution but there isn't a thing that causes parameter substitution on the command
+line it's it's not straightforward to make a command up from bits which are held in variables
+because bash doesn't go and substitute the variables into the the command string itself it would
+need to do it twice we need to look at it first to see what the command was and so forth and then
+it would it would need to or maybe it would first need to do all the the the substitutions and then
+it would need to go back and execute the command it doesn't do that but when you use eval it does
+you get two two scans of it this is quite hard to understand at least I think it is I certainly
+have struggled over this in my earlier days of using unix and stuff so what I did here was
+I ran this read value function using one of the features of bash which is to trace what it's doing
+you do that with the command set space hyphen x that sets on tracing of commands then you type read
+what is your surname blah blah blah and you then see all of the steps that are going on as the
+contents of that function are being executed each line is preceded by a plus sign and you can see
+something about what it's doing so for example the function itself starts with a local command
+where it sets the variable prompt to whatever the first positional parameter is dollar one well
+the first position parameter is the prompt and it is what is your surname and you actually see
+it being set to that in this this trace info I won't read all of this stuff but the really
+two of the interesting things anyway are that you can see the default value being set
+to hyphen i and then the string not provided which is what was what was used on the command line
+and then you can see the eval being issued where it is the read command that's being assembled
+consists of this hyphen i quote not provided there's a lot of backslashes in here because there's
+quotes within quotes and stuff and that's all done automatically by bash it gets a little confusing
+but then there's a line plus plus it begins to two pluses then you see the read being executed
+after it's been assembled with eval and then you get the the prompt what is your surname and I
+actually typed an answer to this and you can see the the answer being dealt with come on to the
+other eval in a moment I then turn off this tracing thing which you do the set plus x and then
+echo the value that I get back in the variable surname and it is the the name that I typed
+the second eval in the function see it's actually even there's only 38 long it lines long it's
+actually a little bit more complicated actually before I go on to that I should mention that
+after the eval line 27 there is a thing that says res equals then in quotes dollar question mark
+dollar question mark is a built in variable inside bash which gives you the result of the last
+command now if that last if that last command was not zero return to non zero these are these are
+numeric responses then it means that in the case of read the person typing stuff has hit control
+d which is end of file which will of course read to abort so it's checking this and if it if the
+reads are borted it says so it sends an echoes a message saying read a borted and then returns
+a false value which is one I think I did that in the previous examples so but I thought it's worth
+mentioning again this is just standard boilerplate stuff that one does in in bash scripts so the
+final eval which is on line 36 this is the bit where we're trying to return a value back to the
+the caller now inside the function we have collected the name or whatever it is that's been
+requested of the user of the of the script and we stored it in a in a variable called var the
+AR but there's a variable called output name which was set from second position parameter of
+the function and that's the name of the variable in the calling environment which is to receive
+the answer so how do you do that well one way of doing that is to make up a command which is the
+name of the the variable equals the value that's been collected so you'll see the line line 36 says
+eval then in double quotes dollar output name equals single quote dollar var so what that will do
+is we'll construct the command and whatever output name was surname in my example equals and then
+whatever was typed in and if you look at the listing of the trace you can see
+eval surname equals and then the name I typed in and you get another line after it which is the
+actual command so the eval shows the command that's been constructed and the next line with two
+pluses beginning it at the start it shows surname being set to the string now surname is going to
+be a variable which is not local to the the function it's actually a global variable but the
+point is that you can define which variable it's going to be it's not going to be a fixed one
+against the answer okay I was quite a long winded explanation of something that looks simple but
+is there's there's layers so the second function need these three form group of like things things
+that are used together this one's called check value it's designed to be used alongside this read
+value it takes two arguments one is a value that you want to check it actually it doesn't take two
+arguments it takes N arguments there's always a first one and then there's any number of further
+ones the first one is a value that you want to check so it'd be something like the name that was
+returned in the previous example and then it's followed by any number of regular expressions
+bash regular expressions that to be used to to check validity the first thing the function does
+you can see it setting the local variable whose name is value seem like a good idea at the time
+but it sounds silly when I read it out anyway it's setting it to the first positional parameter now
+there is a there is a digression here because the way it does this we talked about this I did a
+series way back where I talked about parameter substitution and the magic you can do in bash with
+parameter substitution and the version of it here is different from the versions I talked about
+back in that show so you're seeing value equals then in double quotes dollar open brace one that
+means parameter one then a question mark and then a string usage call on blah blah blah and then
+close brace closed double quotes what that means is substitute in the contents of positional
+parameter one and put it into value but if parameter one is missing you just call check value without
+any arguments at all say then or it's a null value then you might want to take action and abort
+things to say you call this wrong there's a mistake here or something and that's what this does
+but the format that I talked about back in that that show way back when was where you had the name of
+the the parameter which is just one in this case followed by a colon a question mark and then some
+some string the string was used as an error message and the thing would abort if the parameter was
+null or unset but the variant I'm using here misses out the colon and what that does is it checks
+to see just it just checks existence not whether it's empty because there are times when we might want
+to check a value which is empty and it's perfectly valid for it to be empty so the first thing
+after this that it does is on line 15 there's a shift command and what shift does is it
+takes the it throws away the first argument in the the list of positional parameters throws away
+the first one so it throws away the one that's referred to as dollar one that's because we've
+got a copy of it we don't want it anymore but we are going to be dealing with the remaining ones
+so we want to be able to uh to just get them on their own so line 16 to 18 it checks in an if
+command the value dollar hash dollar hash is bashes record of the number of positional parameters
+so if that that value is zero then it wants to we want to flag it as an error because we needed
+some regular expressions to compare things with so put out an error message and return a value false
+then the next thing is a while loop which begins at line 24 and runs up to line 30 of the function
+and it just processes each of the positional arguments until aren't anymore it's using the test
+dollar hash number of positional parameters greater than or equal to one so when that becomes false
+then it will stop inside the loop it's doing a comparison of the value that came in as argument
+one to the function against dollar one which is now the first which is the the first positional
+parameter and it's using regular expression matching now i haven't really talked much about
+bash regular expressions i plan to do that in another show rush if there's a match then there's
+a variable called matches which is incremented then after the if command then there's another
+shift so that just that then that throws away the positional parameter that's just checked
+it's treating it as a stack it will just go through one after the other and it will delete them
+out of its stack as it goes as it uses them so once that loop is finished then the match is variable
+will be zero or non-zero if it's zero it means nothing matched and in that case we return false
+if there were any matches at all we return true and that's lines 35 onwards is the if
+then else thing and that's it again it's pretty simple but there's there's elements of a bash
+magic that you need to understand to be able to fully appreciate what it can do now what i did
+was in the notes i made an example of how you use this i showed the source commands for read value
+and check value you need to do them once in a in a session makes these things available to the
+bash then i declare a temporary function of called demo and into functions are just a name
+to a brackets to parentheses and then some statements in curly braces in the temporary function
+the demo function is a variable called name which is set to nothing then read value is called
+in a loop this is an until loop i've never really talked about loops in great details in bash but
+maybe i should cover them in another series at some point anyway it's just a type of test
+and read value returns a true or false remember and the read value is is being called with the prompt
+what is your first name and it's going to store this in a variable called name and it can
+cantonate that command with two amberzans and with a test the test simply checks to see test is a
+is a built-in command which is sort of used behind the scenes in in a sort of normal test you see
+inside square brackets or double square brackets so it's checking using the minus n option minus n
+the string that follows checks you whether it's non non zero non no not empty i suppose so
+basically that loop continues running until a name is is provided turn if you in fact if you hit
+control d it will re re loop because nothing was returned and if you if you don't type anything
+at all just hit return then it will continue to loop so that loop just ensures you get a name
+then it's followed with check value inside an if check value uses the contents of name as the
+first argument and then there are two regular expressions if there's a match it simply echoes
+hello and then the contents of name if there's no match then it says that name isn't valid the two
+regular expressions are pretty simple the first one matches any sequence of upper and lower case
+letters one or more no spaces no numbers just uppercase and lowercase letters that's all that will
+accept the second one was designed to take simple hexadecimal sequences so hexadecimal you
+normally write them as zero x to show that they are hexadecimal and it accepts a lower uppercase
+x after the zero and then it will take any of the hexadecimal digits which is a to f upper
+lowercase zero to nine and one or more of those so show it being run it only does one for each one
+once it gets a name then it exits so if you run demo what's your first name you type in a name
+and it says hello and it works if the name is just simple simple alphabetics it also works if you
+type zero x one one one but if you type in what's your first name gym 42 it says now that's not
+valid because we're not catering for new numbers in digits and in names you could do of course but
+I thought it was quite amusing that you could type as a name zero x d a d 42 and that was accepted
+but if you didn't put the zero x on the front d a d 42 dead 42 is not valid so you can do some
+quite sophisticated things with it so the final one is really just a concatenation of the previous two
+this one is called read and check and it uses read value to read value and uses check value to check it
+and it just loops until it gets a valid reply or a control d to abort it as it's arguments it expects
+a prompt string which can't be null it expects the name of a variable to receive the result which
+again can't be null it will take a default value which is optional but if you don't provide one
+you do need to put a placeholder in there like open closed quotes just as a null string and then
+after that it takes any number of regular expressions so it's you can tell it's a combination of all
+of there all of the above so the first thing it does is to call read value online 16 with the
+relevant parameters so prompt and output name the names I've called them and a default if there is
+one so if the result of that is false it's actually if not read value then it will it will
+exit the function with a with a false value so the the case where that would happen would be if
+control d was was hit so we need to check otherwise control it it's just going to fall through it
+and do the rest of the work in the function if you are trying to abort it so after that read value
+it will run shift to clear away the first three arguments in the positional parameters list shift
+can take a number which is the number of things to clear away they could type shift shift shift
+but shift three is more efficient it takes less typing then there's a loop another until loop
+from lines 20 to 26 and it checks it's running check value to check the answer that came back from
+read value and match it against a list of regular expressions now this is done in a in a way you
+might not have seen the first argument to check value is consists of in double quotes dollar
+open brace exclamation mark output name close brace close quote what that means is it's doing a
+an indirect so-called indirect expansion now output name is a variable which holds the name
+of a variable so remember the the thinking behind read value was that you gave the function the name
+of a value into which was to write stuff so if we want to do further checks on that value inside
+this function we can't simply use output name because output name is just the name of another
+variable a global variable in the callers environment so use this indirect expansion and what it
+means is examine the context of output name and use what is there as the name of a variable whose
+value we require so it's it's doing a sort of two level reference indirect expansion is the term
+that's used so that value is being passed to check value for checking and the other argument which
+in quotes is dollar at is a way of representing all of the positional parameters to the the
+function so remember we deleted the first three so we're left with however many regular expression
+were provided now if check value doesn't return true then the until will loop and because it
+returned false that it must not matched so the an arrow message is generated in valid input
+and it shows the the using this indirect expansion again the value that was that was given
+to the the read value earlier saying this is not valid and then it calls read value again in another
+if in the same way as before if read value it the second time round is given a control d then
+it will also exit from the loop and from the function once the loop ends in a in after a valid
+check the function will return zero which is true so i've given an example of how you might
+call this i actually wrote this to be originally to be used in a function that i in a script that
+i used to manage my hpr submissions like this one and so my example i put the the source commands for
+each of the the files containing these functions you wouldn't do this normally you'd have them
+in the in the script that you were preparing most likely and then it calls read and check with the
+prompt enter slot this would be asking for a for an hpr q slot number the variable that's going
+to be put into is called slot there's no default so we give it a blank string an empty string
+and then the only regular expression that's matching against is the string hpr in lower case
+followed by a number between not nine and one or more of those the hpr square bracket zero
+hyphen nine closed square bracket plus string would match anything any hpr show number but we
+want also to allow this function to receive this call of the function to be happy with a null
+response so that string was put into parentheses followed by a question mark and what the question
+mark is it says whatever the expression that precedes me which in this case is a compound thing
+in race in parentheses this it i'd be prepared to accept a zero or one of so the equivalent of
+having nothing you could have done two regular expressions one one without the the parentheses
+in the question mark and the next one being simply an empty string in all of these cases have put
+an anchor a start of string an end of string anchor either end so i would put put that in as well
+with nothing in between that just helps to deal with it would reject cases where they were
+leading or trailing spaces you could get cleverer and actually take allow those leading and
+trailing spaces if you wanted to but then the thing the other end would need to trim them off
+anyway running it i typed in hpr 42 with capital and it comes back in valid input
+hpr 42 because we're only catering for lowercase and it asks again and i just hit return
+and then ends quite happily because that's a valid expression echo the contents of slot but i
+put slashes either side of it just so you can tell there's nothing between the slashes because
+what you get back is two slashes in succession so the thing is empty so that's that's a sort of
+stuff that you can do with it like i said i've certainly used these i use them all the time and
+not only in my show submission stuff but a lot of other things they're not a hundred percent
+bulletproof i have to say as i was preparing this i found a bug in in one of them so you know
+they're they're not they're not perfect then very little in software is i don't know what would
+happen if you when you gave it a regular expression when you give check value or read and check
+a bad regular expression of whether things that could make it blow up it certainly make it
+misbehave but you know there's there's no validation of the regular expressions the whole business
+of passing information back from a function using eval is messy it does work but it's messy but
+there's a there's a new feature i think relatively new in bash called name ref which allows you to
+do this in a cleaner way but i'm not going to look at that here we've already spent a lot of time
+on this one so if you if you liked it or or you can think of any improvements or you thought it
+was rubbish or whatever you wish i'd stop doing this and go away and let me know because
+all feedback is useful so you can see in the links links to the previous shows on this subject
+and that there are downloadable versions of the the functions and of the trace if you want
+i'm not quite sure why you would but there you go all right that's it then bye bye
+you've been listening to hecka public radio at hecka public radio dot org we are a community
+podcast network that releases shows every weekday Monday through Friday today's show like all our
+shows was contributed by an hbr listener like yourself if you ever thought of recording a podcast
+and click on our contributing to find out how easy it really is hecka public radio was found
+by the digital dog pound and the infonomicon computer club and it's part of the binary revolution
+at binref.com if you have comments on today's show please email the host directly leave a comment
+on the website or record a follow-up episode yourself unless otherwise stated today's show is
+released on the creative comments attribution share a light 3.0 license

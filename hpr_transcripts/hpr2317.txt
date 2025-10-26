@@ -1,0 +1,196 @@
+Episode: 2317
+Title: HPR2317: Bash snippet - extglob and scp
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2317/hpr2317.mp3
+Transcribed: 2025-10-19 01:15:47
+
+---
+
+This episode of HPR is brought to you by AnanasThost.com, get 15% discount on all shared hosting
+with the offer code HPR15, that's HPR15, better web hosting that's honest and fair at AnanasThost.com
+Hello everybody, welcome to Hacker Public Radio. My name is Dave Morris. Now I've got another show on Bash here for you. It came about because of the fact that I've been working with Dave Morris.
+Hello everybody, welcome to Hacker Public Radio. My name is Dave Morris. Now I've got another show on Bash here for you. It came about because there'd been some comments on a show I did you expect from the time of recording 2293 about finally expansion and stuff.
+And the comment was from John Culpin, it was a question about things to do with extended glob patterns. Just before I go on I've mentioned that it's a fantastically nice day here in Edinburgh. It's very warm and it's so much so that my ass is hot and I've opened the doors and the windows and stuff.
+There will be some environmental noises as the odd bit of traffic goes by. The guy next door who practices the clarinet seems to have done his practice now so hopefully we'll not be interrupted. So he hears noises off then you'll know.
+Anyway, John was trying to copy a subset of files out of a directory where he had I think he said mark down MP3 and org files and he was trying to select that just the MP3 and org files from that set. So he was using an extended file name expansion glob thing to do it. And it worked fine when he ls it.
+But then he wanted to copy them to another machine and he wanted to use SCP to do this and it didn't work. So that's a bit surprised actually that it didn't. But then I realized I'd never actually tried to do that.
+So I looked into this to try and answer the question for him and also just to to assuage my curiosity. And I found a whole bunch of things which I thought, ooh there's a show in there.
+I can make an HTML show. So I ran away to write things down and so on and so forth thinking, oh this would be quite a quick thing. You know, it's not. It's huge. Well it's turned into quite a beast.
+Anyway, what I'm going to do in this particular show is I think what might be the best is I had to dig into some deep dark stuff in order to understand this.
+And I've made notes about what I found and so on. But I'm not sure unless you are amazingly interested in this that you want to know all of that stuff. You probably just like to know the answers.
+So what I've done is to put that there was bits of information in the notes, but I've marked them as skip this bit if it's not of great interest to you.
+And I won't actually talk about that. I think you can always read the notes and that will satisfy you if you want to know.
+Okay, so let's get on with it. So the first thing I did was on one of my Raspberry Pi's RPI-4, I've got really original names from my Pi's, I made some empty test files in order to simulate things.
+I did a make-dure on a file called SCP test and then I created a bunch of files which begin with the letter A through C and followed by the numbers 00 through 10 and end with MKD for markdown MP3 or OG.
+So they're just empty files, but they pretend to be sort of data files that John was probably dealing with. He probably had HTML as well, but I didn't bother with them.
+So I LST them to show them in the notes so you can see the sort of things actually created just for, you know, sometimes it's useful.
+So I then cd into that directory, cdscp test. I LST using minus lowercase x minus lowercase w80, so I got the already organized nicer for the notes.
+And I used the expression, the glob pattern that John used, which is asterisk, open parenthesis asterisk.mp3 vertical bar asterisk.orgg, close parenthesis.
+And so that then selected out all of the MP3 and old file.
+And that was very fine. Yeah, yeah, that works. But then moving on to testing the things that John had raised, the issues he'd raised.
+So I then on this pi 4, number 4, I copied files across to another one.
+I've got another one which I call with huge originality RPI 5, and I created a directory test on it under my username.
+And so I did a copy of these files. So I was able to type scp, the secure copy command, scp, space, asterisk bracket.
+All that stuff I just read out before, the parenthesis list of std.mp3 and std.orgg.
+And the destination, that's the source file. And the destination is Dave at RPI 5, call on test slash.
+Doing I needed the slash, actually, but I tend to put it on to remind me it's a directory.
+And then I see a list of all the files going across, it's fine. All of the files I asked for, all of the MP3 and old files got copied across.
+No problem at all. Fantastic. Then I thought, right, I think what John was talking about was doing the copy the other way.
+So I logged in to RPI 5 and tried to then do a copy from scp, copy from RPI 4.
+So my command was basically reverse. So I logged in and I cd to my test directory. Then I did scp.
+Dave at RPI 4, call on scp, test slash, star, parenthesis and all of that stuff that I've already mentioned.
+That x-club expression probably don't want me to read them all out.
+And the destination was dot, the current directory. There were other ways it could have been done, but that's it.
+Just in case you've not encountered this before, when you're referring to files and directories and things on a remote machine using the likes of scp and other ssh related tools,
+that thing where you type username and at sign, the host name, call on, that tells ssh what machine you're talking about and what user you want to log in as.
+And the username that's been followed after call on by the path from the, from the home directory of the account that you're aiming at.
+So you're pulling or pushing to that. So having digested that explanation to get back to what I was saying.
+This particular scp copy didn't work. I got various arrows which said syntax error near unexpected token.
+And scp minus scp test, blah blah blah, it came back and said it was wrong.
+So basically the x-club, the extended glob pattern was not being interpreted at the far end on the remote machine, which was RPI-4.
+Now there's a minus v option to scp where you get a very long detailed list of all of the stuff that it's doing.
+And in there you see the actual process of passing a command to the remote machine and using ssh and ssh tunnel and the command that it tries to run is another instance of scp.
+And my later investigation has showed that the issue is that ext glob, the option is not on when the command is being executed at the far end.
+Which is odd given that it is on by default when you log into that machine. Not really clear why it's not on but it seems to be the issue.
+So I then started looking for some ways to solve this.
+As usual I did a Google search and found an article on stack exchange which I've linked here which had a very long comprehensive answer that was really hard to understand.
+The person who wrote this must have done some investigations or be up to date with the internals of scp and was able to point to methodologies that to use this knowledge.
+Basically scp hands the file in more expression to the remote machine where it's then interpreted by the local shell and that shell could be anything, it could be any shell.
+So the fact that you're using a bash extended feature won't necessarily work for you anyway because the default shell for that user on the remote machine might be, I don't know, ksh or zsh or whatever.
+The answer that I found suggested that the stuff that you send across to the remote machine or the specification of the remote machine is a sort of a command or could be interpreted as such.
+It was pointed out that there are potential security loopholes because that's the case. I experimented with this briefly, I couldn't get it to work but I think I'm just a bit naive as to exactly what this means.
+I did find the source of scp by the way and had a poke around with it but I've not got very deep into it, just had a cursory look.
+Anyway, there was a command that was suggested that would work and I've listed it. It basically consists of setting a bash variable to the pattern that you want to use, the glob pattern.
+So the scp test slash and then the extended glob pattern.
+Then using scp in a mode where you say I want to send the contents of this environment variable across to the other end and then you nominate this.
+I'm not going to read this command out yet, I think it's probably too complex to read out but I'm just trying to summarize it here.
+Then you have to give it as the first file name to scp a weird thing which consists of two lines. It has to be a new line in it.
+It was of experimented to see what happens if you take it out and it doesn't work.
+So it consists of a double quoted string so you can substitute variables into it which uses the remote username and hostname.
+And then it's followed by a file name which is just devnull. It's actually a redirection from devnull.
+So this will cause some weird stuff to happen to the other end which will then allow the rest of the line, the rest of that this particular string which is an invocation of bash with ext globs switched on.
+And with bash executing an scp of the type that scp does all by itself.
+Have a look at it, it's really hairy. Yet but it works, it's really strange, it works.
+You wouldn't want to be typing this every time though, it's really quite long and convoluted and hugely error prone.
+And I was nearly monitoring off into explaining how it works or as much as I understand of how it works.
+But that's in the you know go in here and read this lot if you dare section.
+Anyway it was suggested in this article that making that into a function was a good idea and there was a function shown which was called safer underscore scp which contains essentially this same command but with a few other bits and pieces.
+Now I have gone into a lot of detail about this function and how it works and how scp works as much as I know anyway as much as I've worked out which isn't all that deep.
+But I know let me just say in summary that the function works, it's really really obscure.
+It works on the principle that scp if you run it on your command line connects to the remote sheen using ssh and having done so it's got a tunnel through which it can then send a command and the command it send is another scp.
+The scp that it sends has got a hidden option on it hidden because it's not documented minus f and that seems to be a thing that says to scp that if it sees that it's running as a remote end.
+And then it does different things and it goes and finds the files that you want and it copies them back up the pipe to the originator to the local machine.
+So it would be quite a voice to read through that that particular source code of scp I think is what I've seen so far.
+But that's basically what it does and it's because of this strange handshake between the two ends with commands with a command remote command running in bash that things go awry when it comes to sending across extended bash patterns.
+So having gone through that stuff which does work it does solve the problem but is not fantastic I'd be very wary of it because it depends on it's depending on how scp works under the hood and if scp ever gets changed and people say oh it can't do this why don't we implement it then it's going to blow apart.
+So an alternative would be to use simpler patterns of glob patterns things that don't rely on ext glob option being switched on.
+So I suggested to John that he did something like scp space username at host name colon.
+And then my example scp test slash asterisk dot open curly bracket MP3 comma og close curly bracket dot.
+So what that's using is a simpler glob pattern which simply says all files which have got a dot and either an MP3 or an org on the end.
+And of course that works that that pulls the files off RPI 4 onto RPI 5 and puts them in the current directory which is something to be test.
+And it all works perfectly and if you investigate what it's doing it's simply a simple glob pattern gets passed across and it works.
+It's still prone to the potential problem that if the remote account uses a different default shell then it's not going to work because I think that glob expression is not necessarily implemented in other shell.
+I don't know this for a fact I haven't investigated deeply but it's a factor.
+I could dig deeper in this but life's only so so so long.
+So I thought well how about a third way of dealing with this problem and this set sent me off in another direction.
+I've never encountered this issue with scp myself when moving father and I do a lot of moving because I've got a lot of machines in my house.
+There's 13 Raspberry Pisces which I believe and a server and a desktop and two laptops etc etc you don't need to know that.
+And I also do this as an HPR you say admin janitor which I think is more appropriate.
+I just have a vision of needing to grab a mop and run down to the lavatory and something but anyway I don't fall over this often because I usually use our sync.
+Async is a very powerful tool which lets you shift files around.
+It's not doesn't have quite the same intention as scp does.
+SEP is a simulation or it's a similarity and analog of cp except that you can do it between machines.
+Async is a thing for copying whole directories around and so forth and it's used for backups and it's done and all sorts of things done with it.
+But it's pretty damn good. It doesn't use extended glob pans just simple glob pans but you do.
+You are able to use filters and the filters can do the sort of selection of files that you'd want in this case.
+So I thought I just put together a quick example.
+I keep using quick I'm not sure it is quick.
+I put together an example which should do what is wanted here.
+I did say in my notes here that maybe we need a series on our sync because it is quite a complex command but enormously powerful and useful.
+So what I normally do when I'm dealing with this type of thing is first of all I make a filter.
+I keep the filter stored in a file. Our sync can work with that.
+Then I run our sync with that filter.
+So for this example I created a filter which I called dot our sync underscore test.
+I tend to call these dots make them hidden and so I don't keep stumbling over them.
+And in it I have three lines which I've listed here in the notes.
+The first one is a plus sign, a space and then star dot asterisk dot mp3.
+The second one is plus space asterisk dot ogg.
+The third one is minus space asterisk.
+So the lines beginning with plus are inclusion rules.
+You can actually use the word include instead of plus.
+Ten not to do that myself.
+So we're saying include star dot mp3 include star dot ogg.
+The lines beginning with the with the minus with the hyphen are exclusions.
+You can use the word I think it's exclude I don't remember I don't use it all the often but check it out if you want to do it.
+The order is significant.
+If you put the exclude first and then say add the others then I think we'll say right you asked me to exclude everything.
+Well I'm not going to include anything at all then because you asked me to exclude everything.
+However if you say exclude a exclude include a include be exclude everything then it takes it as meaning include a include be and exclude everything that's not those particular pattern.
+Okay my notes make slightly more sense of that than I just did.
+So interesting thing every time I talk running in these notes it came out as ruining so maybe something some Freudian element to that.
+So running rsync with this filter consists of the the command rsync rsync space.
+Then there are some options which control rsync which are minus v a and capital p.
+I'll come on to what those mean in a moment.
+Then there's a minus e space ssh and then there's the filter which is hyphen hyphen filter equals and then in a string the filter expression.
+The filter expression is simply a dot followed by a space followed by the name of the file which is dot rsync test.
+And that is followed by space and Dave at RPI 4 colon scp test.
+So that's the name of the remote directory then space test slash which is the name of the local tree and what that will then do is it will copy all the files across and I've shown a snapshot of the sort of things that it does.
+So what are these options? Well I won't go into depth with these but minus lowercase v, lowercase a capital p.
+It's just three options can carry it together.
+The v is the verbose mode so you get a little bit more information about what it's doing and if it's moving a big file you'll get a sort of progress indicator as it's moving it.
+These are all zero length so that you won't see it.
+Then a, the a is archive mode which is actually a shorthand way of specifying the whole load of other options which include things like making sure that the files characteristics like its ownership and its permissions and so forth are copied across.
+If you want to get into this you can look it up in the man page which is great but long and complex and the capital p is to show progress basically.
+The minus e space ssh is saying that you want to use ssh as the transport layer so it'll make it an ssh connection.
+By the way I never said that when I'm moving stuff around between these systems I'm not being prompted for a password and that's because I've shared my ssh key between them.
+So if you do this against one of your machines you might find that you do get prompted for the remote password for you can log in.
+So there is security here even though I haven't really mentioned it very much.
+The filter expression I mentioned was, it consisted of this string which consisted of which started with a dot.
+The dot is another shorthand for merge where what you're saying to us think is merge this filter file with any other filter files or filters that you've put together.
+The two directory arguments, the source and the destination where the source is a remote host, the destination is directory locally.
+These, there's tricks, there's stuff involved with these. One thing, if you want to get into this is always use the option minus n when you're running rsync the first time because it runs it in a dry run mode so you can check that you haven't made any horrible mistakes before you do it and move files or indeed delete files because you can delete them this way as well.
+Put a minus n in there, I usually put it straight after the rsync so I can take it out once I'm happy with it but use that as you're going.
+One, the way to, the way that you write these source and destinations is important.
+I'll come onto these in a minute in the caution, there's a caution bit that follows.
+Now one other thing I wanted to say was you don't have to put your filters in a file but if you want to put them on the command line you have to use the minus f which is the short form as minus minus filter followed by each of the expressions that are in the file I mentioned before.
+So you've got a minus lowercase f space and then n quotes plus space start at mp3 e close quotes and then another minus f and another minus f for each of the lines.
+Personally I would not want to do that but then on the other hand I tend to be setting up rules for repetitive transfers across from one place to another.
+Your mileage may vary. I'm thinking more and more we need to have a series on rsync to learn about its power and its features and there are cousins of rsync as well.
+I can't remember. Unison I think is 5150 did a show about the unison too.
+It's also brilliant. It's like rsync but it'll coordinate directories in both directions.
+I do use it but it's in scripts and I've forgotten the details.
+There's a caution about rsync if you want to get into it.
+Rsync will traverse a directory hierarchy by default. It's recursive. Unlike scp you have to go to some length to make scp recurs.
+Rsync does it by default. Of course the assumption is you're synchronizing directory trees.
+The presence of a trailing slash on the source directory makes it transfer the contents of the directory.
+This is important because if you don't put that trailing slash then the directory itself and its contents will be copied.
+If you're copying a directory A to a directory B from wherever to wherever and you don't put a slash on the A then B will contain A as well as A's contents.
+If you look at the documentation I think you'll find that it explains it a bit better than I have done.
+I didn't want to be too long about this. Now rsync compares source and destination files. If a file already exists at the destination it won't copy it.
+If the source copy is different from the destination copy or vice versa what do you want me to say.
+Rsync will transfer the differences so it will work out what needs to be changed in order to change the destination to be the same as the source.
+That's why it's so good for backups and that type of thing. Right enough about rsync but it is a good solution to the thing and I've given an example of how it could be used to solve this problem.
+Then I went off on another digression which I'm not going to drill into in this audio.
+I had a comment from Claque on show 2293 and he was asking about or commenting about the whole issue and mentioning the issue of spaces and file names and other funny characters and file names and so on.
+File names with spaces and other funny characters are difficult to use in Unix and Linux. It goes right back to the early days and it's always been a problem.
+The question really was how SCP would behave and I did some experiments by trying making a file called what a horrible file name dot txt with spaces between the words and tried to pull it from RPI 4 to RPI 5 again.
+And I used the minus v option with SCP to see what the hell it was doing to see whether it worked or whether it failed and if so white failed.
+And I've given an itemized list of 7 tests that demonstrate problems and so forth but I ain't going to talk about them anymore.
+I also wondered whether that safer SCP function we saw earlier would handle file names and spaces and the answer was no.
+I did find a hack which would get around that and have presented that in the notes as well and it does work though I'm not going to use it myself but you're welcome to if you want to.
+It's not mine anyway so conclusion then.
+So SCPs built on the original BSD Unix command RCP from the days of system 5 and all that and BSD and the fights between them and so on.
+I had to work on both of those systems and it was horrible going from one to the other anyway.
+So it's just basically been enhanced I think. I don't know if this is why it has the quirks we've been looking at here but it certainly seems to suffer from some deficiencies.
+But I certainly find it useful I do use it as SCP quite often.
+Using arcing solves the number of the problems SCP shows but it's also got its own shortcomings.
+But I think a good working knowledge of SCP and arcing is important particularly if you're a cis admin it's important they're important to have in your toolkit and it's of great use to all Unix and Linux users.
+So definitely worth getting your head rather than if you want to get deeper into these things.
+So that's it for this not very short show which I apologize but anyway hope you found it useful. Bye.
+You've been listening to Hacker Public Radio at HackerPublicRadio.org.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show like OR shows was contributed by an HBR listener like yourself.
+If you ever thought of recording a podcast then click on our contribute link to find out how easy it really is.
+Hacker Public Radio was founded by the digital dog pound and the infonomicon computer club and is part of the binary revolution at binrev.com.
+If you have comments on today's show please email the host directly leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated today's show is released on the creative commons, attribution, share a light 3.0 license.
+Thank you.

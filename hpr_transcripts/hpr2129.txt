@@ -1,0 +1,256 @@
+Episode: 2129
+Title: HPR2129: Gnu Awk - Part 2
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2129/hpr2129.mp3
+Transcribed: 2025-10-18 14:40:06
+
+---
+
+This is HPR episode 2,129 entitled Genoaq Part 2.
+It is hosted by Dave Morris and is about 27 minutes long.
+The summary is, we examine how it works, record and feels, printing and program files.
+This episode of HPR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15.
+That's HPR15.
+Better web hosting that's honest and fair at An Honesthost.com.
+Hello everybody, this is Dave Morris and this is a show about Genoaq and it's show number
+2.
+This is the second episode of what we're hoping is going to be a series that be easy and I are doing.
+We're trying to go into a moderate amount of depth looking at the orc language.
+We're really concentrating on the GNU variant which is called Gork.
+If you listen to episode 1, you'll be aware that it's a comprehensive interpreted scripting language
+designed to be used for manipulating text.
+Now, it hasn't been mentioned before I think, or has it?
+I can't remember, but anyway I thought I'd reiterate the fact that the name orc comes from the names of the authors,
+Alfred Ahul, Peter Weinberger and Brian Kernigan.
+I would like to speculate if they put the names in different order it would be called Wack or Core or something.
+Anyway orc is what it is.
+The original version was written in 1997 at the AT&T Bell Laboratories and if you look at the GNU or Users Guide which I've linked in the notes,
+then you can get a full history of these languages.
+They have changed a fair bit over the years or by enhancement than anything else.
+You'll often see the name of the language written in capital, say WK, but the command that you use to invoke it is lowercase orc or gork.
+So I am going to use the lowercase version throughout the notes when referring to the command and when referring to the language I'll probably capitalise it, the first letter anyway.
+Nowadays on most Linux distributions, I'm not sure about others, BSD and so forth, orc and gork are synonymous and the underlying program is the GNU version.
+Personally, I first encountered orc in the late 1980s when I was working on a digital equipment, corporation, deck, back cluster running open to VMS.
+This was a popular operating system for small mainframe systems in the day and I worked at a university where we had back cluster.
+The operating system was very clever and very nice but it didn't have any good ways of manipulating text actually built into it.
+You could write programs to do it obviously, but that was pretty laborious. You could write compile programs in things like Fortran or Pascal, even C.
+Oh, C didn't come along until a bit later on in my experience.
+I needed to manipulate text quite a bit and was very happy when I discovered that there was a thing called gork which was available on open VMS.
+It's been ported from the Unix version obviously and I installed it on the Vax cluster and this made life far, far easier for the stuff I had to do.
+That and said, which came along at the same time, I think I might have mentioned this in the said series, really changed what I could do working on this system.
+So I thought I'd recap what was covered in the last episode and be easy did did a summary of how you invoke or you type AWK on the command line followed by options followed by a program and then a series of input files that you want to process.
+So obviously AWK awk is the command. The options are quite numerous on GNU awk and the minus capital F was introduced last episode which was the field separator.
+Program is normally written in single quotes but it could be in double quotes but you have to be very careful if you do that because you will get your shell which I assume is going to be bash.
+We'll attempt to interpolate stuff if it sees dollar signs so that you can get yourself in a hell of a tangle.
+The program can actually be preceded by a minus e option like said. I think these grew up at approximately the same time so they tended to use the same general ideas.
+That makes it clear that the program follows in instances where it might be ambiguous.
+Then put several minus e programs into the command line to make a composite thing.
+The list of input files can be as many as you as you want. If you use as a file name just a single hyphen then AWK will read from standard input so you can use that if you're using AWK in a pipeline.
+Let's just summarize what AWK actually does. It views its input data as a series of records and these are usually new line delimited lines as you'd expect.
+It's important to mention this because you can change this. Each record is regarded as containing a series of fields and a field is a component of the record delimited by a field separator.
+We looked at field separators in the last episode and the default one is usually referred to as a white space sequence so that space is tabs and new lines.
+You can also specify it explicitly by, as was shown last time, a minus capital F and then a comma just a bear comma to mean I want to use a comma as a delimited or you can enclose the comma in quotes.
+One of the features of AWK is that if you're using a space or white space in general as a separator then it treats multiple instances of that separator.
+In file 1.txt in the last episode there were multiple spaces between the fields of the file yet those multiple spaces were treated as one separator and the fields were picked out from that.
+If you use an alternative separator then you don't get the same behavior.
+So if the field separator was a comma and you gave the program a piece of text that consisted of a letter A comma comma B then it would find three fields, the first field would be A, the second field would be blank and the third field would be B.
+So the two commas aren't treated as one and you actually treat that example as a three field record.
+Again in the last episode we saw that an AWK program consists of a series of rules where each rule consists of a pattern followed by in curly brackets an action.
+It's normal to write each rule on a new line in the program.
+This isn't mandatory and there are other program components than these types of rules pattern action rules but these will be dealt with later on in the series.
+So in a rule the pattern part is used to identify a line in some way as you've already seen and the action bit in curly brackets defines what will be done to the line which has been matched by the pattern.
+So patterns can be simple comparisons regular expressions or combinations of the two and there's a whole bunch of other things that can be used which will be covering as we go through the series.
+You can emit the pattern altogether in which case it means that the action is to be applied to every record.
+You can also have a rule which just consists of a pattern in which case the action is taken to be print just print the whole record.
+So it says in the documentation it's taken as if the action is open curly bracket print close curly bracket which means print record.
+It's the same as print dollar zero as you saw in the last episode.
+The programs are essentially data driven in that the things that they do depend on the data.
+So they're quite a bit different from the way you write programs in other languages.
+So what I wanted to do in this episode was to expand on some of the things that were covered in episode one and I thought I'd talk more about the field and record idea.
+We already know that as a record is divided into fields split into fields they're stored as numbered entities.
+These are available by using a dollar sign followed by a number.
+So dollar one first to field one dollar two field two and so on.
+Dollar zero is the entire record in an unsplit state.
+So the number after a dollar sign is actually an expression and we'll be talking more about expressions as we go along.
+But it's it's um dollar dollar one or dollar two is not a variable in itself.
+It's a dollar followed by a numeric expression.
+So dollar two and dollar open parenthesis one plus one closed parenthesis means the same thing.
+An expression in this particular case that's piece of an arithmetic expression needs to be in parenthesis.
+But there will be other things that could be used in this context.
+And that's quite an useful feature of organ is an important one to remember.
+Now within an ORC program within the action part in fact within the entire rule there's a special variable called NF, capital N, capital F.
+And it's it's a programmable language remember and so you will have variables in it which we'll talk about in more details we go along.
+But this one in particular is useful and important.
+And this is used by ORC to store the number of fields it's found in the current record.
+So you can print the value of this out if you want to we can use it in test.
+Now I've given an example here which uses file1.txt that was used in episode one.
+And the the files that we were not included in episode one have been added to this episode just for your convenience.
+So my example consists of ORC, space, open quote, curly bracket, open curly bracket, print $0, space, double quotes, space, open parenthesis, double quotes, space, NF, that's that variable capital N, capital F, space, open double quotes, closed parenthesis, double quotes again, space, closed curly bracket, single quote.
+So just to reiterate on that because it's just a list of characters.
+We're printing the contents of $0, $0 being the whole record.
+Then we're following that with a string which contains a space and an open parenthesis.
+We're following that with the variable NF, capital NF.
+We're following that with another string that contains a closed parenthesis and that is the entire action.
+And there's no pattern so it's being done to every line.
+And we're applying this to file1.txt and I just followed this with a vertical bar head minus 3.
+So what that'll do is it'll work on the file but it will only print the first three lines just for brevity in these notes.
+So you'll gather from this print command which we saw print statement I think is more on an accurate name.
+It takes a series of arguments and it simply concatenates them all and prints them out with a new liner at the end.
+So what I've contrived to do here is to tell orc to print out the contents of the field,
+the record I should say, followed by a space, an open parenthesis, the contents of NF and a closed parenthesis,
+which since every field, every record in this file consists of three fields will always be at three.
+But you could use the same on a different file and you might have different numbers of fields per record.
+So it might be useful.
+I've certainly used this myself because sometimes you're trying to deal with a file and you don't know how many fields there are.
+You want to know what the maximum number of fields is in the longest record or something of that sort.
+So as well as counting fields per record or also counting input records as it goes along.
+The record number is held in another variable in R, capital N, capital R, and obviously these stands for number of fields or number of records in the two instances.
+And this can be used in the same way as we've seen for NF.
+So if we wanted to print the record number before each line, we could write orc space quote, open curly bracket, print nr,
+space, double quote, colon, space, double quote, space, dollar, zero, close, curly bracket, close quote, file1.txt.
+And in this case, I've just printed the whole thing. It's only ten lines along.
+So what I've done, what I've asked for here is for, on every line, there's no pattern in this particular program.
+So in every line, the action is to be print the record number, followed by a colon, followed by a space, followed by the contents of the record.
+And as you see, you get numbered records coming out the other end.
+And just to say that when I'm writing these things out, I like to put spaces in between the components of print.
+I think you can get away without doing that. In fact, you could, I think, concatenate them all together. I didn't try this.
+I've just got into the habit of always doing it, doing it with spaces in between them because I find it makes it much more readable.
+But I think it's August, not that bothered.
+So we've been using this print statement in order to output stuff as we're processing a file.
+It's a little bit awkward, I would think, to use it to put out a mixture of fixed bits of text and variable.
+There is no interpolation of variables into strings, as you can do in other scripting languages, like, for example, bash.
+So there's also a statement called printf. It stands for print formatted.
+It's similar to printf, which you find in the C language, and also in the bash scripting language.
+It takes a format argument, it's its first argument, and then it's followed by a comma-separated list of item,
+which are to be processed by the printf statement.
+So the example is printf space format, comma item one, comma item two, and then so on as you wish.
+You can, if you wish, put brackets, parentheses around the argument list.
+So it could be printf, open parenthesis, format, comma item one, comma item two, etc.
+Close parenthesis. You can do that if you want to. If you find that more readable, but what doesn't mind can be with or without.
+The format argument, or more generically called a format string, defines how each of the arguments is to be output,
+and to do that it uses format specifiers, and these are sequences of characters which have a special meaning,
+and they begin with a percent sign, and are followed by a letter.
+There's a little bit more to it than this, but we'll deal with that in more detail later on.
+So examples are percent s, which means at this point, as you're writing stuff out,
+output a string, a string of any arbitrary length.
+Yeah, another example is percent d, lowcase d, and it was lowcase s as well.
+And that's for outputting a decimal number.
+So I've given an example where there's a printf statement, which outputs the record followed by
+a parenthesis number of fields. So it's just like the one using print, but it's just going at it in a different way.
+So to do that, you would use printf, and I'm not using the parenthesis form, space, open double quotes,
+percent s, space, open parenthesis, percent d, closed parenthesis, backslash n, then there's another double quote,
+comma dollar zero, comma nf.
+So what that's doing is it's using the format string, percent s, and then in parentheses, percent d,
+and the percent s means output dollar zero as a string of arbitrary length, and follow that with the space,
+and then in parentheses, the number, which is in the variable nf.
+Follow that, the backslash n is a new line.
+I saw that in the said series if you followed that.
+It's necessary because printf does not generate a new line, unlike the print statement.
+It doesn't generate a new line at the end of what it does by default.
+You have to explicit about it, and the backslash n represents that new line.
+Now there are other format specifiers, and there are more features of printf, but we'll describe them in later parts of the series.
+Now let's look at ORC programs in a more detailed way.
+What we've seen so far is programs which are written on the command line.
+They've been pretty simple, consisting of just the one rule in ORC case so far.
+When an ORC program starts to get more complicated, it's usually a good idea to put them in a file.
+There is an option minus lowcase f followed by a file name.
+What that does is to tell ORC that it's to get its program from the named file.
+I've included a file called example1.awk, and it's included with this episode.
+It just consists of two rules, which I've included in the notes here.
+It's a regular expression rule, so it's a slash circumflex lowercase a slash space.
+I like to put spaces after the regular expression, just because it makes it more readable.
+You don't have to, in fact.
+Then in curly brackets, you've got print space double quote, capital A colon, space double quote,
+space dollar zero, closed curly bracket.
+That's the first rule.
+It's just saying, when you find a record that gins with the lowercase a,
+print it out with the letter A in front of it, A colon space in front of it.
+There's a similar rule, the second rule is a similar one, and it's using B.
+So the regular expression uses a lowercase B, and it prints out the capital letter B followed by the record.
+So if you ran this on file1.txt, you would do it by typing on the command line.
+Ork AWK, space hyphen F, space example1.awk.
+Remembering that's the program file.
+Follow that with the space file1.txt.
+What you'd get back would be three lines, and the line which contains,
+the first line that contains Apple, will be printed out with an A on the front of it,
+and the one line that contains, begins with banana, will be printed out with a B on the front of it,
+and then the second line starting Apple will be printed out with an A on the front of that.
+It's not spectacularly useful, but it makes the point.
+Is the convention to give Ork program files the extension.awk,
+and that makes it clear what it is, and that the fact that it holds an Ork program.
+This is not mandatory, but it gives a useful clue to things like file managers.
+If you click on something in a file manager, it will execute it with Ork, for example,
+or if you're running it through an editor, you're editing it with an editor, and the sort of editor.
+Like VIM, for example, or EMACS, which does syntax highlighting,
+it would use that as a clue to highlight the syntax using Ork,
+syntax analysis. There's another way of doing this, though,
+and as you have seen from, if you follow the said series, and other series about scripting on HPR,
+an Ork program file can be made into a script by putting a first line at the top,
+which begins with a hash mark and an exclamation mark, hash bang, or crunch bang as people call it,
+and you also need to make the file executable.
+So I've included a file called example 2.awk.
+It's been included, and I've listed it out in the notes as well.
+So this one consists of the first line is hash mark, exclamation mark,
+then the path to the Ork program, which on system I was running it on,
+probably the one that you'll be running it on, is slash usr slash bin slash awk.
+Follow that with a space and a minus lowercase f.
+You need the minus f because that tells the Ork program that it's actual,
+program that it's to execute follows in the same file.
+Then lines 2, 3 and 4, the listing in the notes is numbered, so it should be easy to follow.
+2, 3 and 4 are a comment. Comments begin with a hash mark in the first character position.
+In fact, anywhere on the line it can be a hash mark, and a rest of the line is ignored.
+And then the actual program is on line 5. It's just a simple one, one liner, just as an example.
+And this one consists of a pattern which is using the nr variable.
+So we've got the expression nr, and a greater than sign 1.
+So it's saying, do this for all records, which have a number greater than 1.
+And then the program is in curly brackets.
+And I tend to write a space after the open bracket, before the closed curly bracket, just for it.
+Because I like things to look neater. But you don't have to.
+Anyway, the program is printf, space, double quotes, percent, lowercase, d, colon, space, percent, s, backslash, n, double quotes, comma, nr, comma, dollar zero.
+So what that is doing is it's printing the each line.
+Each line that has a number greater than 1.
+And it says, orc counting the line numbers as it reads lines from the input file.
+And it will print the nr value, which will be the line number, and a colon, a space, and then the contents of the line.
+What this means is that line 1 doesn't get printed.
+Now for this to work, you need to make the file executable.
+Do that with the command, chmod, chmod, space, lowercase, u, plus lowercase, x.
+That means make it executable for me, space, and then the name of the file, example, 2.org.
+Then it can be invoked in the way that you normally invoke executable scripts, and so forth.
+That are in the current directory.slash, example, 2.org, space, and then the name of the file.
+You want to run it on file1.txt.
+And what you see, and it's listed in the notes, is each line of the file with a line number, just printed out.
+But you don't see line 1.
+So I put a little summary at the end of this episode.
+It's useful, but sometimes it can be handy just to review what you've covered.
+And so we've covered a bunch of new topics.
+We've looked at records and fields.
+The difference between spaces is field separators and other separators.
+The way that an alt program is made up of rules, and referring to fields by a dollar sign and a numeric expression.
+We've looked at the variables nf and nr, which hold the number of fields and number of records.
+And we have looked at print and compared that with print f statement.
+We've looked at org program files and the minus f option on the command line.
+And we've also looked at executable org scripts.
+You've covered quite a lot actually.
+In a fairly quick and cursory way.
+But we'll be drilling down into these concepts.
+A little bit more as the time goes on with this series.
+Anyway, that's all we're doing.
+There's a bunch of references at the end.
+Links to various websites like the GNU Walk users guide and the Wikipedia article and so on.
+It's not much point to me reading them all out.
+I've made a link back to the previous episode in case you want to refer to it.
+And listed out the resources that we've used in this particular episode.
+Just to make it easier to go and download them.
+And that's what you'd like to do.
+I hope you found that useful and thanks for listening.
+Okay, bye.
+You've been listening to Hecker Public Radio at Hecker Public Radio.org.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+Ever thought of recording a podcast and click on our contributing to find out how easy it really is.
+Hecker Public Radio was founded by the Digital.Pound and the Infonomicon Computer Club.
+And it's part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly.
+Leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released under Creative Commons,
+Attribution, ShareLive, 3.0 license.

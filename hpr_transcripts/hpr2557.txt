@@ -1,0 +1,167 @@
+Episode: 2557
+Title: HPR2557: Styx -- The Purely Functional Static Site Generator
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2557/hpr2557.mp3
+Transcribed: 2025-10-19 05:32:32
+
+---
+
+This is HPR Episode 2557 entitled, Stix, the purely functional static site generator.
+It is hosted by Clackit and in about 14 minutes long and carrying a clean flag.
+The summary is, for the Fractalide website, we are using Stix and a site generator.
+Here's a bit of how and why.
+This episode of HBR is brought to you by AnanasThost.com.
+Get 15% discount on all shared hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's honest and fair at AnanasThost.com.
+Hi, I'm Clackit, first a technical note.
+I was going to start this with some nice cafe music in them all, but apparently the microphone
+on this Galaxy S5 is much worse than the Galaxy S5 mini, which is pretty surprising.
+So it was all just garbled noise, so I decided to go outside first before I started recording.
+So here's your weekly update on what I'm up to.
+Rackit is not finished by far, but it's doing what we need it to do, so it's not
+defensible to work with anymore.
+It can take a package name, or it can take a path to a package, and you can create a
+nix package, nix derivation, and that derivation will depend on the necessary other generated
+derivations that will bring everything into scope needed to build a package.
+So that's Rackit and nix, and now moving on to help Stuart with the main fractalide projects.
+What the most urgent thing we have to get in order now is the website.
+Currently it's in, or the next version of the website is currently in Hugo, and because
+we're in nix heads, we would love to use something very nixie to produce the website.
+And one of the people working with fractalide has created his totally nix-based site generator
+called Stix.
+And if you search for nix sticks on your favorite search engine, you'll find that the source
+code to our website is like the next hit below the actual package, the program that creates
+the website.
+So you can do pretty crazy stuff in nix.
+Of course, it's a language that exists solely for the purpose of creating derivations for
+the nix tools to then make concrete in the form of packages in the next store.
+But it is a complete language.
+It has less than 20 buildings, I think, and they're all more or less geared toward these
+creating packages use case.
+But you could quite easily create a cheering machine in nix.
+You wouldn't have any useful inputs or outputs maybe, so, but if you would run that in some
+kind of loop and call it from something, then you could have that too.
+If you produce some sort of output, something, parses and shows that output on the screen,
+you could even interact with it and send something in.
+So it is a complete language from the theoretical point of view.
+And it can read in files and handle file contents within the language.
+It's not what you usually do, usually you call out, you create a derivation that calls
+out to some existing tool that gets build environment and then that will run on the input
+and it produces an output.
+For example, I think it's the car nix project, which is a program that produces nix derivations
+for cargo packages, the package manager for the rust language.
+And rust uses the tumble language to describe its packages.
+And so someone wrote a complete tumble parser in nix, not calling out to any other language,
+but just reading in the file into nix and parsing it there and using the information
+gain to do whatever it needs to do to create these rust package durations.
+So what the sticks guy did here is, well, he's not parsing mark down.
+No, theoretically, obviously you could do that.
+He's not doing that using a package called multi mark down to parse the actual mark down files
+into HTML.
+But then at the next level, the mark down file gets parsed into HTML by multi mark down,
+or if it's an ASCII doc file, it parsed into HTML by ASCII doctor.
+And then you have a string that is HTML content, it's not a complete page, it's just the HTML
+body.
+And then of course, you want to have your templating and stuff around that.
+And all that is managed within nix.
+So the whole HTML file fragment becomes a nix string and then everything from then on
+is parsed in nix.
+So you write a template that is some HTML text, and then it has the string interpolations
+here.
+So we call out to page.content and so on.
+And you have a template and you have a layout.
+And then everything is generated to become an HTML file.
+So there's one derivation per HTML file.
+And then all of those are pulled into a big derivation that is the whole site.
+And then sticks is the convenience framework that ties all of this together.
+So you just define your pages and inputs as sets in nix.
+So a set in nix is what if you use generic language, not a particular programming language,
+you would call them dictionaries.
+So they're like an array in pearl or hash in scheme or a dictionary in Python, that's
+a set in nix language.
+So you have layout equals blah, template equals blah, content equals blah.
+And then there's a function that can, oh yeah, and the output path of course.
+So you define what goes in and you define where to put it.
+That's the description of a page.
+And then there are library functions that can tie all these pages together and produce
+the site.
+So why would anyone use nix for this?
+The nix is made for handling huge amounts of data converted to other forms of data and
+try to minimize the amount of processing needed when something changes.
+Everything is in the nix store, cashed.
+As long as you refer to it somewhere or as long as you don't garbage collect, it will
+be there.
+If you have this markdown or ask a doc file that you modify, then you generate a site,
+it will take that hey, all these other files did not change.
+So we can just keep the generated portion of the website that comes from those files.
+And we can just generate the part which affects this thing here.
+And that sounds kind of simple, this is just make.
+But what also happens is that you can have data files and those get loaded in by sticks.
+And they can be used to change the contents of the pages.
+The pages can refer out to this data.
+So instead of putting, for example, in our website, we have a list of the team members.
+So that's just a YAML file per member, per team member.
+And the YAML file says this is the type of social network and here's the icon to the type
+of social network and here's the icon for that team member.
+That's the YAML file.
+And then there's some templating code that reads the YAML file and creates a portion of
+the page.
+So if you change some of that data, then it's no longer trivial for something like make
+to figure out that this data file over here changed.
+Then better hope that someone declared a dependency and make that this HTML file over here depends
+on this data file.
+And what if you change one part of the data file and that affects one page and then you change
+another part of the data file and that affects some other page.
+Well because in sticks, the data is read into nix and the nix handles all the dependencies.
+So if you have a template over here that said, I need this piece of data.
+This will notice that, okay, to generate this file, I had this data and then it hashes
+all of the data going in and then it says, I'm actually already generated this page.
+It's already in the store, so then it won't have to do anything.
+And if the data did change, yeah, then I will run the appropriate generator, it says
+key, doctor or multi mark download or if you declared something else and added in.
+I haven't really touched this very much so far, but what I will be doing this week and
+we'll see how long it takes, hopefully not too long.
+We need to get this before the end of the month, I think.
+Well we have a Google site and we want to convert it to a stick site because everything
+we do is nix, so it's pretty comfortable to have nix even for this thing.
+And that's the manual for the success.
+Processing is pretty slow, but because every little part is cached and because the caching
+mechanism understands very well what data goes where and when it really needs to regenerate.
+Once you have generated the site once, it should be really efficient.
+If you change a small thing then you know that the right things will be regenerated and
+it won't have to do any unnecessary work on the irrelevant files.
+So this is going to be pretty exciting.
+Also worth mentioning is that he really went all when making sticks.
+And the library itself is a sticks website.
+So if you just generate a documentation, every function in the library or at least in
+certain parts of the library is a documented function and that's a documented function
+is a nix function name.
+So you have the description of the function and what it does together with the actual function
+code and you have example code and then you have an expression that runs the example
+code so the documentation contains the real output from the actual code.
+And all of this is put together in one of these dictionaries and when you use it as a
+function it figures that out and runs the function and when you build it as a site it figures
+that out and uses the other attributes to build the documentation.
+So that's pretty cool.
+That's sort of literate programming in Nix.
+I haven't seen that anywhere else.
+I hope it's pretty interesting.
+Yeah.
+Until next time, this has been Hacker Public Video.
+Check out sticks.
+I've been listening to Hacker Public Radio at Hacker Public Radio not a work.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast and clicking our contribute link to find out
+how easy it really is, Hacker Public Radio was founded by the Digital Dog Pound and the
+Infonomicon Computer Club and is part of the binary revolution at binwrap.com.
+If you have comments on today's show, please email the host directly, leave a comment
+on the website or record a follow-up episode yourself unless otherwise stated today's show
+is released under a creative comment, attribution, share-like, 3.0, isn't it?
+You've been listening to Hacker Public Radio at Hacker Public Radio.org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast and click on our contribute link to find out
+how easy it really is, Hacker Public Radio was founded by the Digital Dog Pound and the
+Infonomicon Computer Club and is part of the binary revolution at binwrap.com.
+If you have comments on today's show, please email the host directly, leave a comment
+on the website or record a follow-up episode yourself unless otherwise stated today's show
+is released under a creative comment, attribution, share-like, 3.0 license.

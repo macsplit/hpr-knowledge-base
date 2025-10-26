@@ -1,0 +1,137 @@
+Episode: 1286
+Title: HPR1286: iCalendar Hacking
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1286/hpr1286.mp3
+Transcribed: 2025-10-17 22:57:00
+
+---
+
+Hello, this is Dave Morris. Today I want to talk to you about a problem I encountered.
+Last year it was in fact in 2012 and some of the research I did and experience that I
+tried to carry out to fix the problem. I didn't quite get there but hopefully you'll find the
+voyage interesting. So the original problem was that back in 2012 Ken Fallon tried to use Google
+Calendar to set up an event for recording the monthly community news shows on HPR. He wanted to be
+able to send out invitations to people using that means. He wanted to set it up so that the message
+went out the event was set for the Saturday before the first Monday of each month. Quite surprisingly
+he didn't find a way to do this and ended up deleting the attempt going for another method.
+This puzzled me because you'd think that's what calendaring was all about. I looked at the application I
+use which is Thunderbird with the lightning plug-in to see if I could do it but I couldn't find a way
+either. I'll do surprising. I'm sure Kenneth looked at all manner of ways of achieving this.
+So I thought I'd do a bit of research about what might be going on here. I was aware that
+calendars like Google Calendar and many more use the I Calendar format to represent events.
+So I thought I'd try and find out more about this. I've come across it before and I've always wondered
+how this stuff works, how do you represent an event and all the other stuff that you can do
+when setting up a calendar. So I grabbed a copy of the RFC that covers this which is 5545
+and tried to absorb enough to get a vague idea of how it defines recurrent entries of this sort.
+It's pretty heavy going. I must say I haven't read it in my office. It's about 9,000 lines of
+pretty dense text but it's possible to grab a copy and I've left a link in the show notes for you.
+So I discovered that there are two primary methods of defining recurrent events within
+I Calendar. There's a command, I suppose you call it a command, which is R Rule,
+spelled R-R-U-L-E and R-Date. The R rule, sorry, property is the more powerful of the two
+and of course the more complex. The description of R rule is long involved but in the context of
+this problem I could see how to define the first Monday of every month which is if you go and look
+at a calendaring application such as Thunderbird it's there in the GUI. You can say I want this
+to repeat every month on the first Monday and the rule underneath it is I've written it in the
+in the show notes but this is simple enough that I can read it out to you. It's R-R-R-R-R-U-L-E
+colon frequency that's F-R-E-Q equals monthly semi colon by day B-Y-D-A-Y equals 1-M-O.
+Now fairly obviously the frequency equals monthly simply means that the rule repeats every month
+and by day equals 1-M-O then means that the day every month is the first Monday so that's
+pretty simple quite neat actually. So most calendar applications are well able to deal with this
+sort of specification and seems to be the way in which most recurrent events are defined. You can
+dump calendar entries out into devils and go and look at them if you're interested.
+So I thought I'd have a try at using this i-calender stuff to do what was needed.
+Obviously the first Monday of the month is not what we want to do. We wanted this Saturday before
+that but then I found that the i-calender syntax doesn't have an obvious way of subtracting two days
+to get this Saturday before. You'd think it'd be easy enough to say first Monday of the month
+take away two days and there you go it's not quite as simple as that.
+So I discovered that the the by day part of the rule can be followed by a list of days of the
+week which are represented as two character strings M-O for Monday, T-U for Tuesday etc.
+And you can also proceed each of these days with a digit meaning the first Monday, second Monday etc.
+There's a further part to the rule which is by set pause B-Y-S-E-T-P-O-S
+S which modifies the by day rule and it's followed by separated list of values, comma separated
+list of values which correspond to the in the currents within the set of events. That's pretty
+complex to say but we take the rule I had before and modify it a bit. So we've got R rule equals
+frequency equals monthly by day equals now here we can we're going to put a list Saturday and that's
+S-A comma Sunday S-U comma one M-O so that's a list that says the first Monday of the month
+and the list also contains the Saturday and Sunday before it. We follow that with
+semicolon B-Y-S-E-T-P-O-S by set pause equals one so the intention here is to say
+every month go and find the group of days which contains the first Monday
+that group of three days the Saturday and Sunday before it and take the first.
+So that's actually quite nice, quite elegant, a little bit convoluted but there you go.
+I was quite surprised to find that this actually worked once I'd actually constructed this rule
+and plugged it into a calendar but I found that it has a fatal flaw.
+If the three days in the by day group are all in the same month it works fine but if either
+the Saturday or the Sunday are in the previous month something or other fails to backtrack
+enough and drops the event on the wrong day it's as if the algorithm has been written only to deal
+with dates within a given month not to span one month to another.
+Well even if this worked reliably I suspect that many calendar applications couldn't define it.
+The interface certainly with Thunderbird and Lightning the interface does not have the capability
+to specify something that's complicated. Anyway in the show notes I've put an example of the
+full eye calendar entry that I broke to a file and plugged into Thunderbird to get the effect
+that I just described so you can have a look at that and see if you can get it to work with your
+calendar. Maybe there's a calendar out there that does actually do the right thing be most
+interested if that were the case. So rather than give up entirely at this point I thought it
+have a go at another experiment. I discovered that there's an alternative way of specifying
+repeated dates though not in such a nice compact way as the R rule. The R date specification I
+mentioned before allows you to define a number of events by simply specifying them they don't have
+to follow any particular rule and there can be anything. Now there are ways of doing this you can
+actually say within calendaring applications one sort of looked at anyway that you want it to
+occur on these specific dates though making that happen seems to be rather involved.
+Anyway I thought I'd have a go at building a test calendar containing the next 12 community
+news events and constructed this by hand you'll be surprised to find that there's a plug-in
+for them which recognizes the I calendar syntax so that makes it quite nice and prevents you
+making mistakes. So rather than do this I thought I'd put together a pulse script to
+generate a block of events using our date and there's a reference to this script in the show notes
+you can go and examine it on the show notes page and there'll be a link to a downloadable
+copy if you wish to grab it and play around with it. The script uses the pearl modules date calc
+and data ical date calc is used to perform date calculations and the other one data ical
+generates i calendar data so you can run the script it's called mate calendar and pipes it's
+it centers out put to stand it out so you can pipe that to a file there's an example of it being
+used in the show notes by default it generates 12 appointments and there's an example of
+a set of these appointments in the show notes which you can load into thunderbird and any other i
+calendar based calendar I assume and get the desired result you can't edit them in any
+certainly not in thunderbird you can't edit the sub-events you can just delete them
+so you couldn't move one of them to another day as far as I can make out but the idea works although
+it's a hell of a convoluted way to get calendar events i did try this with k organizer i'm a kde
+user and that's the only other calendar i had available to me and it sees the multiple dates
+as multiple discrete events rather than a single recurring event but there's some hope in this
+but it's still not not ideal but maybe better than the the our rule thing that gets the date wrong
+so i thought i'd have have a look for and see if i could find another way of doing this so i
+went for another experiment which where i looked at other calendaring systems
+and there are the two that i looked at do seem to have ways of handling this type of date
+specification better for example i've used a tool called pcal for many years which generates
+post-crip calendars into which you can add events and then you can hang it on the wall or carry
+around with you as i used to do and it's it syntax can quite reliably specify the saturday before
+the first monday of each month and you simply type the expressions saturday before first monday in
+all which means every month the saturday before the first monday it does does a fine job of
+computing it but not particularly useful unless you like carrying around paper calendars
+there's another tool that i looked at which is called remind which can do the same thing
+and i won't read out the expression in this case have a look at the show notes you can see
+the specification to to generate events like this but the interesting thing about remind is
+that it comes with the tool which can generate i calendar data it's called rem2 ics
+it expects output from the remind command and then it generates i calendar data from it so
+i give an example um command pipeline to uh to show how uh you could generate 12 meetings from
+the reminder that i've specified there um and uh produce uh an i calendar file from it so i discovered
+that this uses our date um as my pulse script does to to generate such a set of events
+um and does quite a nice job of it but uh it's it's it's still not the the thing that i wanted
+so the conclusion after all this experimentation is that uh the i calendar specification should
+be able to generate appointments of the type that we need using the the r rule specification
+because you'd want that because you could generate infinite appointments that just character the
+rule just keeps operating forever it should be able to do this but the small number of
+calendaring applications i've checked it against don't seem to be able to do it for some reason
+it's uh the only conclusion i can draw is that they've not been implemented properly
+so other tools that don't use i calendar have less difficulty representing such things but uh
+they're not quite the same thing they're not going to call you to to a meeting and all that sort
+of good stuff that uh that i calendar thinks are supposed to do
+so i'd be interested if anybody has any other experiences around this area um some thoughts about
+how this could be solved more effectively and just let me know so it's a bunch of links in the
+show notes that hopefully will give you some help if you want to follow this up any further
+but otherwise that's it okay bye
+you have been listening to Hacker Public Radio at Hacker Public Radio does our
+we are a community podcast network that releases shows every weekday on day through friday
+today's show like all our shows was contributed by a hbr listener like yourself
+if you ever consider recording a podcast then visit our website to find out how easy it really is
+Hacker Public Radio was founded by the digital dog pound and new phonomicum computer cloud
+hbr is funded by the binary revolution at binref.com all binref projects are proudly sponsored by
+linear pages from shared hosting to custom private clouds go to lunar pages.com for all your hosting
+needs. Unless otherwise stasis today's show is released under a creative comments
+attribution share a life lead us our lives.

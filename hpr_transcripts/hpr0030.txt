@@ -1,0 +1,128 @@
+Episode: 30
+Title: HPR0030: Network Backups
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0030/hpr0030.mp3
+Transcribed: 2025-10-07 10:28:09
+
+---
+
+.
+Hello and welcome to another edition of Hacker Public Radio.
+Today I'm your host, D.J. Dawesman, and today we're going to be talking about backups.
+I'm going to kind of dive into a couple of different types of backups.
+I'm going to cover a couple of different pieces of software for one type of backup.
+I'm going to cover and talk about the hardware setup and then kind of go over some other
+concepts and such.
+First, the backups that I used to make early on of my systems were basically you power
+the system down, you boot it off in floppy disk with Norton Ghost or Clonezilla or something,
+and then you either burn it to a local CD or DVD or you can shoot it over the network
+to your ghost cast server or whatever you're going to do with it.
+That's nice.
+That gets a full complete backup of your system.
+However, the downside to that is it's pretty manual and your system has to be down for
+this to happen.
+Because of that, I don't think a lot of people do those often enough.
+I know I don't.
+What I really like and what I've come to really appreciate about what we use at work is
+an online backup system that backs up stuff over the network and automatically tracks
+incrementals and runs while the system's up, so your production system so I have to
+be down.
+I started looking around for an open source way to do this on my own systems at home.
+What I came across were two different packages, one is called Amanda and that's been the
+good old standby for, I don't know, 15, 20 years now, and basically it's called Amanda
+for originally created by the University of Maryland, I believe, and basically it's
+a loosening collection of different scripts and programs, all packaged together with
+a server and basically it runs as a Damon and so when it runs, just every night, it
+just gains your system for files that have changed and that's your incremental backup
+because it shoots off files that have changed on each of your servers over to a central
+storage backup system.
+Of course, the server component on the backup system then saves automatically manages writing
+all the backups to tape for you, typically with a larger installation you're going to have
+a array of multiple tape drives and a tape library, a robot moving tapes in and out.
+You can also do that, they can store, I don't know if Amanda does this yet, stores to local
+storage pools on online hard drives basically, so you don't have to have the tape drives for
+the backups, but Amanda has been the standby for people doing stuff like that and it mostly
+is intended for working with Unix or Linux systems, Windows systems, I think there's kind
+of a hack way to do that using SMB shares and so on, to get backups of your Windows systems
+using Amanda, I really wanted something a little less clumsy and I finally stumbled
+across another package called Backula and their slogan is, it comes by night and sucks the
+vital essence from your computers and it's only, it came about in 2000, 2001 or so I think
+and it's, all of a sudden it has some very strong development behind it and a surpassed
+Amanda quite a bit by its features, capabilities and robustness I think, which is kind of
+unfortunate for the Amanda folks, it's a good, Amanda's a good thing, but anyway this
+is Backula product, it's basically all completely distributed so you can have like a single
+tape drive on each, you know, of several different computers and you can have those act as
+agents that receive, you know, you have a central backup server that kind of, you know,
+pulls the strings and manages all the backups to these other systems that have the storage,
+all your client systems back up to the main Backula server and you could also just have
+a standalone Backula system if you have multiple tape drives hanging off this one system
+or a tape library, so that's what it does.
+Commercial products in the same area of course if you're familiar with TSM or Legato
+network or ArcServe backup exec, these are all very, very expensive commercial products
+that basically do what I just described network backups with your systems online, so anyway
+I decided I wanted to do something like this on my own for my own systems because after
+a while you get so many different laptops, computers running and stuff, you don't keep
+good backups of them and so I also just happen to have an XABXB210 dual drive 10 cartridge
+didn't tape auto-changer that I acquired and I still got to get some tape drives to put
+into it but basically any 8 millimeter tape drive will work with this thing that will
+be compatible with the robot, the gripper, it's pretty slick, I finally, I've had it for
+a couple of years but when I decided I never actually hooked it up and actually I like
+used it and so I sat down and basically to get an auto-changer to work with Linux, there's
+a couple things you're going to have to do, obviously you've got to get your scuzzy card set up,
+I was using a future domain PCI card which worked fine under Fedora Linux, Fedora 5 and it's
+pretty old but I've got a system that I'd use that's Fedora 5 and for experimentation and stuff
+and at work fine I could control the accessor but under sent OS 5 which is basically Red Hat
+Enterprise Linux, I have not been able to get the thing to work and the driver keeps crashing
+anytime I try to use it, I don't know if it's an application problem or driver problem on
+kind of suspecting it's a driver problem at this point because sent OS didn't come with this
+driver by default whereas Fedora did, I was able to get it to compile but anyway some problems I've
+had, so basically how do you use an auto-changer with Linux? Of course you mod probe your scuzzy card,
+most tape libraries use the scuzzy generic Linux device driver set and so that rides on top of
+your above your scuzzy card stack and then also you're going to have to have a scuzzy tape or ST
+driver for your tape drive and your scuzzy changer is going to be a scuzzy idea on your scuzzy bus,
+your tape drives will be separate IDs also on the same bus so basically you can
+cat slash proc slash scuzzy slash scuzzy and if your scuzzy drivers initialize properly you'll see
+both the auto-changer and the scuzzy tape drive and from that point you're good to go to try
+with the MTX command and you can check out the man page on that for flags and how to use it
+obviously and you'll reference the scuzzy generic device. Once the SG module is initialized into
+the kernel you'll have a couple of devices out in your dev file system and usually like you'll
+have at least SG zero and SG one those will represent the auto-changer and the scuzzy tape even
+though you won't access the tape with the scuzzy generic interface to it. You'll use your regular RRMT
+or whatever little device you have that your OS provides for that. The thing about scuzzy generic
+is basically just very low level scuzzy interface so it just lets commands throw data at the scuzzy
+bus, throw commands and stuff and so that's how that's why auto-changers are typically accessed
+with the scuzzy generic. So once you get those things working then the next layer the actually user
+commands is going to be MTX and there's a couple different user space commands for accessing
+your tape-changer but MTX is pretty much the good old standby that I think everyone uses Amanda
+uses MTX in order to manipulate the auto-changer or backulate uses MTX and I think they can use some
+other utilities too but MTX that's that's the good way to go and it'll do some verification you
+can do some basic status information from your library. I've got a little script when I had it
+working under Fedora I could have it just you know run the move the robot back and forth and move
+tapes automatically just kind of an exercise so that was a lot of fun to see working. So like I
+said you were talking describe some of the applications software that writes on top of it so so
+anyway once you get these layers of things set up and you get your your applications software
+up either Amanda or backulate or possibly something else then basically you should be able to have
+nightly incremental backups of all your files. I for most part I you know I've got a lot of like
+text notes that I have personal documentation that I write for myself. I've had a growing library
+of like video and photo photos and stuff that need to be archived a little bit better than I
+currently do. So that's that's some of the things that I intend to use with it. I currently
+I'm having some problem. I haven't actually gotten backulate up and running yet but that's mostly
+because I once I I switched mid-mid process to a new system I got a dedicated piece of hardware
+just to run backulate on and unfortunately like I said I've been having some problems with sent
+who has but once I can get those issues resolved and I'll go ahead and start working again with
+backula and the thing with with Amanda and backula and the I mean these the trade-off of having
+a very convenient nice backup server is it takes quite a bit of configuration and massaging
+to get these things to work right. You've got you know exclude lists like there might be certain
+directories on your system that you don't want backed up. I don't know things like obviously
+you don't want it to mess with proc there's no reason for it to be touching anything under there
+and other other file systems and such. So it's going to take some tuning there's going to be quite
+a few concepts you're going to have to I get your your head wrapped around and backula try is
+pretty hard to explain these concepts early on to help you make the right decisions to configure
+the system what you need. Some of the Amanda documentation really seems to be kind of they're
+switching from their older style of documentation to a wiki and it seems like there's a lot of stuff
+it is just really in the middle of a transition right now. My apologies to the Amanda folks if
+they've worked out all those issues since I've looked at it but it seems like they're unfortunately
+they were kind of overtaken it seems like with the functionality and backula there but it so that's
+basically a good robust backup system how you would use it how to set it up. I'll have some
+notes on the hacker public radio for some of these different things I've talked about.
+So anyway have a good day enjoy and I'll see you later.
+Thank you for listening to hacker public radio. HPR is sponsored by caro.net so head on over to

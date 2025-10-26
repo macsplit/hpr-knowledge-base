@@ -1,0 +1,178 @@
+Episode: 331
+Title: HPR0331: Snort Part 2
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0331/hpr0331.mp3
+Transcribed: 2025-10-07 16:31:18
+
+---
+
+Music
+Hello, and welcome to this episode of Packer Public Radio with your host, Operator.
+You can check out my site on McCurdy.com, R-M-C-C-U-R-D-Y.com, got a bunch of stuff on there
+for applications, all kinds of goodness.
+Today's topic is going to be snort, okay, yes, we all know what snort is, that's fine.
+But has any of you actually implemented it and if you have, how are you using it or are
+using it to its best ability?
+Okay, so yeah, you've used snort before, whatever, it's an IDS and it's blogs and that's
+great.
+Well, it can do a lot more than that.
+It's an IDS, it can be a wireless IDS, detect rogue access points, crazy stuff like that,
+intrusion detection prevention, which is the blocking aspects of it, and actions not necessarily
+blocking, but you can do any action based on that, malware, signatures, command and control
+for botnet, shenanigans, rogue services like DHCP services, DNS services, etc., denial
+of service attacks, all kinds of stuff that you would think that your network would cause
+problems with, even malformed packets, all kinds of good stuff, snort has out of the
+box for the most part.
+And what's even better is if you don't like it, you can write your own signatures, do
+whatever the hell you want.
+Okay, so let's get started.
+It's not IDS proof.
+There's a lot of good guides out there.
+There's a couple of good ones for BSD specifically, but first things first, once you start
+your running, you're going to find false positives all over the place.
+We're also going to have issues with updating or automatic updating, and then if you do patch
+anything into it, besides doing signatures, you're going to have to compile it or patch
+it, the actual snort part of it, to do it, get it to work with snort sam, etc., then
+you've got all this other crap like base and snort and oink and oink master and barnyard
+and inline and all that mess, which is a different story altogether.
+Then you've got environment variables, so for things like signatures that get pop up
+for something that's not even run on a specific port.
+So for example, if you've got SSH running over port 8 and you're flipping bits across
+there, you're going to trigger alerts or vice versa.
+If you're running something on a different port than snort would normally listen on, it's
+going to trigger alerts, trigger false positives, and you're going to have all kinds of mess
+going on.
+But for the general network, and you're not going to have to do a whole lot with the environment
+variables, unless you've got the infamous security through obscurity, stuff not on a
+port, so it's not supposed to be run or what you need to know before you start.
+What OS you're doing it with, are you going to use IPFW or are you going to use IP tables
+here, Linux flavors, as far as ease of use, I would start with a BST box, free BST, open
+BST, not for the newbie, you're going to start with free BST and then kind of go from
+there on the guides online.
+There's also some mess to get into as far as the preprocessors, what they do, how they're
+set up into all the magical goodness that they can do.
+And then like I said, you've got your oink master and barnyard and acid and basin and snort
+and inline and all that good stuff, which oink master from what I can remember is the
+guy that kind of helps you update your signatures and you get an oink code from snort and I'll
+kind of go over that, then you got stuff like barnyard that sends the base information
+into a SQL or postgres backend and all kinds of fancy stuff and then you got the alternative
+method for instead of snort sand, you've got snort inline that does similar actions.
+Okay, so here's your idiot proof guide for snort sand.
+You start off with a free BST box or open BST if you want to go squarely, alright, so
+you get an open BST or free BST box and go to the, what is this?
+These are reports security snort folder and do make space config.
+Now you'll check the box that says snort sand and hope for the best.
+You will have errors with auto comp auto make.
+If you do, go ahead and go to the configuration of all the packages and get rid of anything
+auto make auto comp and you don't have to worry about the mislinking and it making to the
+wrong binary.
+So let's just get rid of auto make and have it go down the dependencies of whatever auto
+make and auto comp at once.
+So once you've finally gotten snort to configure with snort sand or snort inline or whichever
+one you want to use, you want to do snort sand in my case.
+You want to also go to the ports folder for snort sand and compile snort.
+And at this point, you'll have snort and snort sand compiled ready to go.
+And now you're going to go to the configuration part.
+Okay, so from ports, you got snort to configure with the snort sand madness and then you
+got snort sand itself to configure and compile from ports.
+Okay, so then you get this sample configuration for snort sand of course and I will post
+my configuration and as far as configuration icon for snort sand, that's the easy part.
+I'm really going to go into that snort and however is the more difficult part to get
+running the way you want it.
+Now after getting all this mess set up, I realize it snort inline now supports free
+BSD.
+So whatever, if you want to use snort inline to do your actual blocking deal, I would use
+that.
+Go for that.
+I'm sure there's tutorials on that that are a little bit better.
+But this is more mainly for people that have snort running and want to actually know
+how to update the configuration and update the rules and automate all this stuff to get
+nice and clean and updated.
+All right, so you have snort listening and you have some signatures and you have it
+doing something when you get triggered a signature, either dumping to an SQL database
+and blocking or doing both or six one half and a dozen the other.
+Okay, okay, so now we're going to go over my horrid update script for snort.
+Barnyard and you could probably do all this or if not more than this, but I don't even
+go down the barnyard yard because I was just way too complicated for me and I'd rather
+just write a script to do what I want to do.
+So first thing, we download snort rules.
+Before I had a PHP scroll script, it would log into the web interface and download the
+rules that way.
+Apparently now it's just a one URL, one liner.
+You get a snort code that's some weird fancy hash and once you register for their free
+feeds that don't update that often, you'll get a snort point master code and you can just
+feed it one URL and that's going to be in the update script if you want that.
+So just W get whatever and you're done.
+The merging threats rules, you also be bleeding edge threats or bleeding threats and
+God knows whatever else it was before that.
+Now it's emerging threats dot net.
+Take a look at the website, it's awesome.
+The rules are free and they're small, they're zipped up and you're good to go.
+So along with those two rules, those are your signatures, the base signatures you start
+with.
+What I do on the next step is unremove unrun one of the rules.
+The first thing you're going to need, like I said, is your false positives that are going
+to be triggering all over the place.
+You're going to ICMP rules I'm removing.
+I remove the chat rules, FTP and the peer to peer stuff.
+Now you're still going to have false positives regarding all these.
+You're going to have ICMP chat and NETTP and peer to peer false signatures, probably
+that you're going to have to get rid of manually.
+You'll want to do the way I set it up on the next step is have a template with a base
+and then everything that I add to it is going to be in this nor update.
+Okay, so this is the template file.
+It's just everything except for everything that's in this nor update script.
+So the unwanted signatures removal and the suppression and anything after this, what
+is this for this step?
+Okay, so after that, we remove unwanted signatures based on just a text stream.
+Now I know this is not the best way to do it.
+You're supposed to use the actual ID of the signature, but I got lazy and we know what
+happens when we get lazy.
+We got rid of DNS stuff, some disclosure feeds, NC.exe was getting triggered and all
+these unwanted and false positive signatures that I got rid of.
+Here on the other side after that, I started using the actual IDs, signature IDs for each
+event instead of just doing a grip stream.
+And I don't even know what most of them are.
+They're just mostly false positives.
+Then this other rule is the other line here is the ads nor sam tag.
+Now all it does is ads the tag for nor sam and you'll see that in the notes if you go
+to snort sam.net, it'll have the notes to tell you what to put on the end of each signature
+for this to work.
+Now apparently I think Barnyard or at least you could do it probably straight inside
+the config and just append it to one instead of having an append it to all of it.
+But for whatever reason, I'm still using it this way.
+Then I have a snort check script that runs every 10 minutes or so to make sure that snort
+sam is running and snort is running.
+If I get the alert more than twice, then I know something else is going on.
+Alright so you manage to get snort running, you manage to get it updated, you manage to
+get it automated and doing some cool stuff with maybe dumping it to a SQL database or
+dumping it to a database and having nitsypc charts and all that good stuff.
+Or just like mine is snort snarf, which is a pro plug-in for it that just dumps the
+html and it's no big work right.
+So let's talk about detecting scans which was originally I think the whole reason I went
+with snort back in forever ago.
+It's fairly different now they have the pre-processor mess and the pre-processor is a whole different
+road.
+But mainly you'll look for the sf port scan option and you'll set the scents underscore
+level to high.
+Now the first thing that happens when you do that is goes apeshit when you start using
+torrent because snort has the ability to detect port scans from different host or some
+shit.
+It's some magical stuff that I don't know how the hell it knows but what it sees is a
+bunch of host connecting on a bunch of ports and it's like somebody scanning some creative
+things you can do with it recently have a semi-automated incident response system that
+will do who is on the ip, give them the logs and look up all the emails on the actual who
+is information and send it out to you'll be used at or info at or whoever at.
+And I've been getting some interesting responses back from it so another idea I had was something
+that would listen and have open for all ports or maybe like a firewall that I could set
+up that says that's open for all ports and you're going to get a lot more traffic with
+that because what happens is these automated bots and scanners they're scanning ports
+scan the ports close and then you're done.
+Now if you get a port open and maybe some do its back you might even want to set up a
+honey pod or something crazy like that and your signatures will probably go up a lot of
+wise so.
+So yeah that pretty much wraps up my random cycle battle for snort.
+Anybody has any questions?
+Everything will be in the show notes that I have that I can possibly give you and if
+anybody has any questions just send me a line at our McCurdy.com that's our mccurdy.com
+Thank you for listening to HACCA Public Radio.
+HPR is sponsored by Carol.net so head on over to CARO.NAT for all of her speed.

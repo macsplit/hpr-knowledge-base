@@ -1,0 +1,234 @@
+Episode: 10
+Title: HPR0010: The Linux Boot Process Part 1
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0010/hpr0010.mp3
+Transcribed: 2025-10-07 10:16:11
+
+---
+
+Music
+Music
+Welcome to Hacker Public Radio, my name is Dan Washgo, and today I am going to begin
+a series of shows, of episodes that discuss the Linux boot and initialization process.
+Now, I can't recall whether I did a similar show focusing on the differences between System
+5 and VSD style boot processes under Linux for today with a techie, but I figure what
+I would like to do is to give an overview of the Linux boot process from start to finish
+and then go back and detail significant sections of the boot process in future episodes, including
+and not limited to how the device file system gets initialized.
+Looking at technology such as how the hardware abstraction layer Damon and UDev and hotplugging
+how that all works and different portions of how services are configured and actually
+started on the Linux style system.
+So today what I am going to do is just do a cursory high level view of the Linux boot
+process and all the way up until you get to the command prompt.
+Now what's interesting about the different distributions of Linux by and large which
+you are going to find, they are all the same, Linux is pretty much Linux, but when you
+are looking at the different distributions, primary differences occur quite frankly in
+the boot process and how the system is configured and whether it is System 5 or VSD style
+system and the actual boot process, in which we will detail in a few minutes here, there
+are subtle differences between Debian style systems, Red Hat based systems and of course
+Slackware and Arch Linux and other different distributions.
+Beyond the boot process and the configuration files, some of the other differences would
+be what patches they apply to the kernel.
+For the most part, distributions generally support the same hardware although commercial
+distributions may extend hardware support for certain binary only drive hardware components.
+Sussan may include different patches or stuff to their kernel than a Red Hat for support
+for different operating systems.
+By and large you could still get all those patches if you wanted to collect them yourself
+and apply them from the different manufacturers, hardware, driver websites or from the kernel
+enhancements at kernel.org, different kernels out there and pull all those together.
+It's a little bit of a task but it can have its benefits and you get to actually learn
+what you're doing or what's going on inside your system.
+Aside from that, patching certain applications is a possibility but generally there isn't
+that much of a difference between distributions.
+So what we're going to do is just start at the beginning when you turn on your computer.
+The first thing that the system does is does a hardware check and runs through post and
+the BIOS initializes the boot device.
+Unlike some other operating systems, Linux primarily uses the BIOS to initiate the boot
+loader process and then that's it.
+It does not probe the BIOS to detect hardware or anything else but just to initialize the
+boot loader off the preferred boot device.
+Now let's just assume we're going to be booting off of a hard disk here.
+There are other types of boot devices, flash drives, CDE or DVDs that you can boot from
+but we're going to focus primarily on booting from a hard drive, be it scouser or ID, whatever.
+What it does is it looks for an initialization of boot loader program and the two main programs
+you're going to find on Linux are LILO and it's LILO and GRUB, GRUB.
+Now LILO was the old standard that was used way back in the day.
+It's one of the first ones I cut my teeth on and GRUB has been its predecessor not so much
+by the same group but has essentially replaced LILO as the preferred boot loader of choice
+for most distributions.
+Now there's a third way to boot Linux and that's out of a Windows or DAW session using
+the LoadLin which will initialize the boot loader but we're not going to cover that right
+now.
+We're just going to look at probably the primary difference between LILO and GRUB is that
+GRUB allows for a dynamic loading or configuration on the fly at the boot process.
+Both of them present you with a menu of options or images, kernel images that you have or other
+operating systems that are available that have been configured to boot from but GRUB takes
+in one step further which allows you to actually specify through an edit option a kernel
+that might not be present or an operating system that might not be in the actual menu file
+provided you know the parameters to get that thing running.
+LILO on the other hand the only thing you could actually do is pass a boot time option
+parameter like Linux single to the image sets you're going to be booting.
+The benefit of using LILO as opposed to or actually using GRUB as opposed to LILO is
+that on some distributions that don't like leave it up to you to initialize the boot loading
+process if you're using LILO most modern distributions like Ubuntu, Debian, when you upgrade
+the kernel or something will make sure that everything is ready to go but you take a system
+like Slackware or Arch Linux which requires more hands on you install a new kernel and
+you run a LILO you actually have to initialize LILO if you don't do that and you don't have
+a default kernel or anything you get kind of hose there you can't boot your system as
+you can't find a kernel.
+Now GRUB on the other hand like I said you can dynamically load that kernel put that information
+in there right from the get go and you're good to go it'll allow you to boot the kernel
+that's on the system.
+So GRUB is definitely a lot more flexible and in addition to the enhanced booting process
+there you are able to provide this similar parameters to the boot process that you can
+in LILO.
+Well anyway once the boot loader initializes the kernel or kicks off the kernel it also
+may or may not load what is called a ram initializing ram disk it's a virtual disk an
+image that goes hand in hand with the kernel there are two kind of two kernels that you
+can run on a Linux system there's a monolithic and a modular or a modular kernel now monolithic
+kernel has everything compiled into it that you would absolutely need and when you are providing
+a distribution for a myriad number of systems you're not going to go with a monolithic
+kernel you're going to go with a modular kernel which makes more sense what a modular
+kernel does is provide just enough in the kernel to get things going and then everything
+else is loaded in via modules.
+Now a modular kernel has one disadvantage that if you don't compile in the necessary hardware
+support for your system or it's not compiled in it makes it difficult to boot your system
+up using that modular kernel that's pretty slim down therefore they use what's called
+an initializing ram disk and that provides a virtual image so to speak of modules that
+pretty much cover the majority of systems out there which then does not require the
+need for a monolithic kernel or most hardware to be compiled into the kernel at boot
+time so it's a system of getting around being able to initialize the required components
+of your hardware like your file system the drivers for your disks hard disk scusy disks
+whatever the necessary components to boot the system it gets you just enough to get up
+and initialize your file system and load the drivers or modules that are on your distributions
+or your modules directory and get you onto the process of running the rest of the machine.
+Now there are some systems that don't need an initial ram disk again if you're going
+to use a monolithic kernel with has everything compiled in or your own kernel you may not
+have to worry about there being a missing driver or anything and you can forgo the use
+of an initial ram disk initializing ram disk but by and large most distributions out there
+today do do that and stick with a modular kernel the advantage of a modular kernel it's
+a lot smaller and it only loads in the play exactly what you need modular wise so it takes
+up a lot of space and resources in the long run so the bootloader passes off control
+to the kernel and the initial ram disk gets loaded and the image actually gets mounted
+virtually as the kernel boots and initializes the hardware and the file system comes up
+it can unmount the initial ram disk and begin to mount the root partition read only to start
+to continue loading the modules required for the rest of the system doing some hardware
+program and everything to match modules with the hardware that's the kernel has found
+or the scripts have found at which point then the kernel turns over control to the
+espn init application unit application is executed now that's of course short for initialization
+you can say and what that does is it begins the process of loading up the actual software
+that you're going to interact with on the computer it starts the services that's the
+beginning level right here of actually getting the rest of the tools of your operating system
+running because as we know Linux is the name of the kernel and it comes with a whole suite
+of tools in it which is one of them so what in it does is it uses an application or uses
+a configuration file and most systems called the Etsy init tab file now here's where we
+start to get a difference between red hat devian Ubuntu slackware arch Linux type distributions
+at the init level by large majority of distributions red hat slackware red hats derivatives are
+using the init tab file I believe some older distributions of devian devian are still using
+the init tab which is a a file that you'll find in the Etsy directory that begins to describe
+how this system is going to be running what init tab one of the main things it does is set the
+run level of your Linux system now a run level defines what applications and what what you're going
+to be running for the rest of your session there are seven run levels zero through six now zero
+is halt okay stop shut down machine has a run level of zero six on the other hand is reboot okay so
+you'd never want to set your init directory or your init file to set the default run level the
+zero or six that would be ridiculous it would start up shut down start up shut down now run level
+one is the Linux single user mode no services are started no network started it's essentially repair
+mode you can get into it by calling the kernel image that you want from your boot loader and
+specifying sig single after it you generally don't want to run in Linux single user mode you can
+also use the tel init program to drop down in a single user mode by passing tel init and the
+number one to the system it's good during an upgrade process or if you need to configure something
+or stop a service that requires in that gets a little funky you can bring it down the
+single user mode and you can bring it back up from single user mode to any other level like for
+instance let run level two is multi user with no networking one and two generally aren't used
+for anything other than troubleshooting configuration repair stuff you well once primarily used
+now three is what the majority of systems used to be set for and there's some controversy I
+noticed today as to what exactly is run level three run level three is a multi user with networking
+okay now on slackware based systems run level three that's it multi user with with
+networking the standard system you boot up into a virtual council you type start x if you want to
+start the x windows subsystem and run with a graphical x system now on debian systems for instance
+run level three actually starts the graphical interface using gdm kdm or xdm so they kind of
+what I consider run level three is not the same run level three and debian okay run level four
+is used not used by most distributions otherwise run level four is the same as run level five which is
+what I was accustomed to is a multi user system running the x sub system or x session using gdm xdm
+or kdm as a login window as a login manager right there that was what I considered run level five
+which debian considers run level three or runs at run level three so on a slackware system run level
+five will put you into your graphical login and initialize your services for running x on login
+and of course we just said run level six is reboot now once the
+sis in it or the initialization file is called the init tab and specifies what run level is
+going to run at it then init runs the initialization scripts and here again is a difference
+between slackware and other Linux systems which will actually say it's a difference between the
+bs style bsd style and system five style of initialization scripts on a top level what you have
+with a bsd style is you have a a bunch of scripts in a directory on slackware is the etc rc.d
+directory run control dot directory in there it's a series of scripts that get run based upon
+what run level that you have chosen this difference from the system five style of
+initialization in that as opposed to an etc rc.d directory with a series of scripts you have an
+etc init dot d directory that has a whole bunch of scripts in there for starting and stopping
+certain processes now those those scripts don't get called out of the init dot d directory instead
+what happens is based upon what run level you have chosen that runs or executes looks in a
+directory called etc slash rc dot d slash r and the run level dot d of of whatever run level
+you're running it so for instance run level three we'll look at r3 dot d now not all distributions
+of here to putting it under the etc slash rc dot d slash r run level some of them just put it in
+etc r2 dot d or whatever anyway what it is is you go to that run level directory and in there
+is a series of sim links back to the files in the etc dot init dot d directory and they're either
+preceded with an capital s or a capital k and what these do is an s starts the service whereas
+k kills the service so if you're running at run level one zero or one level one or we switch to run
+level six it has a bunch of kills links in there that will kill the process that's running
+or and for run like run level one it might kill some processes and verify that some other ones
+are started whereas in something like run level three four five you're going to see a lot more
+assets for starting a lot of different processes and subsystems in there so that's primarily the
+big difference there you have one primarily one directory for initialization scripts or startup
+scripts in a bsd style system whereas on a system five initialization system you have a
+bunch of sim links in a run level directory that actually get executed now there's some other
+differences in there like for instance there's one file in particular called the sys init file
+most distributions still use which is an etc can be an etc sys init is a configuration for it or
+etc rcd slash rc sys init which is where you find it in the red hat system slackware is the etc
+rc dot d slash rc dot s file in the rc dot d directory and arch Linux has a etc slash rc dot sys
+init file now if you have an init tab and you look in there you're going to find where the system
+initialization file is which calls some other basic system initializations prior to running
+the run level scripts one thing I think I need to make clear about the bsd or the slackware
+style of initialization is in addition to whatever run level script are if you look in a slackware
+directory you're going to see a number of files in the etc dash rc dot d directory is you're
+going to find a number of files in there called rc some number dot s which is the script for
+and those are your run level files right there rc dot four rc dot five rc dot six if they're
+available you'll find those in there for specific run levels there's some other subtle
+differences but we're not going to go into those right now anyway I'm getting back to the sys
+in a file now on Ubuntu and some Debian based systems or more modern Debian systems you're not
+going to find a sys in a file or you're not going to find an init tab in a tab file instead you're
+going to find the etc event dot d directory which essentially has the similar startup files that
+we have discussed it breaks it down in the individual files in there and begins to set your run
+level from there and start the necessary applications that you'll run on boot once the scripts are run
+in either your bsd style or system five style of initialization all the scripts are run the
+init then creates a handful of virtual councils based particularly using the mingeti program
+most times you'll have six virtual councils that you can log into if you're running a
+graphical session using xdm gdm you're still going to get those six virtual councils you'll find
+them on one two three four five and six whereas seven will be the x system that you're currently
+running and also most likely the first session the first virtual council will be where x is
+actually running from in that council you won't actually be able to use the first council it'll
+have some debugging information or your session information in x in some cases actually you know
+what it might not be on one it might be on another one like seven or I'm sorry six or eight so
+it's not necessarily but one of them is going to contain your x session debugging information if
+you were to start x after you have booted your system and you'll be running what I call run
+level three you log into a virtual council and start x your your information of the session that's
+going on will be available in that virtual council session that you started x from and then you
+will actually run x on virtual council seven it could be on a different council eight nine or ten
+whatever by standard is seven for that so that's the entire Linux boot process in a nutshell
+we focused a little more on what differences between system five and vst styles which is
+primarily what I wanted to get through as a little more focus on that in addition to the high
+level view of the boot process to recap you have your you turn your system on those posts the
+BIOS passes or actually initializes the boot device and control gets handed over to the boot load
+or which allows you to choose what image you want to load or what operating system from that point
+control gets passed to the kernel which you typically uses an initialization ram disk to
+initialize some hardware that's required for booting which may not be compiled into the kernel
+and virtual drivers like your array or your file systems so that it would be able to mount
+the root file system at that point and begin the rest of the loading of the modules that you have
+and identifying your hardware so that it can pass off control to the init program which defines
+run level you're going to run at and from there begins the process of kicking off
+be it a bsd style system or system five style system the scripts to run the applications and
+processes and demons that you prefer to run at that specified run level it completes that whole
+initialization process by providing a number of virtual terminals that you can log into using
+a mingeti program and or it set you up for graphical login using gdm kdm or xdm so that you can log
+into an x session that's in a nutshell so next time we come back we're probably going to look at
+another subsystem or look at one of those those processes in detail I'm not might not stick with
+going from poo loaders to clearly defining the init tab stage I might just jump right into some
+other subsystems not necessarily going to go into order but keep on listening and keep on
+participating and have a great one bye thank you for listening to hacker public radio
+hpr-sponsored by caro.net so head on over to caro.net for all your hosting needs

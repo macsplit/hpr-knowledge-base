@@ -1,0 +1,136 @@
+Episode: 4028
+Title: HPR4028: Passwords with a Pi Pico
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4028/hpr4028.mp3
+Transcribed: 2025-10-25 18:50:23
+
+---
+
+This is Hacker Public Radio Episode 4128 for Wednesday the 10th of January 2024.
+Today's show is entitled, Passwords with a Pie Pico.
+It is hosted by Norrist, and is about 17 minutes long.
+It carries a clean flag.
+The summary is Norrist uses a Raspberry Pie Pico to type passwords.
+Alright, I'm going to talk about how I use a Raspberry Pie Pico to type passwords for me.
+Normally, I would use a password manager.
+I like using password managers like every password I have to be different and complex.
+I like using the browser plug-in to keep the passwords for me and let me copy and paste them into the fields.
+Recently, I switched from last past to Bitwarden.
+It was one of the last past users that I've been using it for a long time.
+As they revved their requirements from 1 to 5 to 1000 to whatever iterations of the password algorithm.
+As they revved their requirements for that, the users who had been on it for a long time never got prompted or automatically upgraded.
+I was in the group of people that had a list of passwords, potentially compromised passwords from the last past breach.
+I decided to go ahead and switch to Bitwarden so I could have a little more control.
+They basically work the same last past and Bitwarden.
+What prompted me to do something a little bit different is my stupid bank's website.
+Normally, what I would do and I would need to change a password home.
+Most websites act reasonably.
+You go to the password change form and there's a place to put in your old password and you can use your password manager to do that.
+Then you can generate a new password and type it into the new password field.
+There's usually two of those and make sure that you're not making a mistake when you type it.
+What I'll do is I'll generate a secure, hard-to-type, random, non-sense password and copy and paste it into the new password fields.
+I said my stupid bank for some reason uses JavaScript or some other bit of browser code to disable pasting into those fields.
+I'll assume that's to make you think about a password that you can remember.
+If you type it in twice, you're more likely to remember it.
+As far as I'm concerned, it's just insecure because it forces you to use passwords that are typeable instead of copy-pasteable.
+I was looking for something like, I wanted a device to type where it's password is forming.
+I thought maybe something like a programmable keyboard could do it.
+Those exist but they typically don't.
+They're for kind of like key combos instead of password.
+Really what I wanted was something where I could copy and paste in a password that I wanted and then have some button I could push or something like that.
+I could work with trigger type in the password for me.
+I saw somewhere on the internet, I don't remember where, that you could use some microcontrollers to emulate keyboards and send keystrokes.
+I own a circuit playground express, which is a kind of a beginner-friendly microcontroller made by Adafruit.
+So I looked around, found some code for using the circuit playground express for sending passwords.
+The neat thing about the circuit playground express, it's got a whole bunch of onboard devices and sensors, switches and buttons.
+What I've done is found some example code, modified it a little bit, but I could say the passwords as a variable in some circuit Python code.
+Then when I would push the button on the circuit playground express, it would type in the password for me.
+It had two buttons so I could have two different passwords in there so I could use it twice for two different sites before I'd have to modify it.
+So there's a couple problems with that solution.
+The biggest one was that I had to put the password in the code as a variable, and that's a big no-no, you shouldn't do that.
+Especially if you want to maintain that code in a Git or something, some other software repository.
+The other was I just felt like it was kind of a waste of the circuit playground express.
+Because it has so many Skyleadies and switches and buttons.
+There were some other things that I wanted to do with the circuit playground express, so I didn't want to quote, waste it, just typing passwords.
+Because it could do a lot more than that.
+I started looking around for a different microcontroller I could use.
+I settled on the Raspberry Pi Pico for a couple of reasons. One, it's only four bucks.
+And two, it's very well supported just like everything else from the Raspberry Pi foundation.
+If you're not familiar with the Raspberry Pi Pico, it's different than the Raspberry Pi 2, 3, 4, 5, where it's not a single board computer.
+It doesn't have an operating system, but it's a microcontroller if you're familiar with something like an Arduino.
+It's a lot closer to that than it is in the Raspberry Pi 4 or 5.
+A downside to the Raspberry Pi Pico is that it doesn't have any sort of way to interact with it out of the box.
+It doesn't have any buttons or switches like the circuit playground express does.
+And it has a single LED.
+I was trying to think about how can I interact with this?
+I can't push a button because it didn't have a button. I could add a button, but I was trying to keep it simple.
+What I decided to do was program a countdown timer.
+I would use the LED to flash a few times.
+When the flash is to countdown, and then when it counted down to zero, then it would put the keystrokes.
+Start the countdown again.
+During that time, if I had to fill out two fields, I could tap or click or whatever from one field to the next.
+I was doing the programming of the Raspberry Pi Pico as well as the circuit playground express I've used it before.
+I've used a project called Circuit Python, and Circuit Python is a really cool project that allows you to run Python on microcontroller, so it doesn't require an operating system.
+And the way it works is when you plug the device in, you'll get a small, it's like plugging in a USB drive where a small device will show up.
+You can mount it, and it will typically the only thing that will be on there.
+If you're using Circuit Python, there will be a file called code.py, CODE.py, and that's what the microcontroller runs when it's booted, and then you can have a lib directory full of extra libraries.
+So the way you write code is you plug the device in, and you open up your editor, and you open up the code.py file, and you start typing it, making changes or reading, or whatever you want to do.
+But if what you're working on is sending random keystrokes every 10 or 15 seconds, it makes it kind of difficult to actually work on the code, because you'll be in there working on the code, and just looking at it or reading it or thinking about changes, and then all of a sudden this random nonsense gets splatted across the screen.
+So I wanted a way to enable and disable the countdown timer and the keystrokes.
+Like I said, there's no buttons or switches on the controller.
+So what I finally settled on is made the code look for a file named send underscore keys, and I just put that in the same directory as the code.py.
+So if that file exists, it will send the keystrokes, and if that file doesn't exist, it doesn't send the keystrokes.
+So that way, what I could do is while I was working on the code, I could just delete the file, work in piece without it messing with me, and then when I was ready to put the pico back in service, typing passwords, I could just recreate the send keys file.
+That worked. And then also, like I mentioned, I don't like the idea of having the password in the code.
+The biggest problem is it keeps you from being able to check in the code to get somewhere like that.
+So again, sort of similar is what I did was I just created a text file called pw.txt, make sure that it does not get included in the get repo.
+And then have the code.py read that, and then when it goes through its countdown cycle, it'll type out whatever's in the pw.txt.
+So I'll talk through real quick how to set up a pico to do something like this. If you have a pico or you want to get one, I'll kind of talk you through the steps to get.
+So the picos don't come with circuit python installed. It's not difficult to install, but I have a link to an article from Adafruit about how to install it.
+But the basics is there's a button, I forget what a boot select or something like that button.
+So if you push that button and you plug it in, plug the pico into your computer. When it mounts the drive, it will mount a different part of the drive.
+And then what you can do is put a firmware file, which contains the circuit python.
+You can put that on the drive, then it will reboot when it reboots. It will, it's like updated the firmware from what comes on the pico to the circuit python firmware.
+The next step, the next thing you'll need is a library from the circuit python bundle. Again, I'll have a link in the show notes.
+But what you've got to do is, there's a, remember I said, on the circuit python, when it exposes the drive, you'll have the code.py and you can have a folder called lib.
+The folder doesn't have to be there, but if you have extra libraries, that's what you'll put them. So what you need to do is, on the raspberry pop pico, right beside the code.py file, you need to create a folder called lib.
+Then you need to download the Adafruit bundle. In that bundle, there's a whole bunch of extra libraries. The only one you need for this project is called the Adafruit underscore hid.
+So if you just copy that out of the zip file that you download, copy that from there into the lib directory on the circuit python drive, that should work.
+And there's a whole bunch of stuff in there. If you want to do more than just emulating keyboards, take a look at what's in there.
+It'll go a long way to get you started in some other projects as well.
+And then the final step is just putting opening up code.py and putting in the code that we're going to execute in code.py.
+And it'll I'll have the entire code in the show notes, but I'll also have a link to where I have the code on get lab.
+So then to use it to type passwords, and what you'll do is you'll plug it in, plug in the pico into your computer, mount the drive.
+Once the pico gets power, it just blinks on and off one second on one second off just to let you know that it's ready.
+Then whenever whatever passwords you want to type, you want to type in, you put it and there's a file called pw.txt.
+And then when you're ready for the pico to start typing, create a file, just an empty file called send underscore keys.
+Then the LEDs will start blinking fast. I say fast, fast compared to one second on one second off, but it'll blink four times.
+Well, five times and four times and three times counting all down to zero.
+When it gets to zero, it will send the keystrokes and then restart the countdown.
+If you have two links to fill in, you can just tab to the next one or click on the next one.
+Wait for the countdown and then when you're finished with that or when you're done typing password, you can remove the send keys file.
+And then just to be extra safe, you should probably either delete or overwrite garbage the pw.txt file.
+Now, I wanted to put a license file in the repo of the code that's doing the password type in for me.
+Since all the Adafruit examples that I used or MIT license, I decided I would just stick with the MIT license.
+I normally like that.
+It's a permissive style of license anyway, but any examples that I used and the code and the repo will be MIT license.
+And again, I'll have a link to my GitLab repo in the show notes.
+The code.py script will be in the show notes.
+If you want to use it from there, that's fine or if you want to use it, go to GitLab source and get it.
+That's fine too.
+And then even though I'm not using the circuit player and express to do this for me anymore, if you have one and you want to try it, I'll put the code I was using for the circuit player and express.
+I'll have it in the show notes as well.
+In case you already have that.
+I'll have some links at the in the show notes for circuit Python.
+If you haven't heard of circuit Python before and you're thinking about electronic or Arduino or anything like that is something you're interested in.
+It's a really great project that allows you to do microcontroller type programming, but use in a higher level language.
+So I'll have links to circuit Python and then I'll link to the devices that I talked about circuit player and express and raspberry poppy code.
+That's it.
+Hope you guys learned something.
+Always welcome feedback.
+The code is on GitLab, so if you have any suggestions or anything, welcome those as well.
+Thanks a lot.
+You have been listening to Hecker Public Radio at Hecker Public Radio does work.
+Today's show was contributed by a HBR listener like yourself.
+If you ever thought of recording a podcast, you click on our contribute link to find out how easy it really is.
+Hosting for HBR has been kindly provided by an honesthost.com, the internet archive and our sings.net.
+On this advice status, today's show is released on our Creative Commons Attribution 4.0 International License.

@@ -1,0 +1,532 @@
+Episode: 801
+Title: HPR0801: Slackbuilds
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0801/hpr0801.mp3
+Transcribed: 2025-10-08 02:45:17
+
+---
+
+Hi everyone, welcome to Hacker Public Radio. My name is Klatsu. I have a three-part series
+for you this time on packaging, actually, packaging code for Linux and BSD. So I'm not
+a package maintainer. Really, I'm very, very novice at it, but I don't really hear. I've
+never actually heard an episode on the subject, and I maintain a couple of packages over at
+slackbuilds.org, and I built an RPM, and I built a port once. So very, very much a novice,
+but in this episode I'm going to discuss slack builds. And I'm going to discuss slack builds
+first, because I don't know necessarily that it was a terribly early development. I don't know
+when this was all devised. I don't know the history of really any packaging formats, but I figured
+it was a really good one to start with, because it is, in my opinion, the simplest to understand
+that the most straightforward one of them. It's the one that I kind of started with first. So,
+packaging Linux applications, of course, is a pretty important task, I think. I mean,
+one of the selling points, I think, maybe not at first, but one of those things that becomes
+very, very addictive and very, very almost expected at this point, is that when you are using Linux
+that at some point you start to just kind of expect naturally that application that you just
+heard about from someone, naturally that will be in your repository. It's just kind of a given.
+So, I wanted to encourage people to look into packaging, because it's a pretty cool little trick
+to know, and it can be very helpful to other people as well, because if there's an application out
+there that hasn't been packaged for your favorite distribution, or that's maybe lagging a little
+bit behind the curve, then you might be the person to pick that up. So, we'll get started with
+slack building. Now, of course, I'm fully aware that not everyone's going to jump out of their
+chair at the end of this episode, and go package stuff for slackware. But it really is a very
+beautiful packaging format, the slackware packaging, because it doesn't use anything specific to slackware.
+Well, it does, but it doesn't. The slackware packaging format is a shell script, and the shell
+script goes through the code that you want to compile, and it sets up a little destination directory,
+sort of a temporary directory, where everything is going to be compiled, and then installed into
+that temporary directory. A couple of other files in the package, we'll get into that later, but
+at the basis, there's this little shell script. It's the slack build itself, a shell script, and it
+compiles the code, puts everything into this directory. Now, if you look at this directory, inside the
+directory, there is, if you go into that directory, you would almost think you were inside of your
+computer, because you'll see really familiar folders, like, slash usr, and slash etsy, and you'll
+think, gee, what's in there? So you go into slash usr, and look at that, there's a slash bin,
+going to slash bin, and there's the program that you were compiling, the binary for that program.
+Back out of there, go into the etsy directory, maybe, and maybe there's another folder in there,
+or maybe not, but there's a dot-conf file for the application that you're compiling, and then maybe
+you go back out, and there's a slash usr, slash share, slash doc, and then there's the documentation.
+So basically, this little destination directory is a little tiny clone of a Linux system,
+without anything in it, except the application that you want to compile. So you've just taken
+source code, you've compiled it into its own little folder. It's completely bundled up in this
+one folder with lots of subfolders that correspond exactly to a Linux system, so that if you,
+specifically, do a Slack system, but that's pretty universal. So if you overlay that directory onto
+a Linux system, then suddenly you've installed that application, makes sense, right? So in theory,
+of course, you could go through, and you could give that folder to people, you could zip it up,
+and give it to people, and they could unzip it, and they could move everything that you've compiled.
+If it was compiled for their architecture and everything, they could move everything that was
+compiled onto their computer in the corresponding places, meaning if it's this destination directory,
+they see a U.S. slash U.S. R slash bin slash whatever, then they'll take that whatever, and they'll
+put it in slash U.S. R slash bin slash whatever, and then they would go into the slash U.S. R slash
+share slash dock, and they would take all the documentation and drop it into their own slash
+U.S. R slash share slash documentation. And the same thing for the Etsy config file, they would take
+the, they would take it out of the Etsy folder in their little destination directory, and they'd
+put it into their own computer's Etsy folder. And if you think about it, that's all installing
+software is, right? There's nothing really magical going on there. Now the one thing that is a
+little bit magical, or it might seem that way, is that there are dependencies. There's code on the
+computer that when you're building that application, it kind of wants to see that code, it wants to
+build against that code. If the user doesn't have that code on their computer when they're compiling
+the code, then that application isn't going to be able to compile. And that of course is a dependency,
+that's what that's all about. So for this reason, slash building is kind of one of the easier
+packaging formats because it doesn't do dependency resolution. It doesn't do any kind of checking.
+It simply runs the dot slash configure or whatever option that particular brand of compiling takes.
+It's usually a dot slash configure. And if the dot slash configured check fails, then it cannot
+proceed to actually make the program. So the burden is on the user, the slackware user, to resolve
+their own dependencies. So enough talk. Let's just go ahead and build something. And the program that
+I've chosen to build in all three of these demonstrations in each episode is the little program called
+Yes, Please. Yes, please is a little C application, I think, by Sigflup. You remember Sigflup of
+Hacker Public Radio. She's a great programmer type person. And she came up with this Yes, Please
+program that will take a screenshot of your computer screen of your desktop. And then it will
+automatically upload it to the fine website, UnixPorn.com. Now UnixPorn, of course, is not porn,
+it's Unix. And it's a place where people can post their desktops, just whatever they're looking at,
+you know, during the day on their Linux machine or BSD or whatever, Solaris, whatever. And they can
+post it on there, then everyone gets to see, you know, how they have their computer set up. So it's
+just gratuitous screenshots, basically. So you need an account over at UnixPorn. It's a free
+account. It's just like me and the last name God and Cobra 2, it admin the thing. Oh, and I think
+330 technically, we're admitting the thing. And you can just use Yes, Please to upload to it
+straight from the command line. It's a really slick little application and it's got just enough
+complexity, I think, to make it not a completely easy script to write, you know, a package to write,
+but it's at the same time it is very simple because it's a very small application. So let's take a
+look at it. The Yes, Please source is currently at least the one that I've built packages for is
+Yes, Please underscore, underscore four, that's August and August, underscore four, underscore
+twenty ten dot TGZ. That's the source file that that SIGFLOB distributes. That's the source code
+and everything in there. So for a Slack build, what you would do is you would grab that source.
+Well, actually, I should start out by saying this is going to be common on all three packaging
+formats that are all three that I'm going to cover. Sorry, I didn't mean to imply that they were
+the only three packaging formats. If you think that those are the only three packaging formats,
+go listen to HPR episode seven thirty three by Marcos where he talks about just how many
+packaging formats there really are, but I'm doing Slack builds RPM and port because those are the ones
+that I learned and that's why I'm doing them. I mean, Slack builds and RPMs, I actually use a lot.
+Port was kind of fun and the other ones I just I haven't gotten around to really looking into
+them. So for any package that you're going to be doing, it's a good idea to have kind of an
+environment, like a building environment setup, as well as a clean install setup. Those are two
+tall-ish orders because if you're lazy, you won't want to do them, but it is important to do them.
+Especially for something like RPM, which apparently was traditionally at one point kind of done by
+root because it had a lot of, you know, it was, it was the RPM builds were done outside of the
+home folder and stuff like that and people kind of decided, you know, that's really crazy to be
+just sitting in root all day while you're packaging this thing up. And yeah, it's probably true,
+it does seem pretty crazy. So it's a good idea to kind of make your own packaging identity.
+And I mean, I always have two users, at least two users on every computer I have. My everyday
+normal computer usage and then a another account just kind of just they're hanging out because I
+like to have multi-users just because I like to explore what what interesting things happen when
+you have two users, even though they're both me. But so if you can do an ad user or a user ad,
+whatever you've got on your system and just create a new user for yourself who will be your
+packaging identity, that's not a bad idea. Now at the same time, before you go doing doing that,
+another way about that, and this isn't a bad way, believe me, is to just grab Qemu,
+Qemu, however you say that, the virtualizer and grab the latest distribution of your
+distribution and fire up an instance of Qemu and do a little install of that. Qemu, I've done either
+a hacker bullet radio episode on it or I've done a bin rev blog, which is also now sort of mirrored
+over on my go for space point go for like in links or in Firefox go for colon slash slash slacker
+media dot info colon 70 and you'll find a link to my go for space from from there. So you can look up
+the Qemu tutorial on in my articles and it's a really simple one. I like using Qemu because it's
+just it's fast and it's easy. You don't have to worry about installing a whole virtual machine
+client, you know like virtual box or anything or vert manager or anything like that. You can just
+fire up a quick instance of Qemu, Qemu make a make a disk image and then install your your
+distribution on there. Do a minimal install possibly and and you're you're good to go. You don't
+even need X for I mean it's really this is all going to be on the command line so you can just
+install a really simple version of your of the distribution that you're packaging for and it really
+is quite important to do this in a virtual machine because I cannot tell you how many times before
+I really really understood packaging, not to say that I really really understand it now but I
+certainly understand a better than I did when I was first starting out but I can't tell you how
+many times I would write a slack build on my machine for it is swearing that I've got a fairly clean
+machine and and of course there'll be something that I just I forgot that I had installed a hugely
+major dependency of this application and I just never noticed that it's there because I've already
+got it on my computer whereas if it was a clean install a completely clean install and I was packaging
+the thing I would have known right away that when I did the dot slash configure oops it didn't work
+because you know such and such was missing so it's very important to have a really really clean
+install so that you're building against what you really kind of have to assume everyone else is
+going to be building against you have to assume that they're starting from a from from ground zero
+from the ground up from their distribution okay so that's very important it's all free it's very
+easy to get started the next thing I guess would be if you're not familiar with compiling software
+if you're not completely familiar with compiling software I did an episode on that over on
+new world order for sure so that's augcastplanet.org slash canoe world order I don't remember the
+episode number but it's an episode completely about compiling software so if you're not familiar
+with it and you feel like I'm rushing through parts in this episode you can either go listen to that
+and yes please like I say is a really good little application to practice on too so if you haven't
+compiled that often and you want just sort of practice yes please is great because there's a couple
+of little dependencies and then you can resolve those and suddenly you're building and it works
+and and everything's great okay so we've grabbed the yes please source from the from the homepage
+and you know honestly the easiest way to get there the the way that I get there is I simply go to
+slackbuilds.org because I mean heck that's what we're doing anyway and you can even grab the slack
+build if you want to kind of follow along as it were so if you go to slackbuilds.org down at the
+bottom of well at the top of the page there's a search box and it'll be set by default to 13.37
+so just put in the word yes please and that is yesplz and then hit return and it'll take you
+to the yes please slackbuild and you'll see a read me with some asky art that doesn't quite
+translate very well to to html unfortunately and then you'll see a source download with the MD5
+sum next to it you can download that to your computer and then right underneath that you'll see
+download slack build and that's that's going to be yes please dot tar dot gz and that is uh
+signed gpg sign so you can verify it that and uh then you should have in your little packaging
+identity wherever that is whether it's on a virtual machine I make a directory called slackbuilding
+and I put the source and the the slack build template that I'm going to use uh which slackbuilds.org
+actually even provides so in terms of getting it to work it's a great starting point okay so I'm
+going to just untar this yes please dot tar dot gz so that's the slack build itself not not the
+source code just the the actual slack build like I've said there are about well there are about
+there are either four or five essential files in a slack build again this will be really similar
+in rpm and everything like that it's they've typically got a pre standard format and they're
+actually more similar than they are not in in many ways so um the the first file is the easy
+one that's the read me those are always good to have I tend to be very I tend to try to be very
+verbose in my read me I never want to assume that someone's coming to slack builds and getting
+yes please because they know everything and they're doing it all from the command line in one command
+that's just you know I like to try to assume that people are going to need a read me if they're
+reading the read me they probably want the information at the same time I don't want to go on and on
+either I want to kind of be informative up at the top and then kind of break it down for people
+down at the bottom having said that the yes please read me is marvelously useless I should probably
+work on that but usually my read me's are quite helpful but the read me there's no format there's
+no requirement the read me is a read me it's it's something that you can talk to the user
+through and kind of help them do whatever you think that they need to do in order to get that
+thing installed okay so the next one is a little bit more specific actually quite specific it's
+called the slack slack slack dash description really but it's dash d e s c and it's very very
+specific about what you must do it has a handy little ruler at the top which is a bunch of dashes
+it's got the application name down the left side of the document and then it's got play a place
+for text so it's about I think it's probably about 80 characters wide I would imagine or 79 or so
+within that handy ruler and then you've got 11 lines to use so you can say whatever you need to say
+in that 11 lines but you have to be careful not to go over that or go outside of that that
+ruler because what they're going to do is crop all that junk off and and show the contents of
+the slack description within the little package management tools that slackware ships with by default
+so you have to follow the format here and of course in any packaging format you're going to find
+that there's files that are very specific obviously because it's all scripted right I mean
+so they need everything to be exactly the same all the time so traditionally in the slack description
+you place the title at the top of the of the description of the 11 lines of description then
+you give like a brief description of what exactly this is so that when people are kind of just
+browsing through the packages they'll see oh yes please the sigflux unix porn.com CLI screenshot
+and upload tool okay I get it that sounds interesting I'll download that and then typically it's
+very handy at the bottom of your description to either have like a link to the home page of
+that software so that they can go check it out if they want to but also definitely have what
+dependencies are required so I simply write this requires for instance in this case lib jpeg x11
+and p threads now in this case happily because it's slackware all of those are included in a stock
+slackware install so the user actually doesn't have to go out and resolve any dependencies they can
+simply go to yes please they can they can do the the install script and and that's it that's the
+end they don't have to do anything so like I said yes please is kind of easy and yet it's kind of
+complex just complex enough were this a non-standard stock slackware install for instance maybe this
+person is a pro they've been using slackware a lot they know that they never use jpegs so they
+just didn't even bother installing lib jpeg or maybe even more realistically they they don't
+really use excellent let's just say that they don't have some one of those dependencies when they
+read that they'll say oh gee I guess lib jpeg is actually required for this I better go install
+that and then they can pull that package down from from the slackware server and install that and
+then they can install yes please so it's manual dependency resolution it's a beautiful thing
+because you actually know what's going into your computer and you actually get to compile it
+the way that you want to if if it's that important to you but I digress so that's the slack dash
+dc or description file the third file that one would do is the yes please dot info file the dot info
+file is again very structured very specific as to how it needs to be structured and this you're
+going to you're going to really well I mean again once you see all these packaging formats it's
+going to all kind of start to look really really familiar to each other so that's kind of kind
+of neat so um the yes please dot info file starts with a program name or PRG and AM and that equals
+in this case quote yes please end quote next line is version this is tricky with sigflux yes please
+because she didn't follow any kind of uh established at least that I know over that I can tell
+an established method of naming her program so the version in this case is AUG underscore four
+underscore 2010 now more traditionally like if you read up on packaging and you go to like fedora
+documentation and read up on how to do RPMs or the bsd packages uh porter's handbook then you'll
+you'll read up and they kind of have like this thing about you should follow this convention it's not
+law or anything like that but it's a convention and that is that you have your program name and then a
+dash and then your version number and then the compression and that's just kind of how it's done
+fairly universally I've found in my very limited experience as a big famous package maintainer
+with all my like three or four packages that I have so uh sigflux flew in the face of that convention
+and and just named it the month and the day and the year that she she actually released that
+version of it on and and at first I didn't really see a problem with that until I started building
+packages for it and it seems like every packaging the language as it were or convention out there
+demands something completely different but that's that's okay that's what makes this one a little
+bit fun so in this case we're just doing the whole string as the version homepage is uberlead hacker
+force dot deep geek dot us and then the download equals hgtp colon slash slash hobones dot dog soft
+dot net slash yes please underscore aug underscore four underscore twenty ten dot t gz so that's all
+the information so far that that the that like someone like you or me if we just have the slack build
+we could look at that file right there and figure out where to go to read up more about the application
+and even the direct link to these to the source code for which this slack build is created MD5 sum
+self explanatory uh and then there's a separate download link and a separate MD5 sum for an x86
+underscore 64 version that is obviously only to be used if these are binary packages that were
+installing uh but we're compiling from source here so there is no separate download for x86 64
+so we don't need to fill that in we can leave those empty just two empty quotes maintainer is oh
+look there's my name uh the email clatoon at um member dot fs f dot org and then approved by my
+friend and fellow slackware and slack build user decimero who I actually interviewed at
+southeast linux fest but the recorder wasn't really on the right way so it didn't quite work
+okay so now finally finally we get into the actual build script itself and this is uh yes please
+dot slack build and once again there's that convention you have to do the the the name of the
+application and you know capitalization and everything like that it counts so it's yes please
+dot slack build where the s and the b are both capitalized that's how it's done you don't want to
+deviate from that so like I say slack builds they come with some great templates and if you go to
+the get repository of slack builds they have even I mean they've got some good templates on the website
+slack builds dot org if you go to their get repository they have templates for everything for
+pearl applications for automake applications which is which this is uh for seemake stuff for
+java stuff it's just got all kinds of templates which are really really helpful but generally speaking
+the I mean obviously I'm not going to just read this line by line so if you want to if you want
+to go get the package the slack build package and then read through the code yourself that would be
+a good idea most of this is not even my code um this was a really a pretty simple slack build so
+a lot of this is basically just robby workman and and and decimero and and um all the guys over at
+slack builds it's just kind of their their scripts that everyone else gets to kind of modify and tweak
+and leach off of and makes you feel really good about yourself because you wrote a slack build
+when really you did like you know ten percent of the work but that's ten important
+percent okay so the program name reiterated here in the script because we need the variable uh
+is yes please the version org underscore four underscore twenty ten the build is dollar sign curly
+bracket build colon dash one uh curly bracket and that's what that is going to do is append a dash
+one to the end of the script like after we've built everything it's going to have a dash one to show
+that this is build build one um and then a tag and the tag is an underscore SBO so all the slack build
+files all the packages that you build via slack builds will have that tag underscore SBO if you
+go and download a slack build from say alien bob's website who beets a lot of cool packages uh
+then he'll have an underscore alien tag for my personal packages that I I build for myself but
+I don't submit the slack builds for whatever reason which isn't all that common to be honest but there
+are some things where I know that the slack build already exists but I don't want to submit uh I don't
+want to use their slack build so I'll modify it heavily or I'll just do my own version and then I'll
+have it on my computer so I'll have the underscore class too so you can tag your files just to kind
+of differentiate where these packages came from notice here as well that we're using variables
+right here at the top of the script that's such a great habit to get into because then you don't
+have to you know you you you establish your variables right up at the top and then you don't have
+to go through the script and like do a said replace or anything like that you know it well you know
+said um you don't have to replace stuff because you only list it once at the very top of the script so
+if if sigflup comes out with a really cool new version of yes please on august 8th 2011 you don't
+have to go through and change that everywhere you just simply go into your slack build file you
+change the version you close it and you build it and suddenly you've just updated your slack build
+so this is very very efficient and of course I'm marveling over it but it's probably like
+something that programmers have done for for years and years and years I think it's really smart
+though the next chunk of code I'm not going to read through but it's basically and well it is
+it's an if statement with a little case loopy thing in it and it's establishing the architecture
+of the machine and it's done really really well this is like just cool good old fashioned
+bash parsing kind of stuff where you you simply tell it to do a you name dash m and if the value
+returned from you name dash m is for instance i 486 or i i something 86 then we set the architecture
+as i 486 if it is arm then we set the architecture or arch ARCH to arm and if it is anything then we set
+the architecture to whatever that value is so it's a really cool kind of auto detection kind of
+technique I have taken that chunk of code right there simple that may be probably I've taken that
+and just used it on so many different things so many little bash scripts that I've written where I
+just want to get a value and then examine it and and set some other variable to whatever that
+returned that's it right there it's it's just it's done for you just go get the template and rip
+off the code it's really cool okay so then we set some more variables and this is kind of cool
+because we most importantly we set a temporary directory to slash temp slash sbo we set a package
+to something inside of that temporary directory slash package dash program name so meaning
+that as we build this package or as slack builds you know the automated script as it builds this
+package it's going to put everything into slash temp slash sbo slash package dash program name so
+in this case it'll be package dash yes please so this is good to know because if if you were
+packaging and it fails a few times you can go to slash temp slash sbo slash package dash you
+yes please and look inside of there and see what did you know how far did it get what what's going
+on inside of that package that we're trying to form and then the output is set to slash temp then
+we go through and set some compiling like some make flags basically and it does this based on
+that variable that we established just a minute ago where we did the you name dash m so we did
+new dot new name dash m and whatever that returned and if you don't know what you name dash m does
+open up a terminal right now and type in you name dash is space dash m and you will see that
+it actually gives you the exact architecture of your machine so in this case it's x86 underscore 64
+on the computer that I'm using right now so we did a you name dash m we got some value and then
+we took that value and set the variable arch ARCH equals you know whatever value we got back from
+you name dash m so in this chunk of code we're saying okay so if the value of arch equals i
+486 then slkc flags equals quote negative oh two space dash m arch equals a 486 space dash m tune
+equals i 686 closed quote libder suffix is nothing because it's a 32-bit system there when you go
+a libder like slash usr slash lib or slash lib it's just slash lib that would be as opposed to
+for instance a couple of lines down where it says else if the value of arch equals x86 underscore 64
+then slkc flags equals dash zero to space dash f pick and the libder suffix equals 64 so this is
+very important stuff because it's looking at the architecture of your computer and setting some
+pretty common little flags that you you want to maybe keep in mind when you're compiling software
+and then we do a set space dash e the set space dash e means that we're going to exit the script
+if there are errors this is such a great great thing and I never really understood why it was done
+in slack builds I always kept it in because it was in the template I didn't have a deep understanding
+of why it was done and then I started doing a lot more scripting at my job and I would run a script
+and it would run through the whole script and then I'd look at the results and it turns out that
+half of the script didn't actually get done and I would always think to myself why did it
+continue going if if it couldn't even find that directory you know and just kept kept working but
+it it was missing like half of the things that I asked it to do well it turns out that I had never
+said it to to stop there was no there was no warning that hey if you encounter errors then bail
+so set space dash e will help with that sort of thing rm space dash rf space dollar sign package
+why would we do that well think about it if you're if you're building the package and you're trying
+to build it and it fails so then you try again well you don't want to try to build the package into
+itself right you don't or have some kind of conflict where it says directory already exists
+so as part of a fairly early step in this process is to look and see if an existing dollar sign pkg
+exists and if it does remove it recursively and forcefully the forcefully flag of course is set
+because otherwise it might if if we have rm set to um rm dash i then it would ask us hey are you
+sure you want to remove this and we don't want that we want our script to run very very silently
+so rm dash rf dollar sign package and then we make some directories we make a directory
+called dollar sign temp dollar sign package and dollar sign output and you'll remember of course
+that those are variables that we set earlier in the script temp was set to slash temp slash sbo
+package was set to being in the the temporary directory slash package dash yes please or
+really program name but in this case yes please and then output was set to slash tmp you'll
+notice that there's a dash p flag after the maker and what that stands for what that means is
+to make any necessary parent directories turns out that this is a really handy trick to know because
+if you're ever making a number of folders like you want to make a i don't know directory of a bunch
+of skinny puppy albums so you'd say make your skinny puppy and then you'd have to go into skinny
+puppy and then you'd say make their vivisect and then you'd say make their um maybe inside of that
+you'd you'd have the the remixes and the normal ones you know if you wanted to do that you could
+just do it with one command by saying make all the parent directories that are needed so you could
+say make your dash p skinny puppy slash vivisect slash vivisect live and then again for the whatever
+but the point is that you can actually it will make everything leading up to that directory for
+you you don't have to actually do it in separate commands it's quite nice um that was way over
+complex for a very simple explanation uh so then you cd into slash into uh temp you're sending
+the shell script you know the the executor of the shell script into the temporary directory
+this can get complex because you have to remember where these commands are being executed from
+this is something i try to actually avoid in my own shell scripts because i always get confused
+happily a lot of this is pre scripted in the slack build so you don't have to really keep track
+of it as much if it's a simple compile it's not always that simple so sometimes it does become
+tricky and again you do an rm dash rf of the program and the version just in case it's already
+in progress if it's being built in that temp directory and then you untar and un gzip or whatever
+needs to be done that program version so this is the source code that the user will have downloaded
+on their own and placed in that directory and it's going to need to untar it now that's a line
+that obviously you're going to have to change if your source code was tar.gz or tar.bz2 or
+.zip whatever it might be that's kind of a line that you're going to have to keep an eye on if you're
+building a lot of slack builds from from a template file uh and then notice that we cd into that
+program version and we change the permissions this is again something that's going to be fairly
+constant in the packaging stuff where you have to keep in mind that we're building and distributing
+on linux and and unixy systems so permissions actually are going to matter the next chunk of code we
+we do what we basically do the we set the c flags for the for the comp the the compilation
+process and we do a dot flashed in figure with all of the associated options that you may or may
+not want to have and this is kind of an important thing at least to me uh it it helps you keep everything
+very consistent and it helps you make sure that everything actually works but things like setting
+the prefix or setting the what what library directory you want to refer to where your configuration
+files are kept and some programs like you know the more complex programs like ffnpeg I mean there's
+a million different options can drink configuration that you can pass so uh audacity too there's
+a bunch of different ones so sometimes you'll see a list of configuration options that just take up
+well your whole screen really I mean it can be very complex so that's a very important part and
+the only way to find that out and really the only I think the only way to do a slack build
+properly is to go through the actual source code and run through the compile the the compilation
+process a couple of times so if we go to the source directory with if we um we untar it
+ungeezip it and go into it and just do a dot slash configure dash dash options or dash dash
+help I'm not sure it it seems to depend on unlike the uh on the program itself I've seen both I
+don't know what the uh the deciding factor on that is but the dot slash configure dash dash help
+will show you a full list of all the potential configuration options that you can pass to the
+dot slash configure process so in this case it's it's it's still a screen full I mean it's a pretty
+it's it's I've never really seen one of these it's just a couple of lines but if you read through it
+there's some really important stuff you know it's just kind of some of the stuff you don't even
+have to set because there are defaults and it tells you what the defaults are for instance the
+mander wherever the man file is going to go dash dash man dir equals some dir and then it says
+well in square bracket graph square brackets that is prefix slash man well what is prefix
+we'll go up a little bit to where the dot slash configure option tells us what the prefix is
+and it says okay the prefix is dash dash prefix equals prefix and the default is slash usr slash
+local and that's actually kind of funny I don't think I don't remember noticing that before
+I actually like usr slash local as my as my default prefix but I I don't know that that's
+always the prefix that it's usually just slash usr it seems like a lot of distributions and things
+are going away from the slash local folder but yeah that's always interesting to look at but
+anyway the the dash dash man dir obviously would not be something that we would need to specify
+if if the default was something that we were perfectly happy with but if you want to override
+that then you certainly can do that as well and in fact it looks like in this script we do override
+a prefix we have dash dash prefix equals slash usr so it's not going to be slash usr slash local
+it's just slash usr and that is to keep it consistent with the rest of slackware of course if
+if for some reason you felt like it doesn't belong in slash usr slash whatever like slash bin
+or slash share slash man whatever or slash share slash man whatever path is going to kind of
+cascade down from different components of what you're compiling and installing you could
+always change that prefix and it's done it's done sometimes on on particularly large or maybe
+somewhat intrusive applications you'll see things that installed themselves to slash opt slash
+local slash bin or to slash usr slash local slash bin whatever one of those two sort of classic
+this was installed by a third party or you know not a default system kind of application
+so for for us though we're just going to do a simple slash usr to be nice and consistent with
+the rest of slackware then we do a yes a make yes please and you can see that I did a comment in
+there that says make install is broken and installs the file to the build system now this is
+funny I wish I'd read this note to myself a long time ago actually because I think I when I
+built it I obviously knew that then when I was doing the RPM of yes please I ran into that same
+problem and spent like a day trying to fix it and I'm just actually just now seeing again my own
+note to myself in here but yeah so sigflup used an install script that her I think her make file
+refers to the install script it it runs that install script and that install script gets some kind
+of option from you know the environment that you're in and and so far on at least two of the
+systems that I've built a package for I know it happened on slack build and I know it happened
+on RPM that install script just didn't quite didn't match up with with the the packaging that
+that I was doing I could be doing something wrong but but that's that's what I found so we do
+simply make yes please and then we do an install dash d dash m 0 755 dash s and then dollar sign
+program name space dollar sign package slash us slash bin slash program name so what we're doing
+there is very very explicitly telling the install where to put the binary that it's about to compile
+so the make command when we said make yes please what we're doing there is calling out a very
+specific option in sigflup's make file so if you go back to her source code that we just
+unzip to look at the configure options if we go into her make file well you won't see a make file
+unless you did the configure but you will see a let a make file dash dot i in if you do a less on
+that or cat or more whatever you prefer then you will see that on the left side of the the make
+file there are words and then series of commands after them so you've got like I'm I'm looking
+down under all the c flags and prefixes and stuff you see yes please and that's simply doing one
+thing and then you see an install so if we'd said make install what would have happened was yes please
+jamaud plus x dot slash install dot s h and then dot slash install dot s h s please to the prefix
+to the bin to yes please so it's kind of hard coded in her make file to do a certain set of commands
+that we actually don't want to do so we simply want to make the binary we don't want to install it
+at least not the way that she is installing it and then on the separate line in our own script we
+said install dash d space dash in whatever and then we said here's where we want you to put the
+the binary which of course isn't in our system we're not really installing yes please we're installing
+it into that fake little clone that destination directory that we've created and where is that
+directory do you remember look up in the script you'll see it yes exactly it's in slash temp slash
+s b o and then of course it's slash package dash yes please so that's where we're actually installing
+everything so if you if you think about it when all we're doing is a normal everyday source code
+compile but every step of the way where something's actually getting compiled we're redirecting all
+of the output to the fake system with this fake slash usr slash bin and a fake slash usr slash
+share slash dock and a fake slash Etsy and and all these other in a slash a fake slash lib so
+that's that's all that's happening in a package you're you're you're you're building and putting
+it into one location that isn't your system because you don't want to put it into your system yet
+you want to put a new package that you can then distribute among your friends or you can say okay
+computer now I want you to overlay this package onto your file system so that of course later on
+when you get tired of that application or when you want to upgrade it you can very cleanly
+how you have a record of everything that you've just done and you can uninstall or you can upgrade
+without going through jumping through hoops and that's I mean that's what packaging is all about
+right that's why people keep applications and packages and don't just keep installing everything
+straight out of source code all right so we've got a package that we've installed now there's not a
+whole lot of documentation with sick of flops application but there is a read me file and it is
+it it seems to be a convention of of all the packaging stuff that I've seen so far again all
+well three of them that I've actually looked at that if there is documentation then basically you
+I mean even if it's not like a man page or something then you're going to keep track of it you're
+going to install that onto the system as well as considered part of the application so in this
+case we are going to make a directory without dash p flag again you remember how I explained
+that that makes all the parent directories and we'll put that into of course our package so that's
+the package the dollar sign pkg variable and then just like I said this in we're going to put it into
+slash usr slash doc slash program dash dollar sign version I kept saying slash user slash share
+slash doc I guess it's just slash user slash doc and then we're going to copy all of the documentation
+over there which in this case is all of one file so you copy cp dash a that makes sure that you
+get everything recursively and maintains all the different permissions and stuff like that I think
+and then we've got a little slash but we're really we're just saying copy the read me file to that
+one destination that we've just made which is the slash usr slash doc slash program version which
+of course isn't the real one it's the one in our destination directory our package and then we
+we we we cat the slack build itself into that folder as well into that directory as well why copy
+when you can cat and why cat when you can copy it's kind of like in the slack book if you've ever
+read that or if you're ever going to go read that they've got like in the same kernel compile lesson
+they've got like two or three different ways of copying a file and there's like literally line
+after line it's just like why did they copy that and cat that and to this day I don't know but you
+know it's it's helpful to to kind of see all the different ways you can do things um and finally
+we're going to make a make der dash p in the package slash install and into that install folder we
+are going to cat from the current directory the slack where the slack dash description file and now
+if there was a man page that was built for this and there isn't there's a yes please space dash
+dash help but that's not a file that's part of the program itself so there is no man page so we're
+not going to do anything with man pages this had no pearl or or um you know this didn't have
+anything else involved so there's no meta little hidden things to strip out or get rid of so again
+this is a pretty simple build comparatively but at this point we could do all kinds of cleanup
+and again you're going to see this in the other packages where the after you've installed it
+you you want to kind of clean up after yourself and make sure that you're not leaving a whole
+bunch of bits and pieces lying around for for your user to have to clean up on their own tidy up
+a little bit and after that you see the into the package and you issue what is a distinctive slack
+where application called make pkg and that is it resides in slash s bin slash slash make pkg and so
+we're basically converting everything in this directory that has the exact correct structure and
+skeletal form of a slack package and it's it's taking all that stuff and putting it into well
+really just a tar g zipped archive so make package make pkg while I say it is specific to slackware
+it actually isn't specific to slackware at all because if you do a less on slash s bin slash
+make pkg you will see the shell script and all the code or you know you'll you'll see the
+the application right there and it's just a bunch of unique stuff it's it's normal every day
+bash kind of shell kind of stuff that anyone could do so this is a really really I just can't
+get over how like beautiful this this format is because it is just it's pure
+unix it's just a bunch of shell scripting and it's just so effective why is it so effective
+well before we go into that we should run the script and see what actually happens so the way
+that you run a slackware script or a slack build script rather is that you've got your folder you've
+got your little slack build folder with our for obligatory slack build files in it and you place the
+source code package all zipped up and everything just like you got it from the internet you place
+that inside of that folder you chamod the slack build script to be executable so that's chamod plus x
+yes please dot slack build and then become root su into your root password and then run the script
+dot slash yes please dot slack build and that finds this source package sitting next to it it
+unzips it it moves it over into the temporary directory and builds it and compiles it and all
+that other stuff that we've just written down in the script let's look and slash tmp and we'll
+see our newly built yes please underscore august for twenty ten dot tgz well underscore x86 64 dash
+one underscore sbo dot tgz and that is of course a normal everyday slack package that we could then
+use install pkg to install onto our system and it it's simply unarchives that directory and takes
+every all those little bits and pieces and dumps them into your file system where they belong and
+spits out like a little description for you and stuff like that and it is truly as simple as that
+the really cool thing is that if you ever want to look and see what has been installed on your
+system in the lifespan of your slackware system you can simply do a ls on slash vars slash log
+slash packages and there they are all the packages that you've ever installed now those aren't
+the they don't contain the binaries and everything you know there's no reason to keep that stuff
+around but they they do have it is a list of of everything that was installed and those each of
+those packages contains a file list of everything that was installed and that's not just for your
+information of course because if you ever went to go do a remove pkg then the system could look
+at the file with all of the little folders and directories that it lists as having been part of
+that install and it can see if they're unique you know make sure that they're not being used by any
+other package on your system and if they are unique then it will remove that file from your system
+and that's how remove pkg works so the install pkg takes your slack build and overlays it over your
+your file system and records exactly what it has done in a plain text file in your slash vars slash
+log slash packages and the remove pkg caps that log file and does a unique or sort with unique
+flag probably over everything else figures out what it can and cannot remove and then removes it
+and you're done it's that simple it's that generic notice how there's no complex packaging front
+end there's no database underlying all of this it's just shell scripts plain text traditional
+unix commands very very very cool and it's easy enough that someone like me and you dear listener
+can actually start with on your own you know I mean if you know how to shell script you you
+basically know how to make a slack build slack slack builds that that format that that packaging
+format is the one I mean that is what is used by pat vulcarding to make slackware so it's a very
+it's all very cohesive and very tried and tested so very robust little packaging format very simple
+and I think once you do it or even once you've listened along to me doing that it does help you
+understand what's going on during packaging because while this is very well I keep saying it's
+non-specific but this is something that slackware does it's it's it's all the same idea it's
+it's packaging so when we do rpm on the next episode a lot of that is going to sound very
+familiar to this one and I do hope that you'll return for that episode on rpms but for now I
+think we're finished with slack building I hope you enjoyed this I know it's been a long episode
+hope it's been informative thanks for listening
+you have been listening to hegerpublic radio at hegerpublicradio.org we are a community podcast
+network that releases shows every weekday on day through friday today's show like all our shows
+was contributed by an hbr listener like yourself if you ever consider recording a podcast
+then visit our website to find out how easy it really is hegerpublic radio was founded by the
+digital dot-pound and the infonomicum computer club hbr is funded by the binary revolution
+at binref.com all binref projects are crowd-sponsored by linear pages from shared hosting to custom
+private clouds go to lunar pages.com for all your hosting needs unless otherwise stasis today's
+show is released on the creative commons at review show share a live video's own license

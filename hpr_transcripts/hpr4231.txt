@@ -1,0 +1,187 @@
+Episode: 4231
+Title: HPR4231: Duplicating Multiple USB Flash Drives with DD and Tmux on FreeBSD
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4231/hpr4231.mp3
+Transcribed: 2025-10-25 21:46:59
+
+---
+
+This is Hacker Public Radio Episode 4231.
+From Monday the 21st of October 2024, today's show is entitled, Duplicating Multiple USB
+Flash Drives with D.D. and Tmux on Freebie SD.
+It is hosted by Claudio Miranda and is about 16 minutes long.
+It carries a clean flag.
+The summary is Claudio describes his process for mass USB flash drive duplication with
+Freebie SD Tmux and D.D.'s.
+Hey Hacker Public Radio, this is Claudio Miranda, recording an episode because I know we're
+running a bit low on shows.
+It has taken me a while to actually get to do this, but I've had it planned for some
+time now and I finally was able to get some notes down for this episode.
+In this episode, I'm going to discuss how I used Tmux and D.D. to duplicate a USB installation
+of Windows 11 for work.
+We have an image that we use that we deploy to our all our desktops and laptops of Windows
+11 and the way we have to create those USBs is a big cumbersome because there's a script
+that we have to launch and then just wait until it creates the image using the Microsoft
+tool.
+We can't use Rufus or anything like that, we used to, but not anymore.
+So it takes a while because we have to do it through a share that's provided to us.
+So trying to do these one at a time, especially when I had to do about 30 USB flash drives
+took quite a bit of time and they didn't always work.
+So I thought I would go ahead and see about probably finding a solution to this.
+I looked to see if I could find a USB flash drive duplicator, but they tend to be pretty
+expensive depending on which ones you get and I wasn't sure about the cheapy ones.
+So I decided to use the tools I already had.
+So I have a free BSD box that I use for B-Hive and I said, well, let me see.
+I can take and make an image of the actual one of the USB thumb drives with the installation
+procedure and create a disk image out of it and then use DD on the free BSD machine to
+duplicate it to the other USB thumb drives.
+So that's great in all, but I would be stuck again doing them one by one, unless I used
+T-mux and T-mux if you're not familiar with it is a terminal multiplexer, which is actually
+what the name stands for if I'm not mistaken.
+If you're familiar with GNU screen, it's just like that.
+There are things that I like about it that I like about T-mux over GNU screen, mainly
+the fact that you already have a kind of an information bar at the bottom.
+You can do this with GNU screen, but you have to configure it and I'm not going to go
+into those details.
+But it's out there if you want to look for it on the internet.
+I did it once with a, I think I did it with an episode I talked about where it was a,
+my Raspberry Pi 1 that I installed, was it an FBSD, I don't remember.
+I don't remember.
+Anyway, no, it was Pi Core, some sort of one of those tiny core Linux distributions,
+but anyway, I digress.
+Back to the topic at hand.
+So I have a FreeBSD machine, I have DD, I have T-mux.
+So I said, let me give this a try and see if I can basically use this FreeBSD machine
+as a duplicated pun intended and kind of cut down the time in duplicating these USB flash
+drives.
+So the first thing I did was since I'm working with Windows initially, I have to create the
+image on the USB flash drive using the script that would be the initial USB flash drive I
+use as kind of the golden master.
+Once I run their script to create the flash drive installation, I started searching, I'd
+started to look on the internet because I tried with Rufus, I tried with Elena Etcher,
+and all of them gave me errors.
+And all I needed was something to create an image of this USB, that would still be bootable.
+So I ended up finding this tool, it's called USB Image Tool of all things.
+You can find it at https, colon slash slash www.alletspage.de slash USB hype and image hype and
+tool.
+Now I'm going to put all of this in the show notes along with the steps I used.
+So you'll find everything there.
+So what I did, I kind of did some pre-planning here to create my image.
+So I created the image, you can create it with your preferred disk image creation tool.
+So right here I'm going to use this example of mine where I use this particular tool.
+So USB Image Tool created the image, a golden master, Windows 11 installation flash drive.
+So once I did that, and I had the image, I copied it over to my VSD machine.
+And then I prepared my team up session.
+Now again, team up you can install Linux or VSD, you can use any Unix-based operating
+system to do this, I just chose VSD because it's what I had on hand.
+It's my preference.
+So and can't finally keep saying that I keep pushing the VSD.
+So I might as well keep doing that.
+Anyway, so what I did was I created a new team up session.
+So I did a command was team up space, new space, dash S space and whatever name I wanted
+to give the session name.
+So the dash S gives you is what allows you to create the name for this session.
+So after that, you can move or you can do what you need to do.
+So I went ahead and I did a control B.
+And then, well, after the control B, I do a quotation mark.
+And that'll create a horizontal split for me.
+So I was trying to do four at a time.
+So I did a horizontal split, which put one pane over the other, okay?
+After that, I did a control B percent to create a vertical split on whatever my
+active pane was.
+And that would put one pane next to the other.
+So in essence, I had to go back to the other one.
+I would use the control B up arrow or control B down arrow to move to the pane I wanted
+to split.
+And then I would split it accordingly.
+So after I did that, and I'm going to go ahead and put in the link to a team up
+cheat sheet that I found that I had on my phone for the longest time because I've
+been wanting to record this episode.
+So I'll put that in the link in the show notes, but it's htbs.com slash slash teamux cheat sheet.com.
+Okay, so now, once you have your four teamux panes, okay?
+You are going to use the DD command to start creating your USB flash drives.
+Now, very important, make sure you plug in your USB flash drives first.
+And please, please, please check your D-message or your slash bar,
+slash logs, slash messages for the correct device name and write it down.
+I highly recommend you write it down because DD is also known as the distroyer.
+So be sure to not wipe out anything that is important like your main hard drive
+because it will do it if you put in the wrong device.
+So what I did, I checked for D-message.
+And the nice thing about FreeBSD is that in T2Y V0, FreeBSD shows all the output in D-message
+or whatever is in slash bar, slash logs, slash messages, and you can view them as you plug them in.
+Or you can just check within using the D-message command or catting the log file.
+So my process was inside my T-message session.
+So I have four pains in my T-message session.
+So I'll go to pain1 and the command I'll do, again, this is the commands for FreeBSD.
+So make sure you, whatever device name it, it shows as for your chosen operating system, that's what you use.
+But I'm going to give my example on FreeBSD.
+So in pain1, I typed DDE space, IF, or the input file, equals whatever the name of the disk image was.
+Space, OF, which is where the image is going to be sent to your output file, equals slash dev slash DA0.
+Space, VS, for block size, I put it as one megabyte.
+And then space status equals progress.
+And that will give you a progress as to how far this duplicating has gone.
+So not just a one thing to add also.
+OpenBSD's DDE command does not support the status option.
+So if you do it, it's not going to work.
+So anyway, what I did was, for the first pain, DDE, IF, equals, whatever the disk image name is,
+OF equals slash dev slash DA0, VS equals one megabyte, or one M capital M, I put, or the block size, and the status equals progress.
+That is for thumb drive number one.
+Remember, we always start with zero when it comes to computer stuff, at least when it comes to the devices.
+Now, next thing you're going to do is you're going to switch over to the pain number two, whichever you're going to designate as pain number two.
+And do the same thing, except instead of the device name is going to change.
+So mine, the first one was DA0, pain number two is going to be slash dev slash DA1.
+Now, I switched the pain three, same command, except the devices slash dev slash DA2 for the third USB flash drive.
+And then pain four is slash dev slash DA3 for the fourth USB flash drive.
+Now notice, I haven't hit enter on any of these yet.
+The reason is, TMAX will allow you to synchronize your pain.
+So you just give, once you synchronize your pains, whichever one is the primary pain, will send the command to the secondary pains.
+So if your primary pain is number four, pains one, two, and three will follow whatever command is sent to pain number four.
+So if anyone has ever used CSSH or cluster SSH as it's known, it's very similar to that.
+That has that feature as well, something similar.
+So in TMAX, what you're going to do, before you hit enter, you're going to do a control and then a colon.
+Or I believe it's control be colon.
+Let me test that real quick, because I may have to modify my notes here.
+Let's see here.
+I already have a TMAX session moment here.
+So you're going to hear the clicking of my IBM Model M keyboard here, that I've brought to work.
+Yeah, there's a mistake in here.
+So it is control be then colon to call the TMAX command prompt.
+Okay, very similar you're going to see it's going to remind you if you've used VI or VEM.
+You're going to see that colon, which is the command line prompt for that.
+So then what you're going to type in that command prompt is set W, STW, space, synchronize, hyphen, pains, and then you'll hit enter.
+And what that will do, you'll notice that one of the pains will change color.
+And in my instance, it turned red based on the color scheme I have in my terminal.
+And the other stayed green.
+So once you do that, then you can hit enter on the primary pain.
+And all of them will begin to start, we will begin to image or create or pass the image over to their respective USB flash drive.
+Once that's done, for me, it depends on how faster USB flash drives are and how faster USB ports are.
+So the faster they are, the clearer will get through it.
+This is the only way that I can figure out how to simultaneously duplicate four thumb drives at a time.
+And this saved me a ton of time.
+So once it finishes, you can go ahead and remove the USB thumb drives, pop in four more.
+And remember, you still have the set synchronized pains enabled.
+So all you have to do is hit the up arrow on the primary pain and it will pull up the previous commands.
+And then you just repeat and then wait and then just do the same thing. Repeat is needed.
+Now, if for whatever reason you need to desynchronize your T-mux pains, all you have to do is type the same command in and it will remove the highlighting from the primary pain.
+And then each one will take the command once you're in that pain.
+They're no longer synced.
+That's what I did. I hope this made some sense to you.
+Okay. It was a solution that worked for me.
+That tool that I use that USB image tool from AlexPage.de worked wonders for me.
+It's a very simple tool. It will create an image from a thumb drive from a thumb drive flash drive in Windows.
+And once you have that, you can pass it over either over the network or however you want to do it.
+To your unique space machine to use DDT-mux.
+I haven't tried this in Windows, so if anybody would like to record an episode on doing such a thing in Windows, feel free.
+And I'd love to hear it, especially since we need a lot more shows on Hacker Public Radio.
+So lately, I've heard that we're very long shows. We're dipping too much into the reserve queue.
+So please, if you can record an episode for Hacker Public Radio.
+And I'm glad to see them back after the Internet Archive had been de-dost and compromised.
+So I'm glad to hear that the Internet Archive is back as well as the Hacker Public Radio episodes.
+I've been missing a few due to that.
+But they're back, and I'm getting the episodes again, so thanks again for taking the time to listen to this.
+My name is Claudio Miranda and be back for another episode of Hacker Public Radio.
+Bye-bye.
+You have been listening to Hacker Public Radio at Hacker Public Radio.
+Today's show was contributed by a HBR listener like yourself.
+If you ever thought of recording a podcast, you can click on our contribute link to find out how easy it will be.
+Hosting for HBR has been kindly provided by an honesthost.com, the Internet Archive and our sings.net.
+On the Sadois status, today's show is released under Creative Commons, Attribution, 4.0 International License.

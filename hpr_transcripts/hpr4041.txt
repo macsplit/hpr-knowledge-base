@@ -1,0 +1,85 @@
+Episode: 4041
+Title: HPR4041: Using grepcidr to find IPs in a netblock
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4041/hpr4041.mp3
+Transcribed: 2025-10-25 18:56:27
+
+---
+
+This is Hacker Public Radio Episode 4141 from Monday the 29th of January 2024.
+Today's show is entitled, using Grepsider to find its inner netlock.
+It is hosted by Delta-ray and is about 11 minutes long.
+It carries a clean flag.
+The summary is an introduction to the Grepsider command, which makes finding it from a netlock in log files easier.
+Hello, HPR listeners.
+Have you ever found yourself wanting to use the GREP program to look for an IP address and a log file?
+Well, I often have, over the years, as I've run websites and mail servers and various network services.
+Sometimes you need to see if an IP address that is hitting your website or mail server in an unfriendly way appears other places in the log.
+Sometimes you see connections from multiple different IP addresses on the same netblock and you want to see if there's others from that netblock.
+And so usually when you use a program like GREP, you are matching the text part of the IP address.
+You're not really matching the IP address itself in the sense of it as an object.
+The GREP program doesn't understand how IP addresses work.
+You have to basically fudge it by giving it a set of numbers and try to match the range.
+And it gets really messy.
+So there's this great program called GREP SIDER that's written by Jim Berks and others that actually fixes this problem by allowing you to actually search for IP addresses on netblock by using SIDER notation.
+But what is SIDER? And when I say SIDER, I know it sounds like Apple SIDER, but it's actually spelled CIDR in its stance for classless internet domain routing.
+So what's that?
+Well, this goes all the way back to 1993.
+See in the early days of the internet, they need to figure out how to divide up all the IPv4 addresses and the first method that they released the most recent,
+penultimate method that they used was called classful domain, classful internet routing.
+So the way classful internet addressing worked was basically they divided up the IP addresses into octets, you know, the four different parts of the IPv4 address.
+They call them octets because each of the positions is made up of eight bits and, of course, two to the eighth being 256.
+This is why you have a range in each of the positions of the IP address that goes from zero to 255.
+So if you're allocated an IP address block in classful internet addressing, if you were allocated an IP address block that started from zero to 127, then you would get the last three octets allocated to you.
+If you were allocated an IP address block that started from 128 to 129, then you would get the last two octets allocated to you and the second octet would be just determined by, you know, sequence or something like that.
+So they would have up to 256 times 64, you know, 256 times 64 class b's that they could allocate.
+And then if you're given an IP block that started in the first octet between 192 and 223, then you would be given 256 addresses.
+So basically the last octet would be given to you.
+But classful internet addressing hasn't existed since 1993 and the people who say like, oh, can you give me a class C net block.
+They're using very long obsolete terminology and they need to think of it in terms of, you know, cider notation like slash 24.
+It became woefully inefficient and they realized very quickly that they were going to run out of IP addresses too fast if they allocate them this way.
+So cider enters the picture and says instead of trying to divide up, you know, by the octet, let's create a bit mask that basically says you get a certain bit mask that says anything that matches the mask,
+you'll get that part of the network allocated to you.
+So one of the most common ones that you see is a slash 24 and that basically means that the last octet is for your use.
+So if you were allocated 40.10.32.0 slash 24, that would mean that you've been allocated all the IP addresses in the range from 40.10.32.0 up to 40.10.32.255.
+You can actually get where cider gets a little bit more complex is that you can actually have like a larger than slash 24 address space or smaller than slash 24 address space.
+So you can have like a slash 22, which basically means that you're going to get for slash 24 is equivalent or in other words, it's if you had 40.10.32.0 slash 22, your IP address range or go from 40.10.32.0 up to 40.10.30.35.255.
+And so you get 40 slash 24's, you know, I'm sorry, you'd get for slash 24's equivalent. It's a little bit hard to talk about.
+So the nice thing about this program GRIP SIDER is that it understands all this math. It understands how IP addresses work and it understands how cider notation works.
+So if you know that you want to search for stuff that's like on a slash 24 net block, you can just give it the net block and then put slash 24 at the end and it'll do the right thing.
+You can even give it like a slash 22, you know, larger than a slash 24 so that would understand that needs to match things in that special range or even a smaller than slash 24 like let's say a slash 25, which would only go from zero to 128 or from 128 up to 255.
+So GRIP SIDER is this really useful program that understands all this math and it's especially helpful if you're trying to do something like fend off a distributed denial of service attack or you want to see if you know IPs that are scanning you are coming from the same net block or something like that.
+Now that you understand how the GRIP SIDER syntax works and if you have an IP address that you want to search for other IPs on its net block, you're probably wondering how do I know what the net block is besides just using the last octet and dropping that and replacing it with the zero and adding slash 24 or dropping the last two octets and just hang slash 16.
+How do you know what the actual net block is for the network that that IP address came from? Well, there's another program called Who Is and you may have used Who Is for looking up domain names and other things for a long time.
+It's basically a program that interfaces with Who Is databases on the internet, which are some of the oldest databases available online.
+They don't use HTTP protocol in order to get their information, they use a special protocol of their own.
+So this is a command line program that you might have, you might need to install it.
+But usually you can find it in your repositories for your distribution or on a Mac if you use a home brew or something like that to install software you can do it that way.
+Or there's also online, you know, web-based versions of Who Is that you can go to if you just search for like a Who Is database, you can do it that way.
+But anyways, you would basically just open up a shell and then type in Who Is space and then the IP address that you're interested in.
+So if I do Who Is on 40.10.32.7, let's say that was the specific IP address and then enter, you'll get a lot of output.
+You'll see like a big database entry that includes the names of the people who help manage that network and so on and who you'd want contact for abuse.
+But at the very top of it, you should see a couple of lines that say net range and it gives you, you know, the range of IP addresses that belong to that net block.
+And then the line below that will say citer, CIDR, and it'll give you one or more of the net blocks that are in there.
+And generally, if you see multiple net blocks there, you want to choose the one that has the lowest number after the slash.
+So in this case, it's Eli Lilly actually that owns this IP address block, which is not far from where I live, just kind of random coincidence.
+But they have a network that goes from 40.000 up to 40.44.25255.
+And so that's actually a 40.000 slash 11.
+And that's quite a big net block.
+That again is like a historical legacy of the internet.
+They applied for their allocation back in 1991 back when we were using classful internet addressing and they were given a fairly large net block.
+Probably they were given, I don't know, maybe they were given the entire class A and they have sold off parts of their net block sense.
+I know that that's something that's happened.
+But I don't remember seeing their name in the original list of allocations because there's a document online that has like all the allocations.
+As they were originally handed out, I don't remember Eli Lilly being one of those.
+So it's possible they acquired a company or something.
+There's some interesting history there that maybe is worth delving into.
+So that's how you actually look up the net block itself.
+It's quite useful tool to have as a system administrator.
+Okay, so that's it.
+And I'll probably go over some other cool and interesting commands that don't get covered a lot in a future episode of HPR.
+Take care.
+You have been listening to Hacker Public Radio at Hacker Public Radio.
+Today's show was contributed by a HPR listener like yourself.
+If you ever thought of recording podcasts, you click on our contribute link to find out how easy it really is.
+Hosting for HPR has been kindly provided by an honesthost.com, the internet archive and our syncs.net.
+On the Sadois status, today's show is released under Creative Commons, Attribution, 4.0 International License.

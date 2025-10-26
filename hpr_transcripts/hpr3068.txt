@@ -1,0 +1,155 @@
+Episode: 3068
+Title: HPR3068: Keeping track of downloads in Elm
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3068/hpr3068.mp3
+Transcribed: 2025-10-24 16:09:23
+
+---
+
+This is Hacker Public Radio Episode 368 for Wednesday 6 May 2020.
+Today's show is entitled Keeping Track of Downloads in Elm. It is hosted by Takutoro Toa
+and is about 13 minutes long
+and carries a clean flag. The summer is
+222 shows how to keep track of what later is being downloaded in Elm.
+This episode of HPR is brought to you by An Honesthost.com.
+Get 15% discount on all shared hosting with the offer code
+HPR15. That's HPR15.
+Better web hosting that's Honest and Fair at An Honesthost.com.
+Hello and welcome to Hacker Public Radio.
+This is Tukutoro Toa and today's episode will be about keeping track of downloads in Elm.
+Elm is a... you may remember that the Elm is this language that
+transfers into JavaScript, so you can write front end code with it.
+That's what I have been using in my little space game I have been working on.
+So, the background. There's a... I have a page that downloads data from the server.
+That is a vehicle designer to be specific and among other things it will need to
+when you enter the page, you'll need to load all the available chassis,
+all the available components and all the existing designs, those designs that you or your
+teammates have made before. And all these are loaded with different codes to the server.
+So, there's no one load, but there's several requests to the server side.
+So, the old way I would have handled this is to have a model.
+This is the state of the program.
+As usual, there's a code sample in the show notes.
+It's a good idea to have a look at them, but I'll try to explain them in any case.
+So, there's a type alias model that's a record that has three fields that we are interested in currently.
+There's a available chassis that is listed of chassis. There's a chassis loaded.
+There's Boolean and chassis loading that is Boolean.
+So, idea is that when you start loading, you change the chassis loaded to true.
+I'm sorry to fall. It has to be false, but the chassis loading is true.
+And while you are rendering this on the screen, you have to check for chassis loading.
+If it's true, then you display some sort of loading indicator.
+We also have to check for the chassis loaded.
+Because if that has been false, we are not going to try to render.
+All the chassis is on the screen, but if it's true, then we know that we have loaded the chassis
+and we can render a presumable list of chassis on the screen.
+And there might be buttons also on the UI that you have to disable or enable basement of Boolean values.
+And this is error from because you have to remember to do that check before rendering.
+Things you have to check that have we loaded this data?
+Or are we currently loading it?
+Or even we might have a third field for error days.
+That's just it's error is Boolean.
+So, if that's true, we would have to display some sort of error thingy.
+And what about if we have all three assets true for some reason?
+Then we would have that we are loaded the data, we are loading the data,
+and there's error in the data.
+So how do we render this thing?
+So we enable inconsistent or error-nose state for the program.
+And this is bad, I don't like.
+A solution for this, we have all the track data types.
+Sometimes these are the types that say that this type can have value of this or this or this.
+So let's use them.
+And good thing is even that we don't have to roll our own solution because there's this library called remote data that solved this for us.
+So, just we are going to import that library and going to use what it provides.
+So, import this import remote data, exposing remote data, web data.
+And then we have to change the model to give track of these things.
+The web data is just alias for remote data, HTTP error, hey.
+So it basically basically says that this data is coming over the HTTP.
+So they might be an HTTP error instead of the data.
+But so you could use the remote data for other things than HTTP traffic.
+But here we are using it for communicating without server over the HTTP.
+So we can use web data.
+So we change our model.
+So we throw away all those pull-ins and then we change the definition of available chassis to be web data, list chassis.
+This means that now available chassis is a data coming over the HTTP that will come down list of chassis.
+Okay, what has changed?
+We don't have those pull-ins anymore, which is nice.
+The information, have we loaded the data?
+Are we loading it currently?
+Has it been an error?
+And what the data is?
+And what the error is?
+All that is now encapsulated inside of the available chassis.
+So there's four constructors in the web data.
+There's a not asked that is simple.
+Data isn't available, it hasn't been requested from the server.
+So for example, when we are rendering things on the screen, we can just depending on the application,
+but we can just omit this data.
+There's no data and it hasn't been asked.
+The second case is loading, meaning data isn't available, but it has been requested from the server.
+In this case, you will display loading indicator, for example, just text loading or some spinning thingy or what you have.
+Then there's a success in these chassis.
+This means that the data has been arrived from the server and it has arrived correctly.
+So here's the list of chassis that came from the server.
+And now we can just render this list of chassis on the screen.
+Oh, it can be a four case failure, HTTP error, meaning that yes, we tried to load it from the server, but something happened.
+Maybe the network was down or maybe the server had melted down or maybe there was an error on the server.
+So there's a HTTP error that has the things like it has the message that was given by the server.
+It has the HTTP status code that you can use to quickly check what's going on.
+So in this case, we will display, for example, something we're going to run from.
+Or if we are fancy, we could look into the error code and say that if it's a four, four, we could say that the resource was not found.
+Or if it's a 500, we could say that there was a problem at the server, please contact your administrator.
+And the neat thing about this is that the Elm compiler, when you are hiding these case cases, it will notify you if you miss a case.
+It will say that, hey, you forgot to handle the failure case. I'm not going to compile this program before you do that.
+Or you say that you haven't handled the not asked case. What should I display in that case? All that is now taken care of the compiler.
+And you also remember by yourself that, hey, this data is coming from the server.
+And you? Okay. There's a couple of things we have to remember.
+For example, when the user comes to the page, we have to initialize the model correctly.
+For example, the available chassis could be not asked.
+Or if we know that it's going to start loading immediately, it could be loading.
+And when we receive a response from the server, be it success of failure, we have to update the model to have to have the correct info again.
+But at least we have a compiler to help us along the way.
+And remote data library has more functions. I'm going to go through all of them, but it has things that help you.
+For example, if you have a case that you are doing two requests to the server and then go on the client side,
+combining them, they result with a function to produce some calculation or something.
+Remote data has a not a function and not two and not three, I think still.
+So you can, you don't have to have a case, case matches, pattern matches all the time.
+You can just use those high order functions.
+Because if you are, if you are using a remote data.map to run your function over the data, it will produce.
+If you had a, if you have that data available, it will be produced successfully result of the function.
+But if it, if you haven't asked the data or it's still loading, it will produce, not asked or loading.
+And same. Actually, I don't remember how it behaves in the error case.
+I think it will produce the failure error in that case.
+I probably would have to double check for that.
+But the idea is that you can, you don't have to all the time give track of the,
+do I have this data or not, because you can just map over it and result of that function map over it.
+And in the end, you just look like, okay, what's the, what's the end result?
+Did I have all the data data that I needed or was something missing or still loading?
+And I have been switching over this, this layer of doing things.
+There's still a couple places in my code that needs to be changed.
+And I have to say that I'm pretty, pretty happy how this thing works.
+There's a pivoting on what you are doing. There's a one thing that might brief you.
+And that is, if you have a data that you loaded from the server and then you modified on the client side
+and then you send it back to be saved, then what are you going to have as a client side state?
+What are you going to be loading?
+Because you are making a request on the server and relating the reply.
+But if it's a loading, then you don't have the data anymore to display.
+Because loading doesn't have a parameter for the data.
+Then you have a, then you don't have any data on the client side to solve.
+Sometimes it doesn't matter. Sometimes you would like to have the data visible on the client side
+while it's being saved on the server side.
+So myself, I solved that problem by making an prototype called save data.
+That is a, that has two constructors, R data, that is a remote data or saving A.
+Because then I can, in normal cases, I can just have that remote data behavior
+and when I'm saving, I switch over that save, save data, saving behavior.
+And then I can display the data on the client side while it's being saved on the server, server.
+That's all I had to talk about this today.
+The best way to reach me is either by email or on mustardon, where I'm to do that, mustardon, that shows all.
+Or you can, of course, record your own episode on behalf of the radio.
+Ad Astra.
+You've been listening to HackerPublicRadio at HackerPublicRadio.org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast and click on our contributing to find out how easy it really is.
+HackerPublicRadio was founded by the Digital Dove Pound and the Infonomicon Computer Club
+and is part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released on the creative comments,
+attribution, share a life, 3.0 license.

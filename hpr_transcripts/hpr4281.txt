@@ -1,0 +1,110 @@
+Episode: 4281
+Title: HPR4281: My ridiculously complicated DHCP setup at home
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4281/hpr4281.mp3
+Transcribed: 2025-10-25 22:25:41
+
+---
+
+This is Hacker Public Radio Episode 4281 from Monday the 30th of December 2024.
+Today's show is entitled, My Ridiculously Complicated DHCP Setup at Home.
+It is the first show by Newhost John the Nice Guy and is about 8 minutes long.
+It carries a clean flag. The summary is, this is about how I set up my DHCP server at home.
+Today's show is licensed under a Creative Commons Public Domain Dedication License.
+Hello, this is John the Nice Guy and after 10 years of knowing about Hacker Public Radio,
+here is my first podcast for the network. Firstly, I want to give a shout out to my
+headman Edmund Podcast co-host out who I heard just a week or so ago talking about
+Proximal Clinic, glad to hear you over here too. I want to record an episode on my
+ridiculously complicated DHCP set up at home. I'm not saying this is the right or even a
+good idea for anyone else, but it's something you might want to do. Firstly, a little
+bit about why I have a complicated DHCP set up and it starts with the router my previous
+ISP gave me. My router could just about cope with serving DHCP, but at the time when I was
+experimenting with running service on my home lab, the DNS server on the router wouldn't
+return the dresses for the hosts on my network, just those on the public internet. This
+wasn't a great experience, so I installed PiHull initially because I've heard good things
+about how to use it, add blocking capabilities, but later because it was just a pretty
+and sensible DHCP and DNS server that I could do things with. Another cover is PiHull
+is running DNS Mask, which means that all the configuration is just plain text files
+that I can overwrite with Ansible. My PiHull was running on a Raspberry Pi 2, with
+in a Lego style case plugged into the back of my router, and this was fine for a few months,
+and then it ran out of storage space. I changed jobs, my wife complained one too many times
+and I reverted back to using the router's DHCPD and DNS. I also picked up either Nebula
+or Tails Girl around that time too, so I didn't really need an internal DNS to resolve
+my home services anymore, and anything probably I set up external DNS records pointing to
+internal addresses. Job done. Scrub forward a few years, and when I changed jobs, I got
+a joining bonus, which paid for me to get wired network around my house. I also set up
+my own Prox Mox cluster, which I documented on a blog post, on my blog. Again, everything's
+peachy. I set up Home Assistant, which I exposed to the internet via Proxy on my VPS,
+and everything was still good, but things are a little bit more complicated now. I've
+got more stuff to keep track of, and the router's DHCP server was struggling a little,
+but it was all still okay. And then I changed ISP. My new ISP shipped a router running customized
+version of Open.OpenWRT, and I thought, finally, a great router. And then I realised I couldn't
+do anything sensible with it. It was so locked down. I mean, I couldn't even change
+the admin password without factory resetting it. Anyway, we're going to a couple of weeks
+while my wife was complaining about random, intermittent DNS requests failing, and I was
+seeing it too. So I found on the Prox Mox helper script website that someone would put
+a script to set up a pie-hole instance. And naturally, as I had two Prox Mox servers
+by this point, I ran two pie-hole servers. This lasted a few months until I performed
+a system upgrade to the Prox Mox cluster, and it took down both Prox Mox cluster members
+at the same time. And DNS fell off the network. I revised the Raspberry Pi 2, which now sits
+reattached to the back of the router again. Excellent. So, meanwhile, I was getting more
+and more into internet, more and more into internet of things, and I had several two-year
+IoT devices connected over Wi-Fi. And the 254 network addresses available in the Slash24
+size network, to me at home, didn't seem enough anymore. So I decided to expand my networks
+to a Slash22, giving me enough address space for 1222 devices. Plus, I have kids who
+each have computers and phones and games devices. My wife and I both worked from home, so
+we both had computers from work and our own personal devices too, so I decided now is
+the time to plan out my network. I decided to use PHP IPAM, having been asked to look
+at it for work, and found it was a good fit for what I wanted to do with it. PHP IPAM
+really is designed for owners of large-scale networks, people who allocate chunks of
+public IP scopes and IPv6 address ranges, but it will subdivide smaller network blocks,
+and so I could carve up my little network. I decided to split my Slash22 into 4-24 networks.
+One was dedicated to the HTTP address items, with one smaller subnet in there allocated to the
+Proxmox hosted by Hull, and the other to the Raspberry Pi hosted by Hull. Both are basically
+a catch-all for anything I've not yet allocated static IP addresses to. One Slash24 was allocated
+to end user devices like phones, computers, TVs and games consoles, separated into smaller subnets,
+per person, one additional subnet for room-shared devices like TVs and games consoles. One subnet
+was separated into smaller subnets for IoT devices and core network things like mains and networks,
+switches, light bulbs, cameras and printers. The last Slash24 subnet was undivided, but was for
+servers both physical and virtual. And I should note at this point that whilst I'm saying they're
+subnetted or divided down, these are logical subnetting, they're not actual subnetting,
+so I don't lose addresses for routers and DHCP and stuff like that. This is literally just
+logical for how my head thinks about it. So great, I've now got a lovely network map, but
+ah, now I've got to transfer all of those DHCP and static IP address allocations to the
+pi-house. And whilst I've been using gravity sync to synchronise between the two pi-house devices
+for a while, sometimes it took a little while for gravity to sync to sync. And over time I wanted
+to expose some of those servers I was running at home to my family at home, so I needed to move
+this up again, and I turned to Antsport. A few years ago, I'd helped write some answering
+modules which used to interact with the cloud service my employer at the time was running,
+so I kind of had an idea on how Antsport worked under the service, and my
+the documentation for writing a new set of lookups was okay, and chat GPT helped us where I lost my way.
+I knew there was a terraform provider for PHP IPAM, and so I knew there was all working API.
+I knew I could look stuff up in PHP IPAM, and I wrote some Antsport lookups to confirm the data was
+accessible for PHP IPAM. And it was great, now what I need to do is drop the files into pi-house.
+Now, I've heard Alex from the Self Hosting podcast talking about how he wrote some Antsport
+automate his pi-house management, but it assumed a lot about how your network was set up,
+and integrated a bit with some of the other things he did. No complaints there, it's his
+no withdrawal, but I needed it to do five specific things. One, create a list of static DHCP
+allocations on both pi-house devices. Two, create a list of DNS names to resolve in the internal
+network to address his via a record. Three, create a list of DNS names to resolve to other DNS
+names via c-name records, this means I can move stuff around if I need to. Four, create a list
+of DNS wildcards, so anything ending in that name would appear in my network, and five, if
+anything, changed in those four things before restart DNS mask. I wrote this code and ran it.
+Well, ran it, and it didn't work, so I fixed it, and ran it again, and again, and again,
+until it did work. So now I've uploaded that Ansible Playbook to my GitHub today, feel free to take a
+look, and you've probably spent a while listening to this, and this is my too-longed listen
+wrap-up. I have two pi-house devices. I run a PHP IPM service under Docker on an LXC container
+on my Proxmox server. On the same LXC container, I have a cron job which triggers the Ansible Playbook,
+every five minutes or so, to push updates from PHP IPM to the pi-house hosts.
+Every few days, I check to see what hosts have turned up in the DHCP pools on the pi-house hosts,
+and map those to hosts I want to track in future, and allocate them addresses in PHP IPM,
+so that those hosts will get managed IP addresses after five minutes or so. The next time they
+renew their DNS, the DHCP addresses. Ta-da! Now, for more over-engineered solutions like this,
+feel free to take a look at the content on my blog, in my GitHub, in the GitHub Openization
+I'm associated with, anyway, both sorts of things, and maybe I'll appear again on Hacker,
+public radio. Take care, 73s.
+You have been listening to Hacker Public Radio, at Hacker Public Radio, does work.
+Today's show was contributed by your HPR listener like yourself. If you ever thought of
+a quick podcast, you click on our contribute link to find out how easy it really is.
+Hosting for HBR has been kindly provided by an honesthost.com, the internet archive, and
+rsync.net. On the Sadois status, today's show is released under Creative Commons,
+Attribution 4.0 International License.

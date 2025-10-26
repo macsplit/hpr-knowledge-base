@@ -1,0 +1,348 @@
+Episode: 2791
+Title: HPR2791: LUKS like truecrypt
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2791/hpr2791.mp3
+Transcribed: 2025-10-19 16:53:28
+
+---
+
+This in HBR episode 2,791 entitled, looks like true crypt, and in part of the series,
+privacy and security, it is hosted by Klaatu and in about 25 minutes long, and Karima
+Clean Flag.
+The summary is, Klaatu demonstrates how to use LVM and crypt sit up to create, and use portable
+and crypted file systems.
+This episode of HBR is brought to you by an honesthost.com.
+At 15% discount on all shared hosting with the offer code HBR15, that's HBR15.
+Better web hosting that's honest and fair, at an honesthost.com.
+Klaatu, remember back when there was a thing called true crypt?
+I kind of don't, to be honest, it's been ages since I've thought about or much less used
+true crypt, and even when I used it, it was more of an experiment.
+Like let's learn about this tool, those were way back in my early days of getting a clue
+about computers.
+So I don't exactly remember what true crypt did, but I do remember certainly a couple
+years back.
+There was this big kerfuffle about whether true crypt was truly secure and how no one had
+actually seen the source code or something like that, or people had seen it, but no one
+had sat down to audit the code, something to that nature, and then of course true crypt
+just sort of disappeared at least officially.
+Other people have forked true crypt since then, there's Vera Crypt, there's something
+else cipher or something.
+So you can find new versions of it and continue to use it, I guess, and I might have some
+interest in that if I needed all of the different features of true crypts such as super easy,
+drop dead simple, cross platform compatibility.
+I don't need that, I use Linux at work, I use Linux at home.
+For many things that I do, I do not feel an urgent need to have a solution that is cross
+platform for my own use, it just doesn't apply.
+So I was sitting around the other day thinking, how could I encrypt files on a per file basis
+or a per collection basis?
+The immediate thing that came to mind of course was GPG, I've used GPG in the past, it worked
+out pretty well, it's somewhat flexible, I mean you can encrypt a GPG file or a file
+with GPG basing the encryption on your own private key or you can do symmetric encryption
+such that you don't have to have a key present, you just have to know the past phrase,
+enter it, and suddenly the file is opened to you.
+In fact, even though this episode is about luck, let's just really quick like, let's do
+a GPG encrypted file.
+So I'm going to echo Foo space bar into a new file called my secret file.txt.
+Now that exists on my hard drive and so I can encrypt it with GPG which is GNUPG which
+is the free and open source version of PGP, pretty good privacy.
+So I'll do GPG dash dash symmetric with two M's, S-Y-M-M-E-T-R-I-C, it took me a while
+to get that through my head.
+And then the path to the file, my secret file.txt.
+And my computer, it prompts me with a gooey 10-entry dialog box.
+So I just put in bogus 1, 2, 3, bogus 1, 2, 3, and that's it, it doesn't say anything
+in return, so I guess it worked.
+So we'll do an LS of my secret file asterisk.
+And yes, now I have my secret file.txt and my secret file.txt.gpg.
+So if I cat my secret file.txt.gpg, I get a bunch of nonsense characters that doesn't
+really look like anything and that's of course what we would want in an encrypted file.
+But if I cat my secret file.txt, we see Foo and Bar in the output because the workflow
+of gpg is that it encrypts, it creates a copy of the thing that you have encrypted,
+which obviously leaves the original lying around, which is technically fine as long as
+you remember to then shred my secret file.txt and then trash my secret file.txt.
+And now that file presumably is forgotten.
+Now we just have the encrypted version of it.
+To look at that, again, we'll do a gpg-dcrypt my secret file.txt.gpg and it pops up this
+little pin entry thing, it always looks like pin entry to me because the pin and entry
+are all one word.
+So bogus123 and then in the output of the command, it shows me Foo and Bar.
+And if I do an LS of my secret file.txt, again, I still only have the encrypted version
+of this file, which is good, I guess, unless you of course wanted to then edit that thing.
+So in order to edit, you would have to do that same process, again, except you would
+redirect the output to my secret file.txt and then enter the password.
+And then it dumps the output into that file.
+And now I could do like an emax of my secret file.txt, I could add Foo Bar and then maybe
+add Baz and now I've got the improved version of that file.
+Then I have to go back up to the gpg-dash-symmetric to recreate that file and you can write right
+over it.
+I mean, you don't have to do anything too fancy.
+It prompts you, oh, it already exists, shall I overwrite, yes.
+And so now I've recreated it.
+But of course, now I've got the old copy still on my on my drive.
+So I'll do a shred again of my secret.txt or my secret file.txt and then we'll just
+cap that to make sure that it's nonsensical, yes, it is.
+And so then we'll just trash it.
+So that's sort of the gpg version.
+That's the gpg option for that.
+And as you can tell for something that you're going to, if you're going to use something
+frequently, that would not be the optimal method of encrypting something for everyday use
+or for weekly use or whatever.
+So if you need something a little bit more robust, I was looking around.
+And the first, my first stop was the eCryptfs program, or I should say, suite of tools.
+There's an eCryptfs-utals and then there's eCryptfs itself and there's the demon that comes
+along with that.
+But all of that is dependent upon a module, a kernel module called eCryptfs.
+And I've tried this on a couple of different systems now.
+And it just seems to be not exactly working.
+And I would love to hear from you, dear listener, if you, dear listener, I mean, fellow hacker
+public radio comrade.
+If you've had better luck with it than I had because I certainly could not get it working
+on Slackware, there's a bug or not a bug.
+But there's an issue or a post over on LinuxQuestions.org from someone using it on Slackware
+and said, hey, you can't use it on the huge kernel, but it seems to work on the generic
+kernel.
+And I thought, well, that's a little bit weird, but okay, I could do that.
+Not really sure if I want to.
+Then I thought, well, I could just recompile the kernel.
+And then I realized if it's this hard, then that's not the answer for me.
+Like if it's going to be this tenuous, that's not the one that I want.
+So then I tried the same thing on Rell, on a Rell desktop, and that's Red Hat Enterprise
+Linux.
+And that didn't work either.
+It seemed to work, but every time I launched the demon, it said, I can't connect to this
+device.
+And I couldn't, I thought, well, maybe I just need to create the device, slash dev slash
+E-Cript FS.
+But then I, I tried to run the E-Cript FS Damon, and it didn't seem to want to work either.
+And yeah, there were just a lot of, and then I tried to load the module, and it claimed
+that the module wasn't a module, it couldn't be found.
+So I just, I decided fairly early on that this was not the tool that I wanted to resort
+to.
+Like that just wasn't going to, that's not sustainable if it couldn't work on two out
+of two systems.
+Just don't bother.
+So, so I turned to my old friend, LVM, LVM is the, I think it stands for logical volume
+manager or something like that.
+It's kind of an infrastructure tool within your computer.
+If you're running Linux, you almost certainly have it, and if not, it's super easy to get
+from your repository.
+I've not encountered a Linux yet that, that is so marginalized that it doesn't have LVM
+pretty easily obtainable.
+So I mean, LVM ships on Slackware, it, it is implemented by default on Fedora and
+Rell, it is easily available for Ubuntu and WN, if it's not already there.
+Along with LVM, there's an encryption suite to, so that you can have full volume encryption
+or partial volume encryption called LuxLUKS.
+And the front end or the user facing tool for Lux is a command called crypt setup.
+And that's what I'm going to use to implement a kind of virtual drive manager setup, which
+I think is if memory serves is kind of what true crypt did.
+You would have these, these true crypt volumes and then you would open true crypt and you
+would choose the volume that you wanted to decrypt for, for that session.
+And that's, that's pretty much what LVM and Lux and, and crypt setup can provide for
+us.
+So let me run you through the user, the, the use case of it, the, the, the workflow just
+so that you get an idea of what we're aiming for and then I'll run you through how to set
+it up for yourself.
+It is not difficult.
+The prerequisites are that you have LVM and, and Lux and crypt setup installed.
+It depends on your distribution, how that is packaged.
+I imagine on Slackware, I know that LVM is one package and crypt setup is another.
+That's really all you need to get started.
+So let's set, let's go through how I use this.
+So the, I've got a volume on my hard drive called food.img.
+If I do a file on food.img, it tells me that it is a Lux encrypted file version one and
+then some specs on how it's been encrypted.
+Okay, so I'm going to do a crypt setup, that's the main command and then the sub command
+to that is Lux open, that's luks and then open with a capital O, foo.img and then some,
+some string for myself.
+I could call it foo, I could call it penguin, I could call it whatever I want.
+And you'll see where this manifests itself momentarily.
+So crypt setup Lux open foo.img, that's the source and then the destination is foo.
+It now prompts me for a password.
+So I'm going to put in the password, bogus 123, it processes that request and then returns
+me to a prompt.
+So if I do an LS slash dev and if you know LVM, you would know where to look probably.
+On my system, it's LS slash dev slash mapper and in slash dev slash mapper, which is kind
+of the LVM station, that's where all the LVM volumes go when they're activated.
+I now have an entry there called foo.
+So now I can just do a normal mount command.
+I'm doing this as root by the way, crypt setup and mount, you would want to do with either
+pseudo or as root, depending on your distribution and what you've got setup on your computer.
+So I'm going to do a mount of slash dev slash mapper slash foo to some place on my system.
+So I'll just do it slash mnt slash HD because that's short.
+And now if I open, I can open up a dolphin file browser window here file manager and I'll
+go to slash mnt slash hard HD.
+And here's my little file.
+I've got a folder in there called vault and I've got a test file that says foo and bar.
+That's about the extent of what I've stored there, pretty small actually, but that's
+okay.
+So I can open up this text file, I can add entries, baz hacker, public, radio, I'll save
+that.
+Now it's a larger file than it was before.
+That's it.
+Now if I'm done with it, I can do an U mount of slash mnt slash HD.
+And then it looks close.
+So that's crypt setup looks close space foo.
+And now if I do an LS slash dev slash mapper, I have nothing listed there anymore.
+So it's it's a file you can put on a thumb drive or you can put anywhere you want.
+It's self contained and whatever you want to interface with it or interact with it,
+you can do a crypt setup looks open and put it somewhere in your in your device tree.
+Because if though it was a hard drive and then open it up, modify your files, unmount
+it and then close it, looks close, take it out of your out of your device tree.
+And that's built into pretty much, like I said, pretty much any Linux system that you're
+on or it's easily obtainable.
+So here's how to make that happen for yourself.
+It is not difficult.
+It's only about, I don't know, six or seven steps.
+So what I just did, that's the repeatable kind of everyday use of it.
+That's the workflow, looks open, mount, unmount, looks close.
+That's what you have to do every time you want to use it.
+What I'm about to cover now is what you need to do this part once in order to create
+the volume.
+So this is your setup steps.
+First of all, obviously you need LVM and crypt setup.
+They might be called, they may be in packages called LVM and crypt setup respectively.
+They might be maybe in one package.
+I don't know how your distribution manages it on Slackware.
+There's an LVM package and then there's a crypt setup package.
+So you're looking for something like that.
+Once you've got LVM and crypt setup on your system, you can do this.
+First thing is to create an empty file.
+And it can be of any size really.
+You do have to determine the size in advance.
+But I think if I recall correctly, true crypt was the same way.
+And I'm going to do that with F allocates.
+If you do a man, F allocate, locate, you see that it is a command that pre-allocates or
+D allocates a space to a file.
+Options look like the one that we want is the dash, dash, length.
+And that's probably all we need for now.
+Yeah, it looks like it.
+So that's what we'll do.
+So F allocate and then dash, dash, length, and I'll make this, I don't know, 128 megabytes.
+I mean, it could be a lot larger than that if you need more space.
+But this is for demonstration purposes, so I'm keeping it pretty small.
+And that doesn't take long.
+So now bar.img exists.
+So if I do an LS-LH of bar.img, yep.
+It's 128 megabytes.
+Now that we've got our empty space for data, we can do a crypt setup part.
+So this you need to be root for or you have to use pseudo.
+I'm going to just become root because I don't have pseudo setup on this particular machine.
+Never did bother.
+And then I'll do a crypt setup, dash, dash, verify, dash, passphrase.
+That is to get a crypt setup to prompt us to create a password, because this is symmetric
+encryption.
+And we're going to do the Lux format subcommand of, of course, bar.img.
+So this is basically, it says this is going to overwrite data on bar.img irrevocably type
+yes and uppercase, okay, yes, enter a passphrase, okay, bogus 1, 2, 3, bogus 1, 2, 3.
+So that's working.
+So this is obviously formatting this data block, this empty file space that we set aside,
+that we allocated into a, into a crypt setup, into a Lux volume.
+So now if I do a file on bar.img, it doesn't, indeed, tell me that bar.img is a Lux encrypted
+file.
+All right, that's great.
+So now we can, we can, we know how to get these things attached to our system already.
+And for that, we do crypt setup, if you'll recall Lux open, and then the source bar.img,
+and then the destination bar prompting me for my password.
+So I'll do bogus 1, 2, 3.
+And if I do an LS in slash dev slash mapper, I should see a bar entry there, and there
+is.
+So now, normally, you know, this part seems familiar, because this is how you normally
+do it.
+But right now, this is a Lux encrypted file, but there's nothing in the file.
+So what we can do is we can do mkfs.ext2, for instance, on slash dev slash mapper slash
+bar.
+Actually, you know what we should do is give it a label, let's give this a label.
+We'll call this true crypt, just to be clever.
+There we go.
+Okay, so now we've got a file system on this, this Lux volume.
+So now, from now, that's setup, now you're done.
+That's it.
+So from now on, when you want to use that, well, you know what, I should mention actually,
+because okay, so if I, if I go to dolphin, I mean, I, you know, technically you're done.
+But if you're not super familiar with, with managing these kinds of, of devices, it might
+be useful to, to do one more thing.
+So first of all, I'm going to open up dolphin, which is my file manager on KDE, and I'm going
+to go to the little menu that, you know, gives me all the different places.
+And I should see, you should see in there, since it is in the dev mapper thing, you should
+actually see it listed as an available drive that you could, that you can mount.
+And indeed, indeed it is.
+So here's a true crypt of volume, where that's what we named it, remember, to be clever.
+And then it's asking me for my password.
+Oh, that's the wrong password.
+It's asking me for the device, you know, the, the Lux password.
+No, it's not, it's asking me for my root password.
+There we go.
+Because I already gave it the Lux password to get it into my device tree.
+Okay, so there's a lost and found directory.
+So as a normal user, of course, I can't do anything in this, in this volume.
+Now if you assigned it a simpler file format, or a file system, like a fat or something
+like that that doesn't even do file permissions, then you, you could skip this step.
+But I'm going to go ahead and do this step, because this is how I would actually do it
+in real life.
+So it mounted it because I did this through dolphin.
+It used UDISC control 2, as I recently learned, to place it into, I guess it's UDISC control
+2.
+It's anyway, or UDISC 2, so that's UDISC control.
+But anyway, it dumped it into slash run, slash media slash, class U slash true crypt.
+And there's a lost and found directory there.
+So I'm going to make a directory in run media, class U, true crypt, and I'm going to call
+it, I guess I'll just call it vault.
+And I'm going to tone that directory, so that it is owned by Clat 2 colon users.
+And that way, I'll have access to this folder, whether or not I'm on my own system, or
+I'm on a system where my username is different, or whatever.
+So run media, clat 2, true crypt slash, vault.
+And now I'm going to chamad that to 770, I guess.
+I mean, it's encrypted.
+I don't know how, I don't really know that it actually matters at this point, but that's
+what I'll do.
+So it'll be read, write, execute to the user, to the group, and then to no one else.
+Again, if they've gotten through the encryption at that point, I guess it's probably, everything's
+probably lost.
+So heck, I'm just going to chamad at the 777 there.
+So now I've got access to vault.
+I can do things like create new files.
+So I'll exit root, my root prompt, and I'll do an echo, hello, world into, well, I think
+I'll create a file here, and I'll put hello.txt, and I'll drag that into my terminal paste
+location there.
+So now I'm echoing contents into this hello.txt file that I just created.
+I could copy stuff into it, like I could go to a folder where there are small graphics.
+Here's a small graphic that is 13 kilobytes, I'll copy that into there.
+Here's another one.
+Here's a vector of an kitchen sink.
+I don't know why I have that on my hard drive, really.
+I mean, I know why it's there, I just don't know why I would keep it there.
+So anyway, now I've got data in this vault.
+And if I wanted to discontinue using this, I can, again, go into my little places menu
+here.
+Oh, no, I can't.
+I don't know how to eject or unmount a volume from dolphin, actually, at least not as
+I currently have it set up.
+That's all right.
+So I'll go back to my root prompt, and I'll do a you-mount slash run media clatoon-true
+script, and then I'll do a crypt set up, lux, close of what is it called bar, right?
+And I think, yeah, bar.
+And now it's gone.
+It doesn't exist.
+It is a mere encrypted file on the hard drive, and I can verify that, of course, by just
+doing an ls-lh of bar.img, it's 128 megabytes, it is encrypted, I can do file bar.img.
+Of course, I can do like, I can do head of bar.img and get all kinds of garbled, nonsensical
+text.
+Now since this file of encrypted data is, it's just a file, you can put it on thumb drives,
+you can email it to yourself, you can do whatever you want to do with it.
+It is a self-contained encrypted volume, and it is as easy as that, at least on Linux.
+Again, not really cross-platform necessarily, although from what I've understood, you
+can get LVM and probably crypt set up on SIGWIN and other places, so maybe it is technically
+cross-platform, but definitely with Linux, it's just kind of, it's a no-brainer.
+So that's, that's, yeah, that's looks like true crypt, hopefully that was informative
+and helpful.
+Thanks for listening.
+Talk to you next time.
+You've been listening to HECCA Public Radio at HECCA Public Radio dot org.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out
+how easy it really is.
+HECCA Public Radio was founded by the digital dog pound and the infonomicom computer club,
+and is part of the binary revolution at binwreff.com.
+If you have comments on today's show, please email the host directly, leave a comment on
+the website or record a follow-up episode yourself.
+Unless otherwise status, today's show is released on the creative comments, attribution,
+share a like, free dot org license.

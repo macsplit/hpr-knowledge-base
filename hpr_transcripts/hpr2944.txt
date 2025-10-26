@@ -1,0 +1,157 @@
+Episode: 2944
+Title: HPR2944: ONICS Basics Part 4: Network Flows and Connections
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2944/hpr2944.mp3
+Transcribed: 2025-10-24 13:40:00
+
+---
+
+This is HPR Episode 2944 for Thursday the 14th of November 2019. Today's show isn't
+titled, Onyx Basics Part 4. Network flows and connections. It's part of the series
+networking and it's the 10th anniversary show of Gabriel Ebenfire. It's about 16 minutes
+long and carries a clean flag. The summary is, I try to add a bit more network basic info
+while writing a script for Dave Morris. This episode of HPR is brought to you by AnanasThost.com.
+Get 15% discount on all shared hosting with the offer code HPR15. That's HPR15.
+Better web hosting that's honest and fair at AnanasThost.com.
+Hello hacker public radio. This is Gabriel Ebenfire. I decided to do a quick episode in this
+series on command line networking based on a comment Dave Morris made in the community news
+a month or so back. Dave mentioned that he was doing some monitoring of his home network using
+the Onyx tool suite. So I thought I'd whip up a quick script to show another way to use the tools
+to monitor traffic. Unfortunately my enthusiasm kind of spiraled out of control. But before we get
+to that, in the spirit of interweaving network basics in this series, let's pause for a second
+and talk about two new concepts in networking namely connections and flows. I mentioned in the
+previous episode that modern networks are packet switched and showed how we can send an individual
+packet from one machine to another. But actual software doesn't want to worry about the details
+of breaking files or data that they exchange into limited size packets. Furthermore they often
+need to exchange data with multiple remote programs at the same time or sometimes communicate
+with the same remote program using multiple channels. In order to support these needs,
+programs use another layer of abstraction on top of the protocols for basic data exchange.
+They create connections. A connection is a bi-directional channel between two programs.
+The programs linked by a connection may be running on the same computer but are more commonly
+located on different computers connected to the internet. In simpler terms, you can think of opening
+a connection like making a phone call. The program initiating the call is called the client and the
+program receiving the call is called the server. In order for the client to open a connection,
+it must first decide which protocol it will use to talk to the server. Next, the client needs to
+identify the address of the computer running the server program. As mentioned in the last episode,
+a network address is a string of bytes that uniquely identifies a node in the network or more
+precisely the interface that a node uses to connect to the network. Besides the computer's
+address, the client also needs some way of identifying the specific program on the remote computer
+that it wants to talk to. After all, a computer may be running multiple programs that are all using
+networking. The most commonly used network protocols use another kind of address specific to programs
+on the computer. These special program addresses are usually called ports. Like a network address,
+a port is just a number but it identifies a specific program or service on a given computer.
+Once the client knows the address in port of a server program, the client also allocates its own
+local port on the client's computer so that the server knows how to send its own data back to the
+client. Once it has all of this, it's ready to start sending packets formatted according to the
+protocol that's selected to initiate the connection with the server. Now, there are multiple protocols
+out there that run on top of the internet protocol that establish connections. The most well-known
+is TCP but there are others like SCTP and DCCP and so on. There are also protocols like UDP that
+don't specifically establish connections but nevertheless often use connection-like mechanisms
+such as ports for communication. Even though so-called datagram protocols like UDP don't have
+connections per se, programs using UDP still often work by having a client send a request to a server
+listening on a port and the server responding back with its own data to the client's port.
+And some folks in the networking world would call that request response transaction a connection
+even though the programs didn't actually set up any long-term association between each other.
+Okay, so those are connections and ports. Now, let's talk about the concept of flows.
+A flow is a set of network traffic that should all be treated in a common way.
+A flow can entail a large set of traffic between many computers and many programs or
+it can just contain the traffic traveling from a program on one machine to a program on another machine.
+Sometimes a flow defined at that fine level of granularity is called a microflow.
+Note that the direction may actually matter. If we are saying that a particular flow is just the
+data sent from one program to another program, then a connection actually may be made up of two
+microflows, one for direction from client to server and another for traffic from server to client.
+I guess the most important thing to remember about the term flow in networking is that it can
+encompass whatever a network administrator or a program wants it to mean.
+The key idea is that it's a way of grouping data together to treat it in the same way.
+Okay, so much for terminology. Now, let's bring all of this back to the little networking
+monitoring exercise that I was doing for Dave. So I started with a simple script that goes like this.
+It's runs the commands packet in PKTIN, ETH0, PIP, NFTRK-D.
+Now, what that command does is read in packets from the network and pass them to the network flow
+tracker program, which is NFTRK. With the Dash D option, this program drops all incoming packets,
+but prints out events occurring on network flows. In the case of NFTRK, it treats each individual
+connection as its own flow. It also treats unanswered streams of packets from a given source as a flow.
+Now, the events that NFTRK prints look something like this. A connection from my laptop to Google
+just started, or a connection from my smartphone to Facebook just ended and it used 30 megabytes of
+bandwidth total, or a connection from my workstation to my network attacks attached storage is still
+running. It's been running for 30 minutes and it's used 50 megabytes of bandwidth. So we get flow
+starts, flow ends, and just updates on the status of existing flows. Each flow event from NFTRK
+goes on its own line, which is handy when you are working with command line tools, text manipulation
+tools, and Linux, or Unix in general. So I thought that this would be, okay, a good way now, instead of
+looking at individual packets and going, oh, I wonder what this packet is, and I wonder what this
+packet is. I thought this might be more useful for somebody in some interested networking explorer
+than the stream of packets because it gives a little higher level sense of what's going on in the
+network. And I should have probably stopped there, but I thought to myself, okay, that's cute and
+all, but it isn't pretty to look at because you just get this continuous stream of events.
+Many of them pertained to the same flow. So I added a bit more shell scripting. I took the same
+command and I sent piped it's data to a redirected it's data out to a file. And then I used the
+sort command to sort the events by the combination of protocol addresses, of protocol, network
+addresses, and ports that were used in the connection. Sometimes you will hear networking folks refer
+to this as examining the connection's five tuple. The five elements of the tuple are the network
+protocol, the client address, the server address, the client port, and the server port.
+And those uniquely identify a given connection. Okay, so if I've sorted all of the events based on
+five tuple, then all of the events for a given connection show up in adjacent lines in the file.
+So now with a small little ox script, we can take this set of events and compress it down to
+one event per connection. And what we really just want is the last event scene for any given
+connection because it has all the information from all the previous events. Okay, so we took the
+the set of events and we sorted it by the five tuple and we squashed all of the events down just so
+that we see the last event for each connection. I wanted instead of using AUK for finding the unique
+events, I wanted to use the unique command, since that's a nice unique command line tools,
+but it only works on whole lines and I needed it to work on only part of the line, the part that
+had the five tuple. I thought about using the dash u option to sort, which also does the same thing,
+but I could only get that to work, I could only get that to save the first event that would show up
+instead of the last. So I ended up with the little AUK magic instead. Okay, so now what would be
+coming out of this little script would be one line of text per connection. Sounds good.
+But the information is still pretty dense and it looks like a pile of numbers. So,
+okay, I can use another little AUK script to start pretty printing the data and converting the
+numbers to common names. Like for example, instead of saying that this connection uses IP protocol
+6, it would say this connection uses TCP, which is IP protocol number 6, right? Now the data looks a
+bit better, but when we think of sites, we don't usually think of them as random strings of numbers like
+200.40.82.157. We think of them in terms of names like hackerpublicradio.org.
+Fortunately, there's a little command line utility called dig that can convert addresses to names
+or vice versa. So, with a little more scripting, now the pretty printer can change addresses to names
+if it can find them. And to make sure that I'm not spamming the network with these
+reverse lookups from addresses to names, I added a bit of caching into the script as well.
+Okay, cool. But hey, instead of just looking at flows that were captured over some period of time,
+how about we look at what's happening in real time? Actually, that's not much of a modification.
+We can do that. So, all right, first, we'll leave the flow event capture running in the background,
+and next we'll make the shell script keep running over the file of flow events in a loop once per second.
+But just to make it easier, we'll have the script only look at the last 100 events that it has
+seen using the tail command. Then, after we've sorted and squashed the events by five
+tuple and pretty printed them, we can use the head command to say only look at the first 20.
+So, it fits in our nice 80 by 24 character terminal. Yeah, I'm a kind of old fashioned that way.
+While we're at it, let's every second, we're going to get, say, the top 20 flows. Let's just clear the
+screen using the clear command so that it looks like we just have one continuous list of active
+flows that changes every second or so. Let's add one more feature. Let's sort the flows by
+how much data they've each consumed on the network. To do that, we just have to pipe the flow
+output that we have so far through another sort command, and this time we'll base it on the field
+indicating the number of the bytes the flow has used until it to sort in descending order.
+Okay, so what do we end up with? Well, a small set of scripts that basically build up something
+that looks like the top program, but for network connections instead of processes.
+I decided to name it topflows.sh. Every second, it shows the top 20 flows that we've captured
+and their data usage, and how long they've been running. Okay, I finally decided I could stop there.
+Now, a few quick self-criticisms. First, there are already programs that do this sort of thing,
+like n top and Linux or pftop and OpenBSD, and they probably do it better than these scripts.
+Second, I probably could have done a better job with the data manipulation in less lines of code
+using a language like purl, python, or go. But in my defense, this was just a quick proof of
+concept done on a Saturday afternoon to see if I could. Also, my OpenBSD firewall that I wanted to
+test it on is memory constrained, and it doesn't have a purl or python interpreter or a go compiler.
+Besides, it was fun. Okay, so that was the ride. I clearly need to stop taking up challenges based
+on random comments in response to my episodes. Or maybe I don't. If you think not, then
+throw out some random comments in an episode or in the comments section, and let's see what happens.
+Anyway, I hope you enjoyed hearing a little more about networking and the concepts behind it,
+and I hope this podcast will inspire folks to dig a little deeper into the technology we use every day.
+You can find all of the code that I mentioned in this podcast on GitLab at
+https, colon slash slash GitLab.com slash Onyx slash Onyx dash examples. And remember Onyx is spelled
+ONICS for Open Network Inspection Command Suite. And this code is under the top flows sub directory
+in that Onyx examples repository. Now, let's just see what this script is showing is going on
+on our network here. Hey, wait a second. My daughter should be asleep. Why are there connections
+from her tablet going to Netflix? Okay, okay, gotta cut this off now. Bye folks, have a good one.
+Gabriel even fire signing off.
+You've been listening to Hacker Public Radio at Hacker Public Radio dot org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HBR listener like yourself.
+If you ever thought of recording a podcast and click on our contributing,
+to find out how easy it really is. Hacker Public Radio was founded by the digital dog pound
+and the infonomicon computer club. And it's part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website
+or record a follow-up episode yourself. Unless otherwise stated, today's show is released on the
+creative comments, attribution, share a life, 3.0 life zones.

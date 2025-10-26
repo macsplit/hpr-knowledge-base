@@ -1,0 +1,220 @@
+Episode: 3812
+Title: HPR3812: PeePaw's computer does nothing
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3812/hpr3812.mp3
+Transcribed: 2025-10-25 05:49:13
+
+---
+
+This is Hacker Public Radio Episode 3812 for Tuesday, the 14th of March 2023.
+Today's show is entitled, He Paws Computer Does Nothing.
+It is hosted by Brian in Ohio and is about 25 minutes long.
+It carries a clean flag.
+The summary is a Z80 no-op test.
+Hello, Hacker Public Radio, Brian in Ohio here.
+I'm out from under my rock doing part two of the Z80 computer build, and as you can
+tell by the title, today's show is, Pee Paws Computer Does Nothing.
+What that means, of course, if you don't know who Pee Paws is, that's who my two-year-old
+grandson calls me Pee Paws, and he's the impetus, the reason that I'm doing this project,
+and chronicling it here on HPR, and that's so that maybe one day in the future, he or
+turns out now his brother who's in the oven, or maybe his cousin who's also in the oven.
+Maybe one of those three, or maybe all three, or who knows, will someday in the future,
+one or all of those kids will want to hang out with their old grandpa and learn how
+a computer works by building one themselves.
+And here I am learning to do myself beforehand, getting ready.
+And so in the last episode, I put together the one piece of test equipment that I needed,
+which is a logic probe, because I'm going to initially spool up this Z80 system using
+the facilities of an Arduino Mega Board to emulate ROM and RAM, and also to provide
+that some test equipment, like a logic probe, so I can probe around the system when
+I provide the required things to see if it's up and running.
+And so what's required initially is some power, clock signal, and some data.
+And the data I'm going to give the Z80 is provided by the Arduino Mega Board, which
+will be the machine code, which has the opcode of zero.
+So the Z80 has about 180 instructions that it recognizes.
+They're all hexadecimal coded, and it's 0-0 to the processor when it sees that.
+It's a no op.
+It means do nothing and move on to the next instruction.
+And in this case, because the address lines aren't going to be hooked up to anything, it's
+not hooked up to any memory, it's just going to think that it's gone from one memory
+location to another, and it's just going to find another no op.
+And so that's why this is called a no op test.
+You're just getting the computer up and running and having it do exactly nothing.
+So a couple of things is to make sure, just to clarify, I'm using an Arduino Mega Board,
+but it's not the Arduino environment.
+I'm running Flash 4th on it, and why would I use Flash 4th to do this instead of the
+Arduino environment, because Flash 4th is interactive, without being a huge application
+in itself.
+There's other interactive languages that run on Arduino boards, things like circuit
+Python, but they're huge compared to the size of a 4th virtual machine.
+And also, it's 4th is really geared towards manipulating things at the bare metal level
+of being able to dig into the registers and control whatever computer it's on at a
+very foundational level without any abstraction layers in between, except the ones you build
+yourselves by defining words.
+And why am I using an Arduino Mega Board instead of the Arduino Luna Board?
+It's because the Arduino, which has the Mega 328 chip, and that has to do with the fact
+that the Arduino Mega Board has oodles and oodles of IO.
+It's got tons of ports, tons of available ports that I can manipulate to interact with
+the Z80 chip.
+It should be a snap to do it with this board.
+So the micro control board, like I said, is going to give the 5 volts the clock signal
+and the data to get the Z80 up and running.
+It's also going to provide the logic probe so we can test to see that it is running.
+So I wired up a proto shield that plugged into the board.
+First thing I did, and I've got pictures in the show notes to show all this stuff, is
+I hot glued a solderless breadboard onto the Arduino Mega Pro to shield, and then I plugged
+in the Z80, and the first wire that's shown by itself is a white wire, and that's the
+actual logic probe.
+That's from the last episode.
+That's, I can plug that in onto the different pins of Z80 and see if things are happening
+or not.
+The next picture just shows power and ground being connected.
+I split the power wire so I can have basically a rudimentary on-off switch.
+The next picture, there's a picture, picture number three is with the blue wire that's
+a clock signal, and then the next one, picture number four has got the, shows their yellow
+lines, that are the control lines, the interrupt, the non-mask will interrupt, the weight signal,
+the busy, the bus request, and the reset signals.
+Those are all signals that are inputs to the Z80 to help control what's going on.
+Then, orange wires are all the data bus.
+They go up to port A on the Arduino Mega Board, and the address lines then are, I put
+a little silver dot on the chip to show where pin one is, and so from where the clock chip
+is, which is pin six, up and around clock wise, those unconnected pins are on the Z80
+chip, are all address lines, and the one that we're most interested in is the one at A0,
+which is next to the ground line, next to that black wire, and that's the one we'll be
+probing once we start this, because as the Z80 goes through memory space, it's going
+to put each individual starting at zero, and working up all the way up to 65,000, binary
+16-bit data addresses, and so that pin should be cycling between zero and one the most
+of all those pins, and so if I see activity on that pin, then I'm pretty confident that
+the chip is up and running.
+Now, so that's the hardware side of the test we're going to do today.
+On the software side, I fixed, so some of the fourth words, and the last, the code that
+I presented in the last episode, it's kind of good, HPR is always, it's good, it helps
+you to, when you post something, and then even after the fact, I was looking it over
+and I saw that I made some mistakes, and I refactored some of the words, broken apart,
+and I defined some new words, and that listing is in the show notes too.
+The fix I made was that the data processing word, as defined, was getting, when it distanced
+that it was a static either high or low signal, it was probing the wrong point, it was probing
+the output of pin H3, digital six, I think it is, on the, yeah, digital six on the, on
+the, are doing a mega board, and what I really wanted to see was, look at was, was the input
+into pin E, the logic probe, that white wire, so I changed that, I changed the output
+there too, on the data processing word, I really don't care what frequency it is, I just,
+so I just changed the, the word to, to just output, if it's pulsing, to just say it's pulsing,
+just, put on the serial terminal pulse, the word pulse, because I'm not interested in
+specific frequencies, I split the clock in the logic, init words, so that I can initialize
+the clock registers, and on the, on the AVR chip, and I could, and the same for the logic
+probe, just, split in two words. I added some words to control the reset line, those
+words are reset and run, reset takes the, the pin, the reset pin from a high level state,
+which is in the run mode, and takes it to a low, low, low state, so almost all control
+signals on the Z80 are active low, so when they are driven to ground, driven to zero voltage,
+they become active and do what they're supposed to do, so when you take the reset line and,
+and drive it to ground, then the, the chip is, is in a reset mode, and I added one word,
+to, to be able to single step the clock, so I can either, I can start and stop the clock
+with those words, start clock and stop clock, and I can change the frequency of the clock
+by, by putting a number, and, and then calling the word set frequency, but I also wanted
+to be able to single step the, the, the, the, the, the Z80 chip, so that, we can probe
+around and look to see some other signals, to see what's happening, because the, the,
+like all computers, this, Z80 has a very systematic way of functioning, and what it does is it,
+it, it, initially it reads in from the data, looking, looks for, and it interprets that
+first bit of data as, as some kind of instruction, and then if that instruction needs more data,
+it goes and fetches it, and then it processes it, and so the, the, the, you can, there's different
+signals that come alive, in that process, because each instruction for the Z80 takes between,
+I think it's like four and twenty clock cycles, depending on how long and how much data
+it needs. So we, I've got the, I guess, enough explanation I can do the test here. I've
+got the board plugged in, I've got, and I've got my serial term, I've got a, a little,
+a serial term with, serial terminal with flashforth running, I've got the flashforth prompt,
+and the first thing I'll do is, I'll, I'll, I'll get the logic probe up and running by typing the
+word, logic probe, init, and when I do that, it says, okay, and then I am going to get the micro-controller
+board set up the ports on it. So that's, I'm going to be, let me look at my code. I don't remember,
+exactly. A Z80 port, and basically what this does, is it sets up those, those interconnections,
+between the Z80 and the, and the, are doing a mega board, and what I'm going to do is,
+connections between the Z80 and the are doing a mega board with all those wires it all
+those things that it's connected to it's setting up them them up correctly either inputs
+or output ports and so that is the word Z80 ports in it and hit that it's okay and then
+add some power to the Z80 and so I just plugged in five volts on the board and now I should
+be able to the clock should be started so I should be able to take my white logic probe
+and put it where the blue wire is and I should be able to type the word sample in and I'm
+expecting to see the word pulse output and I do and I can double check that that's actually
+working I can go stop clock I'm gonna stop the clock and now I'm gonna do another sample
+of it of the pin and I'm in the wrong place it's here put this into the right place
+I should be able to get okay so I had to I never initialize the clock I never typed in clock
+in it so now I typed in clock in it which initializes the clock and now I can I can I can start the
+clock and I can sample and oops I can type quickly sample it comes up pulse and then I can stop the
+clock and I can sample and now it shows that it's a low it's it's not pulsing it's a low signal
+and I can start the clock again and now the next thing to probe is I'm gonna take a the logic
+probe wire the white wire out from where the clock is the blue line and I'm gonna put it over in
+a zero not line which is that empty pin right next to the ground wire and I am going to sample
+there and I need and I get a high signal so what I need to do is I need to properly reset the the
+board which I'll just type in the words reset and run and then I should be able to sample and I
+get a pulse so the so on the a zero pin it's pulsing and if I stop the clock oops stop if I type
+it correctly stop the clock and now I sample it's just a high because it's because it's not the clock
+stopped and you need a functioning clock for it to work so that to me is a good indication that
+the Z80 chip is behaving properly that it's that the wiring and all everything is connected
+correctly and so now one other experiment one other thing I can check is I can check the M1 line
+M1 line is right next to the I should make sure I've got I've got a image of the of the
+got the image of the Z80 chip the pin out of the chip in the show notes and yeah M1 is actually
+right next to reset so what over so the the the the way is the the order of things that happen when
+the Z80 starts functioning when you first reset it so what happens is you bring power up you reset
+the the the Z80 puts it in a no good state it puts the program counter to zero it puts address zero
+on the address bus and then it it then draws M1 low and M1 is just a signal it it draws the M1
+signal low and that's the indication and it's starting the first part of what they call a
+machine cycle machine cycle is everything it takes to complete to get an instruction whatever data
+needs and then finish it and then and then it signals all this by first off bringing them the M1
+line low and so the way to check that that's actually happening is to go back to that the terminal
+and the clock is right now stopped so I'm not going to start the clock I'm going to single step
+the clock and what I'm going to do is I'm going to go back to reset I'm going to single step the
+just steps are step I'm a single step and then sample the pin and I should see it high
+and I'll do that a couple times because it takes three clock cycles for the chip to be properly reset
+so here we go I'll do that one more time and now I'm going to put the
+reset line into the run mode and now I'm going to single step again and sample
+and the the M1 signal pin is still high that clock signal and now one more clock signal
+and now it went low it's the beginning of a machine cycle and I click clock at a couple of times
+it'll go back to high and so I know that the the the M1 signal is working and so with the aid the
+address zero pulsing that it that it has busy that it has activity on the address bus and with
+the M1 signal cycling the way it is I'm pretty confident that this is the 80 chip is is good and
+that it was a good a good no-op test for that for that chip and so I think that covers
+my notes here yeah oh there was one more thing we can do and and then that'll be the end
+to be the last the last the last signal to probe and this one is going to be the hot signal when
+when the when the z80 interrupts when the z80 encounters a halt signal it actually
+halts this the processor and does no ops internally until it receives an interrupt signal
+and the halt signal again is active leave it's active below also and it's on pin number 18 of the chip
+so I'm going to put a logic probe into pin 18 and do the same exact process I'm going to reset the chip
+so start with by putting it I put it in reset and then I will cycle the clock
+and sample a few times here and now this time what's going to be different is I'm going to put
+the hex address of 76 hex 76 on the data bus and so so when I start when I start to run the
+program instead of finding on the data bus at address 0 a no-op a machine instruction 0 it's
+going to the z80 is going to find on the data bus the machine instruction 76 which is halt
+and when it does that I should we should see when I sample that pin the the halt signal it should
+go low so let's do that let's put 76 into the data port and I do that by typing in 76 data
+dollar sign 76 which is the hex notation in fourth for hex numbers dollar sign 76 and then
+the word data which is the data port and I'm going to do c store which is c in an exclamation point
+that'll store the number 76 onto the data port and I got the wrong thing what's it called maybe
+got the wrong word the wrong thing it's called um what's it called oh it's capitals uh
+case sensitive fourth is this fourth is case sensitive so 76 capital DATA c store
+c store which will store the values the hex value 76 into the data port and I get okay and now I'm
+going to uh sample and uh step and sample the clock and because it's nothing there okay now I'm
+going to put the the z80 into run mode and now I'm going to step and sample and do it a few times
+because it'll take about four or five or six to get there and there now the pin uh 20 the signal
+on pin uh 18 went from high to low and that to me because it found that 76 on the uh on the
+data bus it executed the instruction halt and now this the the um the z80 is in a halt mode so
+if I if I start the clock now
+okay I'm going to do a nice sample it should stay low it should stay low the now completely
+and a little stay low until I reset it uh or give it an interrupt signal which I'm not going to do
+and so there we go uh looks like I've got a functioning uh good the z80 chip I have learned a little
+bit about how to um manipulate and a couple of instructions the no op instruction and the
+halt instruction and put them on the data bus and and get the uh z80 to respond accordingly
+and I was able to see uh um see all those things by using the logic probe that's that it's built
+into the software on the Arduino mega board that's running flash forth so consider consider
+this a successful experiment um I think I'm not sure where to go from here I think the next thing
+to do would be to maybe do a more um a more a longer a set of instructions a small program
+and uh maybe even I might have to add some leds or something we'll see or at least put out some
+numbers on to the serial ports like we can see get some output that way and um and that'll require
+emulating emulating some RAM right now I'm excuse a ROM emulating some read only memory so
+I'll be the next uh the next step in this project so um thanks for listening um if you have any
+questions or comments go ahead and leave them in the show notes or you can email me and if you
+or if you're interested in retro computers are doing something like this yourself uh pick up a mic
+and start recording a show and upload it to hacker public radio and if you um
+um and anyway thanks for listening I appreciate your attention and I just like to remind everybody
+that it's not how much an item costs it's how much you save goodbye
+you have been listening to hacker public radio at hacker public radio does work
+today's show was contributed by a hbr listener like yourself if you ever thought of recording
+podcast and click on our contribute link to find out how easy it really is hosting for hbr has been
+kindly provided by an onsthos.com the internet archive and our syncs.net on the Sadois status
+today's show is released on our creative comments attribution 4.0 international license

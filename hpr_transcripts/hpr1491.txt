@@ -1,0 +1,141 @@
+Episode: 1491
+Title: HPR1491: Heartbleed
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1491/hpr1491.mp3
+Transcribed: 2025-10-18 04:08:22
+
+---
+
+Here goes!
+This is Landeer for Hacker Public Radio, recording Friday, April 11th, 2014, Heartblade.
+Once again, I am recording from my car on the drive home from work, so I apologize for the
+recording quality.
+I listened to my last one and I realized there's a lot of environmental sound, but please
+bear with me.
+Today I'd like to talk to you about the OpenSSL Heartblade Vulnerability, officially CVE-2014-0160.
+I recognize that many of you have probably already heard of the vulnerability.
+It has gotten a lot of media coverage, particularly among the types of tech blogs and podcasts,
+which have a very large overlap with the Hacker Public Radio audience.
+But for those of you who have not heard or have not decided on any action to take, I'd
+just like to briefly go over what the vulnerability is, what kinds of exposure have gone on,
+and some possible courses of action you can take to help protect yourself.
+So firstly, what is Heartblade?
+Heartblade is essentially a bounce-checking error in Lib OpenSSL in OpenSSL's TLS implementation.
+And code for what's known as SSL Heartbeats.
+Now Heartbeats are an extension to the SSL SPAC, basically designed as a keep-alive.
+Now I'm not sure why these would be widely used in SSL over TCP since TCP has its own keep-alives,
+but it's there, it's in use, many servers support it, so it's something we need to be aware of.
+Now, from my understanding, the Heartbeats extension was introduced in OpenSSL 1.0.1,
+and accordingly that is the first version, which is vulnerable to the Heartblade attack.
+Now, I guess before I go any further, I should mention that the patch was introduced in 1.0.1G,
+and so the vulnerable versions are 1.0.1 through 1.0.1F and 1.0.2 beta.
+Now, if you're on Debian Stable, like I am, where packages tend to be feature-frozen,
+you may have a distribution-specific patch level applied to backport the security fix.
+Debian Stable, for example, as of this recording, is at 1.0.1E-2DebShortForDebian,
+and some other numbers that I cannot recall right at this moment.
+But if you look at the changelog.debian.gz in the documentation folder from OpenSSL,
+you will see CVE 2014 0160 listed as fixed.
+Now, I've heard some varying reports in how widespread Heartblade vulnerability has been,
+but the most recent estimate I heard puts it at somewhere around 60% of internet servers,
+maybe higher, maybe lower, but it's extremely widespread.
+Additionally, because of when this bug was introduced, it's been in existence
+and theoretically exploitable for over two years.
+So, really, this is quite a serious thing.
+How serious exactly we don't really know.
+So, back to exactly how the bug works.
+In the Heartbeat extension code, there is a function which is responsible for generating
+the Heartbeat response back to the client.
+And really, what happens is that it reads a length right off the wire coming from the client,
+and eventually down the line passes that into a call to the Unix Memcopy function.
+What that means is that the data that goes into the response reads beyond what the authors of the code intended
+and goes off arbitrarily somewhere into the process is memory.
+Now, based on how open SSL is actually being used and what kind of allocations are being done,
+it's really anybody's guess as to what that memory might contain.
+The important thing to note is that it could contain anything that the open SSL process is already using.
+So, let's take the example of a web server such as Apache running, say, some,
+I don't know, some kind of a website that takes a login.
+Since we're open over open SSL, Apache has to have the open SSL code loaded.
+It has to hold at any given time in memory the open SSL private key in order to authenticate itself to new clients.
+It has to hold any data used internally by Apache that could include information from the file system,
+it could include information from applications running as modules inside Apache,
+and probably most shocking of all is that it could contain data that's being read off the wire and decrypted.
+Parts of HTTP sessions for actual HTTP users, people accessing this website,
+which means this could contain anything as benign as, say, the user agent string that identifies what version the browser is
+to the URL being requested, what page on the site, but perhaps to give you an idea of the scope of what's going on,
+if you enter your password on a site, in most cases, that's going to be sent over the wire.
+Now, SSL would normally encrypt it, but once it gets to the web server, it has to be decrypted at the other end.
+So the application can do whatever it needs to do with that password.
+So memory could contain your clear text passwords, it could contain session cookies that could be used to hijack a session.
+So if you can remember back to the fire sheep extension, which was used to grab things like social media, login cookies,
+from other people's sessions on unprotected Wi-Fi, which would allow them to impersonate those users.
+So even if they don't get your password, they still could potentially log in as you.
+Also, think about banking sites.
+This could potentially have other personal data, bank account numbers, balances, in a worst case, social security numbers,
+or any other kind of information that you really wouldn't want to get out.
+So that's the kinds of things that can get away.
+Now, let's say that you use a website, and their administrator is really on top of things.
+They update to the latest version of open SSL to close this heartbeat bug.
+That's all well and good.
+Your data can no longer get out through that hole, it's been plugged.
+Here's the problem.
+Let's suppose that during the window that that website was vulnerable to heart bleed, someone managed to dump some memory,
+which contained the server's certificate private key.
+That key can be used to impersonate the server.
+So if you maybe were the target of a DNS poisoning or some kind of other men in the middle attack,
+someone could set up a server between you and your banking site.
+They would be able to successfully authenticate as your banking site.
+It would look like they validly have the correct certificate because they do have the private key for most recently received certificate.
+And they can then sit between you and your bank, look at anything you send through decrypting traffic on the fly,
+and showing you anything they want to.
+And it'll look to you exactly like it's coming from your bank.
+So if that weren't bad enough, depending on the kind of SSL configuration your site is using,
+let's say someone has a packet capture of a previous session where they weren't set up as a man in the middle to actually decrypt the traffic,
+but they were just able to capture it. So maybe this was on an open Wi-Fi,
+but you were still accessing it over what you thought was a secure connection.
+So they have this packet capture, and then at some point later they get the private keys.
+Depending on their SSL configuration at that site, they might be able to use that key to retroactively decrypt that entire captured session.
+That is one of the reasons it is important to configure SSL to use what are known as ephemeral keys.
+You may also hear this referred to as perfect forward secrecy, meaning that once the session is done,
+there's nothing kept around that can be used to decrypt that session later.
+So bare minimum, what a site needs to do if they were vulnerable to this bug.
+They need to switch to a version of open SSL that is not vulnerable, so preferably 1.0.1 G or later,
+or the appropriate distra-specific version. They need to obtain a new certificate,
+as any certificates they had private keys for on that server could have been compromised.
+They should issue a revocation notice for the old certificate,
+and once those things are done, traffic to and from that website should again be secure.
+Hopefully they'll also take that opportunity to enable perfect forward secrecy or ephemeral keys.
+Now, if they've done all that, it's still possible that while you were using the site during a vulnerable period,
+some of your data could have been leaked through heartbleed or some data that you sent or received inside a session that used a compromised certificate could have been intercepted.
+So any information on that site that belongs to you is theoretically vulnerable.
+If you have banking or financial information, it may be a good idea to just keep an eye on your accounts for a while,
+just watch for any suspicious activity.
+There have not yet been any widespread reports of ongoing heartbleed attacks in the wild,
+but it's only a matter of time, at least until these sites can get updated.
+So, would strongly recommend keeping an eye on sensitive information that could have impacts outside the site.
+Within the site, go ahead and change your password, update any other credentials that could be used to gain access to your account.
+If you use the same password on multiple sites, obviously this is even more important.
+Maybe take this time to update passwords on all of your sites, consider using a password manager such as last pass or not as familiar with the open source ones.
+I believe the name I'm searching for is key pass or key pass x.
+And just use that as a tool that will help you to securely maintain unique passwords across multiple sites.
+So, that's something you can do just as an end user to keep yourself safe.
+Again, hold off on making those changes until you're sure that the server vulnerabilities have been patched,
+that they're using a new version of open SSL and that their certificates have been updated.
+Most of the websites that I use on a regular basis have been extremely forthcoming with how they were affected and what steps they've taken to correct it.
+So, hopefully with that in mind, you'll be able to keep yourself safe in light of the heartbeat vulnerability.
+One other note, just for those who may have come across some confusion, this is a bug in open SSL.
+This is not at all affecting open SSH.
+There are two totally different protocols.
+The heartbeat feature is completely open SSL or I'm sorry SSL specific, so you do not need to be concerned about that with open SSH.
+So, again, this comes back to website usage over SSL or TLS.
+There are other protocols that do use SSL TLS, SMTP for email, some VPN technologies, but obviously the most prevalent is HTTPS.
+You have been listening to Hacker Public Radio at Hacker Public Radio.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by a HPR listener like yourself.
+If you ever consider recording a podcast, then visit our website to find out how easy it really is.
+Hacker Public Radio was founded by the digital dog pound and the infonomicum computer club.
+HPR is funded by the binary revolution at binref.com, all binref projects are proudly sponsored by Lina pages.
+From shared hosting to custom private clouds, go to LinaPages.com for all your hosting needs.
+Unless otherwise stasis, today's show is released under a creative commons, attribution, share a life, lead us our license.
+Hacker Public Radio was founded by the digital dog pound and the infonomicum computer club.
+Hacker Public Radio was founded by the digital dog pound and the infonomicum computer club.
+Hacker Public Radio was founded by the digital dog pound and the infonomicum computer club.
+Hacker Public Radio was founded by the digital dog pound and the infonomicum computer club.

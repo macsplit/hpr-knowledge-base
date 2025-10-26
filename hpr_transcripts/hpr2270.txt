@@ -1,0 +1,288 @@
+Episode: 2270
+Title: HPR2270: Managing tags on HPR episodes - 3
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2270/hpr2270.mp3
+Transcribed: 2025-10-19 00:41:19
+
+---
+
+This is an HBR episode 2, 270 entitled Managing Tag Mod HBR Episodes 3.
+It is hosted by Dave Morris and is about 32 minutes long and can remain an explicit flag.
+The summary is looking for the best way to store and manage tag in the HBR database part 3.
+This episode of HBR is brought to you by An Honest Host.com.
+Get 15% discount on all shared hosting with the offer code HBR15.
+That's HBR15.
+Better web hosting that's honest and fair at An Honest Host.com.
+Hello everybody. Welcome to Hacker Public Radio. My name is Dave Morris and today I'm
+finishing a mini-series. I started a few weeks ago on the subject of Managing Tags on HBR
+Episodes. This is the third episode of that mini-series. So you probably believe to know that it
+is the last one. I don't know. It's haven't had much in the way of feedback. I've had a few comments
+about help with database design and so forth, which is great. In the first show we looked at the
+whole subject of tags and why we should need them. We need them with HBR shows and we looked at the
+way that we're currently storing them and what's good and bad about that. Mostly bad. The major drawbacks
+are with searching. It's the sort of thing that you might, the sort of design you might come up with
+without really fully getting the idea of what databases are for and what they can do.
+Hopefully this series will help to fill in some of those gaps as much as I can do that anyway,
+not being a database expert. In the second show we looked at how we could make a simple tags table
+and query it and thereby get a better overall effect. In particular we defined some of the things we
+wanted to be able to do with tags, partly based around one of Drupes' comments back in an episode
+he did about the way to improve HBR. We are going to in this last show look at a more, I've
+written here, rigorous, efficient, normalized solution. So I think this is the way that somebody
+trained in database design would do things and I've worked up to this over a couple of other
+shows really just to air the whole subject of how one designs this type of thing for people
+who are maybe not that experienced in this thing. I'm not that experienced but I do have come
+across this sort of thing in the past and implemented it. Now one of the drawbacks with the method
+that we looked at last time was that our tag table had multiple instances of the same tag
+and it also doesn't conform to the accepted database design recommendations. So those two
+things really, well you could get away with it, it's not really a good reason to do so as far as
+I can see anyway. Although I did cite some instances of people who had implemented such things
+in various services on the web, I don't think it's really the best way of doing things. In particular
+the design in the last show doesn't really reflect the relationship between the HBR episodes
+and the tags they're associated with and this relationship is what's referred to as many to many.
+And what this means is that a given episode may have many tags, not very surprisingly,
+and a given tag may be associated with many episodes. Now Mike Ray covered this subject very well
+in episode 1569 called many to many data relationship how to. It covers the subject really,
+really well, but I'm not sure that the audience was quite ready for to hear here such a thing.
+I think we could definitely do with more database related shows for the sake of people who might
+be wanting to get more into databases. Certainly I would recommend that you listen to Mike Ray's show
+if you haven't done so already or if you've forgotten what he said. I've certainly listened and
+read his wonderful notes since then because it does give a very good overview of how you would do
+this type of thing. So in the many to many design, one copy of each tag would be held in a tags table
+and there would be a second table which is linking or cross referencing the tags and episodes in
+our particular case. I mean many to many is used in many contexts, but in the one that we're looking
+at here we're talking about episodes and tags. So I drew a very simplistic diagram using open
+office, Libre office drawer, which has its limitations for this sort of thing, but hopefully it gets
+a message across. I've shown an example where we've got an episode's table, we're imagining that
+there's a show 1, 2, 3, 4, which I've just shown in the little box, it says ID 1, 2, 3, 4 in it.
+Then that is associated with the tag banana, obviously I show about bananas, and the way it's done
+is that there's a joining table that contains a record that says episode, episode reference ID 1,
+2, 3, 4 in the episodes table, and it's got a tag reference, so there's, imagine there's a tags
+table where the tags have an index number and we have that number in the joining table. Then it shows
+picture of the tags table with tag ID 456. I wasn't very imaginative with these numbers,
+and it's associated with the tag banana. So if you if you like looking at pictures of things
+like this, you might find that useful. So what I did in order to demonstrate this, and just to prove
+to myself that this was a viable thing to do and that I fully understood it, and this was some time
+ago I wrote this, I used the comma separated list that we already have in the episodes table,
+which it's called EPS, for some reason, save typing presumably, and I used the contents to
+populate new tables that I created. I did the population with a purl script, and I've included
+the purl script in with this show just really for reference for completeness. I will look at it
+in in brief a bit later on, but as part of this this particular episode I've also included the
+SQL or SQL definition of the table, and it's a file that you can download if you're interested,
+I call it normalized tags 2. I've also listed it in the notes in the long notes, and it just in
+brief it it contains a new table of tags, which are called tags 2, that's because I already had a
+table called tags for the the other method you would call it something else if you were doing this
+for real. Remember this is experimentation, it contains single instances of tags, I did make it
+hold the mix case and lower case versions of the tag, but since I did that I think in my SQL
+and MariaDB I discovered that it's easier just to store one because it doesn't, you have to go
+to some length to make it check the case of words and stuff, that wouldn't be the case with other
+database systems, but it is with this. There's a joining table here which are called
+EPS underscore tags 2 underscore X ref, the convention is, this is something that Mike Ray mentioned as
+well, the fact that it's joining two tables, it's good to give it a name that references the two
+tables and then follow it with X ref meaning that it's a cross referencing table, so it's easy when
+you come to look at a database to work out what the thing is from its name. This table contains
+just two columns, one is called EPS ID and the other one is called tags2ID, so EPS ID is the key
+of one of the rows in the EPS table, so in other words it's an episode number because that's the key
+to this table. Tag2ID is the equivalent of a reference to a row in the tags2 table and one of the
+key things that you need to do when creating such a cross reference or joining table is that you
+need to give it a unique index which is a structure which stores pointers to the rows in the table
+effectively, and in this particular case it combines the two columns to make the key and it's
+defined as a unique index, that means that you cannot have a case where the same episode and the
+same tag is repeated. It doesn't make any sense to do that but since databases can control these
+things then it's a good idea to make that the case, it's in to enforce it this way, so you can
+imagine in this table there will be multiple instances of the episode number because a given
+episode is entirely likely to have multiple tags and for each instance of that episode number
+there will be a different tag number referencing into the tags2 table. I also created an index, a
+unique index on the tags2 table which just ensures that it's impossible to add the same tag twice
+into that table because otherwise the database would let you. Doing this means that you can't.
+Then there's a further index I've created which is probably not necessary which I called all tags
+and it indexes the tags2ID column of the cross referencing table. That's because when managing
+the tags, if a tag gets deleted for whatever reason maybe it was misspelled and you want to change it
+for some reason and effectively have to delete the old and replace it with the new, then deletion
+is done if it's done external to the database then the index helps to speed things up. Well I'll
+come on to that in a little bit more detail later on. Now one of the things that Mike mentioned in
+his show was the use of so-called foreign keys. Now MariaDB or MySQL and all the various other
+databases are so-called relational databases which means that the relationship between tables
+or entities if you want to call them that can be defined by various components of the definition.
+This one's lots of lots of further tutorial episodes to fully fully grasp but bear with me.
+So the thing so-called referential integrity is managed through foreign keys but by default
+MySQL before and MariaDB now don't support foreign keys so if you create a table you don't get the
+ability to create foreign keys on it. I think that's true and at one point MySQL, the predecessor
+MariaDB, couldn't actually do foreign key relationship at all. That's the reason I never used it
+in my work because the time I wanted to do that I wanted to be able to use foreign keys.
+There are different types of table you can create and I've noted down here that by default you
+get one which doesn't support these features. You have to ask for it explicitly. At the moment we
+don't have any of these types of table that can do this stuff in the HBR database so I've not
+implemented this in my example though it's something we should be doing. So a foreign key then
+is a way of showing relationships between database table or the data within them, making it
+one table dependent on another effective. So the field EPS ID in the cross reference table is an
+episode ID number in the EPS table and it should only contain episode ID numbers which match
+episode numbers in the EPS table. You can't just add 999 in there because it's saying I am referencing
+an existing entity in the an existing row in the EPS table. If you define it as a foreign key
+then the database itself will say no you can't do this because this doesn't exist in the other
+table. So the tags to ID field in the same table would also be a foreign key pointing into the
+tags to table and again the database would constrain what can be placed there. One of the other things
+that foreign keys can do is that it can ensure that if you delete something like you delete a tag
+you delete the final reference to a tag then you can get the database to manage all of the
+deletion. So the sort of scenario would be if you had a tag banana referred to by an episode
+then if you deleted that tag in the sense that you said this was a mistake it's no longer to be
+associated. You want to delete the tag from the tag table you also want to delete the cross
+reference. So the maintenance of integrity is a feature called cascading deletion which means
+that you can't delete a cross reference entry without the tag also being deleted. You don't end up
+with tags sitting in the tag table which don't belong anywhere. Orphaned I think is the term certainly
+the term I am inclined to use and Mike similarly I noticed. So I don't sure I explained that very
+well but Mike did a much better job of it and so I can refer you back to episode 1569 if you
+want to understand this more. So I've added in here note about the pulse script that I wrote which
+I called refresh underscore tags underscore two. It's quite a complicated script so I'm not I'm not
+going to go into details about it. It's not really a hugely relevant here but I thought I would
+put it make it available in case anybody wanted to read it and understand it. In just to explain
+it in three quick paragraphs it scans the eps table in the database collecting all of the tags stored
+in CSV form and it's it stores them away with the episode number they belong to. It also collects
+the tags stored in the tags two table if there are any and stores them again associated with an
+episode number so it's made two two tables of information episode number and the tags that
+it that are associated with it in the two tables remembering that this depends on the CSV list being
+available. They can then compare the two sets of tags and look for differences so if a new tag is
+appeared in the CSV list it can add it to the tags two table and if for some reason it's no longer
+there then it can delete it and it manages the joining table along with the tags two table to
+achieve this. I've noted that the script performs actions that the database itself would carry out
+we used foreign keys and so forth and so the deletion in particular and deletion of stuff and
+again again in my notes made a reference to the fact that we really need to implement the full
+database capabilities in order to get this stuff. So moving on to the advantages and disadvantages
+of this method well first of all this is the most efficient way of storing the tags we only
+store one instance of everything it's obviously vastly preferable to the common separated
+variable method which looked at in episode one and it's also preferable to the method in the last
+episode because the same tags stored only once so if you want to make a spelling correction to a tag
+you don't have to go and make it several times for example and if we have the full relational database
+capabilities foreign keys caster cading deletion and so forth we can use the database capabilities
+to help manage this type of structure it's what databases are designed to do the disadvantage and
+I've only listed one really this is the best in in terms of database design but the concept of how
+it works and the sort of way in which you manage it have become more complicated as a as a
+consequence but I don't believe that that's really an issue especially since you can write scripts
+or similar types that you can even write so called stored procedures in the database to help you
+manage this sort of stuff so I don't think that should be a criterion for rejecting it so as in
+the previous episodes let's look at the ways in which this method could be used for searching now
+I've put quite a lot of detail in the notes here but I won't talk about them in in great detail
+I'll leave them for you to examine if if you're interested the first one is how would you find
+all the shows that have a given tag and I'm using the example we used originally which was look
+for shows with the tag community the one note I've made here is that since I created the notes
+the last show I discovered that the method I used to generate show notes which is a templating
+system has the capability of making database queries within it so I've actually done that within
+my notes and my notes themselves actually querying the my copy of the HPR database and because I can
+do that I can also generate HTML tables to show the results so I've done that and hopefully it's a
+bit clearer to to read I think it is anyway previously I was listing things which were too wide
+for the for the page so you had to scroll sideways to see them HTML tables wrap in sensible ways
+so I think it is preferable and also color things and that sort of stuff so the query that is
+an example of how you would do this particular type of query to get the shows of the tags with
+the tag community you have to examine the apps table and the cross reference table and the tags
+to table in order to do this and you need to make sure that for every row you get out of these
+various tables you are making comparisons and to say that you want rows where the episode id number
+matches the episode id number in the cross reference table and similarly the tags id number in
+the cross reference table matches the tag id number in the tags table so you're doing a sort of
+um a set operation where the sets are overlapping between these three tables and then when you've
+done that you then say I want only the rows from this combination which have a tag of community
+and you get back a list which is the say which is actually not the same as last time because since then
+the worlds moved on and we've got more got more shows in the database and one of them I think it
+is has got community as a tag it's mine actually but the time of recording this hasn't come to the
+top of the queue but whatever by the time you hear this it probably will have so if you want to find
+shows with a combination of tags again it's the same same example as before we want to find shows
+which contain the tag community or the tag hpr and there's an example query of how you would do
+this and the result as a as an html table again we get more back because other shows have come into the
+the database the shows the other previous two shows in this mini series appear and that's why
+because they both contain hpr as a tag if we want to find shows which have community
+and hpr as tags then there's a difference the way the the query is done which which I have shown
+without a huge lot of explanation but you can see the result comes out of it I don't think it's
+appropriate to drill down too deeply into this one now in the last episode I did a thing where I
+followed up troops's suggestion which was that if we select a show
+he was imagining that if if we're looking at a particular show listening to a particular show
+it would be good to know which other shows share the same tag tags I should say and I wrote a little bit
+of sequel to do this which I stored in a file and I shared the file with you this time I haven't
+done the same thing I've done the same query the equivalent query but I haven't made it into a
+SQL script there are two queries one is simply to get back the tags of the related to a given show
+I'm using show 2071 as the target so we're assuming we're listening to show 2071 and that was Mr
+X's show I didn't actually know what it was in this one because I did in the last episode but
+I don't know what it was actually I think oh it was about his portable amateur radio device
+anyway the tags are amateur radio electronics and open source and then the second query is
+one which scans the database for all shows which have any of those tags so and then it's actually
+listed them with the tag that it found so there's a batch of amateur radio or a batch of electronics
+and a batch of open source shows that came back from the query and again it's similar to what was
+done last time just different queries basically maybe more shows came back I didn't actually make a
+note how many we got back I don't think it's all that important now in the last episode we
+looked at using regular expressions because there is that capability within MariaDB to find
+partial tags because all we've been doing so far is looking at whole tags but if we want to look
+at a partial tag then regular expressions what we need to to use and I've got an example query
+which is using the regular expression capability and it's using word boundary expression which I
+mentioned in the last episode so I won't go into detail I've gone into a tiny bit more in detail
+how this query works it's scanning four tables scanning the EPS table it's scanning the host table
+because I thought it would be useful to get back the name of the author of the show it's scanning
+the joining table and the tags table tags two and the joining is done to make subsets of the tables
+and the way I mentioned earlier on then the regular expression part looks for the word ham
+so it's got word boundary before and after it so there's only the word ham as a distinct word
+but it's and looking for it as a component of a tag or indeed the whole tag if needs if there is one
+but not as part of a word so a Birmingham would not come back from this query it uses a group by
+which makes sure that you get only one answer if the query matches the same episode twice or more
+so we get back a list of shows and their dates and the titles and the host and then the tags that are
+associated with them and they all contain the word ham so it thinks like ham radio ham as a tag
+actually in one case ham radio seems to be the most common one though ham radio without a space
+is not one of the matches looking through yeah amateur radio ham ham space radio is the
+the commonest one but ham just as a tag is also coming back so there's some very
+degree of sophistication that can be achieved by using this technique now I thought it would be
+useful just to finish off with a technique that's available within the database most databases offer
+this this is a thing called a view can use it to hide away the complexity of some of the queries
+and there's certainly the case that the queries we're using this time round are more complex than
+the ones we used in the last episode so I've created a view and I've called a view I should say is
+a piece of SQL SQL which is a means of storing away a select query one of those ones where you
+you're asking for particular rows to be returned out of the out of the tables so it's a way of
+storing away such a select query and then you can use the the name of that query to query again
+as if it's a table all of its own but behind the scenes the the view query is being issued
+is being executed and the results of that are then being returned or subset of those results
+being returned it's a sort of nested query type of thing I've included the query that I came
+up with as a file if you want to look at it and it's also listed in the notes I created a view
+called EHTVU which is just a way of signifying that it relates to the EPS table the host table
+and the tags table tags two tables I should say it queries these in a similar way to the the way
+we've we've done in previous queries and once it's there and stored away it can then be executed
+I maybe explain a teeny bit more about it in a moment yeah this isn't really intended to be a
+database tutorial as such more a discussion of methodologies so I'm using a create a query
+which is just listed in the notes here which uses the view so it's doing a select from EHT
+underscore view and then it's saying where tag regular expression reggex and then it's looking
+for a the word solder SLDR with word boundaries before and after it and then grouping the result
+by the ID number that comes back it gets back three shows which contain the tag a tag which is
+either solder or contains solder in the tag so the first one is show 941 which has got the tag
+second one is 103 seven mr x where he was he was giving a tutorial on soldering and it contains
+the tags solder and the third one he didn't use the tags solder and we've ever added these tags
+actually can't remember who created them doesn't contain that tag but it contains multicore solder
+as a tag so this thing fished the word solder at a multicore solder because it's a separate word
+and returned it which I think is the way you'd want it to do now the view contains it is a select
+which will do a query it gets back all of all of the instances of episodes and hosts and tags
+you then have to sort of subset that when you call it which is what the example shows but within
+the view there is what's called a sub select so I think I did this I think I did an equivalent
+in the last episode and the sub select is using a function in my SQL called group concat
+which looks for all instances in a table and concatenates them together with a comma so the result
+the tag list that you see in the in the result is concatenated from the tags table all of the tags
+which relate to that particular show again it's it's it's probably not a thing you would do for real
+but it was a demonstration more than anything else okay so we're now at the conclusion and my
+conclusion is that the hpr database needs a tag mechanism very much and we've looked at the
+present tag storage system in this miniseries so it's not a good way to do things we've looked at
+a somewhat better way of doing it but I've concluded that it has some drawbacks this third example
+this third episode shows a better way of doing doing things in a in a relational database in a way
+that we represent the true relationship between the episodes and tags and that relationship is
+a many to many relationship so you could say it's taking me three shows to get to a conclusion
+that Mike Bray drew in in one but I felt it was worth working through this in order to explain why
+and why not some why not use some of the other solutions so although it's going to require some
+work it's strongly recommended that we implement a tag scheme in the hpr database in the way that
+it's been discussed in this show and we also enable the foreign key capabilities of MariaDB
+so that for the reasons I've mentioned along the way today and at the same time we look at doing
+similar upgrades to enable many to many relationships of hosts and episodes we have we don't have
+that when it comes to hosts I think that is as important if not more important than the tags thing
+there's another one which is that there's a many many relationships between episodes and series
+thinking episode will be could be a member of more than one series I don't think it's as critical
+as the other ones mind you and I'm prepared to be disagreed with on that one but it's definitely
+something you should look at if nothing else okay so as before I've got a little
+key at the end saying please include tags in your shows and if you if you have a moment to add
+more tags to the missing shows the ones missing tag let's say then be very very much appreciated
+but other than that I finished breathe cyber relief okay thanks everybody bye
+you've been listening to hecka public radio at hecka public radio dot org we are a community
+podcast network that releases shows every weekday Monday through Friday today's show like all our
+shows was contributed by an HBR listener like yourself if you ever thought of recording a podcast
+and click on our contributing to find out how easy it really is hecka public radio was found
+by the digital dog pound and the infonomican computer club and it's part of the binary revolution
+at binwreff.com if you have comments on today's show please email the host directly leave a comment
+on the website or record a follow up episode yourself unless otherwise stated today's show is
+released on the creative comments attribution share a light 3.0 license

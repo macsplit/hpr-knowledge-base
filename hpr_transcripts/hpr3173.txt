@@ -1,0 +1,268 @@
+Episode: 3173
+Title: HPR3173: Manage your Raspberry Pi fleet with Ansible
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3173/hpr3173.mp3
+Transcribed: 2025-10-24 18:13:10
+
+---
+
+This is Hacker Public Radio Episode 3173 for Wednesday, 30 September 2020. Today's show is entitled
+Manage or Raspberry Pi Fleet with Ansible. It is the 180th show of Ken Falun,
+and is about 20 minutes long, and carries a clean flag. The summary is
+a solution to the problem of updating difficult to reach Raspberry Pi's in the enterprise.
+This episode of HPR is brought to you by archive.org. Support universal access
+to all knowledge by heading over to archive.org forward slash donate.
+I have everybody, my name is Ken Falun, and you are listening to an
+other episode of Hacker Public Radio. Today I want to talk to you about
+deploying Raspberry Pi's with Ansible. The Raspberry Pi foundation has had massive
+success with the Raspberry Pi as an educational tool. The small, versatile device
+made interfacing with the real world breeze for us mere marital. The idea was
+to solve them cheap, that if they're broke it would be sad but not a disaster.
+The usefulness of these devices is not escaped businesses where they're becoming
+valuable tools to aid the automation of the physical world. Whether this is
+powering information displays, automating testing, controlling machinery,
+monitoring the environment, etc. Enterprise see these as serious devices doing
+serious tasks. Each model has a long product life cycle with even the older
+models, the 1B plus, 2B, 3A plus, 3B and the 3B plus, all remaining in production
+until at least January 2026. There is little risk of them going obsolete.
+So maintaining a sufficiently large stock means you can treat them as modular
+components that you replace rather than fix. While you can rely on the hardware
+to remain constant, the same cannot be said for the software. The Raspberry Pi
+foundations officially supported operating system is Raspberry Pi OS. This is
+previously known as Raspbian and they recommend updating regularly to get the
+latest security and bug fixes. So how do we deal with this stable hardware
+versus changing software? This presents us with a problem. By virtue of the fact
+that the Raspberry Pi provides a bridge between the physical and the
+virtual world, they tend to be installed in difficult to reach locations.
+They also tend to be installed by hardware folks, typically attrition for
+plant and assembly technicians for product. You do not want to be wasting their time
+having to connect a keyboard and monitor, logging in, running Rasp, config,
+installing software with appget and configuring set software. As the Raspberry Pi OS
+boots off an SD card, one approach could be is to maintain, is to always maintain
+an up-to-date version on the SD card that the installer can just plug and
+hot-luen. A good quality department will keep the SD cards under version control
+so at least you can be assured that all new installs are on the latest
+release. This solution though is expensive to maintain as all software updates
+require you to prepare a new image and burn them to the SD card. It also doesn't
+address how to fix all the existing deployed devices. In some cases it may be
+necessary to create custom images for a specific Raspberry Pi, doing a specific
+job and it may simply be unavoidable that the installer needs to connect a keyboard
+and monitor to configure something. A better approach is to use the same minimal
+basis operating system install and then use network boot to maintain all the
+customizations and updates on the network. This only requires maintaining one
+base image which is easier to manage. So this is a good approach if you have a reliable
+network infrastructure. Unfortunately not all network support is and I
+quote due to the huge range of networking devices we can't guarantee that
+network booting will work on any device. Also sadly this is no longer
+support is on Raspberry Pi 4. Furthermore it's not an option where devices are
+doing this connected from the network for a long period of time. You always need
+the network to be in place. So our goal therefore is to produce one common
+base Raspberry Pi OS image that doesn't change often but once installed can be
+automatically customized maintained and managed remotely. For this we're going to
+need a base image. You'll want to do some small but necessary changes to the
+default Raspberry Pi OS image. You'll need to recreate the base image when the
+Raspberry Pi OS image gets updated or you need to change something in your own
+configuration. The typical time between major versions of Raspberry Pi OS releases
+about two years which is a good target maintenance life cycle. It gives you plenty
+of time to swap out older devices for new ones while keeping it manageable for
+the quality department to maintain the releases. Older versions will still be
+supported for security and bug fixes for some time after that. Now back in
+this old H42356 called safely enabling SSH in the default Raspberry image. I walk
+through the first steps of automating the update of this base image. It will
+download the latest image zip file, verify that it's a valid, extract the
+image, enable SSH for secure remote management, change the default password for
+the root and pi users and secure the SSH server on the pi. Since then I've
+improved it to enable connections via Wi-Fi using wpa-onderscore-supplicant.conf.
+It loads its own configuration from any file so you're keeping your sensitive
+information out of the script and using LOL setup to greatly simplify the
+mounting of the image. In addition it's got the creation of a first boot script
+which is another project over on GitHub. Not today's version of this is maintained
+on my repo and GitHub as well. The changes there are fairly self-explanatory as
+they ensure that the devices you are deployed are locked down before you
+commission them. So you're encouraged to modify the script to your particular
+environment. I would advise adding any security keys or digital search
+fixates necessary for authentication at this point. However I would advise holding
+off custom applications or configurations as these can be added later. Other than
+that the image will behave exactly like a generic Raspberry Pi OS image as in it
+will boot, resize the SD card as normal and will have the same default
+software and former installed. The notable addition is the inclusion of
+support for the first boot script. This is the glue that allows you to have the
+Raspberry Pi run some custom configuration once it's finished configuring itself
+the first time. Again you're encouraged to modify this script to your particular
+environment. For example you could have the device register itself somewhere,
+run through system tests and diagnostic procedures, pull down a client
+application, basically whatever you want. If you don't want to customize it,
+the bare minimum as it is with my script will get the Raspberry Pi on the
+network so that it can be uniquely identified by network management
+software. So what is network management software? If you're managing servers in
+a DevOps environment you won't blink an eye at the idea of using a
+Configure and Management software to control your Raspberry Pi devices as
+well. Those that need agents can already have them included as part of
+the base image. But given the resources of the Raspberry Pi, an agent less
+solution such as Ansible might be the best option. It just uses SSH and
+Python and requires no additional software on the client. The control
+software is easy to install and it's easy to use. All you need is the Ansible
+software itself. A list of devices managed to be managed saved in an
+inventory file. And as a set of instructions you want to carry out called
+the playbook. For example, you can update the base Raspberry Pi OS,
+image using the equivalent of apt update and end apt for upgrade equivalent
+using an apt module. So that playbook would look something like dash name
+and then the description run the equivalent of apt get as a separate
+process. Then underneath that apt colon and then tabbed underneath that is
+update caches true. Cash valid time is 3 6 0 0. And then the name is to
+update all the packages. So apt and update dist. So that's the equivalent.
+Now you might think that's a little bit overkill, but I found using Ansible
+as worth it. If you have more than two or three computers that you need to
+update. By virtue of the fact that you use Ansible you're getting the most
+hygienic network. Your inventory is audited and listed into a
+host file. Software installs are documented through its playbook. And
+that and configuration are kept off the devices from where it's easier to
+back up regularly. It's what Wikipedia has to say about Ansible.
+Minimal on nature. Management systems should not impose additional
+dependencies in the environment. It's consistent with Ansible
+one should be able to create consistent environments secure. Ansible does
+not deploy agents to the nodes. Only SSH and Python are required to manage
+nodes nodes. Highly reliable. When carefully written an Ansible
+playbook can be in an idempontent to prevent unexpected side effects on
+the managed systems. This is entirely possible to have a poorly written
+playbook that is not idempontent, which is that if you run the same
+task over and over again, it'll return to the same stage. Minimal
+learning required. Playbooks use an in Z and descriptive language based in
+YAML and Jinger templates. So anyone authorized to do so can configure a
+device. But that authorization can be limited using the standard
+Unix position permissions. You can apply granular access to your playbooks
+so that for example, a test operation can only be able to access the test
+and diagnostic tools you installed. So let's work through an example.
+Let's imagine you have a widget factory that includes a Raspberry Pi as
+part of the product. You fill us facilities team also use them to monitor
+environmental plant and security. Likewise, the engineering team uses them on
+the production lines as part of the manufacturing monitoring process.
+I need lists to say your IT department will use them as disposable DOM
+terminals to access the head office European systems. In all cases,
+downtime needs to be kept to an absolute minimum. So we're going to end to
+deliver the exact same device with the exact same image to each of the
+teams. First step is to prepare the image. So come on to all the stages
+to prepare the image itself. After cloning from the Git repo,
+a one time action is needed to edit and rename the fix SSH on Pi.i
+and I underscore example and the WPA underscore supravent.conf under
+example to remove the example and to populate them with the settings
+required for your environment. So you only need to run that script every
+time a Raspberry image is updated or any time you make changes to your own
+configuration files. I recommend that you have that as part of your own
+DevOps workflow. And if you don't have that in place as yes,
+then the automated crown job can do the same thing. I would also recommend
+having the Raspberry Pi station dedicated to burning these images
+located in the storeroom. This will automatically burn the latest image
+from the network. Once a new card is inserted into an external multi-SD
+card reader. So some sort of 3D printed case with a nice display on it
+with a few flashing LEDs will be nice. Justification to get a 3D printer
+in your work environment. So when a Raspberry Pi is requisitioned,
+the storekeeper can simply remove one of the finished cards from the
+SD card burner and include it in with the work order. So the next thing we
+need is an inventory or a host file. So in this a fictitious example,
+the role of the device will be determined by the location on the network
+that it's connected to. This is just something I've come up with.
+Therefore, we need to be able to identify the Raspberry Pi's once they come
+on the network. How you approach this is going to be entirely dependent on
+how your own network is configured and what tools are available to you.
+I would advise listening to operators show HPR 3090 locating computers
+on an enterprise network for some great tips on how to do that.
+So let's say each of the departments have their own provisioning server
+running densable software, which of course can be another Raspberry Pi.
+It's the standard Unix SSH permissions that dictates who has access
+to what within your organization. And in the episode 3080,
+Ansible ping I walked through the absolute basics of installing and
+troubleshooting Ansible. Since then, Class 2 has added
+HPR 3162, an introduction to Ansible, which is a great introduction
+to the topic in general. So how the provisioning server becomes
+aware of the new devices can either be active or passive.
+So you could have the first boot script actively calling a URL to register
+itself when it's activated. You would need to have some sort of web application
+listening and using the received information to register the new host
+in your Ansible inventory. This actually might be a good approach for devices
+that are appraised relatively infrequently, and you want them provisioned
+as soon as possible. For example, as a water quality monitoring station
+gets replaced, it could be a good idea to have it register itself.
+And in that way, an electrician could select the exact playbook to deploy
+to the device via smartphone app. On the other hand, the passive
+approach might be better if you're going to installing devices constantly
+like in a production line. In this case, we can assume that the new
+devices found on the production line network will have our test and diagnostics
+software installed at the beginning of the line. This, of course, can be automatically
+removed prior to shipping. So one of the changes that the script
+does is that it renews the hostname of each Raspberry Pi to a version based
+on the Ethernet MAC address. So if the example Ethernet MAC address was
+DCA632, which is the prefix for Raspberry Pi, one of them, 01234,
+then it will result in the hostname of DAC6 without the columns included.
+When the Raspberry Pi finishes its first time boot sequence, which is
+first time to boot up, resize the drive, then a boot again for
+to run the script and then it reboots again and at that point it's cut a new
+hostname and it's requested an IP address from your network and it's
+probably in your office DNS. So it should be available under DCA6321234.local
+or .lan or .production.example.com whatever your DNS is in your local network.
+I've actually included a small script to locate for Raspberry Pi's based on the
+Ethernet MAC address as discussed in HPR 3052 locating computers in the network.
+And you run that script and you pipe the output into a YAML
+or in 9i version of Ansible Host file.
+And all that's got is one square bracket at the top seeing all Pi's
+and then you've got the hostname space Ansible Host equals and then the IP address.
+This instance, the best format for keeping your inventory file but is really handy for
+this first step where you want them to become available in some form of a host file so that you can then
+later move them into your regular inventory file wherever that may be.
+So at this point you have everything you need to start executing your playbooks.
+So regardless of how the provisioning server becomes aware of the devices
+you now know they exist.
+In our example we would deploy different playbooks based on the subnet that the device is in.
+So the simplest example I can come up with is the one from HPR 3080 Ansible
+Ping which is also included in the download.
+And one of those is the small Ping module.
+So in running this you will be connecting to this device using Ansible
+which will reply back using Ansible.
+So you know that everything there is configured correctly.
+An example is three dashes then a dash named test paying host or for all tasks is
+there's just one task with an action of Ping.
+So now you have everything that you need to communicate with the new devices.
+And the command that we'll be running underneath is Ansible Dash Playbooks
+Dash Dash Infantry Dash File.
+And the file name is all underscorepies.inite.
+It won't be created here there.
+Space and then the playbook is Ping Dash example dash playbook.jamil
+which is included when you download the GitHub repo.
+So by modifying the playbook you can update and configure the devices in any way you like.
+I currently use it to create users, update systems to the latest software versions,
+add or remove software, do other configurations.
+I've decided not to include that because there are probably better versions out there.
+For example Ansible app to update all packages and Ubuntu Debian Linux
+from CyberCity.biz is included in the show notes.
+So it's at this point that your device ceases to be a generic device.
+You will know what the exact role they Raspberry Pi should have and you can provision it as such.
+How custom depends on the paybook in place.
+But I would actually advise having a specific Ansible role for each and every task
+you're going to be deploying them to do.
+So even using the example that we have before,
+and if you only have one water quality monitoring station, you would still define a role for that.
+Not only will this allow you to deploy an identical replacement quickly,
+but you're also documenting the process, which is offer requirement for certifications such as IS-H9000.
+You also have a means to audit that your updates to your network are in place and that they're being carried out regularly.
+They will hopefully keep these devices secure for many years to come.
+This will also apply to products that you ship,
+because they can be updated via a hotspot operated by a field service technician.
+So as they're busy doing regular system maintenance on the physical device itself,
+replacing seals and oil in the thing or whatever it is that your widgets are doing,
+the Raspberry Pi can be happily in the background,
+updating itself using this credentials that you supplied
+in the WPA underscore supplement conf file area around.
+So that's it. I hope this has opened your mind and how you can tackle the task of managing so many devices.
+All you need to get started is essentially your PC are laptop and a Raspberry Pi.
+The principles of burning a generic image, creating the device's inventory
+and deploying your paybook are exactly the same on that small scale as it is when you scale it up to managing hundreds of devices.
+So I hope that was useful and tune in tomorrow for another exciting episode of Hacker Public Radio.
+You've been listening to Hacker Public Radio at Hacker Public Radio.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+Recording a podcast and click on our contributing to find out how easy it really is.
+Hacker Public Radio was founded by the Digital Dove Pound and the Infonomicon Computer Club,
+and is part of the binary revolution at binwreff.com.
+If you have comments on today's show, please email the host directly,
+leave a comment on the website or record a follow-up episode yourself.
+Because today's show is released on the create of comments,
+attribution, share a light 3.0 license.

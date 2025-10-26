@@ -1,0 +1,246 @@
+Episode: 139
+Title: HPR0139: Compiling a Kernel over the Nework with distcc
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0139/hpr0139.mp3
+Transcribed: 2025-10-07 12:17:59
+
+---
+
+Alright.
+Packer's over great.
+I'm quite too talking to you about kernel compiling over a distributed network with
+a program called DISTCC.
+Now this is a third part in a kernel compilation series.
+The first one we covered had to compile the kernel, which I don't even remember how
+to do it anymore.
+The second one we talked about had a patch a kernel, which no one does anyway.
+But in this one, we're going to be talking about something that is infinitely useful,
+I think, than anything, because it's not just compiling a kernel over DISTCC, but compiling
+anything over DISTCC.
+So DISTCC, that's DISTCC, it's distributed compiler.
+DISTCC is basically, you could think of it as a front end for GCC, GCC being the compiler
+that we all know and love, and DISTCC will work if you're compiling code that was written
+in C, C++, Objective C, Objective C++.
+So basically, if you think about it, if you set up DISTCC on your internal network,
+it can become the default compiler for pretty much anything you're going to be compiling.
+So if you're someone who finds yourself compiling a lot of software from source for whatever
+reason, whether you're using Gen2 or whether you're using Slackware or whether you just
+like to compile something from source, because you want it to be configured exactly for
+your system, or maybe you just can't find it in your repo.
+If you're finding yourself doing that a lot, you're going to find that just having, you
+know, if you've got a lot of computers on your internal network anyway, they're all on
+anyway.
+Why not put them all into a DISTCC kind of set up so that you can compile things, it'll
+increase compile times substantially.
+And I used to think that maybe the benefit wasn't really that big of a deal, because,
+you know, you have to think, well, it's compiling over a network.
+And so you kind of think to yourself, well, the time that it takes for all that data to
+get over your network is basically time just slowing things down, right?
+It's just why not just write on your local host, on your, you know, on your one computer.
+The data doesn't have to travel back and forth between computers, and surely it must be
+approximately the same kind of deal.
+But I can tell you for sure, simply because as part of the project I was working on, I
+was monitoring, it was part of my job to monitor the network traffic, the internal network
+traffic during compilation, some rendering, some video stuff.
+And for sure, the network will absolutely fill itself up to maximum capacity if you're
+doing things like this distributed workloads.
+It's just, I mean, you might be monitoring your network while you're streaming something
+from YouTube or something, and you're probably only seeing, you know, 25% of the load being
+reached, not a big deal.
+And I think that's probably happened most.
+But if you do a net stat, like net-space-i for your interface, so in my case it would be
+L-A-N-0 for you, it might be E-C-0, whatever, space-D, space-8, that's the delay in seconds,
+that this is going to refresh, space-C for a continuous net stat.
+That will show you your traffic workload.
+And if you watch that while you're, for instance, pinging some website, you'll see little
+tiny little changes.
+If you watch it while you're streaming video from someplace, you'll see a little bit of
+a workload.
+If you monitor that, if you're doing a DCC, or some kind of clustered, and like a Beowulf
+cluster, like in a deep geek episode where he was doing a Beowulf cluster to convert video,
+you will absolutely see your internal network 98, 97% of its capacity.
+So on a 100-megabit network, that's not too shabby, and that doesn't cancel out the
+benefit of distributing the compilation, that's actually worth it.
+So you'll be amazed, I think.
+Okay, so now that I've convinced you that you've got to do this, let's set it up.
+So I think it's my impression that most distributions come with DCC, but if not, you can always install
+it.
+You're going to want to make sure that all your computers on your network are using the
+same version of DCC and the same version of GCC.
+If you're just going to use DCC once in a while, you could always just give it a
+flag during compilation, so when you're compiling whatever you're about to compile, just
+add at the end of the line of the make line, just add C-C, both capital C's, capital C
+capital C equals distcc, all lowercase, d-i-s-tcc, and that will flip over and use distcc as
+the compiler for that instance.
+But I think more often than not, it's worth just having distcc as your default compiler.
+Even if you're away from your network, it won't matter because your computer that you're
+sitting at is going to be in the list of distcc computers, so it will only use your local
+computer.
+It's not like it's not going to work if you're not in your network around all the other
+computers.
+It's just not going to give you the benefit of having a distributed compilation process.
+So let's assume we're going to set this up forever.
+The way to do it would be to add a simlink of distcc in your user folder, so your till-day
+slash bin directory.
+So that's your local little binary directory, and you can add distcc and a simlink to gcc
+and g++, and all that other good stuff within this little user slash bin directory.
+And make sure that that's part of your path.
+It should be, as far as I know, it usually is.
+And then you also add it to your Shells RC file, so if you're using bash, it would be till
+day slash dot bash RC.
+And just make sure that the simlinks for those, you know, the user slash bin is in your
+path.
+And make sure that the distcc is defined as your first choice for a compiler.
+So that would be cc equals distcc, right there in your dot bash RC file, just to make
+sure that when you're compiling it defaults, it knows that the default compiler is distcc.
+Okay?
+So that's setting it up as a default compiler on the host computer or the master computer.
+That is the computer you're sitting at doing all your work.
+What you're going to want to do is also go around each computer on your network, all
+the little client computers or the slaves, and you're going to want to set that up.
+You're going to set up a distcc daemon to run on those computers because your local host,
+your master computer is going to need to call out to these computers.
+They need to have a distcc daemon running to start the daemon on the machines.
+You can set it up to start automatically on boot time, which would be fine.
+It needs to be, as far as I know, started as root, but you can then use it as any user.
+So you can start it as root, for instance, on boot at boot time, but then you go in and
+you can say, okay, so distcc daemon, space, dash, user, space, clat2, space, dash, allow,
+space, 192.168.x.x.
+So you can limit it to whatever master computer IP address you're going to allow to use this
+daemon.
+You can also set that to be a range.
+So if you wanted to say 192.168.x.0 slash 32, I don't know, whatever range of IP addresses
+you want to allow, I usually just limit it to one computer.
+I guess it depends on your workflow.
+If you're compiling a lot of different machines, I guess it might be helpful to have those
+open up to a whole range of computers.
+But I think it's easiest to go ahead and have it start up at boot time, and you can do
+that with just whatever distribution you're using.
+There's usually some either a service manager in the GUI to start and stop services at boot
+or you can go into the INIT folders or the RC folders, whatever to start.
+The INIT services upon boot time, and for a lot of good information on that kind of thing,
+you can listen to episode, I think it's like 110 or 112 or 114, something like that.
+That Dan Washcoke did on that very subject of how to, you know, the INIT process, the boot,
+the boot process, and how things are started and when they're started during the boot process.
+So listen to that because he gives you a lot of great information, just depending on whichever
+distribution you're using.
+Okay, so now DCC should be compiled, I mean, installed and running on all your little
+slave computers, and you've got it as the default compiler on your master computer.
+So now on your master computer, your local host, you're going to want to make it aware
+of all the IP addresses that it is able to use.
+And I should mention, you don't have to switch DCC over to a specific user.
+You can just keep it running as root.
+Like if it starts up at boot time, I think, I know it starts up as root, I think it switches
+over to a DCC user on its own because it doesn't want to occupy the user ID of the root
+user.
+So I'm pretty sure it switches over anyway.
+It's just that if you want, it's specifically to be running as a different user, you have
+that option as well.
+But otherwise, all you basically need to do is install the DCC Damon, or rather have
+that up and running on all those computers one way or another.
+And so they're set to go.
+I just have mine set to come on at boot time so that I don't have to think about it.
+Whenever I do a compilation, it's just kicking in.
+It's just doing the compilation over the network per whatever's available.
+Okay.
+So now on your master computer, to make it aware of the IP addresses on your network, you're
+going to want to add either the host names, or the IP addresses, to tilldayslash.discccslashhost.
+So just do an LS-a in your home directory, and you'll find a .distcc directory.
+And in there, there is a host file, and you're going to want to list all the host names
+or the IP addresses in the order of the priority.
+The priority being the more powerful computers should come at the top.
+So if you've got 10 computers on your network, and two of those are really super powerful,
+dual core, multiple chip computers, you want those at the top of the host list.
+And then if you've got computers that are really fairly slow, you can put them towards
+the bottom.
+And the reason that you want to do in order of the priority is that your local computer
+doesn't really have any way of knowing which is the most powerful computer.
+So it's going to divvy out the jobs according to whatever you define it to do.
+It's going to give the bulk of the jobs to the top listing, and then down as the workload
+needs to be distributed.
+So you want to make sure that you're using the more powerful ones at the top.
+They also need to be the same architecture.
+You're not going to be able to use PowerPC computer to help to pitch in, compiling something
+on an x86 or an i386 computer.
+So make sure that they're all the same architecture, and make sure that they're in the order of
+the priority so that the more powerful ones will get the brunt of the workload.
+Once you've got all that stuff added to the host file of the disccc folder in your home
+directory, it's all set up.
+So you've got disccc as your default compiler, you've got your slave computers running
+a Damon of disccc, and you've got your master computer aware that those little slave computers
+are out there with IP addresses defined in the host file.
+And don't remove, unless you mean to, do not remove local host from the disccc list.
+The only reason you'd want to do that is if you want the computer that you're working
+at not to pitch in to the compilation process.
+But otherwise leave that local host in there because you'll want that to help out on the
+compilation process.
+When you start compiling the code that you're going to compile, you're going to want to specify
+how many jobs you want to create.
+So instead of just saying, okay, compile this, make, you know, cc equals disccc.
+You're going to want to tell the computer how many jobs it has to send out over the network.
+The general rule of thumb seems to be the number of CPUs that exist on the network times
+two and then maybe plus one per CPU.
+So for instance, like if you've got two machines on your network and they both only have a single
+core processor, you would use dash j for jobs four and then maybe add like one per processor
+so it'd be six.
+So dash j six for two computers with a single core processor each or you could say, like
+if you have two machines that have dual core processor chips in them, then you could use,
+you could say dash j eight and then plus one per processor so it'd be ten.
+So dash j space ten and so on.
+So that's the general rule of thumb.
+You can give more or less just kind of depending on what you know about your computers.
+For instance, if I had a couple of really slow processors on the network, I probably wouldn't
+give them an extra job.
+I would give them just, I would assign one job per processor because I don't think, and
+I could be wrong, but it's not my impression that they could really handle an extra job.
+They're slow processors.
+They're like 400 megahertz.
+It's not going to do you any good to give them an extra job.
+But then again, a dual core machine, those are pretty powerful, you can, you can throw
+it an extra job.
+It can handle it.
+Now there's also an argument that you could even go higher if the processors are actual
+separate processors.
+So like a machine where you've got multiple CPU chips in them because there is, I guess,
+a school of thought that the single processor, the single core processors, multiple single
+core processors are more efficient than, for instance, one multiple core processor.
+And whether that's true or not, I'm not too sure I haven't, I'm not, I couldn't say
+for sure, but I've definitely heard a lot of arguments that lean in that direction.
+And as you do it more and more, you'll get how to get a feel for what your network or
+what you're, you can play around different settings.
+It also obviously depends on what else those computers are doing, you know, if they're
+not just being dedicated to compiling your software or whatever, then quite possibly you
+don't want to give them as many jobs as you would if you know that they're just going
+to be sitting around doing nothing otherwise.
+To monitor the compilation process, you've got a tool that should, should be installed
+along with this CC, called discccmon.moin-text.
+And this is just a little text tool that you can also use, you know, via SSA, if you're
+not going to be at the, at the host computer, at the time of compilation, you can always
+SSH into it and use this little application.
+So it's discccmoin-text and then you enter the seconds that you want per update.
+So if you want to update every, I don't know, 10 seconds, then it would be discccmon-text
+space 10.
+And that just shows you a list of the computers, the IP addresses that are compiling and
+what the workload for each of those is, it just kind of gives you an update on the status
+and how quickly it's going.
+So that's a handy little monitoring tool.
+Very simple, obviously it's got a pretty low overhead, it's just a little text, you
+know, terminal console program, whatever.
+You can also just, if you need to, you know, if you're doing some kind of super secret
+software compilation and you're nervous about people, you know, monitoring the compilation
+process on your network.
+You can actually do this all via SSH.
+I've never done it over SSH, rather than just entering the IP address of each computer,
+the disccc host file, you would enter the IP address of each computer preceded by the
+app symbol.
+And that will tell it to run it via SSH.
+You just need to let the host file know that you're going to be doing it SSH and then
+you're going to need to start certain things up via SSH.
+And obviously for best results, I mean, make sure that you've generated all your keys
+and everything like that.
+That's how to compile over distributed network.
+Thank you for listening to Active Public Radio, HPR is sponsored by tarrow.net, so head
+on over to C-A-R-O-J-E-C-R-L-B-T.
+.
+.
+.
+.

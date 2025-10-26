@@ -1,0 +1,1470 @@
+Episode: 318
+Title: HPR0318: Git
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0318/hpr0318.mp3
+Transcribed: 2025-10-07 16:13:49
+
+---
+
+.
+.
+.
+.
+.
+The Utah Open Source Foundation brings the Utah Lugs home.
+You'll free to listen live at stream.UTOS.org or catch the audio afterward at podcast.UTOS.org.
+The bandwidth is provided by Center 7.
+The following presentation, Git Version Control System was given by Barry Roberts on February
+11th 2009 at the Provolynics user group.
+Visit their site at plug.org.
+Thanks.
+Okay.
+I said we're going to talk about Git tonight.
+Just to give you a little history of why I like this kind of thing and how I got into this.
+At exact where we've been using CVS for years and years and I kept thinking okay when
+Subversion gets good enough that the features of Subversion will pay for the pain of switching
+and the learning curve and will switch to Subversion.
+Well that still hasn't happened and all the new DSCMs came along and we just skipped
+the whole Subversion step and our CVS repository was a good 10 years old.
+We had history going back to the dawn of time and so we migrated straight from Subversion
+to Git.
+I did after I read my blurb on the website, I did want to clear up one thing.
+Not all the developers at exact where migrated to Git just in the division that I worked
+for which is exact value.
+They're just about 15 or so people, developers, managers, testers, documentation writers
+who migrated from CVS to Git and it's been pretty successful.
+As you can, we did, it took a couple of years to do this.
+I actually chose Mercurial and I used Mercurial for a while just in testing and I can't
+ran into some problems with it but that was about a year ago.
+We switched over to get, we migrated to Git about 10 months ago so some of my information
+I'll admit is a little old and you may be able to tell from the title that I am a slightly
+opinionated person prone to lapsing into hyperbole on occasion.
+But after some conversations on the pound Utah today, I've decided that maybe this is
+really, although I think you're out of your mind for not using Git, this might be who
+should use Git type presentation even though I might think it's everybody.
+But before I get started, who uses Git?
+I know we have some Git users here, quite a few, CVS, even more CVS, you're subversion
+and that's subversion wins, Mercurial, oh two Mercurial users, Bizarre and G, any other
+DSEM on a tone arch, Codeville, Source Safe is not a DSEM.
+If you use Source Safe, sorry I can't help you.
+Okay, so we have a good mix of Bitkeeper, there you go, well have you all seen Linus'
+talk at Google about Git, he has a slide that says if you disagree with me you're stupid
+and bud ugly, I'm opinionated but not quite that opinionated, so if you disagree with
+me you're just stupid, you may not be ugly, so even though I think Git is the greatest
+thing since sliced bread before we get started, I did just want to go ahead and admit that
+Git might, there might be situations where Git might not be the right tool for the job.
+A lot of the things we'll talk about will apply, some things Mercurial will do, some things
+Bizarre will do, but I think Git really has the whole, is the only one that does everything
+that I need in a software source code management system, so Git, Mercurial and Bizarre, they're
+all good tools, Bizarre kind of fell over trying to import my CVS repository and just,
+so I don't know it very well because it got eliminated pretty quickly, but I did use Mercurial
+for a couple of months, so I know how to compare that, and there are situations where
+Git, but after having admitted that we'll go right back into the hyperbole and I'll tell
+you why you will be assimilated in resistance as futile and you might as well just go ahead
+and use Git, there are several features that we found and using Git for the past ten
+months that several individual features, he said, oh wow, that feature was worth switching
+to Git, and again, some of these are just distributed, any distributed SCM applies to them,
+some of them are Git only, start with merging, most developers of the exact where I still
+use Subversion, and even though Subversion 1.5 claims to support merging, it doesn't work
+for us, for the people of exactly who still use it, so as far as I know, you pretty much
+have to go to a distributed SCM to really be able to merge branches, that was the first,
+that was the reason we switched, we do quarterly releases with Subversion and CVS when you
+have to do a production patch, you fix a bug in the production branch, and then you just
+got to manually make sure all the files, they got changed, get into the development branch
+or that fix gets lost in the production branch, and then the next time you release your
+customers find that bug or your testers find that same bug again, and stuff like that happens
+either don't get moved over or you forget one file and it passes most of the test, it's
+just a manual process and it's a pain and cost developer time and it makes more bugs
+and defects get out to production, so unlike in Subversion and CVS, if you can merge, branches
+are actually a good thing, they're not something that you avoid like the plague because they're
+a horrendous pain in the rear end, and that's what, that was the first, that was why we switched
+and that was the first one, we said as soon as we started merging production branches back
+into the development branch, we said oh yeah, this was a good thing to do, which brings
+us to the next fairly general distributed SCM feature, and that's branching, and I'm
+kind of now the internal support person forget at exactly, feel free if you want to see
+how any of these work in get, they're a little bit of a pain to show but I've been working
+on it and I think it's no fun to watch somebody making dummy changes and committing to make
+it look like a real branch, but I've got some things set up, so I think I could probably
+demo some of these and it would be fairly obvious what's going on without wasting a whole
+lot of time, but if you have questions or want to see how something works, just interrupt
+me, but one of the things we found with switching is that, you know, with subversion CVS and
+those, branching is something, you avoid it at all cost, if you don't really need a branch,
+if you can't convince yourself that you really need it bad enough to put up with the pain,
+you don't branch, but in get, you just make branches all the time, same with bizarre and
+mercurial, so you just kind of have to forget and, you know, unlearn your old revision control habits
+and again, long live branches like, you know, production branch or other branches,
+this is another way you reduce errors because especially with get, and I don't know bizarre,
+but it's harder and mercurial, you can let get, keep track of a lot of details, like which files
+you change if you're working on multiple things, you know, I know that never happens where you're
+have two or three different things you need to get done or where you're working on one thing and
+somebody says, oh, emergency, stop working on that, work on this, in those types of cases, subversion
+CVS, mostly just get in your way because you have to manually keep track of everything, get fully
+supports that and will take care of all the details for you, so that's another, or one of those
+places where we've had errors before because somebody didn't, you know, somebody's brain wasn't quite
+detailed enough to keep track of everything, but get is, and then a really controversial one,
+anybody who ever read any have been Colin Sussman's blogs, postings on the risks of distributed
+version control and programmer insecurity and things like that, he's one of the subversion developers,
+so I'm sure he's a really smart guy, but he disagrees with me, so he's stupid, and I don't think he
+quite gets it. If you've ever submitted a patch to an open source project, the limits kernel being
+one of the good examples of this, you have to submit patches that are logical units of work, they're
+small, and you know, if you're doing a bug fix and you got to fix a bug over here or at a, you know,
+make an infrastructure change out of new method or at a change of method signature somewhere over here,
+and then do something, you know, to actually fix the bug, those are three separate patches,
+and the patches look like you knew from the beginning exactly what you need to do,
+but nobody codes like that, you start fixing the bug, and then you find, oh, I need to do this,
+and I need to do that, then when you're done, you clean that all up, and submit nice clean patches,
+get supports all that, without having to use something like a patch manager, like quilt or
+mercurial cues, and some people think that's bad because you can and get, if you choose to only
+keep the perfect one that makes you look omniscient and, you know, right from the beginning,
+but it doesn't force you to get rid of your, you know, oh, I tried this, didn't work,
+back it out, you can keep all that history too, but there are people who believe that
+distributed version control in general, encourages developers to go out, to go dark, and, you know,
+patch bomb with huge finished features with no prior review, and, you know, 10,000 lines of code
+that you've never seen before, because you have your own repository. Again, I think that's mostly
+people who haven't really used distributed versions control much, but, you know, if it's good for
+the limits panel, it's probably good for your commercial product too. It's really nice to have a
+clean history that doesn't have a bunch of, you know, checked in here because I was going home
+for the day, or checked in because I had to switch tasks, you know, things like that that don't
+really have any long term meaning, and especially with a distributed version control, you'll find
+that you do commit early commit often because it's cheap, it's fast, and nobody else sees it until
+you're ready for them too. So, you do a lot of work in progress commits unlike a centralized
+version control. Any questions so far, any, we're doing okay? Everybody, everybody wait? Okay.
+And the main reason I think that people like Ben Collins-Sussman and his friends who
+all their blog posts about how, you know, if you're not subversion, you're wrong.
+One of the really cool things, even in a centralized corporate environment, informal sharing
+with distributed version control is really, really cool. And it, in my opinion, unless you're,
+you know, pathologically averse to other people seeing your code and, you know, we've all known
+programmers like that. Nothing's going to change them, but it really encourages reviewing things
+early because there are so many ways to share your code before it's done, before you have to put it
+into, you know, somewhere that you can break the bill. You can just start up a git demon from a
+command line and say, you know, people, this for me and see if it works with what you're doing
+or test it in your situation or whatever, you know, git has easy tools for formatting and sending
+patches over email or actually sending them for you or letting you just attach them to an email.
+If you have SSH access to a machine that has a git repository, you can fetch or pull from there.
+You can push temporary branches to a centralized repository, so it's in a separate branch,
+so it doesn't go into, you know, the master or your builds come from. And then anybody can access it,
+but they don't have to necessarily mess up. They don't have to check it out. They just look at the,
+look at the patches, the changes just from the branch.
+And then the last one, and this is the one where git really shines. There's some architectural differences
+between git and centralized version control systems that make huge differences in speed.
+The way they're architected, you never, ever have to run through all the files on the server,
+comparing date time stamp to see what's changed. Seeing how you're different from the servers,
+checking if you shot one ID's and seeing where you are and where the server is and deciding what
+you have to push or pull. It's very fast. And in my opinion, I'm going to rip on
+material a few times tonight, so if you really like material, that's fine, but I don't.
+You end up keeping track of things, you end up with fewer work directories,
+depending on what you're doing. But if you're hard core coding, you end up with fewer work
+directories and Mercurial. Any questions at this point? Anybody want to disagree with me?
+I'll take you on. Mercurial, yes. In Mercurial, the history is immutable,
+so if you want to do something that you might throw away, you have to do a local phone,
+because anything you commit is going to get pushed next time you push.
+This is something that's new from when I use Mercurial. Supposedly now they have topic branches.
+I think you could do, if there are any Mercurial experts, you can correct me on this.
+I think you can do Mercurial. You can do both check out different branches in the same work directory
+Mercurial now, can't you? It's an extension, forget what it's called, but bookmarks extension.
+It's very similar to topic branches, but pretty much anything you want to do, and get, you can just create a branch,
+check it out in the same work directory, do some work, rearrange it, and either merge it, or cherry pick it,
+squash it back into the master. Pretty much anything like that in Mercurial, you're going to have to create a new working directory,
+do a local clone, and that's not a big deal. It's pretty fast, doing a local clone with Mercurial,
+is pretty fast, isn't it? Just to give you an idea, the repository I work in all day at exactly,
+is about 620 megabytes, about 9000 files, it's not huge, and actually it wouldn't be that big,
+if there weren't the web stuff, there's flash files and tutorial PDFs and some big files,
+but most of it's source files, and a local clone, you know, by the time you're off the inner key,
+it's done, on Linux. I have a lot of Windows users, we have a lot of our developers run Windows on their desktop,
+and those local clones are not as cheap on Windows, so for Linux users having multiple working directories is not a big deal,
+but for Windows users it is, because they don't, let's see, can you do hard links, I don't think you can't do hard links on Windows,
+and I think Mercurial and get use those. Plus, Windows users tend to be IDE users, and they don't like having multiple work directories,
+because every time you have any work directory, you have to set up a new project in your IDE. If you're an IDE user on Linux,
+that's also a concern too, so.
+My question is actually from the online, they wanted to know if this might work.
+Not yet, but I can, I will do that, but I have.
+Since you're bringing it up to another question is, I know that some of my users work really well with Git,
+and actually, like, accommodates that, switching your directory, and branching on the space of what's other,
+and what's other, and what's other, and close the system.
+And we're going to actually accommodate it, but it's a lot easier than that.
+I haven't seen one that supports, but...
+I might want to think in specific ways, because I've seen people talk about that.
+Oh, really?
+We have a lot of Eclipse users, and it might do that, but they don't know how to do it.
+As far as they know, you know, if you have another work library...
+That's another one of my biases, even though Mercurial does run,
+you know, the difference between Mercurial on Windows and Mercurial on Linux is less than the difference between Git on Linux and Git on Windows.
+Because to Windows users, you know, if it's not in the Git, if it's not in the GUI, it doesn't exist.
+I've also done a lot of research on how the GUI's work and what cross-platform GUI's forget as well.
+I'm not sure if they're going to go over this, but you know, the Git has a symbol,
+especially if it's a C++ API that you can use to, you know, build, you could write our tools,
+we, you know, for the artist, do you check out them, check it, and we'll know if they can.
+No, it doesn't.
+And that is, they're working on it now, like Git too.
+The problem with that is, and this is one of the advantages that Bazaar and Mercurial tell that they have over Git.
+Git was written, you know, in two weeks, and the core of it is still around.
+It's not, it was written to be command line utilities.
+So there are a lot, all through the C code, the other place is where if it gets an error, just exit the process,
+that doesn't work real well in library, because you don't want to, you know, your program,
+because the library couldn't find a file or something.
+I don't think it's re-entrant. There's several other things where the libification, they call it,
+it's not going to happen with the existing code, but they're doing some refactoring,
+and light Git too is getting complete.
+But because of that, there are the, well, there are two things.
+The Git file format is very well documented and very, very simple.
+The Git on the wire, the Git wire protocol is well documented and very simple.
+So there are implementations of those, none of them are as complete as the C, you know, the canonical C implementation.
+But because there's no library, there's Ruby, Java, C-sharp, Python, and one or two others in the works.
+The implementations that actually just access the object database or, you know,
+talk the protocol on the wire to the server.
+It's a little bit of duplication of effort, but there will be a library right now.
+Most tools just launch the utilities as a, you know, as a sub-process.
+Most buoys do.
+Any other questions at this point?
+Yeah, we're doing time, right?
+Sure.
+So if, let's see, you've got some test show, you've got to do something on-count,
+you've got to do something else after that, and check it in, is there a way that,
+like that, out of your history?
+Yes.
+Yeah, all you have to do, and I should have put this on, in one of the myths,
+but material makes a big deal about their history being immutable, so it's reliable.
+Their repository is append-only, gets repository is mostly append-only.
+Usually when you're changing history, you're really just changing references,
+and creating new objects and referring to them instead of the old objects.
+But that's why I get needs garbage collection, and we'll talk, well, that's on this slide.
+If you end up with just dangling objects in the object database,
+but if you run the garbage collection, it's gone, and if you haven't pushed that,
+then nobody will ever see it.
+And even if it's still in your repository, you can still push,
+and it's not going to push it to the central repository, or anywhere you push to,
+or so you're pretty safe there, too.
+Yeah.
+I would say, if you could only, once you've pushed it,
+you can't sell it in the city of physics.
+It's not going to be a fact, and it's kind of in the wild,
+and it's a fact that everyone who's told you might get them for it,
+and you wouldn't even think of it.
+It can be.
+That's why there's a good article called, I think it's something like,
+get means never, get means never having to say you should have,
+but once you've pushed it and shared it,
+then you should have done it right by then, because once it's shared,
+and other people have gotten that, then it's too late to rewrite it.
+It's not really, but it's a real pain to rewrite it at that point,
+and that's true of any of the distributed version control systems.
+While it's local, you can do whatever you want with it, you know,
+as far as the tool supports, but once it's been shared.
+So, this is a shared question.
+I've only used it a little bit, since we've seen them out,
+and I get my hand around it.
+You typically tend to see yourself with, first of all,
+a Christine branch, a certain structure,
+and then you always start to affect a local object,
+just to remember that, and you can straighten your head.
+No, there is the Christine branch,
+which is usually, actually, there are several of those,
+for example, we have the development branch and production branch,
+and then we actually have an old product that has diverged so much,
+we're never going to merge it, but it is still a branch in the same repository.
+And those are the Christine branches,
+and then I do my own work in multiple local branches.
+So, if I'm, if I've got two or three features that I'm working on,
+and a couple of defect fixes, each one of those is in its own branch.
+And then I don't have to worry about which file that changed for this,
+and which file that changed for that.
+If I'm in that branch, those changes are for that, you know,
+that work item.
+So, yes and no.
+It's multiple local or topic branches that get calls them,
+is how most of the developers in the exact value now work.
+We started off, you don't have to do that.
+You can just work on the master and work,
+and that was one of the things I didn't want to stress.
+A lot of the questions to Linus from the Google employees were,
+but we're a company, you know, they didn't come right out and say this,
+but there were several of them that were basically, we're a company.
+We have to have one spot where we know this is, you know,
+the state of the code is determined by this repository.
+And he never really answered this, although he did,
+and he has answered an email before,
+that's fine.
+You can do a centralized, you know, a burden control with yet.
+It's a great plug-in replacement for CVS,
+and you can, you know, you don't have to change the way you work very much.
+The biggest change is you have to commit and push,
+because you have a local repository, and you commit to that,
+and when you push, it goes to the central repository,
+but everything, you know, you don't have to use topic branches.
+You can just, you know, take baby steps and move that direction.
+So some of the things that we use that through that forum
+is spoken in real-time functionality,
+where we can compare repository and middle,
+and everybody can check out from that,
+and it makes you get your own work,
+and then you can get back to that central repository.
+So you can still do centralized bridging control with it,
+just in one central repository,
+or several central repositories,
+and they have their own custom branches,
+and then they can get back to what they're doing.
+That's what we do.
+Yeah, and they kind of figure that would be,
+and then mentality,
+with what they're trying to figure out,
+is there something similar?
+Yeah, it is.
+And as Lenna says,
+centralized is basically just a subset of decentralized.
+Even with, you almost always have a central repository.
+The difference is, you can have more than one.
+You don't have to, but you can.
+The other thing is that's actually supported,
+and you won't get looked down your nose at for doing it with yet.
+When I was running a material,
+and I mentioned that we were going to switch over,
+you'll get lambasted on the material mailing list,
+if you mention you're doing that,
+because it's a bad idea.
+It doesn't, you know, the thought police on the material mailing list
+do not like centralized.
+You know, if you're going to use the material,
+and it works, and there are people who,
+they know there are people who use it,
+but, you know, a year ago,
+you weren't, you know,
+you weren't doing it the one true way,
+or as get, you know,
+it's well documented how to do it,
+and it's, you know,
+it's just one of the supported workflows.
+So we kind of already talked about encouraging patch bombing.
+I think that's a myth,
+you know, from somebody who has never really used,
+distributed version control.
+There's the famous Bizarre and G article,
+you know, version control that doesn't make your eyes bleed,
+and they're referring to Git.
+Git used to be hard.
+Git was originally written as plumbing.
+It was written as a bunch of tools that you could use
+to create a version control system.
+Problem with that is,
+then the porcelains,
+the actual version control systems,
+there were several of them.
+They weren't all exactly the same.
+They didn't, and the Git plumbing was so flexible,
+they didn't even work.
+You know, you couldn't,
+sometimes you couldn't even mix and match them.
+So if you used one plumbing,
+you couldn't switch to another plumbing,
+because the repository would be slightly different,
+and it wouldn't exactly work with it.
+And that actually still causes problems,
+because the biggest, you know,
+people complain Git puts 144 commands in your path.
+Well, it only puts one now,
+but it still has 140 something commands,
+but you never use most of them,
+unless you really, really want to,
+because you don't have to use the porcelain.
+The real problem is,
+you got to know what documentation to ignore,
+because all those porcelain commands are documented,
+because they used to be the only official,
+you know, Git commands,
+but now Git does contain,
+Git Core does contain its own porcelain,
+and it's very good.
+You know, if you've used a CVS or subversion,
+you'll feel right at home with the Git porcelain,
+if you've used a, you know, bizarre or material,
+it'll seem really, really natural.
+But there's still a lot of documentation
+that talks about Git Pesky and Cogido
+and all these other things that shouldn't exist anymore,
+and you shouldn't use anymore,
+and there's still tutorials out there
+that teach you how to use the porcelain commands,
+and I don't know porcelain commands.
+You know, I've been supporting, you know,
+two or three groups into it inside exactly,
+or for almost a year,
+and I don't know them.
+You don't have to know them.
+The problem is figuring out what you can ignore.
+So it is still a small problem for Git,
+and it has this baggage and this history
+of being hard to use and hard to figure out,
+and way too many commands,
+or makes you feel stupid,
+as the guy who introduced Linus at Google said.
+Another myth, Git doesn't run well on Windows.
+It doesn't fly on Windows.
+It flies on Linux,
+and it's like OSs,
+but it runs on Windows.
+Like most of our developers,
+I win those desktops,
+and they're actually pretty happy with it,
+and they still use Git GUI,
+which is kind of scary.
+Git GUI is the GUI that is included with Git,
+and it's Tickle TK.
+It uses the Forcelain commands.
+So if you choose Clone from the Git GUI menu,
+it doesn't use the Git Clone command
+that you just read the man page for, of course.
+And it used to not work exactly like the Git Clone command
+from the command line.
+But most of those are probably fixed now.
+I've actually fixed a couple of them
+and reported several bugs,
+and I imagine by now most of those are fixed,
+but you never know,
+because Git GUI is older than the core Git course one,
+so it doesn't use it,
+and it doesn't work exactly like it.
+So that's one of those things you have to watch out for.
+It gets not for corporate SCM.
+We already covered that.
+Centralize is just a subset of decentralized,
+and it's a great replacement for CVS or subversion.
+You know, Linus goes on and on about how stupid CVS is
+and all those things,
+but what he's really talking about is the repository format
+and the way changes are stored,
+and you know,
+the division between server and client responsibility is not,
+the hub and spoke, you know,
+everybody pushes to a central repository.
+Git works fine for that,
+and that's one of those things that a lot of people think,
+oh, we can't switch to Git,
+because we have to have, you know,
+we're in a company,
+and we have to have a central repository,
+but you can.
+Bizarre and material will do it, too.
+I've briefly mentioned garbage collection.
+Now, I've seen some benchmarks.
+I'm prone to hyperbole,
+but the Bizarre and G people,
+they're worse than me.
+I've seen benchmarks where, you know,
+to prove that Bizarre isn't really that slow,
+they do something and get and run a garbage collection,
+do another thing and run a garbage collection,
+and get still faster than Bizarre.
+But it,
+that's kind of a straw man,
+because if you have a central repository,
+you set up a crime job to run garbage collection once a week,
+and you'll never think about it again.
+I don't run Git GUI,
+which nags you every time you run it,
+it tells you how many loose objects you have,
+and says, do you want to run a garbage collection?
+Or Windows users,
+they garbage collect on a pretty regular basis.
+My development or a repository on my desktop,
+I haven't garbage collected for months,
+and it's still blazing fast.
+So yeah,
+it's a little bit of a pain, you know,
+if you really want that every last bit of speed
+you can get out of Git,
+you might worry about garbage collection a little bit,
+but it's really not something you're going to think about,
+like I said,
+if you really count on the central server,
+you're just going to have a crime job to it,
+and then you'll never think about it again.
+And if you never think about it again on your desktop,
+you'll still have a pretty fast Git.
+There are some problems,
+you know,
+it gets not perfect yet.
+Give it a few more months.
+Talk about Windows.
+There are some things that don't work yet,
+or work well in Windows.
+You can't run a Git Demon on Windows,
+because it's multi-threaded,
+and there's something about the,
+well, actually there's SIGWIN Git,
+and there's MSIS Git,
+which is used as main W.
+I know MSIS Git better,
+because that's what we use.
+It doesn't have the Git SVN command,
+so if you have a subversion server
+and you want to use Git on your desktop
+and commit back to subversion server,
+that might work in SIGWIN Git,
+but it doesn't work in MSIS Git.
+No Git Demon,
+I don't think there's a Git Demon for either one of them,
+and there are things that are quite a bit noticeably slower,
+but compared to subversion, it's still fast.
+So compared to Linux,
+it's slower,
+but compared to a CVS,
+it's still a big improvement.
+We talked about libelification already.
+It'll happen,
+and probably pretty soon,
+and the documentation,
+if you use only the new stuff,
+you're good to go,
+but there's a lot of old documentation out there
+that tells you a bunch of stuff you don't need to know.
+I still don't really know much or care
+about how the object database works
+in the directed ASIC-like graph,
+and I mean,
+I got the basics of it,
+but you don't have to know that
+if you don't want to.
+If you want to, great.
+There's a lot of good documentation for it.
+Git calls,
+and his definition of SEM
+is source code management.
+So as he says,
+Git is a content tracker.
+It doesn't track file attributes.
+Ownership permissions,
+things like that.
+Source code doesn't have that.
+You don't care about ownership
+and things like that on source files.
+But if you want to revision control
+your Etsy directory,
+it's a big deal.
+So there are add-ons like Etsy Keeper
+that do things like that.
+But Git doesn't have
+built-in handling for file attributes.
+And this is another one of those design,
+design decision versus bugs.
+But a lot of people,
+they're pretty regular complaints
+that Git doesn't track file renames
+or directories as objects
+in the, well,
+doesn't track empty directory.
+It tracks file contents.
+When it says that's a feature,
+bizarre people,
+pun intended.
+Say that's a bug.
+Mark Shuttleworth says that's the most important thing
+you do with a revision control system
+is when you're refactoring
+moving things around.
+For me, it hasn't been a problem yet.
+We'll see.
+The one, another specific request
+I got today was,
+Git push.
+A lot of people come across this.
+The, uh,
+the simple rule is never push
+to a non-bare repository.
+That's a repository that has a working directory.
+On the Git fact, they say,
+don't, don't do this until you know what you're doing.
+The real rule is never push
+to a checked out branch.
+So as long as you know that,
+then the first time you do it
+and it doesn't work like you think,
+it doesn't update the repository
+you push to the working directory,
+you'll think, oh yeah,
+I wasn't supposed to do that.
+And you'll know why,
+and then you won't do it again.
+And it's not,
+it's annoying.
+It could be fixed with a,
+a commit hook,
+which will probably be done
+and shipped with Git soon.
+I mean, we don't have to worry about
+the convention non-bare repository
+and just automatically
+you'll find a shendol
+and it says he's working on that
+because Windows users
+especially complain about it all the time.
+Good interesting question
+because maybe that's the intended use
+that you want them to commit,
+like you don't want them to commit
+back to a non-bare because
+then you have simply
+a commit to get other things
+and you actually want to make sure
+that you guess I can see kind of
+some variations on the thing there.
+I think it's kind of a minor thing,
+but I suspect
+the real reason that it works like that
+is just because that's the way
+let us use it.
+It doesn't use it in a push environment.
+It's a pull environment.
+And it...
+Because you could write,
+you catch it and then just merge it back in,
+which is my preferring you
+and do that non-bare.
+Yeah.
+This is a very nice way to go.
+I don't think it's
+an underlying fundamental
+shortcoming yet that it can't be done.
+I just think it's, you know,
+it's not the way people,
+most of the developers for years
+have used yet.
+And so it can be done and probably
+will be done.
+It just hasn't been yet.
+Do you think you're doing
+the central...
+Do you want the central
+repository to be there
+in like...
+Web...
+There are several use cases
+where people want to do this.
+CVS and subversion,
+central repositories are bare.
+That's all they are.
+You have the repository on the server
+and all the working directories
+are on the clients where you have them checked out.
+So, you know,
+that's just kind of what you're
+used to it never would have even occurred to me.
+But it does in informal sharing
+it shows up a lot.
+You know, if the firewall
+is such that you can go...
+you can access from here to here
+but not from here to here,
+then sometimes you just think, oh, well,
+you know, the changes that I want to get from here to here,
+I've got to push them
+because you can't pull from this direction
+or the other one that comes up
+a lot is web servers.
+If you're managing a bunch of PHP code
+and you have a test server
+attached to your central repository,
+you just want to push it
+and then have the test server updated
+so testers can start testing it.
+Turns out that's pretty easy to do
+with another repository
+that just automatically pulls.
+You have a commit hook
+and tell it to pull.
+But again, it'll go away.
+It's not a fundamental, you know,
+designed this, you know,
+problem with yet.
+It's just the vast majority
+of get users for a long time
+have been on the pull model
+like the kernel.
+When you have something done,
+you ask the lieutenant above you
+pull this branch.
+Did they merge it?
+They ask, you know, at some point
+they tell Linus, okay, you know,
+pull from me.
+The pushers are, you know,
+most newer to get than the pullers.
+And that I suspect is why
+it's the way it is.
+Anybody else have any
+problem with yet that
+didn't cover here that
+you're wondering about?
+Or
+Oh.
+It depends on the
+stash you use.
+But if you create a new file
+and don't add it,
+I don't believe stash will
+stash that.
+By default, get will only
+get will ignore
+or
+you know,
+you know,
+if you create a new file
+and don't add it,
+you know,
+get will ignore
+or untracked files for most
+commands or ignore what it
+called untracked files.
+You have to explicitly add them
+or you can just, you know,
+for initial setup or other times
+you can just say add everything.
+But by default, it only tracks
+what you tell it to.
+So that's nice for us
+because we have several things
+that generate code.
+And unfortunately, they generate them into the same directories where we have checked.
+In code, you know,
+tracked files.
+And they show up in the untracked files,
+but they don't ever automatically get added.
+So that's what you're asking?
+Yeah.
+Anything else?
+Since the, you know,
+the get makes your eyes bleed, gets too hard to use,
+I really think a lot of that
+is a documentation issue.
+Let's see.
+We hope we're about out of time.
+Aren't we?
+Okay.
+Well,
+there are a few concepts you need to know.
+And
+even branch and commit.
+You'd think those have fairly
+standard meanings definitions,
+but they're quite different between
+what those are and get.
+So there are a few concepts that you have to know.
+Otherwise, the man pages won't make any sense to you.
+Working directories pretty simple.
+That's where your files are.
+That's where you edit files.
+The repository is the equivalent of what's on the CVS
+or the subversion server.
+That's all the history,
+the metadata, branches,
+branch information, things like that.
+The index is an interesting one.
+And it has several names.
+This is another problem with the get documentation
+that used to be called the,
+as it was the cache or the index cache,
+something like that.
+There's still old documentation
+and most people call it the index,
+but not everything called it the index.
+What this is is a staging area.
+The way I explain it to our CVS users is,
+when you do, or
+in CVS or subversion,
+if you add a file but you haven't checked in yet,
+where is that file?
+It's in the staging area,
+which is the CVS,
+all the CVS subdirectories and every directory
+in your CVS working directory.
+What get does,
+get takes that concept,
+makes it a full blown tool you can use,
+and that makes some really cool things possible.
+But basically what it is,
+is when you commit the index actually pretty much
+becomes the next commit in the repository.
+So it's the state of
+what you're going to commit,
+which is not,
+but it's separate from your existing repository
+and it's separate from your current working directory.
+So that gives you some more
+some flexibility there.
+The definition of a branch
+in Git is kind of confusing at first,
+but a branch is basically just a reference to
+a head or a tip commit,
+and then you trace it back
+to see what's on that branch.
+But it's basically just a reference.
+So a branch,
+literally, in Git is nothing more than
+a 40-something byte file
+with a SHA-1 in it.
+That's what a branch is.
+What's the relation between the file
+and the index?
+No.
+There's pretty well,
+and normal Git,
+there's pretty much one index.
+So you have the repository
+and the index sits between it.
+And when you do a commit,
+that index becomes the next commit
+and the index gets updated.
+So no,
+there's not an index for branch.
+It's for working directory basically.
+You can have multiple working
+directories with one repository,
+but it's kind of a pain
+and not many people do it.
+Sir, a question?
+Early, you talked about the common work
+over a starting one project
+and how do you file your
+index on that first row?
+Do you want to create a new branch
+in that working directory?
+Do you have another case
+for something else?
+How do you...
+So, if you've added a couple of files,
+and I'll just...
+Yeah.
+You commit a lot more often.
+So what you couldn't do
+in CVS or subversion is commit,
+because if you're not done,
+you're going to break the bill, right?
+But in Git, you don't share that
+until you're ready to.
+So you can commit anytime you want.
+And that's how you keep it
+separate by...
+Even if it's not done,
+you can commit.
+And what I frequently do
+is make a note to myself
+in the commit message.
+Did this, but haven't done this yet?
+It probably doesn't even build, you know,
+things like that.
+And then, you can just switch.
+And...
+So, let's say you had some personal data
+and you don't ever want to switch.
+And you go back to that flash
+and report to many full maps back out.
+Well, there's a number of ways.
+And that's...
+How do you say...
+The nice thing about this is that...
+You can do like a...
+Like to commit...
+Then, I'm in the commit.
+You can...
+Rebase.
+You can rebase.
+I can react to it.
+Yeah, you can squash commits.
+You can just...
+You can leave branches dangling
+and never merge them.
+And then, cherry pick.
+The commits off them.
+So, you can...
+If you have a commit that has this, you know,
+confidential stuff,
+as far as I know, correct me if I'm wrong.
+When you do a...
+That's a fetch and puller.
+It's actually the opposite in the material.
+And yet, so...
+But fetch, pull, and merge in the material.
+They...
+They basically synchronize your entire repository.
+All the branches, right?
+Everything that's in them.
+Whenever you...
+Whenever you do either a fetch or a pull or a push
+with Mercurial,
+every object in your repository that's not in the remote repository
+gets pushed or vice versa.
+You...
+You have to do that one right now.
+Okay.
+Unless you give it a flag.
+Unless you give it a flag.
+And it'll pull everything.
+And anything you have committed...
+But anything you have committed
+in any branch,
+any bookmark gets pushed when you push, right?
+Unless you have multiple heads on the level one.
+Right.
+Okay.
+But with Git, the default...
+Let's see.
+Yeah, I'm pretty sure all the remote synchronization commands,
+fetch, pull, push,
+they usually only default to one branch.
+And so, if you're not on that branch when you push,
+it's not going to go.
+And that's different than Mercurial.
+And that's one of the things that helps you control when things get shared.
+With Git, that's a little...
+You'd have to have multiple repositories to do that with them.
+And that's typically what you do with Mercurial.
+If you have something you're not ready to share yet,
+you have another repository, you put it in there,
+then you pull things over to your pristine repository that you use for pushing.
+So, you can push with Git,
+you can push your master branch or even some other branch.
+And it only pushes that branch,
+the objects from our repository.
+So, if you have other branches you're not done with,
+they stay on your machine,
+but they don't get pushed to the central server,
+that makes sense.
+So, even if you have that branch,
+and you have that confidential data in there,
+and the cherry pick all the other commits out of there,
+or there are numerous ways to do it,
+even if you have that branch with that data in it,
+you don't have to share it.
+So, that ends your question.
+Okay.
+I see another hand.
+Okay, real quick back to the concepts,
+and then we'll...
+Another hard thing,
+this took me,
+but especially the Windows user,
+a while to get used to,
+the things I just described,
+the machinery to support that,
+is a little bit confusing
+and yet, until you get used to it.
+And Git,
+you have
+remote branches
+that you never change on your machine.
+So, the master branch, the development branch,
+the production branch, on the shared server,
+you don't change those on your machine.
+You have a tracking branch
+that you change,
+and when you push that tracking branch,
+Git knows that it's tracking this remote branch,
+and it changes it on the repository
+where that branch lives.
+And it's a little confusing.
+Let's see.
+So, if you run Git branch,
+if you can type,
+you'll see the only local branches I have
+on here are a master.
+This is the Git Cola repository.
+But, if I say show me the remote branches,
+I have Origin Head,
+an Origin Master,
+and,
+if Team Git has,
+oh yeah, it's got a few more.
+So,
+I don't know what the command guification branch is,
+but,
+and I don't know.
+This is one of those things I can tell you it's there
+so that you know you have to learn it
+about Git,
+but it's kind of,
+until you've used it,
+it may not click.
+You have branches,
+you have tracking branches,
+and you never change
+a remote branch on your machine.
+You change your tracking branch,
+and then you change the remote branch
+on the machine where it lives.
+So, when you push,
+you can change the master on the
+the central server,
+tracking your local tracking branch.
+That's a little different than,
+um,
+centralized BCS,
+where a branch is a branch,
+and it doesn't really matter whether it's local or remote.
+Um, but once you get those commands down,
+or those concepts down,
+you can really get a lot done
+with Git, with just,
+just these commands,
+and some of them I put stars by,
+uh, either might not,
+um, they might not do what you think they do
+if you're used to, uh, the old centralized systems.
+Um, pull, uh,
+the other big difference between most of the centralized
+and the decentralized,
+every commit is the whole repository.
+It's stored in a very efficient manner,
+so it's not, uh, you know,
+a lot of extra overhead,
+but when you do a commit,
+that, uh,
+shaw one, uh,
+tells you what every file
+in the repository is, they're,
+they're all related to that shaw one.
+Um, so that makes, uh,
+some things work a little different
+than you'd expect if you used to see CVS
+or some version,
+Git add, um,
+most people have a heart,
+a little bit of a hard time getting used to the fact that, um,
+you can change a file in your working directory,
+uh,
+but if you don't Git add it,
+again, or commit,
+minus A for all,
+your next commit won't include your changes in that file.
+Um,
+there's a good reason for that too,
+you can just commit hunks of a file in,
+in Git. Now, if I believe, uh,
+believe bizarre material
+allow this to, you can do partial commits,
+uh, which is really slick,
+um, and actually useful.
+I already mentioned that, uh,
+Git GUI,
+it's kind of old, um,
+it may not do exactly what you think it should do,
+um, just because it says clone,
+and the man page says Git clone does one thing,
+doesn't mean, uh, Git GUI,
+uh, is going to do that.
+Um,
+uh, well, at this point, um,
+um,
+I had, uh,
+I guess we're officially over, uh, time,
+but, uh, I had something,
+you know,
+I've done some hacking on Git Cola,
+the best, uh, GUI for people
+who are switching from older vision control systems,
+especially for, uh,
+if you have any Windows users,
+because it runs on Windows Analytics,
+and runs pretty well on both.
+Um, um,
+but, um,
+I've grown dawn for quite a while now, so, yes.
+So,
+the thing that you talked about was,
+well, you mentioned earlier was,
+the branching and merging is much easier
+with Git to have with other things.
+And,
+I don't know, I've never been afraid of, uh,
+using branches,
+and I do all the time.
+What, what is it?
+And that's the thing,
+that every time I look at Git,
+that's what everybody always pushes there.
+It's just so easy. What isn't about it,
+than they say.
+So that is.
+Well, what, what, what revision control system to use?
+Currently we use purpose.
+Perforce. Okay. Perforce actually does, uh,
+probably use subversion,
+and you have emerging scrap on that.
+Yeah, well, yeah.
+Emerging basically doesn't exist on that,
+uh, is, is the problem there.
+Uh, well, let me show you, uh,
+uh, can't type too many people.
+Um, I'll show you Git Cola,
+since, you know,
+I've got some patches submitted to this, um,
+uh, actually,
+we'll do Git Cave first.
+Um,
+not perforce. Perforce is, is still centralized, isn't it?
+Yeah. Um,
+this is a contrived example.
+Um, all the, all the changes.
+Oh, what?
+Oh, yeah, so I did.
+Okay.
+This is a fairly contrived example.
+If you actually looked at any of these commits,
+all they do is add, uh, comments and things.
+But, um,
+um,
+and this is cool, because this is all local,
+so it's fast, so you're browsing the history
+and looking at the diffs and things without, you know,
+hitting a server.
+But here is, uh, Git calls the trunk.
+I don't remember what it's called in perforce,
+but, you know, the main branch master,
+that's, and that's just the name it gives it,
+you don't actually have to stick with that name or anything.
+But, um,
+here's the master branch,
+going along here, you know, you can see this goes from,
+well, actually they're not even in order.
+That's kind of interesting.
+Back from December and January.
+And then all of a sudden, uh, you get this, um,
+this branch here,
+and I, and this is the master over here on the right.
+And, uh, from here,
+I branched and said, okay, I'm working on this defect fix,
+and I did this backward.
+I should have done it the other way,
+because it looks like I got interrupted on the defect fix
+for an emergency new feature,
+and it's usually the other way around.
+So, here, I have these three commits here,
+and you can click on this and see exactly, you know,
+here's the files that changed,
+here's the commit comment,
+and then if you click on the file,
+I'll show you the, the patch.
+But, um, then, uh, at some point,
+here, I said, okay,
+I got to switch over to this new feature,
+so here's the branch I created for that,
+and it's got, it's, you know,
+it's own set of files that change
+each one of these commits here.
+And, um,
+I don't know with Perforce,
+but I do know, um, you know,
+with CVS and subversion,
+when you have a branch,
+it keeps things separated,
+but it never brings them back together, you know.
+Yeah, if you have to go through
+a thorough winterization,
+you want to go through,
+you want to actually merge back in.
+Yeah.
+With Git, it's so fast and so easy,
+you, you know,
+it's your bookmarks.
+For example, because I couldn't bring my exact wear source,
+that's kind of against the rules.
+But, um,
+it's so fast,
+and merge works,
+it's so fast and so well,
+that you, you know,
+you'll have literally, you know,
+a bunch, you know,
+ten or more branches on your local machine,
+if you're doing a whole bunch of things.
+And, because they're easy to merge,
+uh, it's easy to clean up the history,
+if it's, if it's in its own branch,
+so you've got a master,
+you want to get your defects,
+that's why you had your new feature going.
+So, you apply defects to master,
+you automatically get that back in your new feature,
+if you have to do a whole new feature,
+or how do you bring them together?
+Well, actually, right now,
+neither of these are merged.
+So, uh, right now, that means, you know,
+that would basically mean neither of them are finished yet.
+Um, if I merge,
+uh,
+but they would, they would individually merge.
+So, when you merge,
+whichever one you merge first,
+uh, well, and actually,
+you don't have to merge.
+It gets kind of like Pearl.
+There's more than one way to do everything.
+I hated that,
+but I'm not a huge Pearl fan.
+I use Pearl, but it's, you know,
+um,
+when you're switching from older original control systems,
+the easiest way is just to merge these branches back in,
+and I'll show you what that looks like real quick,
+that's them on the master.
+So, if I just say get merged,
+uh, what do I call that branch defect fix?
+Defect fix.
+And there's a completion,
+forget, so you, and it'll complete,
+not only to get commands,
+but your branch names and stuff,
+that's pretty cool.
+So, as I get merged defect fix,
+and there's not going to be any conflict,
+so it's done.
+So, now defect fix is in master.
+So, if I, uh,
+be enough, yeah.
+So, now, um,
+there's this new commit on master,
+that basically contains all the changes I made,
+all those really important comments I added, um,
+from the defect fix branch.
+But the, uh, new feature branch,
+it's still down here, so it's not done yet.
+And I can merge it as well.
+The other thing you can do is, um,
+you can rebase it,
+which basically, um,
+and again,
+you're not really changing the history,
+because there are ways and get to go back.
+You rebase a branch,
+what it does,
+it takes all the commits on that branch,
+and, and creates new commits,
+as if they were from the tip of the master,
+not from where you started.
+So, um, what I had before,
+was, you know, what usually happens is,
+you, you create a branch,
+you start working on something,
+but other people are still committing to the master,
+before you can commit.
+Um, but, um,
+So, if you want to bring the,
+the fix from the defect fix and new feature,
+is that just a matter of a date?
+Uh, well,
+well, at this point,
+you probably wouldn't mix branches like that in normal usage.
+You could do that.
+But it was purely a bug that you worried about.
+You wanted to get that back into the master tip.
+So, how would you do that?
+Well, I just did that.
+The merge did that.
+So, the defect fix is now a new feature?
+So, now I want to bring that into new feature.
+You want to, um,
+So, you're saying you do it the other way,
+you bring new feature gadgets back?
+Yeah, typically what you do is, um,
+the way I have it set up here,
+uh, if you really wanted that defect fix in new feature,
+you could cherry pick those changes,
+or you actually can't rebase onto,
+so that the typical rebase, um,
+you'll see that,
+Yeah, see, um,
+I branched new features,
+I branched new feature from right here, uh,
+and rebase would take each of these commits
+and rewrite them so that, uh,
+from wherever I tell it to,
+I could say, you know,
+I could say rebase onto this commit
+and make it look like I branched from there.
+And so, I could take the,
+the defect fix branch and rebase it right onto that,
+that branch.
+But again, the way I have this set up,
+that's not typically something you do, um,
+for most topic branches,
+you either merge them,
+squash them, or something,
+back in, everything goes back into the master.
+But there are situations where you do things like that,
+where you say, oh, I'm actually,
+these two are related, I want to put them together.
+But, uh, one of the cool things is,
+you can do, uh, if I just, uh,
+since I'm on the master,
+if I say, get rebase, uh, let's see.
+Uh, I've, I've had to dog food, uh,
+the gooey, and I can't remember how to use the command line anymore.
+Um,
+yeah, I don't, I don't think I'm gutsy enough to do a rebase minus i
+in front of people, but, um, uh, yeah.
+So, if I, um, I'm going to,
+I'm going to check out, uh,
+as a new feature.
+Yeah. So, I'm going to check out new feature.
+And if I say, get rebase onto the master,
+what that does is,
+and again, this doesn't really rewrite history.
+All those old commits are still there.
+They're just not referenced, so you don't see them anymore.
+But I just created new ones.
+And now it looks like,
+come on. Um,
+it appears as though,
+instead of branching, you know, two weeks ago,
+I just branched today,
+and now all my commits are from the tip of the head.
+And if I do a, um,
+let's see.
+And if I, uh,
+if I merge new feature,
+that's what's called a fast forward merge.
+And I can't wish I remembered the key for this.
+Um,
+now,
+even though I branched off two weeks ago,
+and worked on this defect fix for a while,
+now it looks like,
+I just started from the master,
+did these commits,
+and they're right on the,
+they're right at the tip of master.
+You can also do rebase interactive,
+that lets you edit that process,
+and, uh, split up commits,
+or merge commits,
+uh, you know,
+clean things up before they go on to the master.
+Um,
+any, any questions about, uh,
+about those,
+how those work?
+It's hard to see these,
+things until you've actually done them,
+and said, oh yeah,
+I don't have to keep track of which files I change
+for this defect fix,
+or which files I change for this new feature,
+because get just does it for you.
+Um,
+any other questions that, um,
+I did have some other demos that I could do,
+but we don't have to, you know,
+make everybody sit here all night,
+unless you want to.
+Yes.
+Thank you.
+Well, uh, we don't.
+I, um,
+I'm ashamed to admit,
+I do still run a subversion server,
+but we don't, we, uh, pretty much,
+when we migrated, we got rid of CVS.
+Get does have, um,
+uh, CVS integration commands,
+but they don't work all that well,
+because CVS repositories are just screwed up.
+They know, um,
+the way I, we migrated was,
+I checked out certain key points from the past, you know,
+10 years.
+I check them out of CVS,
+and then commit, commit those spots
+into subversion.
+So, uh,
+uh, to, uh, to get,
+to get, sorry,
+I didn't get much sleep last night.
+I'm a little, uh,
+drowly, but, uh,
+so our, our get history is kind of an abbreviated history,
+uh, to a point where we migrated.
+So, there's like, you know,
+one commit per quarter,
+basically up to that point.
+Uh, so yeah, we just, we just switched over.
+The, the one subversion repository I've still run,
+is basically a replacement for a file share,
+where I got tired of people saying,
+oh, it's a bunch of word documents
+and Excel spreadsheets and PDF files
+that was a share between some city areas,
+and somebody overwrite a file,
+and somebody, you know,
+everybody lost the last five changes they've made,
+so it's, uh, basically a web-dave,
+with a mod-dave SVN behind it,
+so that,
+people who,
+bought the idea of actually using revision control
+or using it, they don't even know it,
+but, and I don't, I don't know,
+any what good way to do that would get yet,
+but, um, yeah, when we migrated,
+I manually migrated us, you know,
+a condensed version of the history,
+and then CVS went away.
+Actually, it's still-
+All of the developers inside exact value.
+Uh, exact where, there are other divisions,
+where they have their subversion servers,
+and they haven't, you know, they want,
+there's some people there who want to go to get,
+but, um, we, we're out front.
+We go first.
+Not really.
+No, they don't, they don't use our get servers,
+we don't use their subversion servers.
+But yeah, importing history from CVS rarely works.
+There are even people who go,
+just export their CVS server to subversion,
+and then to get,
+because that works better.
+But, uh, yeah, CVS is kind of messed up, so.
+For, um, when did you get COLA?
+Is that something sort of that storage shell?
+It doesn't.
+There are a couple of those in the works now.
+I haven't used them because I don't use,
+um, but there's, there's get extensions,
+and get Cheetah,
+um, since, you know, tortoise,
+who wants to, who wants to have a tortoise?
+I don't get, but, um,
+there are a couple of them.
+They're not as far along.
+Yeah, they're not quite as slick as, uh,
+uh, uh, tortoise for CVS and subversion.
+But from what I understand they work, you know,
+they're, they're okay.
+Um, but the,
+the GUIs for committing and merging,
+uh, resolving conflicts,
+and things like that,
+they, they were just running on windows.
+Apparently the only way you can do that
+is by writing calm objects.
+And,
+who wants to do that, you know?
+You know,
+any other questions?
+There you go.
+Uh, thanks.
+Thank you for listening to Half the Public Radio.
+HBR is sponsored by Carol.net.
+She'll head on over to CARO.NIC for all of her community.
+Uh,
+uh,
+uh,
+uh,
+uh,
+uh,
+uh,
+uh,
+uh,
+uh,
+uh,
+uh,
+uh,
+uh,

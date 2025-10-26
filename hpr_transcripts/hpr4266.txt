@@ -1,0 +1,149 @@
+Episode: 4266
+Title: HPR4266: What's the weather?
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4266/hpr4266.mp3
+Transcribed: 2025-10-25 22:17:36
+
+---
+
+This is Hacker Public Radio Episode 4266 from Monday the 9th of December 2024.
+Today's show is entitled What's the Weather?
+It is hosted by Lee and is about 17 minutes long.
+It carries a clean flag.
+The summary is Lee writes a script to check what the weather is like.
+Hello, I'm Lee.
+Today I'll be asking the question, what's the weather?
+It's been a fairly mild autumn afternoon in South London, you know it's about 17 degrees
+outside.
+It's now early evening.
+So on the command line I'm typing curl space WTTR.IN and we get a beautiful display of
+the weather on the terminal and it says weather report Bristol United Kingdoms that's obviously
+geolacated me to Bristol for some reason says it's partly cloudy 13 degrees C.
+WTTR.IN includes the built-in private path and query string parameters to get a customised
+for the weather so let's try and get it in London curl WTTR.IN forward slash London.
+And that's better, yeah it says 17 degrees C and that's the peak for today, just what
+I saw earlier on my own home weather station which is only a cheap battery thing, I've
+got nailed to it, well screwed to a tree just outside the window, a little sensor that
+links to it and that was telling me it was 17.
+So today I'm not going to be talking about WTTR.IN, I'm going to be rolling my own little
+script, well to tell the truth I've already done so but I'll go through the process of
+how we can write a script and the language I'll be using is PHP.
+I won't be using WTTR.IN as I said, I'll be using another source of weather information
+which is 7TIMA.INFO and URL that I'll be using is HTTPS, curl on forward slash www.7TIMA.INFO
+forward slash bin, forward slash civil.php.
+So I'll just try and get requests to that URL, I'll type curl and the URL I've just mentioned
+and it says binary, so we don't get binary, let's get some JSON.
+So I'll put that URL, ending in civil.php, question mark output equal JSON, okay why is
+that failed?
+It's failed because I need to enclose it in double quotes, I've always ZSH which I'm using
+in my shell is interpreting the question mark as a wild card rather than actual question
+mark, okay so now I've done it as a question mark, it's output load of JSON but it's filled
+up the terminal, so add pipe bless.
+So I can see the JSON has come up with product civil, obviously there are different types
+of weather forecast and this is obviously the civil one, init and it looks like today's
+date to 2410, 1812, guess 12 is an hour, it's actually 6, 13 evening where I am, I'm British
+Shumertime at the moment which is 1 hour off of UTC, so the main chunk of the data
+is in a key called data series and there's an array and each element has a time point
+and the first time point I see is 3, the next one is 6, the next one is 9, so there
+obviously 3 hours apart, then it has some more information, it has cloud cover, it's
+a number like 9 or 7 or 1 and it has lifted underscore index which is like 2 on all of
+these, it has preck underscore type which I imagine is precipitation type which will be
+like rain or snow and it has preck underscore amount which is saying zero but I imagine
+that's the amount of rain, then it has temp 2m which will be the temperature obviously
+and the number it's giving is 25 and then it's got value RH2m and at 70%, I imagine that's
+humidity and it's got wind 10m and within that key it's got direction S and speed 3, obviously
+the wind direction and how fast the wind is blowing, the most interesting thing it has
+the weather and that in quotes is cloudy day and the next one along is mcloudy night, okay
+so I'm going to write PHP script that passes this data, so have I got PHP installed on
+this laptop, I just type PHP, come on not found and said HHS is telling me, so this is
+the max, I just type Brue, install PHP, home Brue is installing like a thousand libraries
+and then finally it gets around to PHP after having installed the dependencies, so it's
+pouring, pouring the bottle as it terms it and actually I fancy a non-nail call it Guinness
+so, okay this is sound, a non-nail call it Guinness opening, right that should be PHP installed
+or type PHP, yep and control D to get out of it, right so how should we start this script,
+well all PHP scripts start with less than question mark PHP, so no no, weather.php, less than question
+mark PHP and as we're going to be using the time, we'll set a default time zone and this
+will be different depending on where you are, so I'm going to write day underscore D for underscore
+time zone underscore set, open brackets and then in single quotes with capitals at the beginning
+you're up forward slash London and end that with semicolon, then I'm going to put in my longitude
+and latitude and you can get those from Google Maps, so I've got one variable I'm calling
+dollar sign long and that is equal to in double quotes minus 0.1975 and so on, long series of numbers
+and then that was semicolon and dollar sign lat equals in double quotes 51.3 something something
+something something ending with a semicolon, then I'll specify my URL, this is going to be
+dollar URL equals in double quotes htps colon for slash for slash www.7timer.info for slash bin for slash
+civil.php question mark long equals dollar sign long and percent lat equals dollar sign lat
+ampusand unit equals metric ampusand ac equals zero ampusand output equals json and I can't quite
+remember what ac stood for and now I'm going to define some descriptive names for all the different
+types of weather, so I'm writing dollar sign weather's equals open square brackets and then my
+list of different weather's close square brackets semicolon, so my list of weather's the first one
+is in single quotes ts day and then we'll map that with the equals and greater than sign and then
+in double quotes a sun emoji and then the words hot day and then I'll do a comma and the next one
+will be in single quotes clear day and then equals greater than in double quotes another sun
+emoji and clear day and then a comma and I'll go on a clear night partially cloudy day all the way
+to humid day, lightly rainy day and so on and you can see these in the show notes then that's
+actually access this URL and get the json back so I'm going to write dollar sign json equals far
+get contents and that's far unschooled get unschooled contents and then in brackets dollar sign URL
+and that ends with a semicolon and just in case something goes wrong we don't want to leave the
+rest of the script to execute you know so we don't want garbage out on the terminal so we'll just
+say if in brackets exclamation mark dollar sign json exit brackets semicolon and the exclamation
+mark means not then let's decode this json into a PHP object so we'll say dollar sign object
+calls json underscore decode in brackets dollar sign json and a semicolon then let's get the initial
+date which I mentioned before was in the json under the init key and once we've got the date
+we'll decode it into a PHP date the format is four digit year two digit month two digit day
+and two digit 24 hour so in PHP formatting that's a capital Y little m little d look up to h so my
+line of code will be dollar sign init equals date time with dnt capital colon colon create from
+with a capital F format with capital F and then in brackets in single quotes capital Y little m little
+d capital H then comma then dollar sign obj hyphen greater than sign you know it's like an arrow get
+time stamp with a capital T and brackets then we want to get the actual data series into a variable
+and that's simple enough we'll just say dollar sign series equals dollar sign obj hyphen greater than
+sign data series and semicolon each of these items in the date series has a time point to it
+and the time point is just a number like three or six or nine or twelve obviously every three hours
+so it's a number of hours and it is after the initial time stamps that it gave so we'll just want
+to figure out when a time point actually is we'll just add it to the initial time stamp and
+I'm feeling a bit lazy about writing a clever algorithm so I'm just going to write fairly stupid
+algorithm which is just to create an array of all the differences between the particular time stamp
+and the time now and then we'll just find whatever the minimum is of the array and that way we'll
+know which of those time points is closest to the time now so what I'm writing is dollar sign
+now equals time then bracket semicolon that gets the time now then for each in brackets dollar sign
+series as dollar sign k equals greater than dollar sign point so that's just iterating through the
+series where k will be the numeric index and point will be the particular item in the data
+series and then in the loop we'll say dollar sign time point equals dollar sign point
+write arrow time point semicolon and we'll say dollar sign time stamp equals dollar sign in it
+plus in brackets dollar sign time point times three six zero zero so that's just because the
+time point is in hours and we want to convert it to seconds and add it onto our time stamp
+and then to get the difference we'll just say dollar sign diff equals ABS stands for absolute
+in brackets dollar sign time stamp minus dollar sign now semicolon and just the absolute
+function will remove the sign so it doesn't matter with the time stamps before or after now
+we'll just know what the positive difference is from it and then we'll populate an array
+so dollar sign data in square brackets dollar sign diff equals dollar sign point
+so the index of our array will be the difference and the element in the array will be the whole
+sort of object for that time point and then the clever bit of my stupid algorithm I'll say
+dollar sign key equals mean in brackets array underscore keys in brackets dollar sign data
+and that just means it will find the item in the array that has the lowest difference between
+the time point and the time now because the index of the array is that difference
+and then we'll just put the chosen item from the data series into a variable so say dollar
+measure equals dollar data in square brackets dollar key semicolon
+and finally we'll get some useful information out so dollar temperature equals dollar measure
+right arrow in curly brackets single quotes temp 2m semicolon and that gets the temperature
+obviously and then we'll get the description from the weather and we'll use it with the array of
+different types of weather to get a nice description that we defined previously so dollar sign
+weather underscore desk equals dollar sign weather and then in square brackets dollar sign measure
+right arrow weather so i'm saying right arrow by actually mean a hyphen and the greater than sign
+and that's it the last line of code will just be to output what we've discovered so echo
+space and then in double quotes dollar sign weather underscore desk in a space and dollar sign
+temperature and then after that will append a Celsius sign and a new line so per period
+in double quotes degree symbol capital C backslash n and the backslash n just means a new line
+and we end up with semicolon okay and i'll end the php script or those not strictly necessary
+but i'll put a question mark and a greater than sign and then we'll save that and then i'll try
+php weather dot php and it's thinking and it's output something it's given us a nice emoji of a cloud
+and it says partially cloudy night 12 degrees c and i'll just check the weather
+my ipad and it mostly concur as it says 13 degrees it says mostly clear so i suppose it's glass
+half full glass half empty whether you call it partially cloudy or mostly clear and it's correct
+in saying it's night because it it's dark outside you can find the code and modify it yourself
+it's gist.github.com for slash max split and it's somewhat cold now so i'll apologise if you can
+hear the clicking of my heater let's finish off with listening to some weather here's a autumn
+rain shower recorded last week
+you have been listening to hacker public radio at hacker public radio does work today show was
+contributed by a hbr listener like yourself if you ever thought of recording podcast
+you click on our contribute link to find out how easy it leads hosting for hbr has been kindly
+provided by an honest host.com the internet archive and our syncs.net unless otherwise stated today
+show is released on their creative commons attribution 4.0 international license

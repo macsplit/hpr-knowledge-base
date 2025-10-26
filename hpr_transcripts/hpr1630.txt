@@ -1,0 +1,442 @@
+Episode: 1630
+Title: HPR1630: Bare Metal Programming on the Raspberry Pi (Part 2)
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1630/hpr1630.mp3
+Transcribed: 2025-10-18 06:04:23
+
+---
+
+It's Friday 31st October 2014, this in HBR episode 1630 entitled,
+Bare Metal Programming on the Raspberry Pi Part 2.
+It is hosted by Gabrielle Evenfire and is about 50 minutes long.
+Feedback can be sent to Evenfire at SDF.org or by leaving a comment on this episode.
+The summary is, this episode discusses interrupt handling and program loading using the X-Mode
+and protocol.
+This episode of HBR is brought to you by An Honesthost.com.
+Get 15% discount on all shared hosting with the offer code HBR15.
+That's HBR15.
+Better web hosting that's Honest and Fair at An Honesthost.com.
+Hello Hacker Public Radio.
+This is Gabrielle Evenfire and this is going to be the second episode in a series on Bare
+Metal Programming on the Raspberry Pi.
+On the first episode in this series, I talked about how to get yourself set up for development
+for bare metal programming on the Raspberry Pi, how to get your development tools installed,
+how to get your software to compile so that it can be loaded onto the Pi, how to actually
+get it onto the SD card so it would be loaded, and also finally how to write a small program
+that used the serial driver for I.O. to send and receive data across a simple USB serial
+cable.
+In this episode, I'm going to build on that a little bit and talk about some interupt handling
+and then from there we'll talk about how to take the serial code that we had before and
+turn it into interrupt driven serial code and also from there how one can build a loader
+from the serial communications with the Raspberry Pi using the X mode and protocol.
+Okay, so let's start with interrupts.
+So an interrupt is a type of exception in the ARM chip.
+There are eight types of exceptions, well seven but one of them is unused.
+An exception is a condition that causes the chip to stop whatever it's doing and immediately
+saves its current working state and transfer control to a specified instruction at a specified
+address.
+There are actually two different types of exceptions that pertain to interrupts, regular interrupts
+and fast interrupts.
+In this episode I'm just going to talk about, let's say, regular interrupts.
+So what do I mean by an interrupt?
+Well an interrupt is usually where some peripheral in the system asserts to the ARM chip that
+it needs some sort of attention.
+The ARM as a consequence interrupts current program execution and transfers it as I said
+to a specific instruction.
+Okay, so to be more specific when something say like the serial port or the graphics
+card wants to get the attention of the ARM processor, it asserts the interrupt line and
+when it does that the ARM processor remembers what instruction was just about to execute
+that is what address of the memory was just about to be executed plus four due to the effect
+of the instruction pipeline and it saves this value in register 14 which is the link register
+used to save the program counter for function calls.
+It then changes the mode of the processor to IRQ mode interrupt request.
+It also swaps in a new stack pointer so that the interrupt handler will not be operating
+in the same stack space as the program that was just running.
+It also disables interrupts so that it can't be interrupted while it is running the interrupt
+handler.
+Finally, control will jump to address 24 that is memory location 24.
+The reason it is 24 is because interrupts are exception type 6 and in exception jumps
+to four times the exception type number as the address where it will start executing.
+Now if you can remember from the first podcast that I did in this series what we have put
+in that location is an instruction that loads the program counter with the contents of the
+program counter plus 24 bytes as in whatever is stored at the memory location of the current
+program counter plus 24 bytes.
+In other words, at address 48 and what we have put there is the address of a subroutine
+which in the assembly code is called EXH underscore IRQ for exception handler for IRQs.
+Now the EXH IRQ function doesn't actually do very much in and of itself.
+It leaves most of the heavy lifting for interrupt handling to a c-routine called IRQU handler.
+But before it transfers control to that function it first needs to save all of the state that
+came from the previously executing program.
+So it stores those on the IRQ stack basically saving all the registers except for the stack
+pointer which is private to the interrupt handler and the program counter which is currently
+where we are executing and we don't want to change that.
+Then and only then does it call the IRQ handler with interrupts again still disabled.
+In the IRQ underscore U underscore handler function returns the EXH underscore IRQ function
+then restores all of the saved pointers from the stack.
+And finally it executes an instruction which subtracts 4 from the link register while
+updating a program status registers and it stores that result to the program counter.
+Now it turns out that that action performing an ALU operation with the status flags that
+the status flags update bit set and writing to the program counter is actually a special
+signal to the arm that we are returning from an exception handler.
+And so it takes the saved state that it stashed away when the program hit the exception handler
+and it re-instates it.
+And our operation of course restores the program counter to the next instruction that it was
+supposed to execute.
+However this special sequence also makes sure to swap back in the control status of the
+previously running task and also to re-enable interrupts.
+And it does all of this atomically so that you can be guaranteed that nothing is a miss
+when control resumes after processing the interrupt.
+So that's how we handle our interrupts correctly so that we can stop what we were doing, do
+something else, and then resume what we were doing is if nothing ever happened.
+So now let's talk about how the IRQ underscore you underscore handler function works.
+It very simply will read the registers that say which peripherals have interrupts that
+are pending and for each one it will try to call a specific function to handle that interrupt
+if that function has been registered.
+So to be more specific there is a global array of function pointers which the programmer
+must initialize to null because again we don't have a loader that will automatically initialize
+global data structures.
+When the IRQU handler function is invoked it checks to see which interrupts are fired
+and for each one it checks whether the function pointer corresponding to that interrupt is null
+or not and if it isn't null it will invoke the function pointer that is call into the
+handler for that specific interrupt.
+Now the one little bit further bit of nuance to this is how do we check to see which interrupts
+fired which peripheral it was for example that triggered the interrupt in the first place
+and there may have been more than one.
+The Raspberry Pi has three control status registers that contain the list of pending interrupts.
+There is the pending basic register and then the pending interrupt register one and pending
+interrupt register two.
+The pending basic register has a few unique interrupts of its own and then it has interrupts
+from the pending interrupt register one and pending interrupt register two that in the
+system designer's mind were the most likely to be fired so that the interrupt handler
+can manage those with low latency.
+The IRQU handler function does is it reads each of these registers in turn and it uses
+the find first set operation to quickly identify which bits are set in each of those registers
+and for each one of those for each one of those invocates appropriate interrupt handler.
+Now for those of you who haven't done a lot of systems programming a find first set
+is a very common operation it just finds the first bit in a word that is non-zero.
+In this case I have an accelerated version of this function based on the count leading
+zeros instruction that is native to the arm.
+One can search for the first bit set starting from the lowest bits to the highest bits by
+taking your bit mask, exorring it with the bit mask minus one and what this will do is
+actually create a mask of all ones leading up to the first bit that was originally set
+and that bit will also be one and everything after that will be zero.
+And then if you count the leading zeros that tells you the number of zeros leading up
+to that first bit and then if you subtract that from the word size minus one you get the
+bit position of the first bit set.
+So put more mathematically you get find first set of ex is equal to 31 minus the number
+of leading zeros in the quantity x, exorred with the quantity x minus one.
+Okay so that's just our quick way of finding which interrupt fired.
+We could have actually searched for the interrupt number from left to right maybe that might
+have been a little quicker but the key point is you don't want to be iterating over all
+64 plus 8 all 72 possible interrupts going is this one set is this one set is this one
+set every single time an interrupt fires you want to get in and out as fast as you can.
+Okay so that tells you how the interrupt handling is structured in my code anyways and far
+as how I do it on the bare metal in the Raspberry Pi.
+I also make use of a couple of other utility functions for managing interrupts.
+So I've already told you about IRQ underscore you underscore handler.
+There's also IRQ underscore init.
+This is a block of code that one should call early in one's program and what it really
+just does is initializes that global block of interrupt vectors to all null pointers.
+And it also marks a private variable to denote that interrupts have been a disabled once.
+This is a reference count on the number of times that interrupts have been disabled.
+And this comes into play for the functions IRQ disable and IRQ enable which are the other
+two utility functions that I find useful.
+So IRQ disable, disable interrupts and IRQ enable, re-enables them.
+Now there's no need to call either of these functions one you're in an interrupt handler
+as a rule if you want to then you're probably doing something wrong.
+But for regular code that may be sharing data structures with interrupts you do want
+to be able to disable and enable interrupts when you are modifying those shared data structures
+in a non-atomic way so that you can ensure that the data structures remain in a consistent
+state.
+Now unfortunately it's all too easy to screw up when enabling and disabling interrupts.
+For example you could have a function that disables interrupts and then it calls another
+function that goes and disables interrupts and then after it's done it goes and re-enables
+them.
+Now interrupts are enabled if you are just thinking of them as a light switch where you
+just turn them on and off but the original function assume that they were disabled and
+that's a problem.
+So IRQ enable and disable in this library use a reference count to make sure that one
+only re-enables interrupts when the last party that disabled them enables them.
+So the count starts at one when the software begins because interrupts are disabled by
+default and then if you re-enable interrupts it drops that count to zero it says oh there's
+zero now so now I can re-enable interrupts.
+Okay now interrupts are enabled.
+Now the next time one goes and disables interrupts we'll try it will disable interrupts first
+and then it will increment that count and if they get disabled again then the count will
+go up to two and then maybe three and the interrupts will actually only get re-enabled
+then when the IRQ enable is called three times.
+So that makes it a little safer to do your appropriate enabling and disabling to protect
+data structures you don't have to worry about nesting cases.
+Okay.
+So I think that covers the basics of how one can deal with interrupts in general.
+So now let's talk about how one can use the interrupt facilities to drive the full UART
+in the Raspberry Pi.
+You may recall from the previous podcast that the way the serial code works right now is
+that whenever you without interrupts is that whenever you want to send a byte you go and
+you check to see whether the transmit Q is full and if it is you either have to return
+and say I wasn't able to send it or you have to spin and wait until that thing is no longer
+full and then put your byte onto the Q.
+And similarly when you want to receive a byte you have to spin and wait waiting to see
+if that perceived Q is empty until it becomes non-empty and then read the next byte off
+of the Q.
+And you also have to remember of course to be servicing that Q in a timely manner otherwise
+it's possible that the Q could back up and the data could be lost.
+So that's also not very useful.
+While with interrupts we can add a little more buffering into the system.
+We can have a data structure that stores the data that is pending to be transmitted
+and as the transmit Q empties an interrupt can fire and the interrupt handler can then
+copy data out of the transmit buffer into the transmit Q.
+Similarly on receive whenever new data becomes available it can the interrupt can fire and
+the receive code can copy a bunch of the data into the receive Q and the rest of the
+program has more leeway to pull it off when needed.
+I in my example I'm configuring the interrupts to fire on transmit when the transmit FIFO
+becomes half empty and I am having it fire on receive when the receive FIFO becomes
+half full or it times out meaning if you get one byte and it just sits there for a while
+it will eventually time out and the interrupt will still fire.
+So you may recall the function that one uses to send on my version of the code is called
+RPI UARTSEND but the interrupt enabled version of this works a little differently.
+First it disables the interrupts and it's doing that because it's going to be operating
+on a data structure that it shares with the interrupt handler.
+Next it copies characters that are to be sent into the TX buffer until it has copied
+all of them or until the buffer is full.
+It's going to remember how many it copied and returned that number so that the caller
+can make sure that it wrote them all or send the rest later.
+Then it calls the UARTTXFIFO FILL function which will try to fill as much of the data
+out of the TX buffer into the send FIFO, the TX FIFO.
+And this just makes sure that TXFIFO is at least half full if there is data to fill
+it with so that when the TXFIFO drains the interrupt will actually fire and more of the
+TX data that we have queued up can be copied into it.
+Finally, after it's finished with that it re-enables the interrupts and it returns the
+total number of bytes that it originally copied into the TXFIFO, into the TX buffer.
+RPI UARTReceive is kind of a similar mirror operation.
+First it disables interrupts again for the same reason to preserve the integrity of the
+shared data structure.
+Then it copies out the current receive status into a globally accessible byte just in case
+where the rest of the software wants to check for any error conditions on the wire.
+Next, it copies data that the interrupt handler has put into the read buffer into the callers
+waiting buffer for the actual receive data until it either has received as much as the
+caller asked for or until it has emptied the read buffer.
+Finally it re-enables interrupts and it returns the number of bytes that it has copied out.
+The next piece of the puzzle is the RPI underscore UART underscore IRQ underscore F function that
+is the actual interrupt handler that will actually get invoked when either the RX or TX
+interrupt occurs.
+It itself is a short function of calls UART RXFIFO drain and UARTXFIFO fill.
+After that it clears any pending interrupts by writing to the appropriate peripheral
+control status register say, okay I have finished handling interrupts for the UART.
+Now UART TXFIFO fill we have seen already what it does again is it fills the TXFIFO with
+data to be transmitted until the TXFIFO is full or until there is no more data to transmit.
+UART RXFIFO drain is again a sort of mirror image of that.
+It just while the receive FIFO is not empty copies data out of the receive FIFO and into
+the receive buffer.
+And of course later on software will call RPI UART received to copy that data out of the
+read buffer later.
+Okay last function in my UART code is the RPI UART init function.
+Now we have seen this before but you will find that when it is used with interrupts it
+is a little bit different.
+When the pound define UART underscore UART underscore IRQ is a non-zero value then it does
+a bunch of extra steps.
+First it initializes the RX and TX buffers just mentioned above and they are head and
+tail pointers.
+Next it writes ones to the RX TX and RX timer bits of the interrupt mask control register
+and that essentially enables the interrupts.
+So that basically is telling system okay I do care about RX interrupts for the UART.
+I do care about TX interrupts for the UART and I do care about RX timer interrupts.
+In other words I want the UART to interrupt me if any of those conditions occur.
+Now what we find from the data book is that the UART's interrupt number by the way is
+57.
+So that puts the interrupt for the UART in the IRQ pending register 2 at bit position
+25 that is 57 minus 32.
+So in order to check for whether that interrupt fired the IRQ underscore U underscore handler
+is going to do a fine first set on the IRQ pending register 2 and it is going to see
+bit number 25 set and it is going to realize that is interrupt number 57.
+So I will go to the 57th interrupt handler and that is where it will find a pointer
+to RPI UART IRQ F and it will invoke that function leading to our interrupt handling
+as mentioned above.
+Okay.
+The RPI UART and it will enable the receive and transmit FIFOs so that it can actually
+buffer up, transmit and receive bytes which it did not do in the non interrupt mode.
+So a non interrupt mode that FIFO ends up just being one character deep but since we want
+to let the UART transmit and receive in bulk we are going to enable the FIFOs to be in
+this case 16 characters deep which is the other setting.
+Okay and of course in the process of doing that because it happens to be in the same control
+status register we still set it to use 8 bit bytes with one stop bit and no parity.
+The last step that the RPI UART and it function performs is to enable IRQ 57 in the Raspberry
+Pi's interrupt and enable register.
+So now the UART is fully able to actually generate the interrupts.
+The sequence of functions that one should call during initialization is first IRQ in
+it then one should call the RPI UART in it and during all of this time interrupts are
+still disabled and finally after all of that and any other calls that one wants to make
+during initialization while interrupts are disabled that should go somewhere in the middle
+between those two and finally one calls IRQ enabled to rearm interrupts and allow the
+interrupt handler to function.
+Now in the cat RPI repository there is a program serial one under the app slash serial one
+directory and that program is almost identical to serial zero.
+In fact I believe the main function is identical to serial zero the only difference between
+the two is whether the build flag specifies to define UART use IRQ as zero or one.
+So one of those operates on the serial port without interrupts and one of them operates
+on the serial port with interrupts.
+To build it you just need the arm compiler, linker, binutils etc. to be in your path
+and you should just be able to type make there should be no external dependencies for that
+program.
+Alright we've talked now about some little fun basics in a chip how to deal with interrupts
+and we've talked about saving state and restoring state we're actually starting to get to the
+base concepts that one builds in a minimalist operating system.
+So let's talk about another one one that will make our lives a little bit easier and
+that is loading new code to execute.
+By now if you've been playing with your Raspberry Pi and doing bare metal programs and you
+have been following along my examples and waiting eagerly for me to get to this point in
+the podcast then you've been pulling your SD card in and out of your Raspberry Pi quite
+a lot.
+At least I know I was doing that at the beach while I was doing this on vacation until I got
+to this point and I was getting a little bit worried about it to be honest.
+But once again hats off to DWELF 67 he had an idea for a better way which was to create
+a simple loader that one could use over the serial port to load your code to load programs
+directly into memory over the serial port using the X modem protocol.
+So dug out a search engine looked for the X modem protocol and found that it is deliberately
+simplistic and thus easy to implement and so proceeded to write a little loader program
+that will allow one to send a binary file over the serial port and it will dump this
+binary file starting at address 65536 until the file ends and then the loader is able
+from there to immediately jump control into that first instruction and start it running.
+Watch like the boot loader did for our code loading our code at hex 8000.
+But now we can specify our programs without having to have them live on the flash drive.
+So if you look in the directory app slash loader you will see another C program written
+for bare metal on the Raspberry Pi that is my interpretation of how one should do all
+of this and it's probably the lengthiest of the programs well it's by far lengthier than
+the ones that I've shown so far. If you read the code you'll find that it is doing some
+basic IO over the serial port it is reading commands and dispatching them. It itself can
+take 1, 2, 3, 4, 5, 6, 7 basic little commands and run them.
+The first command is useful for debugging it's R followed by a hex address and that
+just reads a hex address in memory and writes the value stored there out to the serial
+port and then similarly there's W for writing a word to memory so it takes an address
+and then a value. So between the two of them you have now peak and poke over the serial
+bus if you want it. Next more interestingly is the X command which does the aforementioned
+X modem protocol and will download whatever you send it by the X modem protocol to address
+6, 5, 5, 3, 6. The S command is what you would usually run immediately following the X command.
+It basically just jumps right to address 6, 5, 5, 3, 6 and starts executing. So you
+could theoretically load your program into memory by using a series of write operations,
+W operations but what I would usually do is while I'm playing with my code, when I'm
+first playing with a piece of code just to make sure that the loader was working I would
+use X to download the program and then I'd use read to the read command to make sure that
+it looked like the program was loaded successfully and then again you use the S command immediately
+to jump to that starting address and start running. There's also a T command to grab
+the current time from the system clock that was just a little fun exercise that I threw
+in there and there's the E command that prints out any X modem error status that might have
+occurred and then there's the question mark or help which prints out the menu of commands.
+It's noteworthy that this loader uses the serial port but does not use interrupts for its
+serial port management and that deliberate choice is so that when the loaded program starts it
+gets in the arm in a much more unconfigured state i.e. it doesn't have to worry that there are
+already interrupt vectors and handlers enabled and so forth. None of those will be present yet.
+So it becomes up to that program that is loaded to do all the proper initializations.
+Okay, I'll talk now briefly about the X modem protocol itself that we will use to transfer
+over the serial line and it's a very simple program and it's driven by the receiver.
+Okay, the receiver sends NAC bytes or AC bytes saying I have or I haven't received the next block.
+Okay, so when you start up the X modem protocol the receiver just starts sending NAC bytes every once in a
+while say okay send me the next block send me the next block. Okay, and then the sender will send a
+block and it will wait for the receiver to either send an AC or an AC. If it gets an AC it'll send
+the next block and the next block next block. If it gets an AC it will resend the block that it
+just sent until the receiver says okay send the next block. Finally when the sender is out of
+things to send instead of sending a block it will send an end of transmission byte which the
+receiver when it receives will go oh okay you've sent me everything I'm done. Okay, it's a very
+simplistic little stop and wait protocol it has a minimal check some protection no protection for
+the control bits in the packets and it has no sliding window protocol so it's not very fast
+but it's very simple and that's if you look at the history of the protocol the author deliberately
+left it that way so that it was easy for everybody to implement so that made it simple enough for me
+to do a poor implementation in the source slash x modem.c file in the cat RPI directory a little bit
+more about the protocol each block that the sender sends is 128 bytes the first byte is the
+command byte which will usually be either here's some data or here's the end of transmission and
+if it's end of transmission then it's you don't send anything else that's just it that's the end
+but as long as that command is SOH the start of handling or forget what SOH stands for but that's
+the the command for the start of the next block then after that first byte there is the block number
+is being sent in bytes in the second byte and the inverse of the block number that's being sent
+for the second byte and then 128 bytes of data and then finally a one byte check some which is just
+the sum of the 128 bytes of data okay so the sender will for each every 128 bytes that wants to send
+it will send the command then block number then minus the negative of the block number each
+is individual bytes then 128 bytes of data and then a one byte sum of the 128 bytes of data
+and the receiver will receive that it's say okay here's a real frame does the block number match
+what I'm expecting and if so then okay I'll receive the data and then I will check the check some
+to see if it's correct if the check some fails or if the block number isn't what I'm expecting I'll
+send a knack but if it's okay I'll send a knack and that is the X modem protocol in a nutshell
+and it's so it was very easy to implement an ad for purposes of loading so now we have the outline
+of a loader there's just one little further detail that needs to go into our build process in
+order to make it ready to be able to write bear metal code that is going to be loaded by our loader
+instead of loaded by the bootloader that pulls from the flash drive any code that will get loaded
+at 65536 instead of 32768 you know has to know that that's where it's getting loaded
+so in order to handle this case what I did was instead of having static linker scripts that always
+loaded code at the same offset I created a little shell script in script slash ldmm.sh that
+generates an appropriate linker script given a starting offset past to it as an environment variable
+or a parameter I forget which offhand and the length of the memory to use okay so then I can
+write the same program and I can compile it with the offset 32768 if I want to just put it in the
+kernel.image file on the flash drive or I can set the starting offset to 65536 if I want it to be
+able to be loaded by our little minimalist loader that's one step in making our code loadable the
+other step is again some of the code and really it's only one tiny part that needs to know where
+the actual program is going to live in memory when it arrives and that piece of the program
+is the very first bit of the core.s file the instructions that copy the interrupt vector to
+address 0 they need to know where they're copying from so in the assembly file you'll see that the
+very first instruction executed is move r0 pound origin now pound origin is a symbol a symbolic name
+that the assembler can substitute for a number so in our assembly line on the command line we have
+to say dash dash df s y m space origin equals 0 x 8 0 0 0 if we want to basically tell the code okay
+you're going to be loaded at hex at hex 8 0 0 0 that would be the case for if we wanted the code
+to be loaded by the boot loader the GPU if we want to recompile the code so that it is retargeted
+for 65536 then our assembly line has to define the symbol origin to be 65536 instead
+in general you can't change origin to be just any value because only certain immediate values
+can be used in the move command to put directly into registers from the contents of the instruction
+the value the number must be one that can be represented by an 8 bit number rotated in even
+number of bit positions and possibly negated so that set of numbers of the numbers that you can
+copy that you can put immediately into a register as opposed to copying from a some other memory
+location okay other than that we don't need any any special facilities in the build process in
+order to build the same programs to be able to run either starting from the loader or starting
+from the flash drive the core dot s file that gets linked into the program in either case will always
+re-initialize the exception vector on start non reset and it will always re-initialize the stack
+pointers for the interrupt handler for the supervisor and so forth and each time it will recall the
+the main function and the loader the loaded programs case it'll call the main function from the
+loaded program and the loader itself of course has its own main function these are not going to
+collide because there are no symbols when you get into raw memory there's just instructions
+okay so that's how one creates a loadable code now if you want an example of using loadable code
+we can go to the program apps slash serial two or apps slash serial three or apps slash time or one
+or more that should be in there that will go over in future episodes as well and those programs
+are all directly loadable by our little loader and runable from there for each one of those programs
+you can build them just by entering their sub directory and typing make no external dependencies there
+so just as a quick recap if you want to run a program that is loaded by the loader program here's
+how you go about it first you have to build the loader so go into apps slash loader and just type
+that should produce a loader dot bin file next plug in your SD card that you're going to
+boot the Raspberry Pi from and copy loader dot bin over kernel dot IMG as I described in the
+last episode you only have to do these steps once after this all of your other programs will
+just be loading from that same SD card all the time okay then you go to the application that you
+want to load and say that might be CD to apps slash serial two you type make to build that
+okay now you have a serial two dot bin file now the next thing that you do is you plug your
+SD card back into the Raspberry Pi make sure that you have your serial connection hooked up as
+described in part one of this and have many calm running so that when the loader boots you'll
+you will see them the program running and then turn on the Raspberry Pi you'll see the loader
+menu come up and at that point you can issue the X command so you just type X in return and
+that will cause the loader to start its end of the X modem protocol where it will wait for you
+to send the file now you use minicombs X modem protocol to send the serial two dot bin files the
+way you do that is you type control A and then the S key and then it will give you a menu of choices
+of protocols so you select the X modem protocol and then it will give you a directory listing and
+you have to navigate to your serial two dot bin file and you select it and it should send it
+over the serial line via the X modem protocol and then you'll see hopefully a transfer complete
+message and then after that you can just hit return a few times to get back to the menu and
+that means that the loader has loaded your program into memory if you want you can use the read
+command to poke around in peak around in memory and see if it's really there but anyways if you
+just want to run it just type the S command and that will kick your program off and running okay
+so I think I've covered enough in this episode to give more details on how one is dealing with
+systems issues in the Raspberry Pi at this point I'm going to end this episode if you want to get
+in contact with me you can email me as always at evenfire at SDF dot org or leave comments on
+HPR on the website and love to hear from you guys whether this is a useful or interesting or what
+of their topics you might want me to cover the third part in this series I've already gotten
+mapped out I think it will be the next step that I took during summer vacation and that was
+to take some of my libraries and make sure that they could run in bare metal on the Raspberry Pi
+these are libraries that are designed to work in both application and embedded environments so
+this was intended to be a good test and then after that I will discuss how to enable the memory
+management unit and caching in the Raspberry Pi and from one of the programs hopefully that you
+will see in that episode you see that it makes a substantial difference in terms of the performance
+of the software just shows you how a modern architecture needs to do an enormous amount of work
+to make our programs really fly so all of that is what's coming up I hope you guys are enjoying
+this and I hope to hear from lots of you soon have a good one bye
+you've been listening to Hacker Public Radio at Hacker Public Radio dot org
+we are a community podcast network that releases shows every weekday Monday through Friday
+today's show like all our shows was contributed by an HPR listener like yourself
+if you ever thought of recording a podcast then click on our contributing to find out how easy it
+really is Hacker Public Radio was founded by the digital dog pound and the infonomican computer club
+and is part of the binary revolution at binrev.com if you have comments on today's show
+please email the host directly leave a comment on the website or record a follow-up episode yourself
+on this otherwise status today's show is released under creative comments
+attribution share a light 3.0 license

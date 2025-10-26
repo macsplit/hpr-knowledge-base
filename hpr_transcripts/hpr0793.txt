@@ -1,0 +1,867 @@
+Episode: 793
+Title: HPR0793: Server/Client relationship, DHCP server
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0793/hpr0793.mp3
+Transcribed: 2025-10-08 02:40:41
+
+---
+
+This is Hacker Public Radio, my name is Klaatu, and this is the Networking Basics mini-series
+part 6.
+You were probably thinking what Networking Basics mini-series, well, if you look back
+about 400 episodes or so ago, there was a Networking Basics part 5, and that was an
+episode that I was talking about, particularly the Internet Protocol IP, as detailed
+in RFC791, talked a little bit about the Protocol, Fort Assignments, and stuff like that.
+And that was a follow-up on four previous parts of that series in which we spoke about
+all manners of Networking Protocols, Networking Conventions, the way that packets are constructed
+and various things like that.
+So if you haven't heard that in any of those episodes in that series yet, and you need
+a primer on Networking Theory, Basic Networking Theory, then that might be something that you
+want to look at, or better yet, listen to.
+So in this series, we're going to talk about, or in this episode, and for the next couple
+of episodes, we're going to talk about setting up a server.
+And I'll tell you why that was a completely vague statement in a moment, but I'm going
+to first give you a little bit of a preamble as to why I think it's important to talk
+about setting up servers.
+And this is not something that has not been covered, if you pardon the double negative,
+before.
+Right?
+How to set up a server?
+That's a topic that other podcasts have covered.
+The one that comes to my mind most immediately is Linux Basement, Chad Wallenberg, the
+fine Chad Wallenberg, spoke about setting up a server for the entire season of like,
+I think it was his season two or three.
+So that was a really great series, and he was doing it on Ubuntu, and it was working
+really well for him, and the series was really good.
+Now, I don't know about you, but me.
+I wasn't even anywhere near setting up a server at that time when he was doing that.
+So I listened and I learned, but not as much as I probably could have if I'd been a little
+bit farther along.
+Of course, I could go back and listen to it now.
+But then again, it never really hurts to hear this sort of thing more than once in different
+kinds of delivery styles.
+So I encourage you to go back and listen to other podcasts that have covered this topic.
+And I'm going to be covering it.
+I'm going to try to keep it as generic as possible, but when it comes down to it, my experience
+has been on Fedora and Red Hat in terms of the server stuff.
+And that's just where I've gotten the experience.
+So I'll be covering it from that angle, and I'll be covering it in a way that helped
+me understand it.
+And if you're learning styles similar to mine, maybe you'll find this one, this particular
+take on the topic informative.
+Servers are so ubiquitous at this point that if you're a geek, you really owe it to yourself
+and to the people around you who rely on your geekiness for their everyday lives and
+support to really understand how servers work.
+If you've never set one up, then you're really just dealing with a bunch of theory.
+And you're almost in a way, you're kind of dealing with a black box because you've never
+been inside there.
+You've never set it up.
+You've never seen the causes for failure, the causes for confusion.
+You don't really understand what's going on on the inside.
+So getting experience with a server, while it isn't necessarily a must-have, it really
+does help, especially if you go around talking about computers all the time because people
+are inevitably going to ask you where their internet's went, and if you don't even understand
+how the internet's on to someone's computer from the magical cloud outside, then you're
+not going to be all that much help, aside from calling Comcast and asking for support
+and at least knowing how to find the network manager when they tell you to open up the network
+manager or whatever.
+So that's why you should know about servers.
+This many series hopes to understand servers a little bit better, and in order to do that,
+I think that we need to introduce the server client concept because after a while you
+start to take this for granted, but you have to understand how few people actually understand
+this.
+So the term, quote unquote, server, it's a very accurate term actually.
+It's really, it's really well said server.
+That makes a lot of sense, but unfortunately it gets confused a lot because a lot of different
+things come to mind when we hear that word.
+So we think of these big scary data centers, these big loud jet engine loud for unit
+rack computers without any screens.
+That's what we think of when we say, oh, that's a server.
+And when people say, oh, I work with servers and I'm going to do a set up a server now.
+That's what we think of.
+We think of these mysterious machines without any screen.
+You don't even know how to get in there.
+They don't even have a keyboard hooked up to them.
+What's going on?
+Well, this can all be very, very simplified.
+A server is any computer.
+It can be a laptop.
+It can be a little, a little electric board with a little process on it, you know, no
+side, no larger than the size of a gum stick, you know, I mean, these, it can be a desktop
+computer.
+It can be a four rack unit beast of a computer, it's a computer from which you or someone
+gets information.
+Even more specifically, we could say a service, but what is a service?
+So if you're getting information from a computer that you're not sitting in front of, you're
+connecting to a different computer to get that information off of it and delivered onto
+your screen, then that is that computer that you're connecting to as a server.
+So what kind of computer are you there for running?
+Well, you're running a client.
+So the two terms here are server and client and then local and remote.
+That's another thing that you hear oftentimes.
+So the server is the remote computer that you are accessing and requesting information
+from the local computers on that you're sitting at, typing on, and it's the client's
+computer because it's requesting information.
+Now very, very interestingly, a client's computer could also be a server to someone else.
+So just because you're on a, quote, unquote, client machine doesn't mean you're not serving
+someone else something.
+So in fact, if you followed along with my HPR episode a long time ago on SSH and X forwarding
+I think and DNS, dynamic DNS stuff like that, if you followed along with that episode
+and learned how to SSH into a computer from that episode, then guess what, you have already
+set up a server amazingly enough, yes, you have.
+The minute you started the SSH D, well, the SSH Damon, the SSH D service, that computer
+became an SSH server.
+And when you went out to the cafe or you went to work and an SSH back home, then you were
+using an SSH client.
+So you see, you're not really as new to this as you might have thought.
+And that's, I think, one of the confusing things about servers, we often think that a server
+has to be one certain thing, doing a certain task.
+And in reality, there's all kinds of different servers.
+Now, sure, they may all be existing on the same computer, the same box, or it could be
+a whole bunch of boxes around the data center or your apartment or your workplace, whatever.
+Yeah, a server can serve many, many different things.
+You've probably heard of DHCP servers.
+You've probably heard of DNS servers, web servers.
+Obviously, like I said, SSH servers, music playing servers, you know, like a music playing
+Damon in PD, it could be serving streaming media.
+It could be doing all of these things and more.
+Go for sites, even, FTP, there's just so much out there that you can serve.
+You can connect to these computers and access the different processes and kind of the different.
+I don't really know if it's an application per se, but it's like an sort of infrastructure
+that it provides you.
+Okay, so what you need to get started setting up your own server, well, like I say, if you've
+already set up an SSH capable machine, then actually you've already set up a server.
+And the idea is pretty much the same.
+If you're going to play around with setting up a server, all you need is like, well, really
+two computers, maybe three, sometimes three would be better.
+But at least two, one is going to be the server computer and one is going to be the client
+or two could be the clients because it's kind of cool.
+If you have three, then you can see how the client talks to the server and then you can
+also see how the client talks to the other client because that's always interesting to see
+as well.
+In theory, I imagine you could do a lot of this with a number of virtual machines, like
+if you've got a really nice beefy computer, lots of power behind it, you could just install
+like, I don't know, KVM and libvert or virtual box or whatever.
+And then just virtualize, you know, establish basically two or three virtual machines and
+they could be pretty lightweight virtual machines too.
+I mean, really, you could just install like a bare minimum install of like Fedora or Debian
+or Slackware or whatever.
+No X isn't really required actually in any of the cases.
+And then you could, that virtual environment will have its own little subnetwork inside
+of your bigger computer so you could make that sort of your virtualized test ground.
+Personally, I mean, first of all, and I don't know, I haven't done enough virtualization
+to really know how many network cards you can just create.
+I mean, I imagine you can do that pretty easily within most of the virtual machine clients,
+but I haven't really done it.
+And personally, I don't know if I would do it that way simply because I think, I know
+myself, I think I would get confused as to which virtual machine was which and all that
+sort of thing.
+And I don't think, I do a lot better sometimes with hardware, you know, if I'm pulling
+a cable out of a box, then I know I've just pulled that cable out of the box.
+If I'm just typing in some numbers and resetting things in a virtual machine, I don't think
+it would impact me quite the same way, but maybe you're different.
+So if you just absolutely don't have a lot of hardware, but you have one that you think
+would be capable of a lot of virtual hardwares, then hey, go for it.
+The required specs for a server vary depending on what kind of server you're intending to set
+up, and also what you're expected usage is.
+So if all you want to set up, for instance, is like a simple music streaming server so
+that you can play music around your apartment remotely and just have that box kind of managing
+all your music all day, then you could do that.
+And you could use that maybe as an IRSSI machine, a little server for a screen session with
+IRSSI in it so you can always be logged into IRC, that sort of thing.
+I mentioned this as an example because that's what I do.
+I've got a little Apple G4, it's like 400 megahertz, and it has like half a gig of RAM
+in it, and it does that sort of thing perfectly well.
+It serves me files, it serves me music, and serves screen inside of which I am running
+IRSSI so that I can be always connected to IRC, and then I can SSH into that box when
+I'm out at a cafe or something, I can reattach to screen and talk to people online as if
+though I was sitting right there in the room.
+So that's a pretty simple server.
+Simple to set up, you don't really need anything special for that.
+Now the minute you start trying to get three, four, and five, and 20 people onto a box
+sharing complex services, you may or may not need something a little bit more powerful.
+Once again, I've actually used like a G4, I think it was a little bit faster, it was
+like one gig of Hertz maybe, but it's a little file sharing server, a Samba file share in
+a classroom at my job, and it does great, and there's about 16 people using it concurrently,
+and it does fine, and it's just that little local file server.
+On the other hand, put that G4, same G4 specs in a room where three people are going to
+use it, running a web server and Drupal and CVCRM, and all these other things that you
+can kind of build on top of Apache and stuff, suddenly the thing just slows to a crawl.
+So you really kind of have to know who is using the server and what they need it for,
+and you have to somehow magically have an idea, some notion of what exactly kind of demand
+that is going to put on your computer on the server.
+And I don't know of any way to really know what that is without just trying it, just setting
+it up, having people use it, and when they start complaining that the thing is horrible
+and slow, then you know it was a bad idea to try that particular old box and you need
+to upgrade.
+So yeah, it really depends, you can go any way there, and like I say, there's a lot of
+different kinds of servers, and you can have one box that runs lots of different services.
+So if you know that you need a gateway machine that is going to serve DHCP and DNS information
+and maybe some file sharing, you know, it's going to, you're going to want a fairly powerful
+box then.
+Okay, so enough about what a server is, I think people have all got an idea.
+So in this episode we're going to set up a gateway machine, and a gateway machine is
+not a brand of computer, it is a computer that brings the internet into itself, it ingests
+the internet, and then it distributes that internet signal back out to its clients.
+It sounds an awful like a router, doesn't it?
+Well, interestingly enough, that's basically what we're setting up, so we'll do that first
+and the way to do that initially would be to, like I say, find a box.
+This box needs to have two network cards.
+That is not to say that every server that you're going to build will have to have two network
+cards.
+It's just that if you want a server to sit between your clients and the worldwide web,
+you do need two network cards because what we're going to do is assign an IP address to
+one network card for the server to have, and then we're going to send out other addresses
+of that other network card, so you need two physical network cards for this particular
+setup.
+But hey, if you're not interested or if you don't have the hardware to make a gateway
+machine, no worries, we can still do cool things with that spare box that you have lying
+around, but you'll just have to skip the gateway part, but that's fine.
+So assuming that you do or assuming that you're interested in how it is done, you would
+want to first install Linux on that machine.
+That's kind of a no-brainer.
+You could do BSD as well.
+It's just whatever.
+Some free distribution of a Unix or Unix alike operating system is a really good idea.
+Just because it's a server does not mean it must not have a graphical environment.
+If you feel like a graphical environment might be a nice fallback for you if you're not
+used to a bunch of terminal work, then go for it.
+Lots of people, more people than I kind of had imagined before I got a job sort of doing
+server kinds of stuff, more people than I realized actually do run the graphical environment.
+Even if it's not something that they have a monitor attached to their server for, they
+still have the X-11 environment set up so that they can then do X forwarding into that
+box.
+If that makes you feel better or if it's just a good fallback kind of things, because
+you're not sure if you're going to be able to get through all the terminal stuff, then
+that's fine.
+You can do that.
+It doesn't really matter.
+But at the same time, it could be a really, really lightweight install.
+It doesn't have to be anything fancy, so don't feel like you have to install the full
+GNOME desktop or anything like that.
+It could be really lightweight.
+And remember that running a desktop, even though you're not seeing it, it is using up system
+resources, so keep that in mind if you're trying to maximize the power of your server.
+Another thing that people tend to, like if you're looking at Linux distributions and trying
+to figure out which one should I go with, I would say off the top, my head go with the
+one that you know, but if you don't want to do that, then if this is a server that you
+intend and it might not be right now.
+But in the future, when you're looking at actually setting up a server that is going
+to hopefully have staying power, then you want to keep in mind that the long-term support
+stuff actually starts to matter when you're dealing with servers.
+On your desktop, you might update and upgrade your distribution to the latest six month
+release cycle every, well, six months, or possibly even earlier than that if you just
+love to run alphas and betas.
+But on the server, you don't want to go through that trouble, believe me.
+There's too much stuff that you're configuring on the system level to make it really super
+simple to just back up and reinstall.
+I mean, obviously you can, but I mean, it's a little bit more complex than just dragging
+your slash home directory, a slash home slash your username directory over to our drive
+and then dragging it back on after you reinstall because there's a whole bunch of config
+vials and stuff that you're going to be messing around with.
+So the long-term support thing is good.
+Of course, the security updates are really important.
+To that end, Slackware, of course, is a really great thing for a server because it's got
+like non-stop security updates, I think, since version eight, I mean, they're still updating
+this stuff for Slackware eight for security.
+So I mean, that's some serious support there.
+Red Hat is the other big industry standard one, of course, or it is the industry standard
+one.
+It is, happens to be the one that I use, you can get an academic license if you're looking
+to get into the IT world and get a natural job doing this sort of thing.
+You feel like you really want to know those checks in the block.
+You want to be able to say, yes, I know Red Hat, yes, I've used them, yes, I've had
+to support a contract with them before.
+You can get an academic license, I'm not sure, I imagine you need to be a student somewhere,
+but if you go back and listen to my episode on fake IDs, you might be able to come up
+with a way to make that happen.
+If you don't want to do the whole supported Red Hat thing where you can actually call them
+on the phone, well, actually, I think the academic doesn't let you call anyway.
+You can get web support from Red Hat.
+But if you don't want to do that and you feel like you can muddle your way through this
+without spending 60 bucks on the academic license, which is probably true, then you could
+go, of course, the Sintos route, a scientific Linux as well, I've been using the scientific
+Linux repository on one of my workstations and it's pretty, pretty good.
+So you know, you've got those Red Hat clones and then honestly, the Fedora stuff is really
+good too.
+I mean, I love Fedora anyway, and I felt a little bit weird about running it on a server
+and I still feel a little bit weird about running it on the server, but it is kind of
+nice.
+There's a certain freedom to Fedora that just, you know, you can install whatever you want.
+Of course, I know Fedora fairly well, so I feel really, really comfortable with it.
+It feels just really, very much like home, so that's a pretty good one.
+And yet, it also feels very much like Red Hat because it basically is, I mean, it's
+the same stuff.
+It's the same configuration, tools, same file locations.
+So Fedora is not a bad idea either.
+And then Debian, of course, is a great choice because they're huge and stable and well,
+well supported, so Debian or Ubuntu, you know, I mean, I'm sure that's basically the
+same.
+I've never run a new Ubuntu server myself, but Debian, I have run a lot of the PowerPC
+boxes lying around here at work.
+They all run Debian and are serving files and web development environments for a different
+person here and there.
+So that's not bad.
+FreeBSD is supposed to be really good as well, although I've never actually run it on
+a server, so I wouldn't know for sure.
+Okay.
+So if you've installed any of those, then you're pretty much good to go.
+And the great thing about these Linux and Unix distributions that we all seem to love
+so much is that they're ready.
+They were designed with the server client model in mind, where I don't even know.
+Maybe the server client relationship was designed with Unix in mind.
+I mean, I don't know how it all started, but this is classic computing.
+This is the way that the forefathers dreamt of it.
+And by forefathers, yes, I do mean George Washington and all those guys.
+So setting up a server as an internet gateway, that'll be our first server exercise in this
+mini-series, and we're going to go ahead and throw in DHCP service as well, because it's
+very, very much related.
+So let's assume that you've got a computer with two network cards available.
+Network cards, I think, are pretty cheap, actually.
+So if you don't have them available, you could probably find one pretty cheap these days.
+There's, it doesn't have to be a super fast one if it's just playing around.
+But otherwise, yeah, there you go, or you could hack some different boxes together.
+I've done that plenty of times, even with the Macs that I find lying around, you know,
+pull some memory out of one, and it's a hard drive out of the other, and you just kind
+of make one better box than the two were separate.
+So, you know, use your imagination, like I say, worst comes to worst.
+Yeah, I'm sure you could do this with virtual machines or whatever.
+So you could do it on a pen and paper and just draw it all out and write it down and
+just pretend like it's networking.
+But it would be better to have a computer.
+So take whatever computer you've got that you're going to make your server.
+And you should probably put a graphics card in it just temporarily because you need to
+get onto that machine and configure it and stuff.
+Of course, you've probably already got that because you've installed Linux onto it.
+So you had to do that presumably with a graphics card.
+If not, great.
+If you can get into the computer without requiring a video card, that's really cool, too.
+I generally just throw a graphics card in there so that I can see what I'm doing just
+at least for the initial stage.
+So you want to turn it on the box, install the distro if you haven't already.
+And if you see any special options for like a server install, you may or may not want
+to use them.
+It doesn't honestly really matter.
+Like I say, this is all, this is just how Linux works.
+You don't have to do a special server install.
+You can just do a normal, minimal install or a normal, normal install.
+And you can always throw the server components on top of that.
+And it'll work just the same way as anything else.
+So don't be confused by distributions that have like a server addition or whatever.
+It doesn't matter.
+Okay, so you reboot.
+And now you're sitting there at your login prompt and I don't know if you have to make
+a user or not, it just kind of depends on the distribution that you're using.
+But you may have to make an initial user in which you'll want to do.
+You don't want to run this route the whole time, although you'll be doing a lot of root
+activities, but you still don't want to just run this route.
+You should have a user.
+So the first thing that you'll want to do is the network configuration of that box.
+And for this stage, it really does make it easier to be physically in front of that box.
+Because if we, I mean, you could walk away from the box and SSH in.
+But then once you start messing around with all the networking stuff, you're probably
+going to lose your SSH connection and you'll have to like figure out what to connect to
+again.
+And it just kind of, it gets annoying.
+It's not, it's not essential, but it's a lot easier.
+And sometimes it is essential depending on what's going on, whether you've done everything
+correct to be physically in front of that computer.
+So an Internet Gateway is going to be the server that sits between you, your users,
+and the worldwide web.
+And the way that that works is that we need to get an IP address from your ISP to one
+of your network cards.
+That's the first step.
+And the way to do that, at least in Red Hat and Fedora, is, and I'll talk about the
+other ones in a minute as well, is located in slash at C slash sysconfig slash network
+dash scripts.
+And in that directory, you'll see a bunch of networking type scripts like if up dash
+eth0, if config or IFCFG dash eth0, if down dash eth0, same series of things for the
+loop back device and for the other networking card, which would be eth1.
+So you'll see these little scripts residing there.
+In Debian, you have slash network slash interfaces, and that's about all I know about it.
+I know that I use that to establish a static IP address in some of the boxes that I use.
+Sometimes I do it outside of that box with just DHCP.
+So I haven't really used that a whole lot.
+It's pretty similar also to the slash at C slash rc dot d slash rc dot i net one dot
+conf or rc dot i net two dot conf in Slackware, where you are simply telling it, okay, I
+know that I have two network cards.
+You know that I have two network cards.
+Here's what to do with each network card.
+So the concept is the same.
+It's just the location of that actual file, even the name of the file that you're going
+to be specifying that information is completely different.
+And if you've ever hard coded a static IP onto a computer in Linux, by hard coded, I mean
+editing the actual text file, then this is actually already familiar to you.
+If you have not done that, then this is going to seem a little bit unfamiliar to you,
+but it is, if you just open up whatever system you're on, if you open up that text file
+in typical Linux fashion, it's very well commented.
+It says, this is where you configure your internet, your ethernet, your network interfaces.
+And it gives you examples, at least Slackware does.
+And I'm sure, yeah, W and does too, I remember.
+So you can just kind of follow along.
+And the basic idea of what you're telling it is what you're establishing a name for
+the device, which your system has probably already established for you.
+So there's probably, it's probably already going to be called something.
+So you might as well just keep going with that.
+You're going to assign a IP address and IP address to that network interface.
+And notice that I'm saying you're assigning it to that network interface, not to that computer,
+because that would be actually quite incorrect to say.
+It's the IP address that you're assigning to that network card.
+So what should that network card have as the IP address?
+Should it have like 192.168.1.1?
+No, of course not.
+We're trying to get the internet into this.
+We're not assigning it a local address right now.
+So we're saying that we need to know whatever IP address is being sent to us from our ISP.
+A classic way to do that, of course, is, well, I guess one way would be to talk to the
+internet company that you're using, the ISP that you're using.
+But probably more realistically, they're not going to know.
+So just go to what's my IP.org.
+And that of course tells you exactly what IP address you are sending out into the world.
+That's how you're attached to the internet.
+And we've seen this before, like I say, if you've followed along with the SSH episode,
+we used this information to go out to a cafe or whatever and SSH back home.
+And sometimes we had to do it with noip.com or dynamic dyndns, whatever.
+So it's the same deal.
+We just need to know how the internet is getting into this box from the cloud outside
+down into our house, like a little cable or the DSL cable, whatever, into our house or
+our building, and then through the wall and then out of the wall, plugged into our computer.
+That IP address right there, that's what you want to make your servers first ethernet
+card, that's the address you want to assign it.
+Potential problem area would be if this address changes frequently in the various places
+that I've lived in the past very long time, I have not had that issue actually.
+It just seems like I realize that that's not a static IP and yet I'll go a year I think
+and it just won't ever change.
+So it might as well be static.
+However, I've heard of people who's IP address just changes constantly.
+It's like they're just always getting a different IP address from their service provider.
+Or even worse, sometimes there's that whole, what is it, like, PPP over ethernet or something
+or, well, basically it's when the company doesn't actually give you an IP address, they
+give you a bridge to get into their network and so you're not getting, you don't actually
+know your external IP address directly, you're not getting that IP address directly.
+So in those cases, you can assign the server the IP address that you have right now in
+this moment.
+It might change later on.
+For the exercise, it'll probably work fine for you, but if this is a long term thing,
+it could be a little bit more complex.
+It can be done, however, it can absolutely be done.
+And the way that it would be done is that, well, especially if it's in, if it's like
+a bridged modem setup where you're actually getting like a 172. something, something,
+something, something, something, something, something, something, something addressed from
+your internet company, then that would be the address of this server.
+And that'll work fine, actually, but it'll be a little bit different in terms of what's
+actually going on, but heck, as long as it's an internet signal, that'll work.
+The prefix, let's just call it 24 right now because that's, that's the kind of network
+we'll set up for now.
+The gateway is going to be whatever the gateway, again, from your ISP that you are assigned.
+So in this case, it would be, in my case, if my IP address that I'm getting in from the
+ISP is 69.122.13.86, then the gateway address is 69.122.13.1, and that's pretty consistent.
+Again, it's just, that's kind of information that you'll get from your ISP more than,
+more than anything.
+And you can usually take a stab at both of those numbers.
+Like if you do at what's my IP.org and you find out your IP address, then you can just
+knock that gateway number, the last number on that IP address down to 1, and that's probably
+your gateway.
+Your network, your net mask is usually 255.255.255.0, and there are lots of ways to change
+that as well, but that's what we'll do for now.
+And then the DNS 1 would be your initial DNS server, so we'll just, for now, we're going
+to use 208.67.222.222, which is, of course, open DNS, and then the DNS 2 server will use
+this 208.67.220.220.20.
+We'll come in and change that in a different episode when we start setting up our own DNS
+server, but for now, we're going to just leave it as open DNS services.
+Of course, you could also use your ISP's service if you want.
+It doesn't really matter to me, but you should obviously assign a DNS to this.
+If there's an option for peer DNS, you should turn that off, and you can set your domain
+name here of the network card, and I like to set this myself personally to somedomain.local,
+because then my little intranet, if I decide to set one up, can all have something, something
+about local addresses, and I just kind of, I don't know, that just makes sense to me.
+Logically, that makes sense to me.
+There are probably places that don't want to do it that way for very good reasons, like
+their intranet and their actual domain are maybe the same or something like that.
+It's not something that is necessary, but you certainly can make your little local network
+can have the domain of some domain name.local, so for me, it's slackermedia.local.
+You want to do the hardware address, so that's the MAC address of the network card, of
+the network interface.
+That's really important, because that's how the computer really knows which network card
+it is.
+You can call it whatever you like.
+You want to make sure that you're actually speaking to the correct network card and everything.
+If you don't know the MAC address, then just do an if, config, and find out the hardware
+address of that card and enter it into the configuration.
+There are typically other options available, like in Red Hat, you've got things like IPv4,
+underscore failure, underscore fatal.
+I set that to yes, IPv6 in it.
+I set that to no, because I'm just not there yet.
+I know, I should be.
+I feel guilty about it.
+Sorry.
+The proto, I say none, because there doesn't need to be on boot.
+I say yes, because there does need to be.
+This thing needs to come up on boot.
+You will typically find that, like I say, in the configuration file, whether it's the
+Etsy slash network slash interfaces or whatever, or the rc.d slash rc.inet 1 or 2.conf, it's
+almost always got examples.
+It's usually got a lot of different options, and it kind of explains what those options
+are.
+The way that I started was I started with a bare minimum, which was basically the MAC address,
+the IP address, the on boot flag, and well, the name, I put in a card name, and the DNS,
+I put in the DNS servers, and the DNS servers and the domain name.
+Then I kind of add more stuff onto that later.
+For instance, I've got user control, that is user ctl.
+I set that to no, because I don't want anyone on the server to be able to control the main
+network interface.
+In in control, currently I have set yet to yes, so that's network manager control, yes.
+I'm trying to get away from that, because I feel like I'd have actually more control
+if I didn't let network manager sort of own that card, but right now, that's turned
+on, because it's convenient.
+Look through the configuration file, copy what you see, kind of use your ad, again, the
+concept is get an IP address from the ISP that you're using, and set this card to that.
+And since this is kind of the master card, this is the one that all the other computers
+are going to kind of defer to as their router, basically.
+You want to make sure that it's got the important settings like DNS settings, and some kind
+of, you know, the domain name, stuff like that, you want that to be present.
+So set that, and then you'll be ready to set up the other network interface.
+So at this point, like if you set up that card, and you've done an if config, and it's
+all looking good, you should be able to ping something on the internet and get a signal
+back.
+And I mean, you should be able to ping the internet from that box, from that physical
+box that we're setting up right now.
+It should have a direct link right now to your ISP, so if you're not getting a ping
+back from where you, from, from a site that you're pinging, and you believe that you
+should, then you're doing something wrong.
+And I would probably have to guess that it had something to do with the IP address that
+you're assigning to that internet, to that network interface.
+So verify that that's actually the IP address that is being distributed to you from your
+ISP.
+And really, it should almost, I mean, that should do it.
+Try pinging an IP address if you're trying to ping like Google.com or something, and that's
+not working.
+Then try to ping some IP address of a place and see if that works, because it could
+just be that you haven't set up your DNS servers, or it could be that you're not setting
+up your, your DNS server correctly.
+Maybe there's, maybe you've got a syntax error in there.
+You forgot to quote the IP address of the open DNS server, or you mistyped it, or whatever.
+So that, honestly, that, that step was really pretty straightforward when I set it up the
+very first time.
+That was not something that really gave me a whole lot of trouble.
+It's basically just like setting up any kind of network card when you get an internet connection
+with, with any old ISP.
+Okay, so the next step then is to set up a second network card in that computer, which
+you should see if you do an if config, you should see that you have an if zero and an
+if one.
+So if zero is going to be, well, is now configured to be your connection to the internet.
+So if one is going to be your connection to all the other computers in the, in the house
+or in the office or in the apartment, whatever.
+So again, you would, on Red Hat, you would just do a VIM on slash, Etsy slash, sysconfig slash
+network dash scripts slash if config dash, if one.
+And that probably will already exist on a, a correct install.
+It should have default values in that as well already.
+But if not, then you can create it pretty simply.
+And that is, again, the first line would be device equals ETH one.
+In in control equals yes, if that's what you choose.
+And right now it's probably simpler to just leave that on, on boot equals yes, the type
+equals ethernet, boot proto is static.
+So you want, this one to be statically assigned, you do not want this to change or anything
+like that.
+This is a static IP address that you're assigning this thing.
+And, and that's a good thing.
+IP address equals 192.168 dot, let's say eight dot one, or whatever, set some subnet for
+yourself.
+But yeah, it's, we'll go with 192.168 dot eight dot one.
+Again, I'm going to skip over IP version six, guiltily because I just, I don't use that
+yet.
+So I'm going to call that a no, I'm going to call user control equaling no, and the hardware
+address is going to be whatever the MAC address of that ethernet card is.
+And that's really all I need for that inner, that particular interface.
+So notice that it does not have a DNS setting.
+It doesn't have a domain name setting.
+It doesn't have any of that extra stuff that ETH zero had because that's not its job.
+It's actually going to be deferring to ETH zero for all that information.
+So that's, that's, that's this card's set up really.
+So at this point, you should be able to do some kind of like, I don't know, if you need
+to, and if can figure up or down, like if can figure down ETH, ETH one, and then bring
+it back up with if can figure up ETH one, if you're on red hat, they kind of want you
+to use like the little, the, the if up scripts, so you could do that too.
+But however you need to bring the network card down and then back up, I, I usually like
+to do that.
+You could also, in theory, do like a service space network restart, just to make sure
+that all your settings are kind of kicking in.
+And actually before you do that, we should set IP forwarding to yes.
+And the way that you do that is it's in atcslashciscontrol.conf.
+And there's a setting that says net.ip4.ip underscore forward equals one.
+Well it might say zero, but you want it to say one.
+Meaning that you want to forward IP packets to the rest, you know, to your other, to the
+other interfaces from one to the other interface.
+This is the kind of the thing actually that makes this box into a router when the, when
+the network comes into this computer that you're sitting at right now, the server, then
+you are forwarding all those packets onto their various destinations.
+So if someone requests something from hackerpublicradio.org, then when that request comes back, of course,
+it has a header that says, hey, I'm destined for 192.168.8.86 on your network.
+Could you send it to them?
+Well, if you have net.ipv4.ip underscore forward set to zero, then that's not going to be forwarded
+onto the rest of the network.
+But if you set it to one, then it will be.
+So that's the way that Red Hat does it.
+And amazingly, for once, it's exactly the same on Debian.
+It's the, it's the same file name, it's the same location.
+The comments are a little bit different, but it's the same thing.
+So it's just go into it with them or whatever is root user.
+And uncomment the line that says net.ipv4.ip underscore forward equals, well, it's commented
+out.
+So it'll say one.
+And then if you uncomment it, then suddenly you're enabling IP forwarding.
+So exactly the same process.
+The oddment out here is slackware.
+But happily, the slackware method is exactly like, well, everything else you do on slackware.
+It's really, really consistent.
+You simply make the slash, etsy slash rc.d slash rc.ip forward script in, obviously the rc.d folder.
+You make that executable.
+And from then on, the packets will be forwarded and it will come on at boot time and everything
+so that that box that you're configuring right there is now distributing, passing on all
+that IP information to the other network interfaces.
+So very, very clear and easy.
+I mean, it's almost something that you don't even have to look up.
+If you just poke around in the rc.d folder long enough, you see that pretty much everything
+you want to do is right there.
+And as long as it's executable, then it's going to start that service.
+It's pretty nice.
+So at this point where we've basically set up the server itself, it's, it is now a gateway
+to the internet.
+But one thing that you do want to do is, is have a DHCP server running somewhere, unless
+you want to manually configure everything, but I mean, come on, you're not really going
+to do that.
+So let's just set up the DHCP server.
+This is actually really marvelously simple.
+This was one of those things that was just, I don't know, surprisingly amazingly easy
+to do.
+It's sort of simple like SSHD, SSH, where you just kind of turn it on and it just kind
+of works.
+It's almost that easy.
+So we've got a little gateway server going.
+Now we're going to add to that same physical box, a DHCP server.
+So if you think about it, we really are kind of, we've got two servers in one physical
+box.
+And that's why I keep saying that when we hear the term server, it's kind of, it's very
+accurate.
+So a little bit deceptive because it's not just a server.
+It's a computer with lots of little services or server applications running on it.
+Okay.
+So we've got this thing and so we need to now install DHCP D. And you'll notice, you'll
+start to notice that a lot of these services that we are running all the time end with
+D because they're damons.
+They just kind of run per in the background happily.
+And they're just sitting there so that when someone pings them, they hear that request
+and they serve out whatever information they're designed to serve out.
+So you know, on whatever platform you're running, you can just install if it doesn't
+already exist on the computer, DHCP D package, whatever that would be.
+I don't even know.
+Everything I've ever set up has already had that on it.
+All I had to do was actually initiate it.
+But before we do initiate it, we want to make sure that we have a good configuration file
+in place.
+And on redhat and fedora, that's in slash atc slash DHCP slash DHCP D.conf, at least by default.
+There are other DHCP servers.
+I mean, the big, I guess the default one, very often is DHCP D.
+But there are other DHCP servers out there.
+Some of them are considered more lightweight or whatever.
+So if you're installing a lot of this sort of by hand or whatever, then you can choose
+maybe a different one, but the one that I've used has only been on a redhat server and
+it's only been DHCP D.
+So that's the one that I can talk to you about.
+And W and I've never made a DHCP server before.
+The W and boxes around here are typically the file servers, so they get their addresses
+from the main DHCP server.
+On Slackware, it is in DHCP rather, is in slash usr slash espin slash DHCP D.
+You can start that manually, I guess, I, this probably not recommended.
+You can install it when you're installing Slackware.
+You can probably grab it off of the, or rather a Startup script, you can install, if I recall
+correctly, when you're setting up Slackware.
+And there's also one on alien bobs of wiki or his site, rather.
+It's conny.slackware.com slash tilde alien slash RC underscore scripts, and you can find
+some RC scripts in there.
+So I've never actually run one on Slackware either, so I don't really, I don't have a
+whole lot of experience with that.
+It's just the ones that I have done have been on redhat, and then someone fedora just
+kind of playing around, but the one that's in production is on redhat.
+Either way, it's a really easy setup.
+The configuration is pretty, pretty easy, it's, I mean, it can be complex if you want
+it to be.
+But the default input into this file, this conf file, and again, it'll be well commented
+as well.
+But you want to set an option, option domain-name, and then in quotes, whatever the domain name
+is of your network.
+So in my case, like I said, it's going to be quote, slackermedia.local, end quote, semicolon.
+You have to remember the semicolons.
+I cannot tell you how many times, unfortunately, I have failed to place a semicolon on some
+random line in the DHCP, d.conf file, and just completely, completely, utterly, you wasted
+like an hour trying to figure out what I'd done wrong, and of course it was just a semicolon.
+So another option that you'd want to set are the domain name server.
+So option domain-name-servers, and that'll be 208.67.222.222, comma 208.67.220.220, I might
+have those reversed, but you get the idea.
+Just look up the open DNS IP addresses.
+I always forget which one is there first and their second one doesn't really matter,
+I guess.
+Anyway, you've got, we've just defined the DNS and the domain name that we're now going
+to forward onto all the clients whenever they join onto our network.
+So that's kind of nice.
+And you would want to do that really, most of all, if you're going to start running your
+own internal DNS service, because you want them to inherit your DNS server first before
+they go out to some other one outside, or you might want to make sure that they're inheriting
+your open DNS setting, because you might have some kind of site-specific settings through
+the open DNS control panel.
+So you want to make sure that all your clients are getting that.
+It's kind of nice.
+I mean, just superficially here, we have some open DNS settings.
+Just things like the company logo appears on the failure page when it doesn't resolve
+to anything.
+It'll show the company logo and say, we're sorry, you didn't get to where you want.
+And if there was anything that you were blocking on that network through open DNS, then, you
+know, unixform.com, you might be blocking that, because you don't want people looking at
+pictures of desktops, so they would get blocked that way, whereas if no one was inheriting
+your DNS services, then everyone in the building would be looking at unix porn all day.
+Now we want to define our subnet.
+And now, since we only have two network cards in our physical server, one of which is ingesting
+the internet and sending stuff back out to the internet, the other card is essentially,
+if you think about it, that's the router, that's the thing that's going to define the subnet.
+That's everything on one subnet is talking to that one card.
+If we had three cards, then we could have two subnets, because we've got one for the internet,
+and we've got two for the internal distribution of IP addresses.
+If we had four ethernet cards, then we could have three subnets and so on and so forth.
+So right now, since we're doing a simple setup, we only get one subnet.
+But that's okay.
+That's all we need.
+So we'll do subnet space 192.168.8.0, space net mask, space 255.255.255.0.
+So we're just saying that everything in this subnet, everything talking to this card,
+is one big pool of IP addresses.
+We'll open up a curly bracket.
+I think of this as kind of like a CSS block, you know, like if you've ever seen a style sheet,
+they have like the class name or the ID name, and then they have an open curly bracket,
+and then you have all the lines, and then you close the curly bracket under that.
+That's kind of what we're doing.
+So we open a curly bracket, and then the next line, you can say options, space, routers,
+space, 192.168.8.1.
+So if you recall, from when we were setting up the server, the big server that we just set
+up, well, we're still setting it up, but you know, the network interfaces, I should say,
+we had defined not the internet network card, but the internal network card that we're
+using for the rest of the computer as 192.168.8.1 static address.
+So that means that everything in this subnet now is inheriting the fact that the router
+that they're going to be talking to, to send information and get information back from,
+has the address of 192.168.4.1.
+And that, my friends, is where they get all the packets, and that's where they send all
+the packets, which are then forwarded to the other network card, which are forwarded
+to the router at your ISP, which are then forwarded to the internet, and magic happens.
+Next line, option, space, subnet, dash, dash, mask, space, well, again, that's 255.255.255.0,
+because we only have one network card, and so we only have one subnet mask.
+Remember to put semicolons, I think I just now forgot to put one after the router line,
+so 192.168.8.1 semicolon, and on this subnet mask, 255.255.255.0, semicolon.
+The next line will be option, space, broadcast, dash, address, and that is, in this case,
+it'll be 192.168.8.254 semicolon.
+That's basically everything on up to the very last IP address.
+The range, this is an interesting one, this is kind of cool.
+This is actually, to me, this is one of the most fun things about having a server, like
+a DHCP server, for some reason, maybe just because it's really familiar to me, because
+I used to do this kind of thing in the little routers that I would buy from Best Buy.
+But the range lets you decide what portion of the potential IP addresses that this server
+is generating now.
+But range of those addresses, you're going to hand over to DHCPD for it to just automatically
+hand out to all the people who sign onto your network, meaning that you could do like
+a range of 192.168.8.80 space, 192.168.8.253, and say that those are the addresses that
+get automatically assigned to clients.
+And that means that you have 80 addresses at the beginning of that, well, 79 addresses,
+at the beginning of your subnet, where you can statically assign those to the computers
+that you want to statically assign them to.
+Obviously, you would want some static assignments, right?
+You'd want this server to have a static assignment.
+You don't want the 192.168.8.1 to suddenly become 8.8.
+You might have a file server on the network.
+You might have a network attached printer that you would want to obviously always be at
+the same address.
+So all of these things, you can assign hard coded into this very configuration file, which
+we'll do in a minute, and the DHCPD server will not then take over those addresses and
+assign them out to other people.
+So it's a kind of a cool feature.
+You've got a lot of control, a lot of fine-grained control.
+Remember to end that line in A. Let's go ahead and say it out loud.
+Loud and long, say it, semi-colon, yes.
+Default-least-time space, heck, I don't know.
+I just put in a bunch of big numbers, 88,000, no commas.
+Symi-colon max-least-time space, I don't know, 120,000, semi-colon.
+I don't really have an issue with this.
+I could actually probably even lengthen it.
+There's just not that much problem with the length of the leads times.
+But obviously, again, you get a lot of fine-grained control here, so you can actually control how
+often you're forcing people to refresh their IP address, stuff like that.
+Now we close the curly bracket.
+Right under here, like if we had another network card, then we could create another subnet.
+If we had another Ethernet card, we could create another subnet.
+Basically, the trick is that the router becomes the name of that network card, or the router
+becomes the IP address of that network card.
+If you think back, when we were setting up that other Ethernet card, network card, we
+were saying that that gets the static assignment of 192.168.8.1, then we were saying we would
+go over to the next network card in our configuration file, whether it's rc.inet.3.conf, or whether
+it's if CFG-E2, whatever it is, then you can assign that a different address, and that
+becomes the router for that subnet, so that would become option space routers.
+Space 192.168.8.1, let's say 1, 2, 9, and then you would set your subnet mask to 255255.255.128
+semicolon, and so on and so forth.
+You can do that as much as you want, and subnet the thing, and you'll have to read up on
+subnets and figure out whether they're right for you, whether they're worth doing or not.
+It's really kind of, there are good points to it, and they're sort of like, why are you
+bothering points to it, and they each have their own different reason for existing.
+It turns out that I find it very helpful because it kind of can isolate certain departments.
+It doesn't hard isolate, it's not a firewall, but it reduces the noise, because
+if you're sending packets around from computers on one subnet, they know they have to probe
+the other subnet for addresses and stuff. They know that that computer isn't on that subnet,
+because it's a 1, 9, 2.168.9 address, so they don't even have to go to that floor in that department
+and scan that range of computers. So that's kind of nice, but it's just kind of something
+that it's not something that I've ever so far in my very, very limited experience set up,
+and just like, oh my gosh, that's changed my life. But I'm sure there's some server admin out there
+who has had their life changed by subnets, and when I meet that person, I will interview them.
+So next block of code here, or configuration lines, whatever, are the static assignments,
+and this is really easy, you just say host, space, host name, whatever the host name is,
+space, curly bracket, and then inside of this curly bracket stands out, we have hardware,
+space, ethernet, space, you know, zero zero, I mean, zero zero colon, 2, 6 colon, 9a colon, 20 colon,
+EC colon, C8 colon, 48, semicolon, remember those semicolons, and then fixed-address space,
+192.168.8.8, semicolon, and then close the curly bracket, and all that does,
+I mean, you can probably just figure that out, I probably don't even need to tell you exactly
+what that's doing, so there you go. All right, so now we've just configured the DHCPD.conf,
+so that is what the Damon that runs DHCP will look to to figure out what it's supposed to do,
+what address is it's supposed to hand out, what address is it's supposed to keep away from,
+when it sees a certain MAC address, what address to give that MAC address if it's been hard coded,
+static, whatever. The only thing really we have to do is restart that service if it's running,
+so if it's already running on Red Hat, it would be service DHCPD restart, or start if it's not
+running at all. On Debian, of course, it would be slash Etsy slash init.d slash DHCPD
+space restart or start, or whatever it needs to be, on Slackware, you can just restart the script,
+the same way, it's slash Etsy slash rc dot d slash rc dot DHCPD, and then you could restart or
+start whatever you have to do. And there you go, that's the DHCP server, so now you can step
+away from that server finally, and you can plug another computer into that ethernet port,
+or you could plug a switch into that ethernet port, that'd be cool, and then plug another computer
+into that switch, and maybe a wireless router into that switch, and a printer into that switch,
+all kinds of devices, just plug them into a switch, plug that switch into the network card,
+the network card that isn't serving the internet, or that isn't getting the internet,
+and then that will latch onto that server, and suddenly the magical blue smoke will
+come out of the server through the little cable into the switch, and it'll just go everywhere,
+it'll be all over the place, you'll have internet's in just all over the place, you won't be
+able to get it out for weeks. Of course, I really should probably mention that if you are on the
+internet in this fashion, you've set up a router, but we haven't even touched on a firewall,
+so right now you've got the internet coming into this box, completely, basically unadulterated,
+it's just the internet, meaning that that's really, really dangerous. There's usually a default
+set of IP tables that come along with any kind of major Linux distribution, so you should
+turn that on. You can get a list of IP tables, and I'm not about to attempt to do an IP tables
+tutorial, because I'm nowhere near knowing enough about that to speak intelligently about it,
+but you can get a list of your IP tables as root user, IP tables space dash L, and then you can
+see if there are default settings that are usually really good default IP tables included.
+If you don't know IP tables at all, then you may want to go ahead and
+not go into the internet yet, but you might want to turn on the X11 firewall configuration tool
+that comes along with your distribution, whatever that would be, and then you can make sure that
+there are some sane settings in there. Like I say, usually there are some really good default
+settings, so that if you do this exercise, you're not completely opening up your box
+to the entire world, but understand that that is what's happening here. You've got
+the internet coming into your wall, and you've got it plugged into a computer. There's no friendly
+little router box between that computer and the whole world right now. There's no
+thing, no router there that protects really a whole lot, so you want to make sure that IP tables
+are turned on and that they've got some good default settings before you continue too much longer.
+And that's it. That's all I can say about setting up a gateway and a DHCP server. I hope you've
+enjoyed this episode. I hope it has been informative and maybe demystified some of the things about
+servers. Next episode we're going to go right into DNS server setting up there of. So join me
+next episode for setting up a DNS server.
+Thank you for listening to Hacker Public Radio. For more information on the show and how to
+contribute your own shows visit Hacker Public Radio dot org.

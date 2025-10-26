@@ -1,0 +1,170 @@
+Episode: 4227
+Title: HPR4227: Introduction to jq - part 3
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4227/hpr4227.mp3
+Transcribed: 2025-10-25 21:44:10
+
+---
+
+This is Hacker Public Radio Episode 4,227 for Tuesday the 15th of October 2024.
+Today's show is entitled Introduction to J.Q. Part 3.
+It is hosted by Dave Morris and is about 26 minutes long.
+It carries an explicit flag.
+The summary is, More Filters.
+Hello, this is Dave Morris and this is Hacker Public Radio you're listening to.
+Today I'm doing another show on the J.Q. tool for reading and manipulating Jason.
+This is part 3.
+I'm going to look at filters.
+The idea is that J.Q. can read Jason and apply filters to it and we're going to look at some basic stuff just now.
+It will return the Jason that it's read in a different form.
+So basically we're reading and parsing and then constructing a different form.
+So maybe just extracting a little bit out of it or turning into some other format.
+It can be Jason, most often he's, but it can be others as well.
+We'll deal with that aspect of things later on, not today, but in a later show.
+The next show, the number 4 in this series, we're actually going to be looking at how you can construct Jason structures.
+We won't be doing much of that in this particular episode, but we'll be looking at some of the things that let you pick bits out of Jason.
+So the title I've got to this section is more basic filters.
+Now there's quite a lot of written detail in the notes.
+I mean not inclined to read them all out because they're really quite complicated lists of things with commas and square brackets and things.
+I'm going to just refer to them in a generic way and leave you to read the notes yourself.
+So the first of the basic filters is what's referred to as an array or a string slice.
+That's basically where you take a subset of the array or the string.
+So you use the usual thing where you start your filter with a full stop or a period.
+And this is followed by in square brackets, two numbers separated by a colon.
+The first number of the pair is the index of the elements of the array or string starting from zero.
+The second number is the ending index, but it doesn't include this.
+It means up to but not including.
+So if the first index is missing, it is emitted, it refers to the start of the string or array by default.
+If the second index is missing, then it refers to the end of the string or array.
+So it's just basically a way of defining the entire array or string.
+So I've got an example. And in general, I'm using the SEQ command in bash to generate the numbers 1 to 10 and separated by commas.
+And it turns that into a variable containing an open and closed square bracket with this list of numbers separated by commas.
+So the second thing in this particular example is an echo of the variable that contains it, which is called X.
+It just shows a square bracket, 1, 2, 3, 4, 5, etc.
+So that was a means of getting a thing which is which conforms to the layout of Jason array into a form that we can feed to JQ.
+So the actual feeding of it is echoing in double quotes, dollar X, piped to JQ, which uses the option I from C.
+And then in quotes, we've got the expression dot square brackets 3, colon 6, closed square bracket.
+And what you get from that is the elements 3.
+So that's the actual number 4. Remember it starts at 0 and up to not including element 6.
+So what you get back is 4, 5 and 6. There's not a count of elements, it's the starting position to the ending position in a non-inclusive way.
+I find this a bit unfortunate personally because it would be nice if it was a count.
+And I tend to make the mistake of using it as such all the time, which is my own mistake.
+So that was for an array. If you used it to process a string, then I've got an example here which echoes the string hack a public radio.
+But it puts the string in single quotes and inside it is double quotes because double quotes are the Jason way of specifying a string.
+So if you just omitted the outer single quotes, the double quotes would be removed and JQ wouldn't be getting a string in its analysis.
+So anyway, that echo is piped into JQ and it uses a string slice, which is, open quote, full start, open square bracket, 7 colon 10, closed square bracket, closed quote.
+And what we get is the element 7, which is a P, the P of public, up to, but not including 10. So that's just PUB.
+Both of the numbers used in the slice, whether it's an array slice or a string slice, can be negative.
+So in the array example we saw using dollar X, X variable, then minus 7 could be the start, minus 4 could be the end.
+So what it's doing is it's counting backwards from the end of the array.
+I've written a little loop, a bash loop, effectively, which is producing a list of slices and is giving them to JQ, which is receiving the array in dollar X,
+which, and so it's applying the slices to it. So the various expressions of slices are minus 7 colon is minus 4, 3 colon 6, 3 colon minus 4, and minus 7 colon 6.
+And they all produce the same 3 element array, 4, 5, 6. So the similar thing with the string, if you, we already used 7 colon 10 as the slice.
+But if you were to use minus 12 colon minus 9, you would get back the same letters, you at PUB.
+So if you find that confusing, which I did, and probably still do, I wrote a little bash loop to show what positive and negative offsets of the characters are in that test string hacker public radio.
+So I put this in the notes as a footnote. I'm not going to read that out, but it's, it sets a variable Y to the string hacker public radio.
+And it, this is not, this is not using JQ at all. It's just bash being used to show the, the offsets.
+So it uses a for loop with numerical elements. And if you've followed my bash series in the past, hopefully you'll find that that makes a lot of sense.
+It uses two indices, two indexes, which increments and decrements, one from the end, one from the start one from the end of the array of the string, should say.
+And then it prints out what the indexes are and what letter comes back as a consequence.
+So this is not, there's no Jason involved in this. It's merely a mechanism for demonstrating the different offsets.
+So I thought I'd add to this particular example, a case where you want to access the last character of this hacker public radio string and the two ways that you could do it.
+So it, it's maximum indexes 18. So you can use in square brackets, proceeded by a full stop, 18 colon. So that just means position 18 until the end.
+What is the end? It's all ready. So that would give you the, oh, the hacker public radio, the end there.
+The alternative is to use the expression in square brackets minus one colon. So minus one just means the last character.
+Pretty obvious, but you might find it helpful just to get that locked into your head. I'm always assuming that everybody else is as slow on the uptakers I am, but maybe you'll find it useful.
+So the next topic is looking at something quite similar to what you've just seen, but it's called an array object value iterator.
+If you were to construct a Jason array, and I've done one example here, which sets a variable called R, which now I see it, and I'm trying to say it is a little bit silly, but never mind.
+In single quotes, it's got square brackets around three Jason style strings. They would, they just came back from a random word generator thing around.
+And the words are coenor plastered and downloadable. If you echo that into a jq command, then the iterator is simply the sequence in single quotes dot open and close square brackets and nothing in between close quote.
+Now what you get back from that is three strings on separate lines, coenor plastered downloadable. So yeah, nothing very exciting there really.
+So the return to individual strings because the iterator has gone through this particular item, which is an array, and it's simply returned each of the values it finds.
+And so it's not returned an array just a bunch of strings and we'll see how this can be used in other more complex filters soon.
+Now this iterator will stop open and close square brackets can be used with objects as well. So say we have an object called around of inspiration at the point and called it object.
+And it's equal to, and then in single quotes, curly braces, double quotes, name colon, quote, double quotes, hack a public radio, close quotes, comma, then type in as a string.
+That's what the double quotes things mean colon and then in quotes podcast. So we have here an object or a hash depending on how you like to look at it where the keys are name and type and the values are hack a public radio and podcast.
+So if we echo this into the same JQ command with this iterator in single quotes, dot, open, close, square brackets, we get back not too surprisingly two strings, separate lines, hack a public radio and podcast.
+They come back as strings. I think I already said because it's Jason we're dealing with and it will by default return Jason types and string must always be enclosed in double quotes iterator doesn't work in other cases.
+You can't apply it to to other things and this upcoming is an example of something that would fail.
+There's an alternative iterator which can handle the errors, ignores them effectively. And what that is is the same as the one we walked just been dealing with which is dot open, square bracket, close, square bracket, but followed by a question mark what that does is it ignores errors.
+So my example is echoing the word true in double quotes true is a value in Jason a Boolean value. There's not a string. So it's not not in quotes when Jason sees it just the word true and feeding that to the iterator call on open, close, square brackets, you get back the error JQ error at a position which doesn't help much cannot iterate over Boolean and it puts in brackets true.
+So it's not on iterable. I think iterable is a word item if we did the same feeding true to the alternative version of the iterator which ends with a question mark then we get no errors back just nothing.
+So if you want your script to work even if junk is given to it this sort of thing is what you need. So there's some nice simple filters we've seen we saw some in the previous episode.
+Now we can start looking at how you can use multiple filters. There are two operators that can be placed between filters to combine their effects. We've got the comma which you look at first and the pipe which is the vertical bar symbol.
+So the comma that this is an operator which allows you to chain together multiple filters and as we already know the JQ program feeds the input receives on standard input or from a file into whatever filter it's given or filters perhaps would be better.
+So far we've only seen a single filter being used. So with the comma operator input to JQ is fed to all of the filters the same input is get fed to all of the filters separated by commas in a left or right order.
+And the result is a concatenation of the output of all of these filters is one after the other.
+So we looked at the HPR stats page when we were first setting off on this voyage through JQ. Part one and I've got a link in the notes here if you want to go back and look at it.
+What we did was we grabbed the HPR stats page and we fed it to JQ.
+What I recommend you do I'm not going to I'm not going to send around the file I'm using here because it's constantly changing result that you get.
+So there's not much point in doing that. You can grab grab it for yourself. There's a curl example.
+I'm just presuming you using curl which will grab it from a URL that ends with stats.json and I've used hyphen capital O which says to curl right the output to a file with the same name as the end of your URL.
+So it'll generate stats.json.
+Then my examples which I'll be working on through the rest of this episode. This is being used for input to JQ.
+So the first example is JQ followed by in single quotes dot shows in a comma then dot Q. I put spaces around the comma just to make it stand up better. You don't have to do that.
+So what that saying is there are two filters dot shows which means go and find the object with the name of shows, whatever it is.
+And then after that go and find the object with the name Q and on this command line stats.json is the file we're interrogating.
+What we get back are two objects which are sequences in curly braces just one after the other and the first one contains the number of shows of the different sorts and how long we last and so forth.
+The other one is the Q which talks about the number of shows unprocessed comments and so forth. You can see it in the notes. I'm not going to read it out here.
+Dot shows is referring back to episode two dot shows is an object identify index filter as was mentioned in episode two. This returns the contents of the object with that name hard to say. It's pretty obvious when you see it.
+So that's what we said about comma we will revisit it. We'll be using it. We'll revisit it in other contexts probably by the next show.
+The other operator is the pipe operator which is that vertical bar. This combines filters by feeding the output of the first the left most filter of a pair into the second the right most one.
+So this is analogous to the way that the same symbol works in various unique shells like bash. So for example extract shows object from stats dot json as we did before.
+We can then extract the value of the the total key within it. If you look on the notes you'll see that in shows there is thing called total as total number of shows known to the database.
+So we can extract that particular element from the object. So you do that by typing jq and then in single quotes dot shows vertical bar dot total close quote stats dot json.
+And in this particular example is number of changes. So in the one I'm looking at it is 4,756. Now there are various shortcuts in jq in its language and one of them is that if you emit the vertical bar and simply put the two filters one after the other.
+I don't think you can have intervening spaces but I must have tested that. But the example shows jq open single quote dot shows dot total close quotes then the file stats dot json you get back the same answer.
+There are cases where you can't do this I think but we've already seen that some of the expressions that you use in jq are abbreviations for the longer more wordy versions.
+So really the pipe is is a case of the longer version. However, I find it easier to visualize what's going on when you use it.
+So I would suggest that you start off by using it when you're trying to fish things out of a bit of json and then maybe experiment with removing it and doing it the shortcut way when you feel a bit more confident.
+I wanted to mention parentheses and it's possible to use these in filter expressions and you use them in order to group bits of expression and particularly to change the normal order of operation similar to the way you use them in arithmetic.
+So the example I've got here is in arithmetic one show if you if you use jq single quote dot shows dot total then as a number plus two and then divided by which is a slash symbol by two.
+So if you do that given that the value should be four seven five six you get back a value of four seven five seven because the two divided by two returns a one that has a high priority in the operations in that particular expression and that one is added to four seven five six.
+However, if we use parentheses so the other example is you open quote open parenthesis dot shows dot total plus two close parentheses slash two divided by two then we're going to add to to the number and so four seven five eight we're going to divide that by two.
+We get back the answer to three seven nine so that just shows how the parentheses can be used that I have used them in other context where it's been where I want to do some quite complicated filtering where I do one filter and pipe it to another chain of filters but sometimes you want to ensure that they're done in the right order.
+I'll hopefully come up with some examples I can't really give you much in the way of that sort of thing at the moment because we haven't gone far enough into the language but hopefully I'll be able to do something in the next couple of iterations and you will refer back to the use of these things.
+So I've got a couple of examples quite closely related but just showing how you can use multiple filters and they're both using the country data that I mentioned in earlier shows probably both I can't remember using here a file called countries dot Jason and I got that from a GitHub project which I've referenced in all of the shows which is a thing that has is collating or collecting or managing country data.
+I know it's when I looked at it today that it's been updated fairly recently so it's probably an ongoing process of adding updates to it.
+So what I suggest you do because it's 39,000 lines long that you grab your own copy if you want to experiment with it I'm not going to distribute it with the show.
+It's probably quite interesting to play with I certainly did so I'm going to talk about the contents a bit it's quite complicated.
+I'm not going to go into the details of its internal just now I do have a tool which I wrote I'm going to refer to later on in the series which can look at a file like this and come back with the paths to the various components.
+So a path being something like dot shows dot total so that's sort of how you get to everything within it.
+So it gives you an overview of what the main structure is I need to refine it a bit because it's a bit of a sledgehammer at the moment.
+But anyway just just go with me at the moment and just believe me I tell you how it's laid out as far as it's relevant.
+So my first example is using jq open quote dot square brackets 42 now the country's data in this file is an array of country objects.
+So I just arbitrarily chose number 42 index 42 probably better we're putting it and it happens to be Switzerland that was entirely random me choosing that.
+So we've got that we've gone to the array we've taken out one thing we've made a slice from it a slice of one object.
+So the array is an array of objects and we've got one of them the object for Switzerland.
+So we're piping that as a pipe symbols next then we have a multi filter which is dot name dot common.
+So we know that there is an object in this particular sub object in this top level object which has got the name is name.
+So that's the name of the things about the name of the country and inside that is the common name of the country in a field with a key common.
+So the filter is dot name dot common and it returns the common name of the country.
+There's only one thing ever there are other names but there's this is the common name.
+So after that we've got a comma going back to the actual filter expression dot capital dot open and close square brackets.
+So inside the country object there's an object called capital and it holds an array containing the name or names of capital city or cities.
+I was amazed to find that some countries have multiple cities like a capital city as I should say.
+The filter capital dot capital dot open and close square brackets is obtaining the contents of an array in the object capital.
+So it's going to return all of the values within that array.
+So and then we close the quotes and we have countries dot Jason which is the file that we're interrogating.
+So what we get back in this particular case is a string a Jason string Switzerland on one line.
+That's its common name and Jason string of burn and BERN which is the capital city of Switzerland.
+Hopefully you followed that. I think the notes might be doing a slightly better job than I just did.
+The example number two is just riffing on the first one but this time we want to look at the languages spoken in that country.
+So there's an object called languages which contains the abbreviated languages names as keys and full names as values.
+So it's the same filters as before.
+Name dot common comma capital dot open close square brackets and then another comma then dot languages.
+If you do that and countries are Jason being the file that's reading from.
+If you do that you get back Switzerland then burn as before but then you get an object in curly brackets, curly braces,
+where it shows the keys are FRA, GSW, ITA, ROH and FRA is the key for French.
+GSW is the key for Swiss German, ITA is the key for Italian and ROH is the key for Rumanche which I've never heard of.
+So that because we use dot languages we get we got back the entirety of that object.
+If we wanted to just list everything then the filter and the next version of this example it uses dot languages dot and then the array iterator dot open closed square bracket.
+So there you get a list of Switzerland, Bern, French, Swiss, German, Italian, Rumanche.
+This is great. It has some shortcomings because you don't know where one ends and the next begins necessarily.
+I mean we do this case but if you're doing it in a more general way you might not know.
+So that leads on to episode four where we're going to look at how you can use the construction capabilities of Jason to actually turn this into a more useful Jason structure.
+Okay so that's it. Speak to you next time.
+You have been listening to Hecker Public Radio at Hecker Public Radio does work.
+Today's show was contributed by a HBR listener like yourself.
+If you ever thought of recording a podcast and click on our contribute link to find out how easy it leads.
+Hosting for HBR has been kindly provided by an honesthost.com, the internet archive and our things.net.
+On this otherwise stated today's show is released under Creative Commons Attribution 4.0 International License.

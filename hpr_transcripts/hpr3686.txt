@@ -1,0 +1,441 @@
+Episode: 3686
+Title: HPR3686:  Followup for HPR3675: Clarifications on the path traversal bug
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3686/hpr3686.mp3
+Transcribed: 2025-10-25 03:51:59
+
+---
+
+This is Hacker Public Radio Episode 3,686 from Monday the 19th of September 2022.
+Today's show is entitled, Follow-Up for HP R3,675 clarifications on the PATH Traversal
+Bug.
+It is hosted by BINRC and is about 39 minutes long.
+It carries an explicit flag.
+The summary is, Installing a Plan 9 CPU Plus, Web Server, NAMMA Space to the Rescue,
+Web App Security Models, and more.
+Hello listeners, this is another episode of Hacker Public Radio.
+I am elaborating upon iterating upon proving upon adding more details to my previous episode
+I reported previously for Hacker Public Radio, which is HP R3,675 titled, Plan 9, an exercise
+in futility.
+I initially thought about leaving a comment on that episode to clarify something I glossed
+over, but even in comments I am very long-winded.
+Ken said, you should just record a show, we don't need more essays in the comment section,
+and I thought, okay, I'll record a show.
+It is going to be longer than the comment, so that's what we get when the database doesn't
+like very long and for both comments.
+The database gets hours and hours and hours of audio.
+So to start off, the thing that I glossed over was sort of in an attempt to not record
+like eight hours of audio, that some poor volunteer will have to listen to, some poor
+HP R janitor will have to listen to about something that not a whole lot of people care
+about.
+I went very quick and glossed over a lot of things, sort of giving a general idea for
+the sake of saving time, whereas, you know, diving into each of these specific things
+could be hours of audio on its own.
+So the thing I glossed over was in the Plan 9 state of security section.
+I wasn't very specific when I was talking about the past reversal vulnerability in rc-hgtpd.
+So I said something along the lines of past reversal was leveraged to exploitive vulnerability
+authentication system.
+The word I skipped over there was the work authentication system, not necessarily the file
+server or the actual auth authentication system.
+This was an error on my part, but I've decided to record an entire episode sort of dedicated
+to explaining this vulnerability and sort of walking listeners through the consequences
+of past reversal, even when you are running on a running your web server inside of a charute
+or with private namespaces or in a jail or a docker container.
+So I will get into that in a second, initially I tried to leave a comment, Ken said it's
+too long and now you guys have to listen to hours and hours of audio about Plan 9.
+So the structure of this episode is going to look something like, and this is also an
+informative episode, not just a talking about, you know, there are some steps you can do
+this yourself.
+So in order to get to the vulnerability section, I'm going to walk you through installing
+a Plan 9 operating system, specifically 9 front in the LibBird hypervisor, setting up
+a CPU server with RC-HTBD and work.
+This is the configuration I run my server on, at least the ones I run Plan 9 on, and
+I talk about the past reversal vulnerability.
+Some other optionally bad configuration options in the work content management system.
+Talk about how private namespaces save the day and then closing.
+So maybe the title will be Plan 9, private namespaces saving the CPU server or something like
+that.
+I'll have to think about it or maybe just spontaneously decide something when I upload
+the show like I usually do.
+So the first section is installing Plan 9 with LibBird.
+I know typically I talk about BSD a lot, but really the one piece of virtualization, hypervisor
+software that I know really, really well is LibBird on Red Hat or I guess Red Hat Variance.
+So I have some commands to install, LibBird, I'm not going to read them out.
+Vert-in-stalk commands are very long and verbose, so I install the virtual machine and then
+I run Vert-Viewer 9-Pone, that's what I name the virtual machine because I'm going to
+be executing batch reversal vulnerabilities on it.
+And then a little trick I use to make it easier to access my virtual machines across
+localhost is adding the host name of the VM and its IP address to my slash Etsy slash
+hosts file.
+This makes it easier and it makes something just work better.
+So how I do this, the command VERSH DOM IF LIST and then the name of the virtual machine
+in my case 9-Pone and then I run an ARP, ARP-E GREP for the MAC address of the virtual machine
+and then echo host name, space, IP address and then append that to my Etsy hosts file.
+The host name in this case is CERDO, it's the default host name on minefront and then
+I proceed with a normal plan 9 installation.
+This is well documented, so continue there, refer to the documentation.
+The next step is to set up a CPU server with RC-HTPD and work.
+I've written about configuring CPU servers in the past, I think I put it on my website.
+I mirrored it to my web server running plan 9 that I've filled with plan 9 related
+things, I've copied and pasted it here and modified it so it's a little bit more complete
+and coherent and cohesive because previously it was notes assembled from a lot of different
+things.
+You know many days apart and they're broken and have typos and you can't just run them.
+For this I'm using 9 front, the 9 front fork of plan 9, it has newer authentication protocols,
+I trust newer rather than older for connecting two remote systems.
+So how you build a CPU server, this is something you might want to do if you're interested
+in plan 9 and you're kind of sick of running the spice client for your virtual machines
+display because it doesn't really resize very well.
+So the first step is to add users to the file server, how we do this is we connect to
+the file server, we add our user code, the example user, and then we add them to a few
+groups, SIS, Admin and UPOS, that's just a system user, Admin user, and Mail user.
+So how you do this?
+Condash Capital C, SlashServe, SlashCWFS.CMD, new user, user name, new user, SIS plus user
+name, new user, ADM plus user name, new user UPOS plus user name, and then we're going
+to reboot and when the boot prompts come up, it'll ask you for which user you want to
+boot the system, type the user name that you inserted for this new user, and now we
+have to configure the user's environment.
+On a unit system, typically you would run a recursive copy command for slash Etsy slash
+scale, and then dump it to slash home slash new user, or your new user, whoever your new
+user is.
+On plan 9, you just run a script called slash SIS slash live slash new user.
+The next thing we need to do is configure headless booting.
+So in order to do this, we mount the boot partition with the command 9FS9 fat, and
+then we edit the boot config.
+This file is at slash n slash 9FAT slash plan 9.ini.
+What this looks like is setting service equals CPU and user equals your new user name,
+and then you don't have to reboot yet.
+It's easier to not reboot yet, so save that file, access so it doesn't get corrupted
+when you reboot the system.
+The next thing to do is add hostowner information to NV Ram.
+So all of this stuff with our new user adding variables that set, you know, new user as
+our user, for example, in the boot configuration.
+This is because when you set the user variables, for example, it instructs plan 9 to use this
+user as the hostowner.
+So on plan 9, a hostowner is similar to a root user, but not really because it's kind
+of arbitrary who is the hostowner of any given system.
+In this configuration, our hostowner is kind of close to a root user.
+We also need to set up automatic booting.
+This means not having to enter a password into the machine at the physical keyboard every
+time we turn it on or reboot it.
+So we need the hostowner's key to NV Ram.
+To the command for this, NV Ram equals slash dev slash sd capital f0 slash NV Ram,
+auth slash wr key, and then you may or may not get errors.
+As long as you get an auth id prompt, it will work just fine.
+So you enter your new username, the auth domain, in my case, serno, that's the default host
+name.
+If you're running this on the internet, you would want to put a fully qualified domain
+name there.
+A sex store key, I typically don't put anything in there because I like automatic booting.
+And then a password for this user.
+And then the next step is to configure an authentication server authentication servers.
+Let us connect over the network and you get sort of an interactive session.
+So the commands for this auth slash key, fs, auth slash change user and then the username.
+Password, the password you just put in.
+And then you can pretty much just push enter for the rest until you return to a prompt.
+The last thing to do is configure the permission system.
+So slash lib slash ndb slash auth is a file where your user is assigned permissions or
+not allowed permission.
+It's kind, it allows users to execute commands as other users except it's kind of like
+pseudo, I think.
+That's one way I think about it.
+It's kind of like pseudo, but not really.
+So this configuration file, we're going to append some lines to slash lib slash ndb slash
+auth.
+So the first line host ID is equal to our new username and then enter tab, uid equals
+bang sys, space uid equals bang adm, uid equals star.
+So this allows our user to execute commands as any user group except for the sys and admin
+group.
+Then you reboot the system.
+If you're looking at these notes, trying to follow these steps yourself, the command prompt,
+that says term and then a percent sign, that is you're sitting at the actual machine
+or for all intents and purposes, right?
+Your spice client, for example, your VNC client to your hypervisor, functionally you're sitting
+at that machine.
+And the next section, a lot of the commands will start with CPU and a percent sign.
+This means you're connected over the network.
+So what we're going to do after reboot is make sure our setup works.
+We're going to use the draw term command on a unique system or if you have another
+plan nine system, you can use the RCPU command.
+If you're using nine front, you have to use the nine front specific draw term program.
+They have support for newer authentication protocols.
+So how you connect over the network with draw term, I typically put on my plan nine stuff
+in slash opt on a unique system slash op slash nine or even just slash opt because that's
+what that directory is the intended for to put auxiliary programs and optional programs.
+So the command slash op slash draw term, dash U, our example username, dash H is the host
+name of the server we're connecting to, dash A is the authentication server that we're
+connecting to.
+And our example, we installed a CPU server that runs everything except the terminal
+client.
+And then the last flag is dash R and then I just do till the slash when you connect to
+a plan nine system over the network, your local file system is exported onto the plan
+nine system.
+And I don't typically like to export my entire root file system, I'll either do dash
+R and then my entire home directory or specific directory or an empty directory or connect
+and only pass only export over the network, the files I need.
+The next step is configuring RC dash HTTPD, this is a part of the base system in nine
+front.
+So we need to make a file edit it.
+This file is called slash RC slash bin slash RC dash HTTPD slash like handler, it's it's
+a lot like an Etsy HTTB D dot conf on a unique system except it's all shell scripts.
+And I'm what this looks like is something like hash bang bin RC path info equals dollar
+location and then run a switch on the server name, so case example dot com set the file
+system root to slash this slash dub dub slash server name exact static dash or dash index
+and that case star so everything else give a 503 error.
+And then what we need to do is add a listener on port 80 that will run RC dash HTTPD.
+So how you do this is you run the command CP slash RC slash bin slash service slash bang
+TCP 80 to slash RC slash bin slash service TCP 80.
+And then the last step is to Chamod plus XR select handler, I kind of put those in the notes
+in the wrong order, but when the file when files without a bang exist in a leading bang
+exists in RC bin service and you're running a CPU server configuration and these listeners
+are started at boot time.
+And then you can reboot and test your server, hopefully it works, it can be a little bit
+fiddly, but that's what makes it so much fun.
+The last step for setting up a web server is SSL certs, I don't ever give money to
+CA certs or certificate authorities, the ones that charge money for them, I think it's
+a little bit of a racket and sort of anti open internet in a sense that specific companies
+can can and have made it so that anyone not using certificates by, you know, the racket
+organization, it makes them look bad, you know, when you go to a website with a self-signed
+certificate, I always click through it because I understand that, you know, the green lock
+doesn't mean anything, the crypto still works, especially if it's a small guy's site,
+you know, if you go to your bank and you get your banking web site and you get, you
+know, an error message, I probably wouldn't proceed, but if it's, you know, just someone's
+blog, it's fine.
+So I use self-signed certs on systems that don't support acme.sh, acme.sh is a good way
+to get free SSL certs, they give you that fancy little green lock so your grandma can
+visit your website and not be afraid.
+So how you generate SSL certs online front, it's a series of commands, I will read them
+out.
+ramfs-p, cd slash temp, off slash rsajn-t in single quotes service equals TLS, role equals
+client, owner equals star, close quote, and then an output redirect to a file called key.
+Then we need to mod 600 the key, we copy key to slash sys slash lib slash TLS slash key,
+we then run off slash rsa2x509, open quote c equals us, because that's a country I
+live in, cn equals the fully qualified domain name, close quotes, slash sys slash lib slash
+TLS slash key pipe, off slash pemen code, cap in all caps certificate, output redirect
+to slash sys slash lib slash TLS slash cert, we then make a directory at slash config slash
+dollar sys name, this depends on what your fully qualified domain name is or your host
+name on your local virtual machine, we then run echo in quotes cat slash sys slash
+lib slash TLS slash key, double greater than so we're appending the output to slash mount
+slash fact totem slash ctl, close quote, and then we add another append output redirect
+so to greater than signs to slash cfcfg slash sys name slash cpu start, and we're now
+going to add a listener for port 443, so you go to slash rc slash bin slash service create
+a file called TCP443, and this listener looks something like hash bang bin rc exec TLS
+serve dash c slash this slash lib slash TLS or dash L space slash this slash log HTTPS slash
+rc slash bins less service TCP $80 star, and then make it executable, so we're just wrapping
+we're just wrapping all requests on 443, around the service on 80, and that is how you
+get SSL on your plan nine web server. So the next step, this is optional, um, is installing
+and configuring the work content management system, work is written in rc scripts, so it's
+4.9, although you can run it on unix, I typically don't though, um, so sort of the process
+of doing this, make a directory slash sys slash dub, dub, dub, cd there, you're going
+to h get h get on plan nine is kind of like a a curl command, so you're going to h get
+URL, so you know, work dot cat dash v dot org and then the download and then the tarball extract
+the tarball, and then I typically move the work dash version number to a folder, just called
+work, and then optionally, you can run like a recursive cha mod 777, I haven't found a way
+to make some of the modules work without doing this. I don't do this, but I also don't run those
+modules, because they don't have it used for them, just in practice, you know, fiddling about
+with it, I haven't found a way to do that, don't do this, I beg you, um, and then we're going to
+change directory to work slash sys, make a directory called example dot com, and then copy,
+either dirt copy, d i r c p, you know, default dot caveat, a lot of work example dot com, or move it,
+and the next step is to edit our our web server configuration, so that's the one, that's the
+select handler at slash rc slash min slash rc dash htpd slash the like handler, so what we're
+going to do is add a variable called work, so work equals slash the slash dot dot slash work,
+plan nine equals slash work depends on a variable called plan nine, so for example, if you're running
+it under plan nine board, you have to specify where plan nine board is, in my case, that would be
+slash opt slash nine, probably slash bin, but I can't remember, same things, which on the server
+name, a case sereno file system root is equal to dollar work, so the work variable we set,
+slash sites slash serename, and then exec static dash or dash cgi, our work variable slash bin slash
+work dot rc, and then the default cases to error 503, and I test the website again, work is kind
+of fiddly, but it's fun, and it's archaic, and it's a fun thing to play. Now that all of the
+boilerplate is set up, now that we have a system with the vulnerability, I did all of this on an
+old release at nine friend that still has the vulnerability, if you're going to run this,
+sort of as an exercise to recreate it, you will have to use an older release, and current
+releases the bug no longer exists, so the vulnerability is a path traversal vulnerability,
+so hypothetically, how would we get a list of work users who are admins using this path traversal
+vulnerability, so the command I use is curl, HTTP colon slash slash sereno, remember sereno is the
+host name of my virtual machine, and then the path I request from the server is dot dot percent to
+f dot dot percent to f, and then the path to our work source, it's list of admin members,
+now if you know anything about web application security, you will know that dot dot percent to f
+is equivalent to dot dot slash, and percent to f is an encoded forward slash character,
+so what else can we do with this? Well, work stores its passwords for its work users in plain
+text, so we can use path traversals to get the login password for the work user, this is for the
+content management system only, this login is the separate password entirely from the system
+authentication, so for example, if someone gets your WordPress password, they might be able to
+vandalize your website but not take down your system, that's what it would look like if someone
+got your work password, so then I proceed, you know, I get my hypothetical user pwn, who's an
+admin, I get my hypothetical pwn users password, which is super secret, I then login using the web
+interface, another thing we can do is enumerate users with path traversal, so if you curl HTTP
+colon slash slash, serno slash, and then a bunch of dot dot percent to f's, enough to get to the
+top of the file system, and then slash ADM slash users, the web server will give you a list of
+all of the users on the system, this is equivalent to using path traversal to grab a slash
+Etsy slash password file on a unique system, and then as you know, hypothetically we have a web
+like a content management system users login and password, we see that they're also a user on
+the system, let's hope that they're not sharing passwords, and my example, I made them share
+passwords, so I log in, and really what I, my grand goal, right, the whole purpose of this entire
+exercise is to say, when you have path traversal vulnerabilities and authentication vulnerabilities in
+your content management system, things can go south, especially if you have users who are sharing
+logins and passwords, so let's talk about how the path traversal vulnerability works in code,
+so rc-atpd, it calls various handler scripts to decide what to do with the request, if we're
+running work in static-or-cgi, it might be static depending on the server configuration, so I have
+pasted the old insecure version of these handler scripts, and I, because rc-shell is kind of
+strange compared to like a born shell, I'm going to talk about them in pseudocode, so the static-or-cgi
+handler, the one that we specifically called in our server configuration, how the logic in that
+one works is if the requested file exists, call this cgi handler and pass the arguments,
+if the requested file does not exist in our document root, call the static-serve handler,
+so the problem actually lies in the static-serve handler, so the logic for the static-serve handler
+is you know step on and code the full request path into a url, if the url points to a file out of
+star slash the document root, error 503, if the url is broken or malformed, exit, if the url points
+to a file that doesn't exist or is unreadable, error 503, and if you still have an exited
+just or to the file, the problem is that there's no sanitization, so the script checks for file if the
+file exists in the current directory, right, does this file path exist in the document root,
+but not before encoding the url string, so in the script they're using the url and code command,
+url and code command, encodes and decodes, HTML characters, so for example if you echo a percent
+to f into the url and code command, it will give you a forward slash, so this is kind of a trick
+about how paths work on unix and unix like systems, so now I ask does does the directory dot
+forward slash exist in star forward slash, the answer is yes because dot dot is directory contained
+inside of dot slash and star slash dot dot slash is the current working directory, if you add
+another dot dot slash you are in the directory above the current working directory, so the issue
+is sanitization, how did they fix it, they added a sanitizer, so they compared the encoded url
+against an actual hypothetical file path and exit if there's a mismatch, this means any urls with
+encoded characters automatically error out, and now I am going to talk more about work, the content
+management system with a vulnerability, and talk about other bad configuration options, so a
+bad work configuration, although it might not lead to remote code execution or executing commands
+as a user over the network, it can still lead to website defacement if your web server has a
+password with vulnerability, so not rc dash hdbd but hypothetically if you were running work under
+something like Apache, or for example calling it from within the php process, so another thing I did
+here was modify the direct discretionary access control for slash this slash dub dub dub to allow
+work which is a child process of the web server to write to disk, so on plan 9 most of the listen
+processes run as the non-user and they're not allowed to write to disk unless you explicitly
+permit it with like a recursive cha-mod 777, I don't do this on my plan 9 web server, I think
+running a cha-mod 777 on your document route is the worst idea in the history of all time ever,
+and allowing any web server to write to disk is a bad idea unless implemented very very carefully,
+so for my test server I enabled the Derrder and blog modules, Derrder is like a wiki,
+but you can use it to edit any page, and I sort of followed the logic of the type of admin who
+would run a recursive cha-mod 777 on on vardub dub dub ht docs because you know that's what
+the word press installation guy told me so I could have a cool cool web interface and not have
+to use a command line to modify my website, let's pretend that I'm this admin and scrape the work
+configuration using the path traversal to see if the bad man has these modules enabled, so I
+scrape the configuration using path traversal looks like the wiki module is enabled, the wiki
+editor group is the admin group, if you recall to the original logging into the web interface using
+these you know user name and passwords, our own user have the group of admin, so I log into the
+interface and I change the index page, so let's modify, let's modify the index page to
+warn the admin as a funny joke, it's not a crime under the computer fraud and abuse act to
+vandalize web servers and it's totally not an appropriate way to warn admins about a vulnerability,
+so I changed the website to say security advisory, lol this guy still hasn't figured out the dot
+dot percent to f trick, I thought about how I might fix this and I think it would be modifying
+work to support password hashing, it's not terribly difficult, I read through the the scripts that
+make work work and I haven't really put any effort into writing code for them but it would be
+as simple as when you create a new user hash their password and when a login is sent
+hash that password, a couple of lines and only two two separate scripts, but because I don't use
+these modules and I use work more so as a static site generator taped to a CGI process, rather
+than a content management system, I haven't done this yet, I think I might do it though in the
+future and what this would, but this means if you add password hashing is that if someone
+hypothetically gets a path traversal on your web server, they don't get passwords and then your
+users who share passwords are not affected and therefore people can't log in as maybe unprivileged
+users, so luckily enough plan 9 private namespaces right, the web server runs as the non user and
+the non user has its own namespace, so out of curiosity I compared the hostowner's namespace
+and the non user's namespace, so if you remember the hostowner is analogous to a root, so I grab
+the namespace from the system console, not from draw term because draw term pulls in a lot of
+different binds and it's a lot larger than you know put like I said your local file system is
+exported to the server and also a lot of other things are pulled in and then I pull the namespace
+from the listen command and then I run a unique style diff to show the difference, I have the
+diff in here but plan 9 is kind of strange and may or may not be hard to parse, so I sort of
+broke it down again, so the major difference between the hostowner and the listen process is if the
+hostowner has a lot more things bound to his namespace, so in the diff command every line that
+starts with a plus is something the hostowner has that the listen process does not and everything
+with a minus is something that the listen process has that the hostowner does not, so the things
+the hostowner does have is access to PCI interfaces, APM power management, storage devices, real-time
+clock and NV RAM, serial ports, USB, slash shared global mount points, the keyboard, temp
+directories and various special files relating to services, so the listen process is fairly well
+isolated from the system, a minimal system damage can be done by taking over a process owned by
+the non-user, one thing that I do want to see though is a web server that doesn't require
+slash bin to be mounted to the listen process's namespace or the non-user's namespace,
+because plan 9 uses static linking, a single C binary, or single binary written in C could
+possibly be the only thing you have to pull into a namespace logic wise, of course she would
+still need some of the networking things, right, and some of the fac totem things, for example,
+in closing I think I've seen an argument made that the RC-ACTPD vulnerability was not a bug
+because namespaces are supposed to segregate users on the system, I disagree on this point,
+I think namespaces are good, but security has to be a multilayered thing, relying on a single
+security feature to save your system means that you're relying on a single point of failure,
+not failing, you know, a single linchpin taking down the whole system I think, that's sort of a
+bad way to do things, so as we all know, Charoo Discapes, namespace escapes, container escapes,
+and VM escapes are all things that we have to think about writing software that touches the internet,
+even though these are very unlikely things to happen, it's still possible, right, the fact that,
+you know, hypervisor escapes are possible means we should be thinking about hypervisor escapes,
+the fact that namespace escapes or container escapes are possible means we should be thinking
+about namespace escapes and container escapes, I think when writing things that touch the internet,
+we have to consider all user input as dangerous, as potentially dangerous, and realize that all user
+input that becomes remote code execution as an unprivileged user will always result in privilege
+escalation no matter how secure we think the operating system is, you know, every week there's a new
+local privilege escalation vulnerability in your favorite operating system, you know, we see it
+more in Linux and Unixes, but I think that's because people are actually poking at Linux and Unixes,
+and not so much poking at Plan 9 for security, because it's kind of a research operating system,
+you know, to run this in production, but don't put anything valuable on a type of attitude,
+I think adding additional layers of security makes it harder for attackers to get into the system,
+so for example, when I write PHP, PHP programs, I consider things in the following order,
+number one is don't pass unnecessary resources into the document route by assembling spine mounts
+or whatever, number two, never, ever, ever use the system function in a context where user input
+will ever be passed to that function, that's a really easy way to avoid shell escapes,
+sanitize all user input depending on context, so if the PHP program is directly referencing files,
+what I do is I make a white list of files and compare the request to the white list,
+and if the request is not on the white list, I will redirect the user to back to the input form,
+and typically I won't even say, hey, this input is bad, I try to be silent when there is an error,
+that way they can't really gather information about the system, and if the PHP process is
+connecting to a database, I use prepared statements, so logic is always logic and data is always data,
+and they're never treated otherwise. A fourth step I take, fire up a Cali Linux VM, and beat the
+server half the depth, I typically run as many tools as I can that are easy to use anyway,
+to see if I have any of these types of vulnerabilities on my test server for the code I wrote,
+and then the fifth step is sort of iterate upon my ignorance, what did I learn from beating my
+test server half the depth and how do I improve it? The sixth thing I do is double check the
+discretionary access control, the seventh thing I do is recheck the Damon configurations to make
+sure I'm not doing anything stupid or I didn't overlook something, and then my eighth step, my final
+step is to rely on SE Linux, or open BS teacher roots, to save me when all else failed, and then of
+course there are the other things like firewalls with white lists and blacklisting entire IP address
+blocks, a key base SSH authentication, writing SSHD configurations that don't make it possible to
+enumerate users, rate limiters, request length limiters, so on and so forth. The way I think about
+security is that each layer of security is like a filter, and if you have enough layers of filters,
+it takes an unrealistic amount of force to push, for example, water through your layers of filter,
+and I think although a system is perfectly safe from three-letter agencies, multiple layers of
+security make it a lot harder for drive-by attackers to just get into your system, and exercise
+you can do to sort of demonstrate that don't rely on a single security thing, you have to write good
+code, is intentionally write a PHP script that does path traversal, and then run it on a system
+with SE Linux and try to coerce slash Etsy slash password out of the server, and if you started
+with mod PHP, try PHP FPM, or vice versa, and I think in the end you'll be surprised when even
+mandatory access control doesn't protect your system from badly written code, you know it's there
+is a failsafe, but I think it really should be the last line of defense rather than the first,
+and I think even now after spending almost a month and a half of time, almost exclusively on
+planned eye, and I'm enjoying it a lot more than when I began, and even more than when I was using
+it and semi-regular month long spurts in previous years, the purpose of research operating systems
+is to perform research either about the design of the system or otherwise, so some of the questions
+I came up with when writing this, the show notes were, where we'd be without private namespaces,
+how can I use this idea in the real world, what would the world look like if we had real distributed
+computing instead of web browsers, which are the new dumb terminals, is there a use case for this
+in the real world, what can we learn for a single layer security models, and what can we do to improve
+the system, I think plan 9 is really perfect for this type of research because a lot of the
+components only made it to sort of a proof-of-concept station, there's a lot of work that an individual
+user can do, there's a lot of low hanging fruit that seems like it's good for practice that you
+might not get on a more reliable system like a Linux or a BSD, I think some of the projects I've
+thought about over this last week when I was playing with a plan 9 in the web server aspect
+is writing an HTTPD in C and a work like I guess how I would describe it is static site generator
+tape to CGI that generates pages on the fly in C, so that I can make a smaller name space for the
+listener without pulling in slash bin, making it a lot harder to execute shell escapes, but also
+you know that comes with the of course downside of now you have buffer overflows to worry about,
+I think that in order to improve ourselves on the systems we use we have to be critical of
+ourselves on the systems we use, and even critical of the things we enjoy to improve them and learn
+something new, especially for software, there's no such thing as you know perfect software or
+only the least bad software, and I think being able to to criticize allows us to improve and sort
+of iterate upon things so that it fits our own use case, really really my final thought, you know
+criticism says you know this program or operating system or whatever sucks, and I think the appropriate
+responses I know helped me fix it, I kind of a humorous response, you know I know that the software
+is bad, why are you hoping to fix it? I think that's the right attitude to have when it comes to
+sort of research operating systems and really any piece of software in general, not a lot of links
+in this show, but hopefully it was entertaining, hopefully you learned something new, and hopefully
+maybe it was useful for you in some way, thanks for listening to Hacker Public Radio,
+if you know a whole lot about research operating systems or even a research operating system I
+failed to mention, maybe something like serenity OS or maybe a minix, I would like to hear a
+show about that, I think that would be very interesting, starting a Hacker Public Radio research
+operating system series, so again thanks for listening to Hacker Public Radio.
+You have been listening to Hacker Public Radio, at Hacker Public Radio does work,
+today's show was contributed by a HBR listener like yourself, if you ever thought of recording
+broadcast, you can click on our contribute link to find out how easy it really is, hosting
+for HBR has been kindly provided by an honesthost.com, the internet archive and our sings.net,
+on the Sadois status, today's show is released under Creative Commons,
+Attribution 4.0 International License.

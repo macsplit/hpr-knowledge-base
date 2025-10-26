@@ -1,0 +1,134 @@
+Episode: 3489
+Title: HPR3489: Equality of structured errors
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3489/hpr3489.mp3
+Transcribed: 2025-10-25 00:20:03
+
+---
+
+This is Hacker Public Radio Episode 3489 for 1st April 16th of December 2021.
+Today's show is entitled, Equality of Structure, There is Undisput of the Series, Haskell
+It is hosted by Tuku Toro-toe, Undisput about 13 minutes long, and Carrison exquisite flag.
+The summary is, Tuku Toro talks about Equality in Haskell.
+Hello, this is Tuku Toro and you are listening to the Hacker Public Radio.
+Today's episode is about Equality of Structured Errors and its continuation of the previous
+one I recorded.
+So for a bit of background, in a previous episode, which number escapes me right now,
+I devised a solution that I didn't have to define all the errors in a one place.
+And I did this mainly to speed up the compilation times and making the system a little bit easier
+to maintain.
+So this time I wanted to talk about comparing those errors.
+So I had a problem.
+I wanted to write a test that calls validate parts of the person function.
+That is a function that I'm using to validate the request from the client or browser into
+the server that validates the data that is used to change a person.
+So for example, if in the game, every person can have a life focus.
+This means that the life focus is a focus of their life.
+It means you can focus on hunting or you can focus on religion or you can focus on scientist
+studies or something.
+And this opens up some new choices for that person and it acts some extra events that
+can happen to that person.
+For example, if you are hunt, you can arrange a great hunt and try to get some legendary
+beast roaming in the footage of your client.
+Okay, this validate that's a big person function does some checks.
+It checks that you're not trying to change life focus to soon.
+There's a five year cooldown in the game.
+You cannot be changing the focus all the time.
+You have to, after you have focused on something, you have to keep that choice for at least
+five years.
+You cannot select the same focus again.
+And you cannot, of course, you cannot modify someone else's life focus.
+You can say to your neighbor that, hey, now you're focusing to something completely different.
+The code for the test is in the show notes, but the point is that I am generating a bunch
+of requests with certain properties.
+And I want to check that when these requests are validated, there's a three errors present
+in the reported, reported errors.
+So it will know this that you are not, you can, it will know this that if you are trying
+to change the focus to soon or if you are trying to reselect the same focus or if you're
+trying to modify someone else's avatar.
+And this is done by just calling it Validate Patsyapid version, and then using equality
+to check if these three errors are present.
+So a bit of a bit about the equality in hospital, there's no built-in equality in the hospital
+if you want to compare something to somethings, you have to define the equality by yourself.
+Or in some cases, you can let the compiler define that for you, but there is no default
+implementation for it.
+This is done by making an instance of the type class EQ, that is very simple, there's
+two functions, EQ and not EQ, both photos, photos, functions take two values of the same
+type and return a rule.
+And you need to define either one of those, because the type class EQ is defined in a way
+that the EQ is not not EQ and not EQ is not EQ, well not EQ, like it's a circle, circle
+or definition, but when you make your own instance and define one, either one of those,
+the other one automatically refers to that function that you define and works fine.
+Of course you can define both, but usually there's no need for that.
+So back to the problem, EQ is my type that is used to wrap error codes.
+So it takes a one argument, the only constructor of EQ takes one argument, A, and returns
+an EQ, and that A has to implement error code class and to change and equality and show
+five classes.
+And essentially it can wrap anything that has instances, this instance is defined for
+it, and it will always return you E code.
+So you are essentially hiding the type of the thing that was wrapped.
+But whatever gets wrapped in, it isn't visible anymore as a type in itself, only the type
+class instances.
+So you have something that you don't quite know, quite know what it is, but you know
+that there's a certain function that you can call for it.
+So only those functions defined in those type class instances are available.
+So I wanted to compare two E codes to each other.
+But the first try, the knife implementation was just to use that E code constructor to
+take the, to peel the E code out from the, around the A and then compare them.
+So instance E code, where E code A equals E code B is A equals B.
+So I'm just comparing those things instead of E code.
+And this will lead into a compiler error, couldn't expect the type A with actual type A1.
+A1 is a rigid type editor bound by a pattern with a constructor and so on and so on.
+This means that the compiler cannot ensure, it cannot figure out how to ensure that when
+you are comparing two E codes, E codes, such any E codes, it cannot ensure that the values
+that they are wrapping are same type because the type of the crafting isn't visible anymore.
+You cannot, you cannot compare apples and oranges in Haskell.
+You can compare fruits, but you cannot compare apples and oranges.
+So you have to, you have to know what you're comparing and here you, here you only know
+that there's some type class instances, but you don't know the type that you're comparing
+hence it's sales.
+The error code, the completion error is quite a bit long, it's in the show notes, but the
+point is that it couldn't match the expected type A with actual type A1.
+So the second try I came up with is, I thought that the perhaps, the thing that the E code
+perhaps, it has a show instance, so I can turn whatever it is inside of, inside the
+into a string and strings I can compare.
+So then the solution is an instance E code where A equals B is show A equals show B. So basically
+to compare two E codes, I call show for the inert to get the string representation and
+then compare those.
+These verbs, as long as you're string representation between different types is different, it usually
+is but nothing current is this.
+So while this verb, I thought that it feels a little bit hacky and set out to find a yet
+another way to of doing this.
+So I started thinking that when two E codes are equal, what does that means?
+And the E code has a function to get the HTTP status code, that is, for example, 500
+internal server error or 404, resource not found, and description telling what exactly
+meant wrong, for example, in our case, if you were to try to change a live focus, it will
+be telling that you can't change live focus, I don't remember the exact wording, but
+it will be an English sentence saying that you're going to change live focus, if you
+last change it on this started and it only has been this many years since you changed it.
+So I figured out that it doesn't really matter what's inside of the E code, that structure
+error because we are not really using that information for anything.
+When the error is reported to the client, to the browser, what matters is the status code
+and the description.
+If you have two E codes that have the identical status code and description, then they are
+equal, they are the same thing, no matter what's inside of them, because for the client they
+look the same, so they are the same.
+So to find that one, I just wrote instance equal equal where A equals B is HTTP status code
+A equals HTTP status code B and description A equals description B. Now that is fairly
+a nice solution I think, I'm comparing the status code and if they are saying I compare
+the description and if they are the same, then two E codes are the same, otherwise they
+are different.
+And the not equal function I don't have to define, like I tried to explain earlier that
+is automatically defined referring to the equality function and taking an immigration of that.
+So now I will write those tests that are testing that when I'm validating, when I'm calling
+that validate touch-up person function with invalid data, I'm getting a list that contains
+three errors of specific byte and that was what I wanted to do.
+Thanks for the listening, if you have any questions or comments, you can reach me via email
+or in the video and you can also contact me on Twitter or Facebook.
+Or even if you could record your own HackerPublic Radio episode.
+Addustra!
+You've been listening to HackerPublicRadio at HackerPublicRadio.org.
+Today's show was contributed by an HBR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out
+how easy it really is.
+Hosting for HBR is kindly provided by an honesthost.com, the internet archive and our sync.net.
+Unless otherwise stated, today's show is released under Creative Commons, Attribution, Share

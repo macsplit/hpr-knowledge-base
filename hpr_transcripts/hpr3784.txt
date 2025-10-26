@@ -1,0 +1,154 @@
+Episode: 3784
+Title: HPR3784: Two factor authentication without a phone number
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3784/hpr3784.mp3
+Transcribed: 2025-10-25 05:17:38
+
+---
+
+This is Hacker Public Radio Episode 3,784 for Thursday 2 February 2023.
+Today's show is entitled, Two Factor Authentication Without a Phone Number.
+It is part of the series' privacy and security.
+It is hosted by Celeste, and is about 18 minutes long.
+It carries a clean flag.
+The summary is, diving into privacy-aware and offline methods to generate one-time passwords.
+Today's show is licensed under a Creative Commons Attribution Non-Commercial Share-A-Like
+License.
+Hello everyone and welcome to this new Hacker Public Radio Episode.
+Today's topic is OTP or One-Time Password, Algorithm to Generate Them.
+And how they work.
+So first of all, remember that Hacker Public Radio is a crowd-sourced podcast, so it's
+made by people like you.
+And if you have something to share, make sure to record a podcast and upload it.
+It's really easy.
+Go to theHacker Public Radio dot org slash calendar dot PHP and book a lot.
+So back to the main topic.
+One-time passwords.
+They are one of the most common and easy to implement true factor authentication methods.
+It asks, when you try to look into a website, you enter your username and password, and
+then the website asks you some kind of possession factor, something you own and control, something
+you own and control to check who you are claiming to be.
+One of the most basic examples is sending you an SMS with code, and you need to enter
+that code into the web page to complete the login process.
+Networks pretty well, unless you get scammed by someone at the phone pretending to be
+the company, asking you to tell them the code, but scamming aside, it works pretty decently.
+And it's really easy to implement.
+You don't even need a complex algorithm on the server.
+You just need random number and send that number via SMS to the user.
+The problem with that is that the user has to, is first to give their phone number to
+the company managing the service.
+And you might not want to do that, also, because we know that phone numbers are working
+like a global universal identifier of yourself, because you rarely change your phone number.
+So it's very valuable.
+And if you have people's phone number and maybe who they contact, you can even reconstruct
+the socially graphable person.
+So it's very valuable information.
+You might not want to give that to external companies, also, because there are much cleaner
+and safer methods to achieve the same level of security of the SMS-based one-time password.
+Other two alternatives exist.
+One was used more or less 10 years ago by banks, and now it got almost replaced with
+the new one.
+The old one is named HOTP, which stands for HMAC-based one-time password.
+HMAC is a form of, is a computation, based on hashing functions.
+That combines a message and a hashing function and a secret to produce a value.
+And it's needed to ensure that the message was not tampered with.
+So the code generated is sent along with the message, and the receiver read us the
+exit computation, and if they get the same result, the message is legitimate.
+In this context, it's used in order to produce some value and make the user recreate that
+computation and get the same value.
+So even without communicating, the client can generate a valid code, which the server will
+understand and check its correct.
+I guess it's confusing for now, but I will try to make some examples.
+The HOTP works by combining two things, a secret and a counter.
+Secret is random number shared by the client and the server, so both of them know and store
+this secret.
+And the second thing is the counter.
+It's a simple counter that is incremented each time a code is generated.
+Maybe you remember those little tokens with the LCD screen that some banks gave you years
+ago, with a single button, and each time you press the button, a new code is generated.
+That's a HMAC based one-time password generator.
+So the bank produces a secret and stores it both in the server, both in the little token
+that they give you, and they are both initialized with the counter set at zero.
+Then you try to look in your banking system, you press the button, and your token combines
+the counter, which is one, because it has been incremented, with the built-in secret that
+it stored also on the bank side to produce a numeric code.
+You enter that code, along with your credential into the bank, the banking login system, and
+the bank server does that exact computation.
+It takes the counter, which now it will be one, and the secret tries to redo the same computation,
+and if it gets the same code as the one you generated, then that's a valid code.
+And it goes to the conclusion that you actually own that token.
+And you can log in.
+Now you might say, hey, I can not enter the code fast enough, and maybe I have to press
+three or four times, or maybe the button on the token is pressed by mistake, and then
+the counter goes out of sync, because the server thinks to be at the counter with value
+one, while your token has been pressed eight times, so they are out of sync.
+And that's why the server actually doesn't check only the next value in the counter, but
+it checks the next 80, or something like that, values in the pressing the button, to check
+that even if they are out of sync, you can still log in, even if you make 20 unwanted
+presses on the token.
+And then when a new valid code is entered, the counter on the server is reset, and kept
+in sync again with the one on the token you own.
+One attack, there's one attack on this type of token that works exactly exploiting the
+fact that the server and the client are not in sync, and the server actually has a window
+of anticipating and reading the next 80 codes, and they are still valid.
+So if someone takes your credential and then has temporary access to your token, they
+can press the button even 10 times, and write down the code that has been generated.
+So imaging that your server thinks to be at counter one, your token is at counter one,
+an attacker presses the button 10 times, and writes down the code generated for the counter
+value, 2, 3, 4, 5, up to 11, up to 10, sorry.
+And then the 11, then the counter has the value 11 inside your token, while the server
+still thinks to be at counter one.
+So the attacker goes away and leaves your token where it was, you didn't notice anything,
+bad. And then the attacker takes that credential, takes that code that have been generated,
+for example, for counter value 2, and that code is valid, because the server thinks, hey,
+I'm at counter number one, and the code I received is from counter number two, so it's valid.
+And then the attacker puts counter number three, that code generated by the counter number
+three, and that's valid too, up to the 11, one.
+So unless you log in with your token before the attacker, the attacker can successfully
+enter a lot of valid codes, my exploiting that out of signature of this type of token
+and generation. So there has been a new way of generating the one-time passwords, which
+is still offline, it still doesn't need any full number, and it's a bit more robust about
+this. And it's called the TOTP, it stands for time-based one-time password, instead of using
+the counter to combine it with the secret key to generate a one-time password, they use the
+milliseconds from epoch, the unique time, the number of milliseconds, or seconds maybe,
+the number of seconds, yeah, I think it's correct to say seconds here, they use the number
+of seconds from epochs from 1st January 1917, rounded up to steps of 30 seconds each,
+as a value, to combine with the secret key that is shared from both from the server and the client,
+to produce the numeric code, the one-time password, the actual one-time password. So we don't have the
+problem of being out of sync anymore, because as long as the client device has a correct time stamp,
+a current date and time, it will generate the same one-time password as the server by only knowing
+the current time and the secret key, which is shared between the two. In this way, you can no longer
+press a button and create 10 or 20 valid codes to be used later, because the generated code
+is strictly tied to the current time stamp. So unless you know the secret that is combined with the code,
+it's combined with the time stamp to generate the code, unless you know that secret, you cannot
+forge new codes. Well, before you could just press the button and write down the valid codes and
+use them in the correct order, and you can log in in the bank account of someone, which is what's
+quite bad. How to use time-based one-time password today? You can use an authenticator app,
+there are many dual mobile Google authenticator and similar, but I highly suggest you
+iegis for Android. It's called AEGIS. It's on F-Droid, it's completely free and open-source,
+and it works. As I said, the calculation it does, it's simply straightforward, it just takes
+the current time stamp, it's rounded it, and it combines it with the secret key to produce a hash
+digest, and that's used to create a short numeric code to enter.
+Another alternative is to use a password manager like KeyPasXC, which is a Qt-based password manager
+for desktop computer, Windows and Linux alike. It actually is used only to store passwords,
+static passwords, but if you right-click on an entry, you can access the set TOTP menu,
+where the keyPasXC can store the secret key and generate the time-based password for you,
+and that's it. You can use that to login, copy and paste it into the clipboard and paste it into
+the login form. Another advantage of this TOTP one-time passwords compared to the HOTP token-based
+ones that were available in the past is that you can easily replicate, if you have access to the
+security, you can easily make a backup of that and replicate it on many devices. For instance,
+I have saved the secret key to generate the one-time password in KeyPasXC, and then I copied that
+in the Android app, and they both work and give the same result because they are not
+dependent on a counter that could go out of sync between the devices. They are only dependent
+on the secret key, which is static and the same, and the current timestamp, which is available
+for both devices, both the computer, both the Android phone. So it really works to have a backup
+of the two-factor authentication method, just in case you don't get your self-locked out of
+important accounts. Another, maybe in the future, I could try to talk about Webothn and
+security-key-based authentication, but that's it for today, and I hope you enjoyed it,
+and I hope you learned something. Let me know if you have some new details, or if I made some
+mistake during the podcast. Bye and see you next time!
+You have been listening to Hacker Public Radio, as Hacker Public Radio does work.
+Today's show was contributed by a HPR listener like yourself. If you ever thought of recording
+podcast, you click on our contribute link to find out how easy it really is. Hosting
+for HPR has been kindly provided by an honesthost.com, the internet archive and our sync.net.
+On the Sadois status, today's show is released under Creative Commons,
+Attribution 4.0 International License.

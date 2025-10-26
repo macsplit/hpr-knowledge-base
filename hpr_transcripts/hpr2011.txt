@@ -1,0 +1,439 @@
+Episode: 2011
+Title: HPR2011: Introduction to sed - part 4
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2011/hpr2011.mp3
+Transcribed: 2025-10-18 13:18:36
+
+---
+
+This is HPR episode 2011 entitled Introduction to Zen Part 4 and in part on the series Learning Zen.
+It is hosted by Dave Morris and in about 48 minutes long.
+The summary is how Zen really works.
+Let's frequently use Zen command.
+This episode of HPR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15.
+That's HPR15.
+Better web hosting that's honest and fair at An Honesthost.com.
+Hello everyone this is Dave Morris.
+This is episode 4 in the series I've called an Introduction to Zen.
+It's a bit more than an introduction but that's what I thought it was going to be when I started.
+Anyway hope you're still with me.
+So in the last episode we looked at some commands, some said commands other than the S
+command that we'd spent a couple of episodes looking at and we looked at how you address lines when
+you're writing a script for said.
+So in this episode we're going to look at how said really works.
+We've not really gone into the guts of it and we're going to have a look at some more said
+commands so that we're in a position to build some useful said programs if possible.
+So let's look at what said is actually doing in a bit more detail and we've done so far.
+I mentioned the pattern space where said holds the incoming data in episode 1 and this is where
+the data is held aligned from from whatever file it's reading.
+This is where it's held while commands are being executed on it.
+Remember the thing we mentioned about this.
+I'm going to expand on this a little bit.
+There's also another buffer or another space for holding data which is called the hold space.
+So when we looked at the pattern space before I didn't really explain what it was in great detail.
+We just looked at it from the point of view of it holding the current line from the input stream
+but it's actually a buffer, a storage area that can hold an arbitrarily large amount of data.
+It's usually holds just the input line. I have to say the way that most people use said
+and but it can hold a lot more which we'll see today.
+So just to clarify what is happening within said as it's processing the data that it's working on.
+A line is read from the input stream. We knew that already obviously.
+Then the trailing new line is removed if there is one.
+And the result of that process is stored in the pattern space.
+Then all of the commands making up the said script which as you know can be provided through
+the command line or through files or whatever.
+And these are all executed with regard to whatever the addressing specifications are.
+So certain lines won't fire until you hit a certain line address and so forth.
+When the command execution is all finished the pattern space is printed to the output stream
+and trailing new lines added to it if one was removed.
+I don't know how you test that actually. I don't know how you make the lines of that trailing new lines
+but that's probably just my ignorance of Unix.
+And remember that we looked at the minus n option to the command line which switches off the auto
+printing that I just referred to. Then the cycle begins again after the line's been printed or not
+or the new line's been grabbed and the pattern space is always cleared before a line is read
+in a normal course of events but there are ways in which you can prevent that.
+Now the whole space is a separate buffer, storage buffer of the same sort to the pattern space
+and it's not affected by the the read and write cycle that I've just described.
+So the data that you put in the whole space stays there till said exits or until you've
+you delete it explicitly. There are commands that allow you to move data to and from the whole space.
+So let's look at some of the commands and what I'm doing here is I'm following the
+Gnu said manual which has section entitled less frequently used commands.
+I'm looking at some of these. I'm not going to cover them all. Some I'll cover today
+and there will be some others which will be in the next episode.
+Some I won't cover at all though. Let's start with the Y command.
+That's just a simple letter Y and it's followed by a delimiter which is by default is a slash,
+then a sequence of characters, then a slash and another sequence of characters and a closing slash.
+The first sequence of characters is called a source characters. The second sequence is called
+the destination character. So what this does is it causes a said to run through the pattern space
+and it transliterates or transforms characters. It looks for any that match the source character list
+and it turns them into the corresponding character in the destination character list. So if it's
+if the source list contains ABC and the destination contains DEF then every A will be turned into D.
+When we looked at the S command a bit later on in that in that series of talking about it
+we spoke about how you can change the delimiters that separate the parts of that command or
+it's the same with the Y command. If you use something other than a slash as the first delimiter
+then that's not a not a problem. If you actually want to have the delimiter that you're using
+within either of the strings you have to proceed it with the back slash. The two lists have got to
+be the same length. The source character list and the destination character list must be the same length
+otherwise how could it work you know the Y command is looking for a character and when it finds one
+it's looking for the corresponding character in the destination list. There are no flags for the Y command.
+So I've got some examples and what I've done is to make a simple said script which
+processes the first two lines of the said underscore demo 1.txt file and it processes them through
+Y command and the Y command the source list is all of the lowercase vowels and the destination list
+is the same vowels but shifted by one vowel. So AEIOU becomes EIOUA. So if I just read out the command
+it is said space minus NE space open quote 1 comma 2 remember that means on lines 1 and 2
+open curly bracket which is the start of a group of commands and we've got this Y slash AEIOU slash
+EIOUA slash then we've got a semicolon and a P closed curly bracket closed quote space said
+underscore demo 1.txt so what that's that's doing is it's applying the Y command to every to the
+first two lines to every character on lines 1 and 2 and then it's printing the result. So what you
+get is instead of hacker public radio etc I'm not going to read this out because this is really silly
+is hacker pub lock rate redo and stuff like that this amazes me I'm a very small mind a childish
+mind obviously but anyway it demonstrates the point I've got another one of a similar nature
+it's a second example so in this case I'm using NL remember the NL command we used before which
+is number lines and it numbers the lines in the same file said underscore demo 1.txt and it
+feasts that said and in this particular case we have two Y commands in two groups we're using
+the the one tilde two expression addressing expression meaning start on line 1 and then go two lines
+after that so it will go every odd line we're doing one transformation in that case and we've got
+another one starts line 2 and then goes every every second line so that'll be every even line
+and we're doing a different transformation and I've got a different
+delimitive for the the second Y command I'm not going to read this all out because it's really long
+and I think that you should should be able to get some sort of idea from what I've just said
+but there's an example that shows that it's actually working its way through the entire file doing
+different transformations to every other line again it's doing this vowel twiddling business
+so the next command is the equals command this is a canoe said extension and it causes said to
+print out the line number the current line number from the input stream that is followed by a new
+line so this is this is merely said counting the lines as they're coming in in in its cycle of
+bringing in lines in and putting them in the pattern space and so on the equals command can be
+proceeded by any of the address types as could the Y command just to think about that I didn't
+emphasize that in the notes properly so I've got an example here using the equal command to print
+out the number of the last line of the input file so it's said demo one again and the the said
+expression the said command script if you like is simply dollar equals so that means do nothing
+at all except on the last line print out the line number so the answer is 13 which we saw in
+episode one when we were using the wc command to do the same thing just said it's perfectly
+capable of doing this by itself the next example I've got prints out the line number but then it
+follows it by the line and I just wanted to point out to you that the line number is always
+followed by a new line so you see the the line number then you see the line and this is a said
+space minus in e space then the script and the script is in quotes dollar open curly bracket
+equals semicolon p close curly bracket quote so that's going to do the same thing as before except
+it will print out the line as well so you see 13 on one line and detail on the topic which is
+the last line of said demo one on the next line it is not straightforward to put the line number
+on the front of the line within said it is possible but it's very very very convoluted I don't even
+think I'm going to cover it in this series basically because there's better ways of doing that I suppose
+given that we've got commands like nl so the last example in the talking about the equals command
+is just pointing out that if you use the minus s option to the command you will get
+and you feed it to commands feed said to two files I should say then you're going to get two ends
+if you approach give it the same script so I've got said space minus s and e space then the same
+script that we had before dollar curly bracket open curly bracket equals semicolon p close curly
+bracket quote and we're giving it said demo one said demo two is the input files so we the answer
+we get is 13 followed by detail on a topic followed by 26 followed by contribute one show a year
+so it's it's operated on the two files because it's treated them separately so now we're going to
+look at a group of commands that operate on the pattern space okay what we've been doing so far
+also operates on the pattern space but these are some some special commands I guess you could say
+that these are commands that you're not going to use all that often unless you're really into
+heavy said programming so there's four commands here the first one is the D command I'm not going to
+give any examples until the end here because you really need to be using them together they don't
+really do very much on there on their own mostly so the D command it deletes from the pattern space
+and it's related to the lowercase D this is the uppercase D I should have said it's it's related to
+the lowercase D command which we've already seen but it assumes that the pattern space has multiple
+new lines in it and it deletes up to the first new line then and this is where it's different the
+cycle is restarted using the resulting pattern space but without reading any input so D does a
+thing to the pattern space and then doesn't read more and goes back again to the start of all the
+the said scripts if there is no new line in the pattern space then the whole thing is deleted
+and a new cycle is begun with a new input line being read so in this case the capital D command
+behaves just as the lowercase D command does and you can proceed D by any of the address types we've
+already seen and we have the capital N command and this one adds the next line of input to the
+pattern space preceded by a new line so it's going to append it to the pattern space if there's
+no more input when the N command goes to grab input then said exits without processing any more
+command so it needs some quite careful use this I I don't personally find it all that useful
+I'm a bit of a said newbie I suppose so I tend not to to do stuff at this level all that often
+but it's it's it's quite an advanced command then there's a capital P command and that
+prints out the contents of the pattern space up to the first new line again it's assuming that
+there is a pattern space that contains multiple lines separated by new lines and it prints out
+the first chunk so you could do you could use the P command and the D command to sequentially print out
+parts of the pattern space then there's the lowercase L command which personally I found
+to be a lot more useful when you're trying to work out what a said script is doing and it prints out
+what's currently in the pattern space and it does it in a special way it can be followed by a number
+I've represented it as L followed by N where N is a number the pattern space is dumped out in fixed
+length lines where that length is controlled by the numeric value of N so it'll print the print
+amount and it will also include wherever there's a non-printable character like a new line or a
+tab or something it will show them as backslash N and backslash T and so forth and the end of each
+wrapped line ends with a backslash and the actual end of the line itself rather than the wrapping point
+ends with a dollar and you can also control the width of the what's printed out by the L command
+because there's a command line option minus lowercase L followed by a number or the alternative
+version of that is minus minus line hyphen length equals and then a number and that provides a
+value if N is not provided with the L command the default value for the width is 70 and if you don't
+want any wrapping at all when you use this thing you can give a value of zero so you just get one
+very very long line or concatenated together everything that's in the pattern space that is
+so I get I have now given an example of using the L command because you can start to use that
+for you you can use any of the other commands though it's not amazingly useful but I've demonstrated
+it by making it print lines one and two of said demo one within a width of 80 so the script well
+that let me to give you the whole line said space minus n e space open quote 1 comma 2 L
+lowcase L 80 close quote and it's said demo 1 dot txt so all it really does here is to print out
+those two lines with a dollar on the end there are no new lines in them because it's it's
+reading one line at a time and printing them out which is merely showing the dollar at the end
+now the next example is using the end command to accumulate lines into the pattern space before
+dumping the result so here I've got a said command a full full command line command would be
+said space minus n e space quote 1 comma 2 then open curly bracket capital N semicolon L
+close curly bracket quote and said demo 1 dot txt so what you see here is the first two lines
+of the file are actually printed out wrapping at 70 characters so the first line hack of a radio
+blah blah blah ends with a backslash in the middle of a word and then the word continues on the
+next line then you've got a backslash n at the end of the word because the line was was longer
+than 70 and so it goes on until there's another line break and then the final bit of the the second
+line ends with the dollar so that can be useful if you're trying to make a bit of said do stuff
+and you you're struggling to understand what has accumulated in the pattern space so I couldn't
+example here of using the the pattern space to construct a list it's a not official example as
+most of these things are I guess the principle of what I'm doing here is I'm collecting 10 words
+from the system dictionary as I refer to it user shared dict words and I'm assaging them a bit
+in a bash loop then I'm feeding them to said and I'm telling it to accumulate them but only print
+me the last five I could just have done five but I wouldn't mind much of an example so I've got a
+full loop which iterates 10 times using a variable i and for each iteration I grab a word out of the
+the dictionary using the shuff command I've done this sort of thing before another other shows
+I've done and cause a lot of words in this dictionary have end in quote s so they're possessive
+I just chop them off and echo the result which is the index i followed by the word so you can see
+you know this is word number one two three so that's the end of the loop then I feed this just
+just from a point of interest into the t command t e e the t command is it's so called because
+it's like a t piece in a plumbing some of the the the water goes one way and some of it goes
+the other way in the in the the t piece so in unix terms t splits the data and sends some
+into a file I've got the file slash t m p slash dollar dollar and it sends the rest through
+standard out into the next command in the pipeline as an aside whenever you use dollar dollar in
+bash and indeed just the straight shell then dollar dollar means the current process id number
+so this generates a temporary file in the temp directory which will have the number of the
+the current pid process id it's a constant throughout the particular session that you're using
+so it's you know you can read and write that but it's just a short hand way of making a temporary
+file anyway the the after the t command is another pipe symbol which feeds the result of all this
+lot into into said I haven't explained this in in minute detail I read out every character but
+hopefully you'll you'll manage to to deal with that so the said command which I will read out in
+detail is said space minus e space open quote capital n semicolon 1 comma 5d quote and what that
+is doing is it's accumulating all 10 words into the and 10 lines perhaps a better way of putting it
+into the pattern space and then for lines 1 to 5 that it's receiving it's simply deleting them so
+at the end of all that lot said will auto print what's in the pattern space which will be the last
+five lines of this this sequence and I made a temporary file here just so you could go and
+have a look at it to see to check that the the the thing actually worked see what it was before it
+was truncated let's say I made this into a file which is available as demo3.sh on the hbr site as part
+of this particular show there's a link to it in the show notes to give you the full path if you
+want to download it and have a look at it so the next batch of commands looking at today are
+for transferring to and from the hold space I guess these coming pairs really are four of them
+do anyway let's start with the lowercase h command what this does is it replaces the contents of
+the hold space with the contents of the pattern space so it deletes whatever was in the hold space
+beforehand and copies the pattern space contents in but the pattern space will remain as it was
+you can put any of the set address types in front of this command its counterpart is the capital h
+command and instead of replacing contents of the hold space it appends the pattern space to the
+hold space but it precedes it by a new line it doesn't change the pattern space either
+but obviously it appends to the hold space so it changes that and you can put usual address
+types on front of this command the g command the lowercase g is one which transfers the hold space
+into the pattern space deleting the current contents of the pattern space so it replaces the
+pattern space with the contents the hold space so the hold space won't be changed but the pattern
+space will be replaced and the two buffers have the same content this can be addressed in the
+can have addresses on it just like the others the capital g command the counterpart of this
+appends the contents the hold space to the pattern space preceded by a new line so you can see
+that's the sort of corresponding thing but it's also corresponds to the current late command
+then the final one in this group of five is the lowercase x command and what that simply does is it
+swaps the exchanges the contents of the hold and pattern spaces so neither are destroyed there's
+swapped it there exchanged so we'll start looking at some examples of how how to use these things
+shortly but I wanted to talk about some of the flags and modifiers that are relevant now which I
+skipped out in episodes one and two when I was talking about the s command and addresses and so
+fourth in episode three one of the missing flags to the s command was capital m and there's also a
+lowercase m version of it which is synonymous remember capital i and lowercase i meant the same thing
+don't even know why they both exist but same here with the m capital m and lowercase m that mean
+the same thing there's also a modifier which is a thing that affects the regular expression
+address matching which is a capital m there isn't a lowercase m same as same as with the i as well
+again the logic of this is a little strange to my mind anyway enough of that what does it mean well
+it means multi-line and it's useful in the case when you're using a regular expression to match
+the pattern space and it contains more than one line it's a canoe extension so when the modifier
+is in place then the circumflex matches the empty string after a new line and a dollar matches
+the empty string before a new line so if you've got multiple lines in your buffer then these are
+matching individual lines it also allows you to use some special meta characters which
+match the beginning and the end of the buffer and these are backslash back quote which is really
+you're running out of characters i guess so the back quote is the one that's on the top left of
+most keyboards and that's for the beginning of the buffer and backslash single quote matches the
+end of the buffer so i've got an example here where i'm using these these characters to demonstrate
+the point so my example is one where i've accumulated two lines in the hold space and have
+transferred them to the pattern space then use an s command two s commands in fact with with g
+modifiers which are not not needed in this particular example but i'm doing them anyway because
+it's a will come on to that in a minute but what i'm doing is i'm putting a square bracket an
+open square bracket at the beginning and a closed square bracket at the end so let me read out the
+said command the command line stuff so that would be said space minus n e space quote one comma two
+capital H so that means for each line in the range one to two append the line to the hold space
+and remember the append to the hold space means you proceed it with a new line so after after
+the capital H i've got a semi colon then a two so that means for line two do a group the group
+begins with a curly open curly bracket lowercase g semi colon s slash circumflex slash open
+square bracket slash g semi colon s slash dollar slash close square bracket slash g semi colon p
+close curly bracket so let's summarize that what it's saying is online to do these command the lie
+online to where to use the g command and you remember that the lower sorry i forget to mention
+what case is lowercase g command is replace the pattern space with the contents of the hold space
+so we've accumulated two lines in the hold space by the time this group is being executed
+so we then grab those two lines stick them in the pattern space we then run the two s commands
+which replace the beginning of the buffer with an open square bracket and the end of the buffer
+with a close square bracket we haven't used the the capital M modifier here at all so we're
+operating on the buffer level having done that the lowercase p command will print out whatever's
+there and because there's no instructions as to what to do with the rest of the lines and we're
+not in order print that's all you'll see so when you look at the output from this and this is
+using said demo one again the output consists of an open square bracket on a line by itself followed
+by the first line of the file followed by the second line of the file with a close square bracket
+on the end of that that's because there's an extra new line at the start of the pattern space
+due to the way that the h command does its thing so that just shows that in this mode of operation
+there's one beginning and end in this buffer so if we do the same again but we modify the s
+commands with the capital M flag flag and modifier mean the same thing really in this context but I
+don't even know why they why they separate the names to be honest anyway the command is exactly
+the same except that each the s commands ends with a g followed by a capital M and the result that
+you get is that the first line which just contain a new line if you remember has got an open and
+close square bracket the second line has got an open and square bracket on the front a close
+square bracket on the end same with the third line so what this shows is that the circumflex and the
+dollar relate to the new lines that are in the buffer and surround each of the lines when they're
+printed out if we'd wanted to signify the start and ends of the buffer then we would need to use this
+backslash back quote and backslash quote sequences meta characters this is really hard
+to type on the command line because bash doesn't really deal with using the
+delimiter of a string in the string very well so what I've done is I've created a file which I've
+called demo for dot scd and in it I've got some commands that do the same things we've already
+done but using these beginning and end of buffer characters you'll see I've in the example I've
+shown what happens if you type cat demo for dot said you can see its contents it's the same
+set of commands but laid out differently and when you want to invoke it you would type said
+space minus n f space demo for dot said space said demo 1 dot txt and the result that you get is
+the same as the first example the open square bracket occurs on the first line all by itself and
+the close square bracket occurs at the end of the second line this file containing these commands
+available if you want to download it and play around with it yourself and it's linked from the
+the show notes so I'm going to stop talking about said commands the new ones anyway at this point
+I'm not going to not going to expand on any more just now but I'm going to dive into the examples
+and I've got a few examples here that try to demonstrate the use of these various commands so
+example one is mainly to demonstrate how you could use the capital p command and the y command
+so if I summarize the actual command that I'm using here I've got the the command line is said space
+minus n e space quote open quote 1 comma 2 curly bracket open curly bracket s slash dollar slash
+back slash n hyphen slash semicolon capital p semicolon y slash aio u slash eio u a slash semicolon
+lowercase p close curly bracket close quote and we're using said demo 1.txt so you probably didn't
+get most so hopefully you're able to look at the the notes as I'm doing this what what we're doing
+here is we've got auto printing switch off with the minus n and all of the commands that we've got
+here are in a group and they're controlled by an address range 1 comma 2 that just operates
+on the first two lines of the file all right now the first thing we do is to use an s command
+and what that does is for a given line it adds a new line at the end of it followed by a hyphen
+and it's doing that in the pattern space then the capital p command so it should stop and
+reiterate that by doing this we've now got in the pattern space a line the lines just been read
+from the input file and we've just added a new line at the end of it with a hyphen after so
+we've got effectively two lines in so the capital p command prints out the line that's some
+that's just been read in it's just been edited effectively by adding a new line to the end of it
+and but it only prints out up to the new line that we added so you'll see that in the output
+we see the first line of the file completely untouched and so on we don't see the hyphen because
+it's it's after the new line and the capital p command prints up to the new last but you say
+and including but anyway I think in the but it doesn't say but I think that that when the yeah
+when it says prints out up to the first new line I think it means up to ending including the
+new line anyway so after that capital p command we've got a y command which is doing this this
+silliness about twiddling with the vowels so the line is still in the in the pattern space we haven't
+deleted it because we've not really started a cycle we haven't explicitly deleted it so it's
+still there so we've just edited it with this y command and then you know as before A becomes E
+E becomes i and so forth we then have the lowercase p which says print out the contents of the
+pattern space which it does but the pattern space holds a the original line that was read in
+with a new line after it and a hyphen after that so you then see the transformed line
+followed by the hyphen and because we've then finished that group of of commands a new cycle
+will begin the next line will come in and then the same thing will be done all over again the un
+unchanged line will be written out then the transformation will be applied that will be printed out
+with the hyphen after it so you can see again most of my examples of fairly useless but hopefully
+they help to explain what these commands are actually doing the example two is demonstrating
+the h and the g you capital h and the capital g command which are twiddling around with the pattern
+and the whole space i'll start by reading out the command line this is quite a complex one so
+you'll need to to look at itself i think to grasp it we're operating on said demo 1.txt as usual
+since we do an example finally over you sorry about that anyway let's read the thing
+said space minus e space quote 1 comma slash circumflex dollar slash curl open curly bracket
+capital h semicolon low case d close curly bracket semicolon dollar open curly bracket
+capital g semicolon s slash back slash n dollar slash slash close curly bracket close quote
+and then the name of the five so we start off with an address expression that says one comma slash
+circumflex dollar slash so that's every line from the first line to the first blank line that is
+the one that just got a start and an end nothing else on it so the first group of commands are to
+be run on those lines and the group consists of a capital h command which appends the input line
+to the whole space with a new line in front of it then it's a d a low case d command which
+deletes that line from the pattern space which prevents auto printing of it remember we've got
+auto printing switched on we didn't have a minus n here so all of those lines are print are put
+into the the cold space then all of the other lines in the file there are no there are no exact
+there no addresses that operate on those particularly so all of those lines just get read in and then
+printed out in the normal way that said operates okay and then the last group within the script
+begins with the dollar which means do these on the last line and it consists of a capital g and
+what that does is it appends the whole space to the pattern space but because when we put stuff
+into the whole space we use the capital h command that causes a new line to be to be added to the
+front of it so after that g command we do an s command which finds a new line backs like n
+in front of a dollar which is the end of line and removes it so it's removing this the last
+new line from the from the the group of lines in the in the whole space that we've pulled down
+the pattern space I suppose that's actually a bit counter intuitive because what we did was to
+add a add a blank line to the front of it or set added blank line to the front of it we've taken
+one off the end of it well the reason we did that is because we want there to be a blank line but
+we don't want it on the front we don't want it on the end we want it on the front so having done
+that the we've now got pattern space with data in it we otherwise we'd have gone through the
+whole file and we'd we'd be finished now we'd printed out so the effect of this has been to
+stash away the first paragraph of the file in the whole space to print out the rest of the file
+and then bring back the first paragraph from the whole space and print it out so what we see
+in the the output is the second paragraph of the the file followed by the first paragraph file so
+I hope that once clear if you're just listening to this you're trying to work or something I think
+you probably had just had to struggle with this you probably even switch it off until you could look
+at the notes I hope that with the notes you've actually managed to understand that this is one of
+the examples that you really need to get your head around if you want to get into this level of
+said I will not be upset if you say no that's enough I don't want to know any more about said by
+that's fine I'm just being completist and wanting to to get to understand this myself and to
+share it with you but if you don't want it then I'm perfectly happy so the final example then
+the example three I haven't got a vast number of examples this time my head's about to explode I
+don't like yours I'm looking here at something I mentioned in episode two where I was talking about
+the solution to the problem of joining all of the lines in a text file make one long line don't
+know why you'd want to do it but you know the question is could you can you well I think you can
+and I think we've now got enough knowledge of said to be able to do that so let me read you my
+commands is two command line commands bash commands which I should read out and then try and explain
+the first one consists of a variable assignment bash variable assignment which begins x equals
+this is then followed by a thing called a command substitution expression which I covered in
+one of my bash tips episodes some further bash tips talked about command substitution and
+the result of doing this x equals command substitution is whatever happens in the command
+the result of it is to be saved in the variable x well the command is a said command would be
+and it consists of said space minus n e space open quote capital H semicolon dollar open curly
+bracket lowercase g semicolon s slash circumflex back slash n slash slash semicolon s slash back
+slash n slash space slash g semicolon lowercase p close curly brace close quote and the file we're
+operating this on is said demo one dot txt I'll come along I'll explain the said command in a moment
+but we're assuming that whatever said is done to this file is now in the variable x we simply echo
+that the next line is an echo command where we we give it dollar open curly brace hash mark x close
+curly brace and this is a bashism which is way of reporting the length of a variable the answer is
+768 so let's look at the said command then which was in this substitution it's got a minus n so
+it's no water printing the h command is run on every line and this causes every input line to be
+appended to the whole space where the new line in front of it you know we saw this already then
+we've got a dollar and a group and that means on the last line of the file do these commands and the
+the lowercase g command replaces the pattern space with the whole space okay by this time there will
+be nothing in the pattern space anyway because we just did the h command on it which copied it away
+to the whole space so there's nothing of any consequence so the g loc hg pulls back the the
+whole space which in which are all the all the accumulated lines of the file the first s command
+removes the first back slash and the first new line from the beginning of the buffer remember
+that the behavior of the the cabled h commands is it precedes every line it stashes in the whole
+space with the new line we don't want that one that's an extra so we're going to chop up one out
+then the second s command it's got a g flag on it so it's going to do this to the whole buffer
+and all it's doing is it's replacing every new line with the space when it's finished that there's
+a lowercase p command which prints the whole pattern space okay so it'll return the pattern space
+which now is one long line because we took all of the new lines we took the first one away through
+it away and all the other ones we turned into spaces i proved in the example that well i told you
+the 768 characters long the result of the first first example i described i've got another piece
+of scripting here which simply does the equivalent thing using a variable y y equals dollar open bracket
+cat space said underscore demo one dot txt closed parenthesis i should say it's a problem with
+the way we bridge describe these brackets we call them brackets you call them parentheses if you're
+in the u.s and other parts of the world anyway in dollar followed by parentheses and inside the
+parentheses is the cat command so it's just copying the entirety of the file said demo one dot txt
+into the y variable and if we use the echo again echo dollar open curly bracket hash y close
+curly bracket we get back the number 768 which is exactly the same as we had when we run the
+said thing earlier i haven't printed it out you you can uh try it out for yourself and see
+what it looks like but basically it's the whole file is one long line so not all that exciting
+but we solved the problem which uh i'm sure you're very happy but okay so i thought at the end of
+this episode i would give you a quiz now whether you actually want to do it of course this is up to you
+but um you can um send me the if you want to have a shot you can you can send me a send me the answer
+as a comment or as an email or whatever the the quiz is i want you to have a go at using said
+to turn text into pig Latin pig Latin is a thing from the last century i guess uh where people
+used to obscure words by taking taking the first letter and sticking it on the end of putting
+a a y on the end of it so pig Latin becomes igpe atinlay so the quiz is use the testator in said
+demo 1.txt from episode one and convert the first line into pig Latin and the rules of how to do
+this are pretty simple there should be there are exceptions in the actual rule to quite complex i
+think there's more than can easily be done in said possibly done at all in said but just to have
+a shot at doing them in a simplistic way so my brief rules are take the first letter of each word
+place it at the end follow it with the letters a y and thus pig becomes igpe and Latin becomes
+atinlay don't bother with one two and three letter words because otherwise you're going to be turning
+a the letter a or word a into a a y which we don't want i suppose you could operate on three
+letter words if you want to but um i'd suggest you don't don't bother about capitals ideally
+Latin with a capital L should become atinlay with a capital A in the lower case L but
+said's probably not the best thing to to do that with so i'll let you off that one i'll do my
+solution for the next episode and uh i hope that you'll be able to come up with a much better
+solution than i'm able to do because uh i'll mean yeah you're way ahead of me with the the said
+all right enjoy bye
+you've been listening to hecka public radio at hecka public radio dot org
+we are a community podcast network that releases shows every weekday Monday through Friday
+today's show like all our shows was contributed by an hbr listener like yourself
+if you ever thought of recording a podcast then click on our contributing to find out
+how easy it really is hecka public radio was founded by the digital dog pound and the
+infonomicum computer club and it's part of the binary revolution at binrev.com if you have
+comments on today's show please email the host directly leave a comment on the website or record
+a follow-up episode yourself unless otherwise stated today's show is released under creative
+comments attribution share a light 3.0 license

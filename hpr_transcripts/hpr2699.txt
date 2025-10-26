@@ -1,0 +1,195 @@
+Episode: 2699
+Title: HPR2699: Bash Tips - 15
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2699/hpr2699.mp3
+Transcribed: 2025-10-19 07:41:44
+
+---
+
+This is HPR Episode 2699 titled Bash Tip, 15 and in part of the series, Bash Cripting.
+It is hosted by Dave Morris and in about 30 minutes long and Karim and exquisite flag.
+The summary is some of the pitfalls when you include in Bash.
+This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+Support universal access to all knowledge by heading over to archive.org.
+Support universal access to all knowledge by heading over to archive.org.
+Support universal access to all knowledge by heading over to archive.org.
+Support universal access to all knowledge by heading over to archive.org.
+Support universal access to all knowledge by heading over to archive.org.
+Hello everybody, it's Dave Morris. Welcome to Hacker Public Radio. I'm going to do another show about Bash in the group that I'm calling Bash Tips under the heading of Bash Cripting. There's a series called Bash Cripting. This is number 15.
+And this time I want to just talk, I think it's going to be fairly brief about when you're writing loops in Bash and some of the problems that couldn't before.
+It's really a thing that was raised in the comments to an earlier show in this sub-series.
+And I'll be getting on to a bit more detail about what the comments were in a little while, so I want to digress now.
+So we've looked at four loops. I spent a show looking at how they were structured. And before that I looked at while and until loops.
+And now I want to just look at some of the things that can catch you out with these loops.
+Loops are great in Bash, they're actually quite easy to use and very, very useful.
+But there are a few areas where you can be called out. And I've certainly been called out myself and wondered what was going on.
+And I thought I'd pass on what I learned so that you can get the benefit of it.
+There's loads and loads of information out there and if you care to go searching, but as usual with these things, if you don't know to search for a problem, because you have an encounter of the problem, then it's difficult.
+And if you fall over the problem, it might be quite a long hiatus in whatever you're doing.
+So in order to, what a main issue is when you use loops in relation to a pipe or a pipeline, I discovered this when I was researching this.
+Bash refers to a feature known as a pipeline where you can have a sequence of one or more commands separated by a vertical bar character.
+I didn't quite realize that a pipeline and a pipe are slightly different things. I'd been using them interchangeably.
+But the point of it is that one command produces output and the pipe symbol, the vertical bar, connect to another command, or script or whatever it is, which uses that output as its input.
+I'm going to spend some time looking at pipe lines later on in this series of bash tips.
+But I just thought I'd better cover a little bit about this just to explain what's going on in the context of this loop issue.
+So the series of commands and the vertical bar control characters is called a pipe line.
+And the connection of one command to another is called a pipe, or a show that that's a very helpful terminology, but just in case you find it and find yourself puzzled.
+So I've got an example that shows an echo, which outputs the string Hello World with mixed case.
+And it's being piped to a said expression, said hyphen E, and then what it's doing is it's doing an S substitution command, which is substituting all the characters that it finds in the lines that it receives.
+And it's only getting one. It replaces them all with themselves forced to uppercase.
+There's a backslash U construct, which lets you do that.
+I did cover this rather briefly in the said series, but anyway, you might want to do this.
+I don't know why you didn't just type it in uppercase in the first place, but you know, this is the natural example.
+So the echo command writes the arguments that it's been given, which is just a string Hello World.
+It writes to what's called the standard output channel.
+And then the vertical bar pipe character causes this bash to send that output to the said command, and said then sees its input coming from that echo.
+I've used this in other cases in said series in the bash series, all sorts of things.
+If you've been following these, this is not a surprise. You probably know about these already, but just in case this is new to you.
+Then the said command, having got its input from the echo down the pipe, then does stuff to it and prints it out on standard output, which is going to be the terminal if you're doing this on the command line.
+And you see the result. One of the things about this pipeline is that each command that you see, so the echo and the invocation of said run is in its own subshell.
+A subshell is really a separate process. Unix and Linux and other related operating systems work on the principle that you are running a process when you log in.
+And many of the things that you do generate subprocesses within it, within that main login shell.
+So the subshells are seen as child processes of the parent, which is the parent shell, the login shell.
+Or indeed, you can have another process created in another subprocess if you want.
+But one of the features of the way processes work within Unix and Linux is that you can't change things in the parent process from a child process.
+In particular, you can write to files, of course, that they share, but you can't send environmental variables back into the parent.
+So this, I hope, will become a parent or a little bit more relevant as I go into some of the problem areas.
+Let's look at piping into a loop where this particular example, I'm going to describe the end destination of the pipe is a loop.
+So I've got an example here and this is a common thing you'll see people doing is to run LS to list out the list of files and piping that to a loop.
+So I've got LS, space, asterisk.mp3, then a vertical bar, and then a while loop, while read name.
+So reading whatever we get on each line into a variable called name, then the do part of the while, then echo the contents of name, and then semicolon done.
+This is not a particular useful thing to do because LS will output stuff all by itself, that's what it's for.
+And to feed it to a loop is like this where it's simply echoing what is past of the loop is not useful at all, but it serves to demonstrate what I'm trying to explain.
+Now it's not wise to use LS like this, in fact, this was one of the discussions we had following one of the earlier shows.
+LS, you find, it's very often aliased to a version, or in fact is defaulted to a version of itself which produces colored output or adds extra characters to file names to signal what type of file they are, whether they are executable.
+There might be colored differently if they are soft links or hard links, they will be marked somehow if their directories will be marked differently.
+So again, a lot of other data in the stream that's coming from LS that may not be all that relevant to what you're trying to do in your loop.
+You can ensure that LS is the plain LS, it doesn't have all the bells and whistles switched on.
+What you usually find is that LS is an alias and you can switch that off with the unalias command.
+So unalias LS switches off, it deletes the alias.
+And then if you invoke LS then it works as you need for a loop.
+But since you probably wanted the alias and you wanted it to be kept in that form, the rest of your command line session is not going to have LS in the version that somebody, presumably you, has defaulted to.
+So it's not the best way of dealing with this sort of situation.
+I also made the note in the show notes that file names in Unix and Linux can be quite complicated.
+They can contain spaces in them and loops usually separate out their input on the basis of a space. You can control that.
+You might have a give a loop a read in a loop like an example, a single file name, which you've got a space in it and it's read as two separate strings.
+So you don't want to be doing that with LS if you can, if you can help, but you need to be taking special action to deal with that.
+I'm not doing so in this particular case, but it is an issue that you need to be bearing in mind.
+For the purposes of this demo, I have a user name on my system, which is kept for HPR shows and stuff.
+And within it, I created a bunch of empty files just in order to demonstrate what LS would do with a list of files.
+In the footnote, the long notes, I show how I made these 10 dummy MP3 files, just files with the MP3 suffix in a loop using the user shared dict words file that contains useful and interesting words.
+This is a short explanation in the footnote. I want to explain it further here.
+So I show here, if you unalias the LS command, then you do ls asterisk.mp3 piped into wild read names, then we call on do echo, then encroached all our name, then we call on done, then you get a list of names.
+And the names that were generated, they just random names out of this dictionary file, things like astonished.mp3, buretters.mp3 and so on.
+So you can use ls, but it's not a wise thing to do. I'm going to give you some alternatives shortly.
+The wild loop, in this example, is running in a sub shell, as we've already ascertained.
+But problems can arise because this has happened. And this is where you start finding some of the issues.
+So for example, you might want to count the files that you've got in your directory. So here's an actual example where the first command is count equal zero.
+So we're setting a variable count to zero. Then there's the LS being piped into a wild reading each file name into variable called name.
+And for each one, we also increment the variable count. And that's the entire loop. And then at the end of it, we echo the value of count.
+But in the worked example, the answer comes back as zero. Why does this happen?
+Well, the answer is that the count variable is being incremented in the loop, as you've asked. But it's not the count variable that you set to zero in the first instance. It's a copy.
+When the sub shell or the sub process is being created, it inherits the variables, the environmental variables from the parent. And it then works with them.
+So you can pass information through to the child. But when it's, as it's being incremented, but when the, it's, it's all doing, it's doing what you would expect it to do.
+You could print it out and see if you wished. But when the, the pipeline ends and that process end, the copy of the variable is thrown away.
+So the variable called count in the parent process is not the same one. And it still contains zero. And this is because, as I already said, bash can't pass back values from the sub shell.
+Now, in the notes that the show was 2651, in the comments to that show, we had a, a suggestion from, um, cladcaster, another area where this might cause problems.
+He was talking about doing things with arrays. So he sets an array called items to nothing, to a null, a null array.
+We're going to be looking at arrays soon. It's in my to do list to, to cover quite soon. We've, we've sort of seen them in passing at various points through this sub series.
+But we've never sat down and examined them in detail. Then there's a, the next, next line is something called produce items, which is a program or a function that generates individual strings or numbers, which we're feeding to a loop.
+The loop is a while loop. It's using read to read into a variable called item. And then the, the array called items is being appended to with each item that's being collected by the loop.
+So you've got items plus equals, then in parentheses, the variable item with a dollar to substituting it. So this will actually cause an array to be extended by adding each individual item into it at the end.
+And that'll all be fine and dandy. But if we then in, in clackers example, we have a thing do stuff with and we give it the array, nothing's going to get done.
+Nothing will happen because do stuff with doesn't get any elements in the array because the array that was processed in the while loop is a copy of the parents parent level array.
+And is not, that's not the one that's being appended to. It's a, it's a, the parent one, I should say, is not one that's being appended to. It's the, the child version of it, the child copy.
+So this is what clackers says about it. Items, that's the array, it gets updated just fine in a sub shell. But then after the pipe is finished executing, execution, execution continues in the parent shell where the array is still empty.
+So arrays inside the loop and outside the loop are separate. So that's, it's just another example of the what, what variables are, are variable to available in and outside, inside and outside a sub process.
+So one way to avoid these pipe type pitfalls is not use a pipe because, because there's no real way of avoiding the, the, the loss of the variables, the invisibility of the variables, whatever you like to put it.
+We looked at process substitution back in show number six of the bash tips series, episode 2045. We did actually talk about the pipe problem just then, but it's, it's relevant perhaps to talk more about it here.
+We're going to look in more detail here. We, in that particular show, we did look at how you could use process substitution.
+That's where you create a process which is running a command or list of commands inside parentheses. The first parenthesis, the left parenthesis is preceded immediately by a less than sign.
+So what that means is there's a process that's running and it's sending its output from the whole, whole thing that it's doing there into whatever is on the left hand side.
+So my example, again, unalias is LS assuming that you've got L, you're going, we're going to use LS again. So we haven't, we haven't looked yet at anything else to, to, to do a better job.
+But we're going to remove the, the alias to make things simpler and we're setting count to zero. And then we start off with a while loop.
+And we read into the variable name as before semicolon do then in double parentheses, we've got count plus plus. So we're incrementing count semicolon done.
+Then there's a less than sign. That's a redirection, which is another subject we haven't looked at properly yet. And that's, that's coming quite soon as well.
+Then it's followed by the process substitution. So that's a less than open parenthesis, LS space asterisk dot mp3 close parenthesis.
+What's actually going to happen in that particular line is that the loop will really, I think the process substitution will fire up, will generate its output and the loop will consume it as it's being produced.
+So it's, it's pretty much exactly the same as doing it the other way around the LS at the beginning piped into the loop, except that in this particular case, the sub process contains the LS.
+So the LS is just generating the data. It's not manipulating variables. The while is not in a sub process. There's no pipe here anyway.
+So the count variable is not being lost. It's not a copy. It's the parental version. So the last line is echo in quotes, double quotes, dollar count.
+And we get back the answer 10. I actually ran this on the list of files that I was talking about earlier on. And they were 10 of them. So we get back the right answer.
+The array thing that Clackie was talking about could also be remodeled in the same sort of way. And I've shown it here. I think it's probably best if I don't read this one out because the last one was quite complex. I think you'll get just a bit if you look at the example.
+I've included a downloadable script, bash15ex1.sh, which is a simplified version of the array example that Clackie mentioned. And in this particular case, it's filling the array with random words.
+From the infamous user shared, dicked words, the dictionary that I like to use so much. And it's only picking out five of them. It's a big file actually. So there's loads and loads of them. And it's filling that array. And then the script is going through a for loop and printing out the contents of the array.
+And each array element has got a number to the left of it starting at one. So it just generates five random words.
+There's another example, bash15ex2.sh, which does something very similar, but it uses a for loop where the loop is being populated from a process.
+What's it called? Command substitution. I get confused between process substitution and command substitution. You'll see it in the listing here. I didn't run this one for you. I'll leave you to your interest enough to try it to play around with it yourself.
+There's just an alternative way of populating an array if that's what you want to do. There are other ways. And I'm going to save them for I do the do the array show.
+So while I'm on the subject of collecting file names and all that good stuff and processing them in some sort of way, I'm going to just talk about an alternative to LS.
+There's a command called find, which gives you a lot more control over what's selected and also what is produced in the listing that comes out at the other end.
+The find command is very powerful. There's a whole find you tools, new find you tools manual. I'm thinking that maybe I should do a show on this at some stage, or indeed if anybody else wants to do that, they're very welcome.
+But find is there's a lot to talk about with find and I don't want to go into a series of shows with pick out some of the really important bits and talk about them would be useful thing to do.
+I'm just going to speak very very very briefly about find in this particular episode.
+One of the typical ways of using find is type the command find you tell it which directory to perform the find operation on and then you give it some options.
+So if we're working with the directory full of MP3 files, empty MP3 files, then you might type find space then adopt.
+Then follow that with a space hyphen name, space then in quotes, single quotes, asterisk.mp3, close quote, space hyphen print.
+So then the dot just means the current directory, if you're assuming we're in the current directory and we're doing this, the hyphen name option to find a glob pattern to match the files that we want to get back.
+You need to quote this because otherwise it'll be expanded in the as the command is being processed rather than being handed down to the command itself to be processed to be expanded within it and the hyphen print option causes the file to be reported.
+Find also reports the path of the file since it's local to the current directory, then you see dot slash and then the name the file.
+I've shown an example of it doing this in the notes. Unlike LS, find doesn't sort the file so they come out in a sort of random order.
+I'm sure what the order is, is probably the directory order or something.
+The other thing about find is that by default it will search subdirectories as well.
+So I've done an example here where I've created a sub directory in which I called subder and any created another empty MP3 file using touch.
+And then I did a find using pretty much the same arguments except that after hyphen name, I've got in square brackets A, I close square brackets asterisk dot MP3.
+So that means only show me files whose names in with an A and an A or an I.
+That was just because to save the length of the notes really.
+Because I knew there's a file in the top directory into the name and the one in the sub directory begins with an I.
+What you get back is dot slash subder slash ignore this file which is what I call the file to MP3 and dot slash astonished to MP3.
+So those are the two files that match those criteria but it's included the sub directory which LS would not have done.
+There's another option you can add to find which is hyphen max depth which limits the searches to which can limit the searches to the current directory.
+It's actually controls how many directories down it goes.
+If you set it to max depth one, max depth followed by a space and a one put that in the same command we had before, then you only see the file called astonished at MP3.
+So I showed here an example of how you would use find rather than LS as we did before to count the files in the directory containing the main MP3 file.
+I won't read this out but it's pretty much the same except that inside the process substitution is a find command.
+The same find command we just talked about or similar.
+That's just really to say find is a good way of working with loops that you want to use in the context of finding files which is a common thing to do.
+It's partly because one of the discussion points around this area included the process of going through a list of files in a directory and performing some operation on them.
+That's a very common thing to want to do.
+So I thought I'd finish off with just a brief bit about the extended patterns that you get when you enable the x-glob option.
+Now I talked quite a bit about this in show 2293 and there's a command called shop SHOPT and you can set x-glob on using that and it's explained in that particular show.
+When I was talking about this I discovered that my workstation running Debian has got x-glob enabled by default because I use the bash completion extension.
+I think there's a very good chance that everybody is doing that because I think that's a default in a lot of versions of Linux.
+So you might well find that the x-glob is switched on for you already.
+We talked in that particular show 2293 about the extended matching patterns that you could use when you had that option switched on.
+So one thing you can do is demonstrate it in the next example.
+Here we're using a for loop which consists of four space F which is the variable we're going to set to each value in.
+And then the extended glob pattern is plus open parenthesis i, vertical bar sA, vertical bar t, closed parenthesis asterisk.mp3.
+What that means is select files which begin with an i with the letters sA or with letter t and do things with them.
+So as you run the for loop a list of such files will be returned and the loop will process that list.
+So after that pattern we have semicolon space do space echo and encodes dollar f semicolon done.
+So that's a loop which will simply echo the values that come back and the pattern just as a bear pattern within the loop will successively return names or files that match.
+And we get back two files. One is called salami.mp3 and the next one is theorized.mp3.
+We didn't get back any files that begin with i. The only one that exists is in that sub directory.
+So we've discovered here that doing things this way we don't go into the sub directory unlike when we use find in its default form.
+In this case the glob pattern returns the file names in sorted order and they don't have the path name on the front.
+So this can be quite a good way of finding files avoiding ls and avoiding find and in cases where things are relatively simple.
+If you got much more complex requirements you have file names with funny characters in or you want to do much more complicated matching then the big guns as I've said here of the find commander often needed.
+But it was worth mentioning future topics we're going to be looking at other things that have been mentioned in this particular episode.
+So I definitely want to do something on a raise quite soon, maybe even the next show in this series.
+I want to talk about bashes of race, types of race, how you initialize them, how you access them etc.
+You have seen bits and pieces of this along the way, some today in fact.
+But I want to just do the whole thing as a more formal description.
+Talk more about the find commanders have already said there's also things to be said about the read commander which we haven't really looked at yet.
+Read is very powerful but there are issues with it that might catch you out so we'll look at them.
+I was planning to include that in this show but I thought we'd get far too long if I did.
+So we'll be doing them in the next few episodes of this group of show.
+Okay, that's it then for now and I hope you found that useful.
+Okay, bye.
+You've been listening to Hecker Public Radio at Hecker Public Radio.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HBR listener like yourself.
+If you ever thought of recording a podcast then click on our contributing to find out how easy it really is.
+Hecker Public Radio was founded by the Digital Dove Pound and the Infonomicon Computer Club and it's part of the binary revolution at binwreff.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released under creative comments, attribution, share a life, 3.0 license.

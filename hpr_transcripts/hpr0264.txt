@@ -1,0 +1,116 @@
+Episode: 264
+Title: HPR0264: Interacting with GSM Modems
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0264/hpr0264.mp3
+Transcribed: 2025-10-07 15:03:15
+
+---
+
+The Leo take me with you when I hit you.
+That's what I did.
+I hold you tight.
+Welcome to this episode of Hacker Public Radio.
+My name is Seal and today's episode we'll talk about GSM modems and how to use them
+to send SMS messages, receive them as well as initiate phone calls.
+So if this kind of stuff interests you and you want to do this, there's really two big
+options that are open to you in order to interact with your carrier.
+You can either buy an old school cell phone that allows you to connect it through serial
+to send it commands and it will act as a modem or you can buy a dedicated GSM modem.
+And those dedicated GSM modems will cost you about 200 bucks.
+One maker that comes to mind is called Cal Amp, C-A-L-A-M-P and basically it's easy
+to use.
+You just put in your SIM card into the device that will connect to your carrier, Bada Bing,
+Bada Boom.
+It's connected.
+Now how you connect to the modem itself is typically done through serial.
+So nothing too complex and in fact you can start talking to the device straight away
+in Windows.
+You can do it with Hyper Terminal or in Linux.
+You can do it with Minicom.
+Now in my case I'm doing some software development and I'm doing it in Linux and my Linux machine
+does not have a serial connection.
+So what I've got is a USB to serial adapter and in Linux they're bloody fantastic.
+Since kernel 2.2 you can just plug one of those things into your machine and it'll show
+up the device in your root slash dev list.
+It'll be there under TTYUSB0 assuming it's the first device.
+So you just connect to that with Minicom or whatever tool you use and you can start talking
+to the device.
+What's really nice about these modems though is that when you talk to it you talk to it
+in English.
+You send it AT commands and so when you send it ATI it'll stick back to you in English,
+not binary, not anything confusing, but pure English, the maker of the device, it's
+firmware version and so forth and every time you send it a command and every time it
+replies back it'll conclude what it sends back to you with either OK or error.
+Now as much as that's an advantage when you're dealing with the device over a serial connection
+using a tool like Minicom it's a disadvantage when you're developing software because it
+really doesn't give you much to parse.
+You're basically having to parse English sentences as opposed to something more conducive
+to being parsed such as having well laid out tags or some kind of structure you can latch
+on to.
+Now that's not to say it's not doable and it entirely is.
+When the modem spits back to you I mean it always follows the same structure so it's
+always going to have commas here, it's always going to follow a certain format of course
+it's just it's kind of you know it makes things a little more interesting.
+Let's put it that way.
+And if you're going to deal with this in software development just be aware of course that the
+modem cannot take multiple simultaneous inputs so you're going to have to develop a service
+basically to act as some kind of intermediary between your applications and the modem such
+that it can cue the messages to be sent out if you're wanting to send out SMSes and at
+the same time so it can retrieve messages from the modem because when you receive tags
+messages you only really have a buffer depending on the device but typically of 75 messages.
+And these include messages that you've decided to save when you're sending a message because
+there's really two ways of sending messages you can either send a message that's it it's
+sent it's in a temporary buffer gone or you can save your message to that message buffer
+which you can then tell it to send to a specific recipient.
+And the difference comes clear when you want to send the same message to multiple people.
+So if you've got a message being sent to an Bob and Joe you can basically store this
+exact same message saying happy holidays to that buffer and then you say send message
+number five which corresponds to our happy holidays one to Joe then you send another
+command saying send message number five to Dick and send message number five to Bob Ed
+because we're actually cheating on our wife.
+That buffer fills up that message buffer of 75 messages.
+If you do not erase that message your modem will not retrieve anymore from your carrier.
+It will wait until you clear that.
+It does not take care of that for you you actually have to take care of that yourself.
+You can do that all through commands again everything's AT commands.
+So to check all your received SMSes you send your modem this command you send it AT plus
+CMGF equals one this tells the modem that you're going to be an SMS text mode.
+Then to receive your messages you press AT plus CMGL equals double quotes all double quotes.
+Now this will actually have the modem print every message in the buffer including red messages
+unred messages and sent messages.
+When a message is read in the buffer it will and it's a new message it will go from status
+unred to status red this is automatic though you can reassign statuses later on if you want.
+To send messages it's another AT command but before I go on just to clarify what I mean
+by status when the modem prints out for you the list of messages it's a two line affair
+the first line per message will be the status so it's kind of a flag the number of the recipients
+so forth the time that the SMS control center received the message and then the second message
+will be the contents of your SMS which by the way has to be 160 bytes you can have multiple
+messages that concatenate I can't say that word you know what I mean though you have multiple
+messages together to string a very long message but typically SMS's on their own are 160 bytes
+as a maximum. Now to go back to what I was saying earlier which is to say how do you send messages
+it's a simple AT command which is AT plus CMGS and then basically so that's the command but
+the way you write it is AT plus CMGS equals double quotes plus the number of the international
+number and when I say plus I mean that's actually part of the number so plus one six one three six
+one three being the auto area code plus one being the international code for North America
+and then five five five five five five close the double quotes but the multiple then do is a little
+spit back to you a character indicating that you must put in the actual contents of the text message
+itself you type that in press control Z and it'll then send the the message for the control Z
+you still have to do that in a softer environment you can you send it a special escape
+character for that. Typically by the way in a software development environment sorry every time
+you send a command you have to send it a carriage return and a new line. A few other commands of
+interest if you're dealing with the GSM modem AT plus CSQ will give you single quality AT plus
+CNUM will give you your number but CNUM being CNUM will give you your number and if you want to
+actually make a phone call that's pretty neat too the modem won't be able to engage in a conversation
+with the person but it will let you know if the line on the other end is ringing or not
+and so the way you do that is actually quite simple the command is ATD followed by the number
+that you're calling no spaces and a semicolon so it's ATD 1613 5555 5555 semicolon no plus signs
+that'll actually engage the modem into calling someone so these are the basic tools there's
+actually more and if you want to learn how to interact with the modem to send messages there's
+an excellent website it's url is called developers home.com forward slash sms it'll bring you it'll
+teach you everything you need to know about interacting with an SMS or sorry a gsm modem to send
+SMSes another excellent site if you're interested in serial programming is easy sw.com
+esysw.com forward slash tilde mic forward slash serial forward slash serial.html all of that is
+lower casing so with that guys I hope that you found this mildly informative serial programming
+on this stuff is actually not as hard as I would have thought originally before I was forced to
+go into it but if you have any questions or any comments or any complaints feel free to message me
+my email address is julian at jmcardle.com that's julian at jmacartel.com have a lovely lovely day guys
+thank you for listening to haklik of the radio hpr is sponsored by caro.net so head on over to

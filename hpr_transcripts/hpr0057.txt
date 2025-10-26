@@ -1,0 +1,143 @@
+Episode: 57
+Title: HPR0057: LPI Certifications Part 3
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0057/hpr0057.mp3
+Transcribed: 2025-10-07 10:51:16
+
+---
+
+.
+Hello and welcome to Acro Public Radio. My name is Ken Fallant, so they will be continuing
+this series on the LPI certification. Today we are going to be talking about hard drives.
+The most common hard drive found in the PC today is the Integrated Drive Electronics
+or IDE hard drive. They are also known as ATA drives. Other drives in use commonly on
+servers are scousy drives and recently most drives being shipped to PCs are now serial
+ATA. So the original IDE or ATA drives are now retrofitted with the name of parallel
+ATA drives. When you can tell the difference, the parallel has a big ribbon cable, whereas
+the serial ATA has a smaller data cable. As far as the LPI certification goes, what you
+probably need to know is the limits that are imposed due to the original bias limitations
+when dealing with hard disks. You are also going to need to know some stuff on the tools
+to look at and tune a hard disk and you probably also going to need to know about the Linux
+disk naming conventions. So that is more or less what we are going to cover today. First
+of all some background on what a hard disk is and how it works. Hard disk is actually composed
+of platters made of other aluminium or glass coated in a magnetic material and the platters
+or disks are arranged one on top of each other on a spindle. The whole thing is enclosed
+in a enclosure and there is a hard disk controller attached to the underside of the disk. The
+read right head is mounted in an arm which moves from the outside edge of the disk to the
+center that allows it to access any area on the disk. The disks themselves can spin at
+very high speeds often reaching 170 miles per hour or around 270 kilometers per hour. That
+is stored on the surface of a platter in sectors and tracks. The tracks are concentric circles
+and the sectors are pie-shaped wedges on the track. The term cylinder is used to describe
+the same track on all the platters as they are stacked one on top of the other. So if
+you have track one on the first platter, you are also talking about track one and second
+track one on the third track one on the fourth as you go up. It creates a sort of cylinder.
+When the original hard disks came out, the way you would locate a piece of information
+on the hard disk was by giving it a reference based on cylinders, heads and sectors of tracks.
+So if something was asked position one, cylinder one and head five on track twelve, you would
+be able to locate information. Another method for locating data on the disk is called
+the logical block address or the LBA address. And rather than using geometry like CHS does,
+it simply used number structure to name the sectors regardless of their physical construction.
+Okay now what does all of this got to do with the exam? The important part is that every hard disk
+is presented to the bias through its geometry, which tells the bias of many cylinder's heads
+tracks that the disk uses. This is using the CHS method. For Windows, the boot loader is always
+located at the master boot record. However for Linux, the boot loader, LiDOR group can either be
+at the master boot record or at the root partition. And if it's at the root partition,
+then you have to be aware of certain limits that are imposed by this CHS methodology
+employed by the bias. And the most important limit that you need to know about is the
+one, oh two four cylinder limited. Now where this comes about is the IDE, ADA specification
+had specification for the number of cylinders, heads and sectors. And then you had biases
+the bias in 13H standard had also specifications for the number of cylinders, heads and sectors.
+Problem is that they didn't talk to each other and we ended up with having to take the smallest
+combination of each. So although the IDE specification supports 16 cylinders maximum,
+the bias only supports 10. And while the bias supports 8 heads, the IDE specification only
+supports 4. And the IDE specification supports 8 sectors max but the bias only supports 6. So what
+you end up is having maximum of 10 cylinders which corresponds to one or two four cylinders,
+sorry 10 bits for a cylinder number. And that corresponds to one or two four maximum cylinders.
+And then the maximum 16 heads with 63 sectors. Like gives a total maximum of 504 megabytes. So if you're
+making a boot partition, you should always make it less than 500 megabytes. A lot of people will
+say that anything more than 50 megabytes is a waste of time. Okay, there have been various
+different ways to get around this problem by doing translations and all the rest will put the
+generally most modern hardest supports LBA. Now the LBA just starts at zero for the first sector
+and marks its way up. However, there is a limit of 137 gigabytes imposed by the old ADA standard
+that only use 28 bits for addressing. That's more or less gone away now and to the use of 32
+bits sector numbers. And that increases the limits to two terabytes. Using workarounds and mapping
+they were being able to make the CHS method work up to a limit of 8.4 gigabytes. But after that,
+you're just supposed to use LBA. So when querying any hard drive over 8.4 gigabytes,
+they will always report through geometry as 16, 3, 8, 3, cylinders, 16 heads, and 63 tracks,
+regardless of what their actual geometry is. And you should look in the LBA field for their
+actual number of sectors. And that's exactly what we're going to do right now.
+But first before we hit that, I want to talk a little bit about the hard drive naming convention
+under Linux. First of all, you'll be able to see the devices under special directory called
+the DEV file system. Those who are all devices are kept. And like the PROC file system,
+which we talked about before, it's a pseudo file system, meaning that it doesn't actually exist
+in the conventional sense. Following again, the Linux, everything is a file philosophy.
+Now in there, the naming convention has typically been for IDE hard disks that they begin with
+slash dev slash HD something. And that for scousy disks, they will go in slash dev slash SD something.
+Now scousy disks are also considered to be serial 80 disks. So if you want to see what devices
+are attached to your computer, you want to check for both HD and SD drives.
+Okay, so jump out to a console and type the following command, LS, space,
+forward slash DEV, forward slash HD and anastrix. And for me, that returned no such file or directory
+and what that does is it asks for a listing of all the files beginning with HD
+in the dev directory. I'm going to do the same thing for SD files and I am returned with a list
+SDA, SDA1, SDA2 and SDA5. And that means that I have one serial 80a disk attached to my computer.
+And the reason I know it's one is that the third letter of that LS, forward slash dev, forward slash
+SD asterix returned SDA and there was no SDB. So that means I just have one disk attached to my
+computer and that's correct I do. For scousy disks, they're assigned letters. The first disk is
+A, the second disk is B, the third disk is C and continues on to the SDA, SDB, SDC.
+For ID artists, it works in a particular order. So the master on the first ID interface would be
+HDA, the slave on the first ID channel will be HDB, the master on the second ID channel will be
+HDC and the slave on the second ID channel will be HDD. Okay, that's the naming system for the
+disks themselves. However, each disk can have partitions and on an ID drive you can have up to four
+partitions and on a limited number of logical partitions. Those partitions are donated by a number
+after the first three letters designating the disk. So on my example from my computer,
+we had a SDA1 and SDA2 and then an SDA5. Another physically amounts is one big root partition which
+is SDA1 and then there's a swap partition which is actually an extended partition and that's SDA5
+and because extended partitions need to be housed somewhere, it's housed under SDA2. That's
+probably a little bit complex for now but it'll come in time. Now looking at my file server downstairs,
+when I do Alice, I suppose four slash dev, four slash HD star, I get a HDA, HDC,
+HDC1, HDC2, HDC3, HDE and HDE1 and HDG and I happen to know that the HDA and the HDG
+are CD-ROMs, the HDC and the HDE are, well the HDE1 is part of an LVM volume which we'll talk about
+later and the HDC contains the root partition. I also have scusy disks on that and SDA1 is part
+of an LVM SDF and SDF1 are part of an LVM as it's SDG1 and just as a side note, an LVM is
+logical volume manager and it's a way to take multiple disks, physical disks and put them together as
+a logical volume making the addition and expansion of your partitions as they're shown to Linux a
+lot easier but that's not something for the exam just right at the moment. Okay a good command
+to find out information about your hard disk is called the HDPram command and that's actually
+spelled HDPARM. Get slash set hard disk parameters and for now we're only going to be getting hard disk,
+I don't want anyone messing about with the hard disk parameters unless you know what you do it
+and I give you the description from the man page which I got by typing man space HDPARM
+HDPARM provides a command line interface to various hard disk IO controls supported by Linux
+serial ATA parallel ATA and SAS subsystems and older IDE driver subsystems some options may not
+work correctly with the latest kernel and the most important command out of that is going to be
+minus capital I which requests identification info directly from the drive which is displayed in
+the new expanded format which with considerably more detail than the older minus low case i flag.
+Now if I'm osy over here to my server and I do uh
+uh
+sudo hdparam minus capital I for slash dev for slash hda I get loads of information back on my cd
+ram drive the model number is a ncdvd read writer it's got the firmware it's standards used
+at api dash 1 it's de recue it's bloody bloody but that's all very interesting now if I do um
+an ls of the slash dev for sd drives and I look at um
+and I look at one of the serial ATA drives I'll do s
+s hdparam space minus capital I space for slash dev for slash sda I get a lot more information
+about the drive it's a max store something rather it's got a serial number firmware
+what standards it supports um and here we are the uh max and current cylinders heads and sectors
+are down as 16 303 heads as 16 in the sectors as 63 which we uh found out earlier in this podcast
+that it was in fact uh dummy information the real information that we're looking for is the
+LBA usable addressable sectors which is 2 4 0 1 2 1 7 2 8 which is 122 gigabytes so you can
+happily play with that command and see what information is available on your system one good
+way to find out what in what our disks are attached to your computer is using they out from
+the system log as it boots up and that command well I think we've talked about it before is called
+and from the description in the man page d messages used to examine or control current
+buffer the program helps user to print out their boot up messages instead of copying messages by
+hand the user needs only uh do de message do messages uh however so if we go to the command line
+on my server again and I type de message space uh the pipe command which is usually above the
+keyboard uh the entry key and a type grep space sd I get a whole list of sd devices that were on
+my computer and in there I'll see that I have uh discuss the uh cd rom drive that I had
+coming up and the other additional disks and if I did the same thing de message and I pipe that
+to grep and I do hd then I see all the different id devices that have come up so I see a max store
+80a disk what else your cd rom drive comes up here as a hd device so that's pretty much it for this
+episode of acro public radio I want to thank you all for listening if you yourself come across
+something cooler interesting consider sitting down for five minutes doing a podcast about it
+we'll send it in uh know that we could do with some extra filler episodes thank you very much
+have a good day thank you for listening to acro public radio hpr sponsored by caro.net
+so head on over to caro.nc for all of the team
+you

@@ -1,0 +1,356 @@
+Episode: 2748
+Title: HPR2748: Writing Web Game in Haskell - Special events
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2748/hpr2748.mp3
+Transcribed: 2025-10-19 16:19:24
+
+---
+
+This is HPR episode 2007-148 entitled, writing web game in Haskell, Special Events.
+It is hosted by Tuku Toroto and is about 44 minutes long and currently in a clean flag.
+The summary is, Tuku Toroto walks through implementation of Special Events in web-based
+game.
+This episode of HPR is brought to you by An Honest Host.com.
+At 15% discount on all shared hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's Honest and Fair at An Honest Host.com.
+Hello listeners, I'm Tuku Toroto, Tuku Toroto for short and you are listening to Hacker
+Public Radio.
+This episode is about making of gaming in a Haskell and this time I'm focusing on the Special
+Events and mostly on the server side.
+So the goal for this I got from our kid who is in the kindergarten with the friends came
+up with the Kragi worms and told me about them.
+These are small 10 cm 4 inches long worms that burrows in the ground, are drawn to foam
+fields and large concentrations of people.
+They are dangerous, eat harvest and sometimes even people and you have three options.
+You can either avoid them, you can try to fight them or you can try and tame them because
+they can improve the quality of the soil.
+All these I was told by the kid so and then I was told that you have to make this in
+your game.
+So off we go.
+This is building on top of the new system that I talked about in the previous episode.
+I think it was 200733 and it uses quite a bit of structure from that one.
+I'm not going to go through all of the same things again, only the parts that are different.
+So there's a resource, the server that you can read, just make a get and the URL address
+and then you get the list of the news and if there's any special events that are written
+in the same structure.
+So we have to have the same to change and from change and to DDO, from DDO instances that
+I'll talk about the last time and not going to go through that part.
+So only concentrating on what happens between the database and the actual simulation and
+a little bit on the before sending the data to the client.
+So the first real difference comes the news and special events are stored in the database
+and they are stored in the station because I want to have lots of very structured data
+and I'm using a relational database and that's a bit a bad match.
+So I have to serialize complex data into text, so that I can store it there.
+And when you are loading the data from the database, when you are using it, it will give
+me all the news.
+There's this part where they said check that if it's a special news, you instead of just
+returning the database ID and the news article, we are going to add available options to that.
+And if that's a regular news, we are just returning the key news article pair.
+And this is a case structure I didn't find a better way of doing this.
+I seem to be writing these a lot.
+They have to be a better way of doing this.
+I have to try and find that but I haven't been able to find out.
+So why are we getting the, why aren't we storing the options into the database?
+This is because between the time that the special event has been stored in the database
+and it means the time it's loaded, the situation might have changed, it might be that the
+you're not even owner of the planet anymore or some scientists came up with something that
+you can use against the rooms of anything.
+So basically I have to evaluate the options every single time somebody requests the info about
+that special news.
+So where do the special events options come from?
+These are, there's a yet again a type class that defines what the special news or special
+event order has to be able to do.
+It gets a three-parameter type and in this case, in the case of the cracky rooms, there's
+the cracky rooms event, cracky rooms choice and cracky results that are given as a parameter.
+These three things are the what encapsulate everything that is related to this cracky attack
+special event.
+So it's the special event of type cracky rooms event.
+The choices are defined in the cracky rooms choice and the result of the simulation running
+is cracky results.
+And there's a two functions, event options is what we are interested right now, it's
+for listing current options and then there's the resolved event that resolves the event
+according to the choice that player may or may have not been made.
+Hence it has a maybe as a type, so it options that are available are written as a list.
+These contain a title explanation of the option and a tag and this tag is what, when the
+client is sending info back to the server that the user has selected, this course of action,
+the tag is the what is, or option choices, what is, what is used to identify that.
+So it's a record of three fields.
+The explanation of the choice is a list of text.
+I was originally thinking that the text would be enough, but then I realized that list
+of text is better because then I can have multiple items there and the server doesn't take
+any option, opinion, how it should be shown to the client, client can sort them all in a long
+line or group them somehow or put them one after another on a different lines.
+So all those layout choices are done on the client side, so it doesn't have to worry about
+all.
+In this particular case, the options don't depend on the current situation, so there is no
+database access here. It just creates a list of three user options.
+In the show notes, I'm not going to spell all of the code out, it's pretty long
+and it basically just repeats, but there's the first one, that first constructs
+user option, where the title is, avoid the worms and the explanation is keep using fields while
+avoiding the worms and hopefully eventually leave. Next line, 50 units of biological
+loss and 25% chance of worms leaving, so you are hoping that by avoiding the worms they will
+eventually move away and the option choices evade worms.
+And then there's the similar ones for the attacking and trying to use them in your other
+improving the soil. And I like spelling out the results,
+opposite results, to the players, because then they can make choices, they can make
+informed choices, it's not just a blind guest that they are going to do this, do that,
+because realism in the case of cracky attacks is maybe a bit incorrect word,
+but I want to think that they are not making a, in the simulated world, they are not making
+a snap decisions, but they are having some sort of discussions and they are some sort of
+specialists and some professionals and people have opinions and then they can gather all
+this information and give this to you, to the player and say that, here's what we know and
+here's our options, please help us to make a choice what we should be doing.
+And if there would be a, if the game would be a more complex at this point, I could make a
+database query here and check that if there's a cracky worm specialist present on the planet,
+they could give me a fourth option that has some info or that cracky worm specialist
+improve the chances of doing something and change the options accordingly.
+So now that the data has been sent to the client,
+so on to the user, they can bond up out which, which choice to make, or they might even
+forget to make the choice or they might be completely over, not be able to make the choice,
+but in that case, there would be nothing to select, but if they select, the data is sent,
+the choice is sent back, they can change their mind, somebody else in the faction,
+this is a multiplayer game where players can form factions and share resources,
+press responsibilities and such. So in such a situation, one player might show that he
+via coin to try and take them and they can, they could have a discussion about this,
+or not, they might just decide to select that, this is a correct choice to make.
+So in any case, choice is made and that is sent back to the client, there's an update,
+so it's a HTTP put and the whole structure of the special event is sent back.
+And code is relatively simple, yeah, no, not simple, relatively straightforward,
+and the first, we are just checking the authorization, checking that the player is logged in and
+member of a faction and then checking that the message that comes as in the body of the HTTP request
+is a special event because you're not allowed to edit regular news items, at least not at this point,
+at least and definitely not if you are not an administrator user, but that's a stuff that I haven't
+yet written. And then the code loads the message and it pays attention that the loading is done
+by the news ID and the faction ID, the combination of them because otherwise it might be possible
+for a mentor of different faction, performing a change to an event that is not concern of them,
+so the faction ID has to be checked here. I'm doing an integrated, I'm loading a list of
+messages where the ID is what we are interested of and the faction ID is the
+faction ID of the version logged in and then just picking the first one off from the
+the list. Actually in this case, I'm not even picking the first one, I'm just running an update if there's a
+if the amount of loaded messages isn't zero, then I'm just running an update, changing the content of the
+according to the ID and if the amount of the loaded messages is zero, that means that somebody tried
+to either modify a news ID, a news that has an incorrect ID or somebody tried to access
+a news item of a different faction. In both cases, we are just going to return for
+message, not found, resource not found. Here's a bit, bit, bit, bit, nice the problem that I have
+yet solved because we are just updating the news content with the or special event content
+with what the client sent. We are not doing any checks on the content of the content of that.
+This means that if there's a for example, Krakki attack, a crafty or malicious user might
+craft a message, where there's a special event of plenty full harvest and use that to override
+the Krakki event, they could replace the event and not just the choice that has been made,
+they could replace the whole event. So, in essence, they would avoid the Krakki attack and get
+a plenty full harvest instead. I have to write some sort of check on this place too. There's
+quite a long to do list of little things to do. But in the end, we are writing to the
+database on that special event that now this choice has been made. Okay, then comes the
+resolving the event. So, when the turn is processed in the beginning of the processing,
+the system loads all the special events, handles them and handles them. I decided to do
+it that way because then there's not and not at the end of the turn because then there's no,
+it makes the processing easier because I don't have to check when the event was created.
+Just enough, all the events that are loaded at the beginning of the processing are old ones.
+If I were to do that at the end of the processing, then there might be an event that we created
+during the current turn and where the users haven't had the chance to react yet.
+And I wouldn't want to process those yet, but those will have to be processed on the next turn.
+So, I'm doing the processing at the beginning of the turn or simulating the turn. It's easier.
+I can just load all the processes, resolve them and then carry on with the simulation.
+Okay, so there's a two. This resolve event is defined in that special event type class. It has
+in this case, it can be different for each and every special event, of course, but in this case
+and usually there's a two case of two branches. One is where the choice has been made,
+so the choice is just choice. And the other one where the choice hasn't been made, so the choice is just nothing.
+But the overall structure in both cases is the same, so we have to run right at the dot run maybe
+the function that is going to do the processing key event there is a contains a database ID and the news article.
+No, sorry, but now you saw the call to the special event in inaudible to crack you at the special event.
+So, what are run right at the end, run maybe the end what are they doing here? So,
+they're related to the monarchs. I'm not going to go through the monarchs because I don't,
+I'm not able to explain and teach them in a sufficient way.
+The incident is going to try and tell what they are used here. So,
+there are monarch transformers, so they basically are wrapping the code in a, like they are taking a,
+I have a maybe monarch that is wrapped in a writer, monarch, and inside of the maybe monarch.
+More, more structure, but in this part there may be maybe the and wrong and fight at the
+are what are interesting, interesting. The writer, the adds ability to record information as the
+competition is performed and the maybe the adds ability to stop computing early on if any
+subcomputation returns nothing. So, it will, I hope it will be clear when I show
+how I'm using those a little bit, little bit later when I go through those functions. They
+certainly took me some work to get working. I have used those before, but it has, it has been a
+while and I was a bit unsure in which order to stack them, but essentially the SS stack of
+monarch transformers that form a completely new monarch. But for example, if the player has chosen
+to avoid the crutching rams and keep working on the part of the, part of the fields,
+there's this choose to avoid function that does that, does the simulation, what happens in that,
+in that gate. So, first is, first it is loading the section information and here's the first
+chance of aborting, if the, if the action is not found for some reason. Then, and nothing is
+returned, then we cannot continue the competition. So, we are just bailing out early on returning
+nothing. And then we are, yeah, we are bailing out early on, going to have a look at the
+return return pattern, little bit later. And the choose to avoid function says that it is,
+that the event, event removal is what it's returning inside of, that monarch, monarch transforms
+structure. And the event, event removal is, is signaling the calling code that has this, has this
+event been processed in a way that it can be removed, or is it, is the situation such that it needs
+to stay in the database and needs to be evaluated. In the later, later point, because might be
+that the crutching are not driven away, they stay there and on the next turn the player has,
+player faces the same, same dilemma they have to choose what to do. And then the simulation has to
+run again and simulate what happens. And this happens until the event removal is, remove original
+event in, in which case the event is finally removed. Or if the, if the processing fails to run,
+to run to the completion and decides that I cannot continue for, for some reason, then the event
+is also removed because there might be some sort of problem in the system, yes, silently discarding
+those special events because they are not that special, all that, that important and giving
+the system up and running. In any case, so get faction event, take the event, loads the, loads the
+planet that is related to that event, checks that who owns that planet and returns that. And if
+they have couple, couple, couple points, that might fail. The planet might not be present anymore,
+the planet might be present, but is not owned by anyone, nobody has settled it. Or the
+faction that has been, has, has been marked as a owner of a planet doesn't exist anymore.
+Any of these three cases happens, nothing is there, and choose to avoid
+function, realizes this and stops processing automatically, it doesn't continue, just remains
+nothing. And there is no, there's no if statement present here in the call. It says that faction
+are all to the left, get faction event. And that, that does the automatically, the second,
+if nothing has, has been returned, they'll out that is the, that is what they may be doing here.
+Then we are calculating, we are calculating new, so this calculates the amount of the
+biological matter that is consumed in, in this case, in this case, in this case, it is
+50 units, because farmers cannot work on whole field, they are, so they are producing a
+less of harvest. And I could of course have done this in a way that during the, during the simulation
+phase where they are actually simulating the amount of, amount of harvest produced, take the event
+into account, but I felt that it started to ruin here, because then the simulation code on the
+farms is a slightly cleaner, and I, I can be, I can create a report saying that because you were
+not using all the, all the farms you lost this amount of harvest, it's all about choices and
+figuring out where to put the code and how to structure, so how to structure things, that's the,
+that's the trickiest, trickiest thing in my opinion, in the coding test.
+And in addition to the naming things, naming is awfully hard in my opinion.
+But here, so we are calculating the biological matter, and here we are using the,
+that section, that was loaded in the previous stage, we are getting a, what's the amount of
+biological matter they have in stock? And if it's more, then what we are, I mean if it's more,
+then zero, there's some, some left, we are going to return a double, where the first item is the
+cost, that's the 50 units of harvest, the, the cracky consume, and the second element is the
+maximum of two things, it's, it's either zero, or it's the current amount minus the 50 units.
+So it's always zero or more, but it's always the current amount minus 50.
+So, so this, this tells you that we, we consumed, cracky consume, this amount of the harvest and
+this is what, what is left. And again, if there is, if there is not, if the amount of biological matter
+is zero, there's nothing to, nothing to update, so else is, the nothing is returned and the
+competition will come. Then comes part, where you're actually destroying the crops of biological matter,
+here we are just updating the database, the, the function information, and putting the
+amount of biological matter left there. And then this line, tell crops destroyed cost.
+And this is, this is, this is what signals, this is what, what uses the variety, this is the first,
+first part where we are lighting to the variety that, some, some information, and yeah,
+recording crops destroyed, data there, and the parameter is the cost that was, the amount of
+biological matter that was destroyed. And then we are returning just a unit, unit is just on,
+it's not, it's not void on nothing, it's just, it's just signal that this, this, this function is
+returning something, but it's not something that you can do some computation on.
+Basically, you can, I usually think that it's returning nothing in particular, or nothing at all,
+it's just something that needs to be returned when there's nothing to be returned.
+Okay, and this, tell crops destroyed cost is the, is the, is the reason why we are using
+writer because we can, we can record information on that, on that writer instance,
+or writer data, however you should be saying that, and we don't have to carry that writer specifically,
+we don't have to pass it in as a parameter and we don't have to return as a value, it's, it's in the
+context of the function. Oh, context, let the function is executed. So this, this, this is what the
+monotransformers are used to add a extra structure into the, into the execution. So you can do
+things easier without having to resort to write a lot of boilerplate, like the, one, one part is
+that the, the maybe the automatically, automatically stops, keeps the execution of the rest of the
+code if nothing is returned, and the priority is carrying along this list of
+cracky results where, where I can just record information that has been happening.
+Okay, the last, last part, name to remove news is a bit, the name is in perfect, I should come up with another, another name,
+but here we are throwing a horizontal die against the odds, and if, if we are beating the odds,
+we get the success, then we are telling, telling the, sorry, then we are recording to the right
+that the, the, burns the, removed, and we are returning just to remove original event,
+signaling the calling system that, okay, this is done, cracky, cracky are leaving, you can get rid of the event.
+If it didn't, it, it, we are, it's a recording that the, burns are still present, and not, and returning
+the, keep, already, returning, just keep original event, signal in that. Yeah, this is the cracky,
+still present, do not remove this special event. So the result of hold this thingy is a
+bubble, where the first element is a list of cracky results, and the second element is a,
+maybe, event removal, it's maybe because the processing might have, the computation might have,
+looked at nothing at some point, in, in which case, the first of the code isn't evaluated or
+computed, in which case, remove news was never handled, in which case, we don't have a,
+that, die throw, if the cracky, they are present or not, so that's why it's a, maybe,
+event removal. And of course, what, the power of the result of the, of the,
+disavaluation is the whole lot of database activity, so reading and writing.
+Okay, now that this is, now that the pieces are in place, that it's time to put things in motion.
+So this, the next step is handled in the, in the, in the, during the, during the processing of
+the, the admin has said that, okay, now it's time to run the simulation for one step forward.
+So there's a, for, for given faction, we are loading all 100 special events.
+And for each of those special events, we are calling handled special events function.
+And in there, we are just loading all the, 100 special events, I'm sorry, yeah, we are,
+we are loading all the, 100 special events, discarding all the, all the, all the news items that
+are not special events, they shouldn't be any, but because it's not captured in the title,
+I have to do it here, so, so that I can move from the news item, I can, sorry, news, from news article
+into, into a special event. And then we are calling the handles special event for each of those,
+which does that processing that I explained just a moment ago.
+In any case, the regardless of if the, if the user has made choice or not, in any case, we are,
+the handles special event is going to insert a report that tells what the, what the, what was the result of the
+simulation. And that's the, that's the final piece of the puzzle. It's a yet another type class
+called a result report that takes the same trip, trip parameter, so in all case,
+cracky rooms, event, cracky rooms, choice and cracky results.
+And the cracky results are what the right that he was writing, or recording in during the
+processing, he, he, he, we have a list of things that tell what, what happened,
+what, what, what things, yeah, what, what happened during the evaluation or simulation of the
+process. And now we are taking those and turning, turning them into a news, which can be then saved
+on the database and then the user next time looks at the news articles that report that states
+that what happened. And this, this is, this is just a plain news news article that I talked about last
+time. The big part of the, of the gold here is to writing out cases or handling for
+combination of everything. Because there's a four different, there's three choices that the
+player, the player could have made. And then there's cases that they did not make any choice.
+So in, for example, if the, if the player did not make choice, then the news article is going to
+read, no, this is in what to do about worms had been taken. That's the start of the news articles.
+If they decided to avoid, then that, that will be local farmers had chosen to work on their fields
+while avoiding the cracky rooms. And then the next part is where they removed or not. And how,
+how were they removed? Did we, did we decide, these are to tame them? Did we try to attack them?
+Did we ignore them? For example, if we decide to evade them and remove all the successful, it will
+read after sometime there has been no new cracky sightings. And it seems that it is now over.
+If we decided to avoid them and the cracky decided to stick around, it will read cracky as
+we'll present on the planet and hand the farming operations, consider going, see their relative.
+So there's a just a little piece of text for each and every option that might have happened.
+And here the half scale is helping me because if I'm miss a combination of the, of the option
+or result or something, then it will, it will tell me that hey, by the way, this case has not been handled.
+And if there's an interest, that is done by checking that if there's a farmers insert element
+in the results, if there's one, then the news item will have a text, some of the personal
+involved in the event will seriously insert, or if there's not, then it will read, there are no
+known reports of personal injuries. And the same thing with the destruction of the harvest,
+it might read in the end, 50 units of harvest was destroyed, or it might read that this part of
+all these, no harvest was destroyed. So all these things are checked and then tacked together
+to form a complete report of the events. And in the code, I'm using the diamond symbol
+to combine, combine these text together because text is a high level, it's just a,
+you know, well, if it were a string, it would be a list of, list of chance,
+but because it's a text, it's something, some, some more, more evolved structure that is,
+that is a more performant, but they both are defining monoid instances
+that work in the same vein, and the diamond is the monoid operator, in the case of lists,
+it's just, conca, conca tenets, the lists together. I talk, talk about monos, at some point I
+probably have been talking about them quite often, maybe. I'll try to get rid of them.
+So, the diamond is a simple way to conca teneting the lists.
+So, there's a quite a lot of moving parts in, for such a simple thing. And in the end,
+it uses a couple, couple lines of text, some choices to make, and then the result of the report,
+it's kind of, I really didn't expect this to be so, inward thing to code. But now that the whole
+pipe or infrastructure or processing, whatever you want to call it, is in place, I'm hoping that
+the next special event will be a lot easier to code, because I don't have to think how all these
+pieces fit together, I can just look that I need these three classes, one to define the special
+event parameters or data, and one to define, what options you have, and one to define
+what the result will be. And then the third one to, I thought one to define what the
+report that is shown to the user about the whole thing.
+There's still some problems left that I want to tackle, like this current system is
+in a way that the cracky might add a cut planet that already has a cracky attack, then it has
+a two cracky attacks going on, and you can even choose that, I'm going to ignore these rooms,
+I'm going to drive away these rooms, and that's just plain silly, but I don't have
+system in place where I could track such things yet, I have some ideas,
+ruminating, but I haven't been able to crystallize them, or even write them down,
+the another one is that the special event might be my fancy replace with another, that's an even bigger
+problem, like you could just decide, I don't want to deal with the cracky so I'm going to replace
+it with a good harvest, but that part shouldn't be too difficult, just having to prevent that.
+And in the end, it might seem that the piece is met nicely, and there was a lot of
+planning in a head, trolling all kinds of diagrams and thinking that this piece fits with
+this piece and such, but at least in my case, that's definitely not the case, there's
+in reality there was a lot of experimenting and errors, and going back and taking a
+period and trying different things, I especially in the part where I had to decide to put this
+put this stuff as a model, not all of this code is in one file, and I kept getting circular
+references all the time, so a module A referring to module P and module
+referring back to the module A, and that's not possible in this case, that does not compile.
+And the monotransforms were a bit of a headache, but so I really didn't plan all this stuff
+on paper in advance, I basically started with the news that I already had,
+and then I figured out this is the starting point, and then I had that goal, I want to record
+our special elements into some processing with them, and then started feeling my way from
+from spot A towards the spot P, and sometimes going back and sometimes taking a period and
+detours, but it's sort of like a connected dots, you know where you are, you know where you want to
+go, so you try to find a sort of straight or reasonable path between those two points,
+and in a way the pipes are helping me to do this, because they tell me that quite concretely
+what I have and what I can do. Okay, thanks for listening to this episode, it was a bit long,
+I really should try to make this a bit shorter, maybe too long to listen. The easiest way to catch
+me nowadays is via email, that should be at the Hacker Public Radio page, or on the fediverse
+to tour the atmosphere on that show, so without further ado, I'm Tukuturta at Astra.
+You've been listening to Hacker Public Radio at Hacker Public Radio. We are a community podcast
+network that releases shows every weekday, Monday through Friday. Today's show, like all our shows,
+was contributed by an HPR listener like yourself. If you ever thought of recording a podcast,
+then click on our contributing to find out how easy it really is. Hacker Public Radio was founded
+by the digital dog pound and the infonomicon computer club, and it's part of the binary revolution
+at binrev.com. If you have comments on today's show, please email the host directly, leave a comment
+on the website or record a follow-up episode yourself, unless otherwise status, today's show is
+released on the creative comments, attribution, share a live 3.0 license.

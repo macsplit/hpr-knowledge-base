@@ -1,0 +1,319 @@
+Episode: 1986
+Title: HPR1986: Introduction to sed - part 2
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1986/hpr1986.mp3
+Transcribed: 2025-10-18 12:55:03
+
+---
+
+This is HPR Episode 1886 entitled Introduction to Set Part 2.
+It is hosted by Dave Morris and is about 61 minutes long.
+The summary is some more about the new set command.
+This episode of HPR is brought to you by AnanasThost.com.
+Get 15% discount on all shared hosting with the offer code HPR15.
+That's HPR15.
+Get your web hosting that's honest and fair at AnanasThost.com.
+Hello everyone, this is Dave Morris and I've got Episode 2 of my series on the set command.
+The last episode we had a look at said from a fairly simple level.
+It's a sort of thing that certainly I learned when I first started using said.
+Found it a bit confusing, I have to admit, so I just kept to the simple stuff.
+We just looked at some of the command line options and we started looking at regular expressions.
+We're going to look at both of these subjects in a bit more detail this time.
+I don't think I said last time but it's Gnu said that we're looking at here.
+Probably did refer to it, I can't remember.
+There are quite a few extensions over the original version of said which complies with the positive standards.
+These extensions provide a fair number of extra features but, and here's the point of this,
+said scripts that you write in this way are not necessarily portable.
+If you're moving to another Unix system or a BSD system or something like that,
+you might find that they don't work because of these extensions.
+So just bear that in mind, that's what you're likely to do.
+There's a couple of new data files I've got in this episode which I mentioned in there in the notes.
+We'll talk about them as we come to them.
+So looking at command line options, we looked at the minus e option to introduce expressions.
+The minus f option for files.
+And we'll look at a few more today. There's quite a number of them actually.
+And I'm not planning to cover all of them in this series.
+I've referred to the Gnu said manual for the whole list if you ever need them.
+Start with minus n. There are two other alternatives for this.
+It's minus minus quiet or minus minus silent.
+Now, as you probably gathered from the last time said,
+prints out the pattern space at the end of each cycle through the script.
+Remember, we talked about this.
+A line is taken in by said stored in a place called the pattern space.
+Then the script that you've defined is applied to that line and then it's printed.
+The minus n option and its variance disabled is automatic printing
+and said only produces output when you tell it explicitly.
+There's a flag to the s command which does this, the p flag.
+And there's also a p command which we'll talk about next in the next episode.
+Next option is the minus i option also referred to as minus minus in-ifin place.
+This can be followed by a suffix.
+What it does is to make said edit files in place.
+So what we've been doing so far is to give said file or feed it on standard in.
+Feed some sort of text on standard in and then it works on it and puts it out on it's standard out channel.
+But in no cases have we actually seen it writing stuff back to the file.
+You can't just redirect it back to the file because you can't do that sort of thing.
+In unix you end up effectively deleting the file if you try that.
+So the minus i thing is for editing the file in place.
+So if you provide a suffix and the usual one is to put .sav or .bak or something after the minus i.
+Then the original file is renamed by adding that suffix to the end of it.
+And the edited file, the changed file is given the original name.
+So when you go looking you see two files where there were one.
+One with the suffix on the end of it and that's the original copy.
+If you don't give a suffix at all then the original file is replaced by the edited file.
+So you can't go back.
+Now by default said treats all input files on the command line as a single stream of data.
+When the minus i option is used the files are treated separately.
+So you can edit multiple files this way.
+There's also a minus s option which will come on to in a little while which also treats the files separately.
+There's another thing that I didn't know about actually until recently.
+If the suffix contains an asterisk symbol then this is actually replaced by the current file name.
+I've got an example later on in this episode example one which demonstrates how you can use that.
+So moving on to the next option minus minus follow minus sim links.
+This option is relevant to the minus i option and it's only relevant on systems that know anything about symbolic links.
+So that's all the unique systems I think.
+Anyway if specified if the file being edited is a symbolic link the link will be followed and the actual file will be changed.
+If it's emitted which is the default behavior is not to follow sim links the link will be broken and the actual file will not be changed.
+So if you ran said in with the minus i without follow sim links and it was the file you were trying to change was a sim link to the real file.
+You would find that you suddenly had a file of the name relating to the sim link in your directory and the sim link would have been gone and the file would then contain whatever the edited text was.
+It's an easy trap to fall into. I fell into it just today while putting together some examples for this series.
+So be aware of that one it's actually quite potentially problematic.
+I mean it doesn't cause any damage but it messes things up a bit.
+So I mentioned the minus s option that's also alias to hyphen hyphen separate.
+So this is the thing that controls with the said treats the input files on the command line as a single stream of data or whether it treats them as separate files.
+So you need to put a minus s in to get it to treat them as separate files.
+And the last one we look at today is minus r, or its full form is minus minus regx, R-E-G-E-X-P hyphen extended.
+By default said uses basic regular expressions but this is a GNU extension which allows extended regular expression which of the sort that are used by the eGREP command.
+So we'll be looking at this in a bit more detail today in this episode.
+Standard said uses backslashes to denote a number of the special characters in the regular expression, so-called metric characters.
+But in extended mode these backslashes are not required.
+But if you do this then the resulting regular expression is not portable.
+So what I want to do today is to talk about the s command some more.
+That's the substitute command that we looked at last time.
+So in order to look at this command in more detail we need to look further at regular expressions.
+And you probably can be a fair bit more complex than what we looked at in the last episode.
+There's a bunch of new metric characters that we'll look at today and all of them start with the backslash.
+Now just as an aside regular expressions are used all over the place in all sorts of tools and editors and that sort of thing.
+There's a variation between those that use metric characters with the backslash in front of them and those that don't.
+This can be confusing so it's a good idea to be aware of the difference between the different tools and their needs in terms of regular expressions.
+They tend to use similar metric characters but there's some variability in whether they need a backslash in front of them or not.
+So what I've done in the notes is I've made a little table of the characters we're going to talk about today.
+And that's really for your reference.
+And then I've followed that with a section which goes into more detail about each one.
+So I'll not read out the table because I don't think that's going to be very helpful but it's there for your reference.
+We'll dive straight in with the first of these metric characters.
+And the first one is backslash plus.
+Now this is a modifier which means one or more of the proceeding.
+So what you do is you put it behind an expression or a character let's say and it means one or more of that character or expression.
+So last time we had expressions like A star BC meaning an A modified by a star meaning zero to infinity of these characters followed by B and C.
+If we change that to A backslash plus BC then we're matching the sequence ABC where there's one A.
+A ABC two A's, A A ABC and so on to as many A's as you wish.
+It does not match just BC because you must have at least one A in that example.
+Some of the examples towards the end of this episode use this in a bit more detail.
+Now this is a GNU said extension.
+The next one is backslash question mark.
+This is also similar to the asterisk but it matches zero or one of the proceeding expressions.
+It's modifying the same sort of way.
+So if we were to use the expression S slash A backslash question mark BC slash DEF slash and that's a substitution expression which means substitute ABC by DEF.
+But because the A is followed by a backslash question mark it can be emitted or there has to be just one.
+So it will just match BC or ABC.
+And again this is a GNU said extension as well.
+Then we get into a collection of regular expression modifiers which have got braces curly brackets as I tend to call them.
+And the first one is a modifier which says a fixed number of the proceeding.
+So using backslash open curly bracket then a number then backslash close curly bracket we can specify a fixed number of the proceeding expression.
+So using the well-worn ABC example again if we I won't read out the entire S substitute command.
+But if the regular expression is A backslash open curly bracket 3 backslash close curly bracket BC then what that means is it's to match an A which must occur 3 times.
+So it's equivalent to typing A A ABC.
+But there's times when you might want to specify a number of that particular character and it's more convenient not to type it.
+In the example I've given here it's a bit of a fiddle to type it in in that way.
+But I'm just making the point really.
+The next one is sort of upgrade from the previous one where in the curly brackets you have a lower an upper band so between I and J of the proceeding is the way I've expressed it.
+So if we go to our example we've got A followed by backslash open curly bracket 1,5 backslash close curly bracket BC.
+What that saying is the A can occur between 1 and 5 times.
+So that matches ABC A ABC etc etc.
+So I have listed them all out in the notes but I'm sure you don't want me to read them all out.
+Anyway between 1 and 5 A is followed by BC.
+The third variant of this particular thing is from I or more of the proceeding as I've expressed it in the title.
+So this one consists of an open curly bracket with the backslash in front of it followed by a number, a comma and then backslash close curly bracket.
+So that means from that number to an infinite number of the proceeding character or expression.
+So in my example regular expression I've got A backslash open curly bracket 1 comma backslash close curly bracket BC.
+So that matches ABC A ABC and so on.
+There's no limit to the number of A characters.
+And that's the same as A backslash plus the one we saw at the start of this list BC.
+So it's 1 from 1 to any number of A's.
+But of course using this form the starting number can be something other than 1, can be greater than 1.
+Now the next topic is not really a meta character but it's a way of grouping the elements of a regular expression.
+So all the examples we've worked with so far they've tended to have all been referring their modifiers to a single character.
+But we can group characters or indeed regular expressions into more complex expressions.
+The way we do that is to use backslash open parenthesis and backslash close parenthesis to enclose them.
+So going to the tried and tested ABC thing then if the expression I'll give you the full expression this time is S slash backslash open parenthesis, ABC backslash close parenthesis,
+asterisk, D-E-F slash G-H-I slash.
+And what that substitution is doing is it's wanting to match the expression, the sequence of characters either D-E-F or ABC D-E-F or ABC ABC D-E-F.
+So what it's actually saying is the string ABC can occur 0 times, 1 times, 2 times, etc with multiple instances of ABC in front of the D-E-F.
+Now there's a further level of magic if you like associated with this grouping.
+As you write a regular expression with such groups in it each group is numbered by said and it just simply counts the number of backslash open parenthesis occurrences.
+And this allows the various sub expressions enclosed in this way to be referenced elsewhere in the expression and we'll be looking at that shortly.
+The next meta character is whatever referred to as alternatives. It's possible to build a regular expression with alternative sub expressions.
+So one or other of the one or another of these sub expressions are going to be matched and you do that by using the characters backslash in the vertical bar.
+So say for example you want to write a regular expression to match either the string hello world or goodbye world and you want to find those without an exclamation mark at the end and then add one.
+So I've given a full command line sequence here to demonstrate it and I've got an echo with the string in double quotes hello space world in capitals leading capitals.
+And then I pipe that with the pipe symbol into said and the said command is followed by minus e open quote s slash hello back slash vertical bar goodbye space world slash ampersand exclamation mark slash close quote.
+So what that would that would seem to be a reasonable way of solving this problem but the answer you get back is hello exclamation mark space world if you then fed the same said expression the string goodbye world which is my second example then you put the exclamation mark at the end after world.
+This might be unexpected if you if you were the first time you tried working with this sort of stuff what's happened is that said has just matched the hello in the first part of the regular expression so the replacement ampersand exclamation mark has just resulted in exclamation mark being placed after this word.
+In the second case it's matched goodbye world and the exclamation mark has been placed properly.
+So what we actually wanted to do was to match either hello or goodbye followed by the word world and that's done in my next example which is echoing hello world to said command which contains the s command which sounds which is structured like this s slash
+back slash open parenthesis we're grouping here hello back slash vertical bar that's the alternative symbol then goodbye back slash close parenthesis so we grouped the hello and the back slash vertical bar with these parenthesis then the close parenthesis is followed by space world then we have a slash an ampersand vertical an exclamation mark slash quote.
+So that does put the exclamation mark at the end of the string after hello world and if you feed it the string goodbye world it works for that as well.
+So we've constrained what the two alternatives to this alternative meta character is what the two alternatives are I should say by grouping them.
+The number of alternatives can be more than two and I've done a further example which uses matches farewell in as well as hello goodbye and I've done that with another vertical another back slash vertical bar farewell as you can see in the example.
+So this is a new extension of this alternative business.
+Next we'll look at the subject of greediness in the context of regular expressions so the way that said and other things use regular expressions do their matching can sometimes be a little bit unexpected and the the subject of so called greediness is where more is matched they might be predicted.
+Notice what it says in the GNU manual the quote is note that the regular expression matcher is greedy i.e. matches are attempted from left to right and if two or more matches are possible starting at the same character it selects the longest.
+So for example we're trying to process the example file for this episode which I've called said underscore demo 2.txt that's the full text of the about page from the HBR website and we're looking for a word starting with capital H at the start of a line you might think well the regular expression
+circumflex or up arrow as I tend to call it followed by a capital H followed by a dot followed by a back slash plus meaning a line starting with the capital H and followed by some number of one to many characters followed by a space that would do it.
+Now I've given an example of what happens if you do this and I've made the matching string be enclosed by square brackets just so you can see where the where the matching began and ended and I've made it print out only the lines that match.
+I'm used the minus an option in the command line options and I've used the P flag before I've actually talked about it but bear with me it's difficult to know what order to introduce these things in looks like this one wrong doesn't it anyway.
+The command is this is something you could type at the command line said space minus n minus minus n e just to digress for a second when you have single character options to any Unix Linux command you can concatenate them so minus n space minus e can be concatenated to minus n e you can't do that if you're using the full form the minus minus
+some text things you can do it for single character ones anyway minus n e space open quote s slash circumflex H dot back slash plus space slash so that's the regular expression then open square brackets and
+and closed square brackets that means whatever you matched put it in square brackets slash that's the end of the replacement P the P on the end says printed space said underscore demo 2 dot txt so what you get back is I won't read out all three lines you get back
+but the first line you get back is open square bracket hacker public radio brackets HPR is an internet radio show brackets podcast that space closed bracket releases.
+So what's happened is the regular expression match has matched everything from the leading H to the last space on the line it's gobbled up everything in that in the dot back slash plus.
+The match has said well that can match everything including spaces up to the last possible space on the online last space on the line so that's that's what is referred to as greediness.
+I give an example of how you can limit this sort of behavior and the essence of it is that if you don't put dot back slash plus meaning any character one or more of them and instead you put in the regular expression open square bracket circumflex space closed square
+bracket instead of the dot then what that means is a not space the square brackets is a set makes a set or a list and the using a circumflex as the first character means everything but the character in the list or characters in the list what that means is then I want to have one or more not spaces.
+So that would match the word hacker on the first line all of which HACKER are not spaces but it won't match the space.
+So what that does is it puts the square brackets in the example here similar example before it puts the square brackets in the result around the word hacker and the space that follows it.
+So that has constrained what the regular expression match can do and it's curved its greediness just as an aside other regular expression matches in other languages their greediness can be be controlled more explicitly let's put it that way.
+I won't go into how and that's because that that's really a massive digression maybe I should do a series on regular expressions at some point but we shall see.
+So the other element of the S command is the replacement part and last time we saw the use of the ampersand which was a way of signifying the whole of the line that matched the regular expression part of the command and some examples we've just seen use that we're going to look at a few more capabilities of the replacement part.
+The first one is the back reference so we were looking at grouping elements of the regular expression a bit earlier on and what we can do I made reference the fact that each of the groups were numbered well we can refer to the groups with the sequence back slash followed by number.
+The numbers between between one and nine you can't have more groups than that which are which can be referenced but it's quite a useful feature.
+So my first example shows a whole command line where the string hacker public radio is being echoed to a said command and the said command consists of said space minus e space quote s slash
+back slash open parenthesis dot back slash plus back slash open parenthesis so that so far means a whole bunch of any character one or more of any character grouped together in a group so we can refer back to it.
+That's then followed by a space in the regular expression then another one of the same of the grouped dot back slash plus and a space and then another one so there are three groups and think you probably twig that this matches the three words in the string.
+So the replacement part in this example consists of back slash three space back slash two space back slash one now back slash three first to the third group which is radio back slash two refers to the second group which is public and back slash one refers to the first group which is hacker so what gets returned is radio public hacker.
+One other aspect of the back references that they can be used inside the regular expression itself so my next example shows echoing the string in quotes run space lower space run never seen that feel I really must get around to seeing it sometimes it's supposed to be very good and it's piped into a said command which consists of said space minus the space and then we've got the same.
+The same sequence of groups that match a word so just to do one of them just remind you back slash open parenthesis dot back slash plus back slash close parenthesis space so there's one of those followed by another one and then the third instead of having a third one we simply refer to back slash one.
+So what we're saying is whatever matches the first word is to be used as the last one because we've got a phrase that consists of the same word in position one and three so if we then invert them or change their order.
+The placement is back slash two space back back slash one space back slash one close slash close quote so we end up with the string lower run run now you could have grouped the back slash one in the regular expression as shown example of how that's possible to do but it makes no sense since it achieves the same end result and it makes said work harder to it.
+So the other thing you can do in the replacement part of the S command is to manipulate the case of what you have selected through the regular expression.
+This is a canoes said extension and it allows you to change the case using the sequences back slash capital L or back slash lowercase L back slash uppercase you back slash lowercase you and back slash capital E.
+So the back slash capital L means turn the replacement to lowercase until you find another one of these case change sequences like back slash U or back slash E back slash E means stop stop changing case back slash lowercase L means just turn the next character to lowercase.
+The back slash capital and lowercase U have a similar effect they they turn the replacement to uppercase until it finds a point to stop or the next character and the back slash capital E as we've already seen is the the stop mark to stop case conversion.
+So what I've done here is to reiterate one of the examples we had before where we echo the string hack a public radio to said and we select out the three words but then in the replacement part I've put back slash uppercase you back slash one space back slash capital L back slash one and then repeated the same sequence for back slash two and back slash three.
+So the result of that is to change the word hacker to uppercase and then to lowercase then public the same and radio the same and my joke was this is from Ken's script for the community news where he has a tendency to go hacker hacker public public radio radio.
+So feeble joke but that's my trademark there is more that we can say about flags as well we saw the G flag in last episode which makes the the substitution keep repeating for each line so every match that it can possibly find in that line it will iterate over there's some more that you can use I've not covered them all here because some of them are quite obscure I reckon anyway.
+I might squeeze them in later on to a later episode but really we don't want to this is meant to be an introduction to said I don't really want to go into every possible corner of it I'm not even sure I'm equipped to do that but and you probably have turned up long before that let's talk about one of these which is a number a number flag it's just a simple number and what it does it it just applies to that number match.
+So my example is echoing the string in e comma mean e comma min e all in lowercase to said and the command is said space minus e space quote s slash n y they all got n y in the end of them those words slash back slash u uppercase u that is ampersand slash two.
+So what that's saying is find an instance of n y lowercase n y which is in each of the three words change it to uppercase form and we're using the ampersand to to mean the the thing that was matched but at the end of the after the closing slash we put a number two.
+So what that means is only do this for the second instance of n y so the result is e comma mean e where mean e is m e e in lowercase capital n capital y comma min e.
+So that can be quite useful at times I've certainly used it myself in in odd occasions in fact to be honest I don't need to discover it it existed when I started preparing this show.
+But it's quite cool I think then the next flag is the p flag which I've already made reference to that is for making the substitute command the s command print the pattern space and it's normally used in conjunction with the minus n command line option which we've already seen.
+My example is a said command which uses minus n space minus e I didn't join them together in this instance just to prove that either possible and the substitute is in quotes s slash hacker space slash hobby space slash p close quote.
+And I'm applying this to the files said underscore demo to dot t x t which is just a file of more text than demo one.
+And what it does is it changes the two instances of of hacker followed by space in this file it's part of hacker public radio to hobby public radio and it just prints the two lines which you can see.
+So point of p then is that only when a substitution is made does anything get printed if you've got the n option.
+I didn't I should have said in the notes but didn't that if you use this p flag when you don't have a minus n option then it just repeats the line.
+So as it it prints the one is printed by the auto print method which is how said normally works and then the p on the end causes it to be printed or over again.
+I can't see many instances of where you'd want to do that but it's usually a mistake I think certainly is in my case.
+The final flag is the i flag this is an extension a GNU send extension and they cause the regular expression to be case in sensitive.
+So I simply repeated the same command that we just had the example we just had except that in the regular expression I've used hacker in lower case replace that by hobby in mixed case.
+And I put the flags i and p on the end of the s expression and what that does is it does exactly the same thing the previous one did except that it's now case in sensitive when it's looking for the word hacker.
+So that demonstrates that particular point the upper case i and lower case i have no separate significance you can use either of them as the flag.
+So at this point I wanted to talk about some of the further extensions that GNU said offers in terms of what you can put into regular expressions and indeed in some cases you can put them in the replacement as well.
+So it's got a way of referencing or producing as I've said in the notes some special characters and there's more than I'm talking about here they're in a section called the same as the section in these notes and I've put a pointer to that section in the manual.
+I'm not going to cover them all because I think they're probably too too obscure for most purposes but they're just just to refer to the fact that they do exist.
+But anyway let me talk about two of the special characters that you can use and these are backslash in and backslash T. Backslash in represents a new line you can use it in a regular expression and you can use it in the replacement part.
+Backslash T represents a tab so called horizontal tab there is a vertical tab but that is so obscure I don't think anybody uses that for its original purpose.
+It was originally for line printers as I recall it made the printer skip several lines down the page while that's going really back long way.
+So there are others there are hexadecimal sequences and so forth but if you need them go and look in the manual.
+Then there are escapes which match what the manual calls a character class they're only for using regular expressions but I thought I'd mention them because they're pretty useful for writing more general regular expressions.
+So backslash lowercase w matches any word character and a word character is any letter or digit or the underscore character.
+So word in this context really means a sort of identifier as you'd have in a programming language where you might call your variable ABC underscore one or something.
+It's not really about English words but still it's still pretty powerful. Backslash capital w has the opposite effect it matches any non word character so that would be anything which is not a letter or the underscore character.
+So that can be a useful shorthand as well. Then we have a weird weird concept if you've never come across it before. Backslash b this matches a word boundary.
+That is it matches if the character to the left is a word character and the character to the right is a non word character.
+So it doesn't actually match a character it matches a sort of virtual position in the string and it operates if this is confusing in the way it's written up.
+I've just copied the word straight out of the manual here. So if the character to the left is a word character and the character to the right is a non word character it matches this backslash b.
+And it also says vice versa which means if the character to the right is a word character and the character to the left is a non word character it also matches that.
+Basically it matches the beginning and the end of a word. There are alternatives to this interestingly and I found that these are not that well documented and like they are backslash less than and backslash greater than.
+So that's a sort of a bracketing thing and they mean the same thing. They mean the word boundaries except that backslash less than is used for the left boundary and backslash greater than is used for the right boundary.
+So if you want to denote a word then you can put those around it. You're looking for an actual word. I've got some examples bit later on that uses them.
+The final one in this list is backslash capitol b and that matches everywhere but on a word boundary. That is it matches if the character to the left and the character to the right are either both word characters or both non word characters.
+Now I haven't really come up with the way of using this yet. Maybe that's a challenge for you if you get this far.
+I'll need to do some more investigation but I've not really found that to be amazing useful but I put it in just for completeness.
+So the final bit of this episode which I fear has got rather long is a series of examples. I've tried to put a moderate number of examples into the notes so you've got something to refer to.
+It's one of the things that I find I learn better from than simply reading the manual because otherwise all I'm doing is reading you the manual.
+So I try to do some, put some effort into making some usable examples for you.
+So example one is the demonstration of the minus i option. What I've got is a series of bash commands which do various things which I will skim through fairly quickly but I'll try and explain for you.
+So the first command in this group is a for loop which says for f in then curly bracket a capital A dot dot capital C closed curly bracket.
+If you remember if you've listened to my series on bash hints and tips then you will know that that is a way of making a loop where the loop variable goes from the first to the last in this group.
+So it causes f to be set to capital A capital B capital C. After that we have a semicolon space do space echo dollar random dollar random is a bash variable as a magic thing that whenever you use it whenever you expand it it returns a random number.
+And the result of this echo is pipe two dollar f so and then semicolon space done. So what the loop is doing it is creating three files called A B and C but no putting a random number in each.
+Then the next line is a said command where I have said space minus i is a low case i as you will be aware. Open quote saved S A V E D underscore asterisk dot S A V closed quote minus E space quote S slash four slash at slash G closed quote curly bracket capital A dot dot capital C closed.
+So what that is doing is it's telling said to operate on all three of the files and it is to edit each one to replace any instances of four the number four the digit four by an outside just just for the point just so you can see what happens.
+There's no other point to it really but the i i setting saved underscore asterisk that will be used to make the backups and the backups will be named saved underscore a dot S A V and saved underscore B etc dot save.
+So the next command is cat space curly brackets A dot dot C and that then reports that there are three three files can you just list them all all out one at one after the other and so you just see a list of three numbers and each number contains an outside because some they've been they each had fours in them and they got changed.
+And then I also cat the files called saved underscore curly bracket capital A dot dot capital C closed curly bracket dots S A V and those are the original files which have been saved by virtue of using the minus i with a with a extension after it and you can see there the same the original numbers with the fours intact.
+So as always fairly can try to hopefully it gets across the message of what you can do with this minus i option example to now this is an instance of operating on the second example file that I provided for this episode and it's called said underscore demo three dot TXT and this contains some statistics that are pulled from the HPR site.
+You can do it yourself if you want to it's got it's called stats dot PHP I think I've referenced it in the in the links at the bottom it contains various useful things like how long to the next free slot see how long the along the queue is and various other things so imagine we're trying to write a bash grip to pass it and we actually interested in the number of days to the next free slot.
+We want it in the answer to that in a variable so the line in question in this file consists of the string days to next free slot call on and then the number on the day that I'd sampled it the number was eight probably is today actually because the queue is going down as it does in the file there are two lines beginning of the word days and so we have to make sure that we get the right one.
+So my example shows variable DTNFS which is days to next free slot list is in my mind equals then double quote remember that double quote in bash is the so called soft quote inside double quotes you can get command and a variable substitution to go ahead the so called hard quotes which are single quotes don't allow this anyway within the double quote.
+So it's we have dollar open bracket and then a said command close bracket double quotes and this is a command substitution so in these these parentheses are a said command and the said is the command is said space minus ne space and then we have a substitute.
+The substitute is attempting to find the line that we're interested in days to next free slot and it's going to pull out the number at the end now I've gone a little bit can recall it overkill I've gone over the top with my matching mechanism here but it's really to demonstrate the sort of things that you can do in a regular expression.
+So the regular expression consists of a circumflex means beginning of line then the words days space to then a list now the list is in square brackets and it consists of a circumflex colon close square bracket.
+So what that means is I'm looking for a not colon any character that is not a colon and that and the list is followed by backslash plus so we're looking for one or more not colon's and then we're going to follow that with a colon that's looking for a line beginning days to followed by some other stuff up to a colon.
+We're using this list business to prevent any potential greediness in the regular expression match up the colon's and followed by another list which consists of a backslash t in a space so we're saying here that we're looking for either a tab character remember
+remember with backslash t is one of the specials that you can use meaning a tab and or a space so we're looking for either a tab or a space there's a backslash plus that follows it so we're looking for one or more of these
+and that's because when you look at the line it looks like the colon's followed by a space but you don't always know it's quite hard to work out what a thing that looks like a space actually is.
+Sometimes it can be a tab character which is invisible of course so it's a good idea to do when you're matching spaces of this sort to put in this sort of thing so that you're covered for whatever it actually is it is really a tab that's been that's in the file that you get back.
+And after that we have a group backslash open parenthesis then in square brackets zero hyphen nine closed square brackets backslash plus backslash closed parenthesis so that's a group which consists of the digits naught to nine and they we expect one to many digits there will be no instances where there are no digits but we're expecting we could have you know double digits.
+Even three digits can you imagine that so that's the end of the regular expression so there's a slash that follows it we simply replace that with backslash one which is a reference to that group which is the the number that we found close the replacement with a slash for that with a p so that particular said expression will look for that line pull out the number and return it and then the final bit in these parentheses that.
+Are the command substitution is the name of the file which is said underscore demo three dot txt so what that should do then is to run said to pick out that particular number and stick it into the variable dt nfs and there's an echo which follows it and the echo returns it actually consists of the word or the letters dt nfs equals so that.
+The result you get will show that that's the variable we're looking at so you use that to debug the bit of scripting you've done so far and that's followed by dollar dt nfs close quote so you should get back the string dt nfs equals and then eight okay so like I say that's a fragment of what you might be putting together in a bash script and you might just type that on the command line to prove that what you're planning to do works.
+You might put it in script itself to prove that it does actually work before you move on to the next bit one possibility is that for some reason maybe the file format has changed the said command doesn't match anything and dt nfs contains nothing so that's something you should be considering when you're writing the bash script and you should check that and take appropriate action if you are doing that particular job.
+Example 3 is the case where we're using the backslash nescape we came across earlier and we're going to use it in the replacement part and here we're simply looking for the string hacker public radio we are going to we put hacker public radio as the literal text in the regular expression part of the the said yes command in the said call and we we've
+made each one a group and the replacement part simply consists of backslash 1 backslash in backslash 2 backslash in backslash 3 backslash in and so the result of that will be that when the the said command runs and it finds hacker public radio it will write out the words hacker public radio each on a new line and we're running this against said underscore demo 2 dot txt.
+In the example I pipe the result to a head command head minus 4 so we just get the first four lines otherwise you'd see the whole file.
+There are ways you can get said to do this as well actually but we haven't got that fire that would be next week next episode I should say not next week I'm not going to be that quick.
+So that that will do what what a said it will do and that will that will work fine backslash ends a nice way of representing a new line alternative ways are a real pain.
+But I did think as I was doing this how would you write a bit of said to join all the lines of the of the input file together.
+You would think that it might be possible to do said space minus e spaced open quote s slash backslash in slash slash close quote and run that again said underscore demo 2 dot txt.
+You'd think that said would simply strip off all then the line breaks the new lines at the ends of all of the lines and make them all make it into one long line.
+That doesn't happen and that's because said grabs one line at a time puts it into the pattern space that we mentioned in the last episode and in doing so it removed the trailing new line.
+Then it applies the script that you've put together on your command line or whatever in a file whatever and it having processed it it will print it out and it will add a trailing new line.
+It won't print it out if you have a minus end option of course as we know but it will add the trailing new line back again.
+So at the point of which the script runs against it there's new and new lines to strip.
+There are ways in which you can concatenate all the lines of the file but we'll leave that to another episode where we have learned about more commands within said.
+Now we mentioned the minus r option or reject extended is its full form.
+That option we mentioned earlier on and if we were to run example 3 the one where we turn hack public radio into each word on a separate line then you would type that particular said command without we would use minus r, said space minus r,
+space minus e, space, open quote, s slash, then you would put open parenthesis hacker, closed parenthesis, space etc etc.
+In other words you don't need the backslashes in front of the parenthesis.
+You do need backslashes inside the replacement, you need backslash 1, backslash n etc.
+But you don't need them in the regular expression because we have, because we have switched to extended regular expression mode which doesn't use the backslashes.
+It's a useful feature, it certainly saves some typing and makes the regular expression a lot more readable but it's an extension and it's not portable.
+So personally I don't use it because mostly I don't want to be in a situation where I'm faced with a said that doesn't have that capability and I forget how the hell to use it.
+So that's just my thinking anyway.
+Example 5 then the last one we're nearly there, one of the things you're often called upon to do when you're processing text is to take in a string and remove leading and trailing spaces.
+Well I was thinking about this and I rather naively wrote a bit of said that didn't work so I thought I would share it with you.
+The thing that didn't work was echo open double quotes and then a bunch of spaces, hello world exclamation mark, a bunch of spaces closed double quotes, piped into said space minus e, space open quotes slash up.
+I'm going to call it up arrow but circumflex space star.
+So that means any spaces zero or more spaces at the beginning of the line, then we have a back slash vertical bar which is the alternative operator.
+Then after that we have space star dollar asterisk whatever you want to call space asterisk dollar. So that means zero or more spaces at the end of the line.
+We close that regular expression with a slash then the replacement part is nothing and close quote. So if you do that then what you then get returned is the string hello world with no spaces on the front of it.
+But and you look at it and think oh that works that's great right onto the next thing but it doesn't actually work if you do what I've shown in the second example which is to add another s expression inside the quotes to the said command where it replaces it after this space trimming business.
+It replaces the start of the line with a less than sign then another one that replaces the end of the line with a greater than sign so puts these these symbols in a sort of brackets around the string.
+You will see that you get a less than sign hello world exclamation mark a bunch of spaces and a greater than sign. So in other words it didn't remove the trailing spaces.
+So what's happened here is that said has spotted leading spaces and has removed them but then it stopped well surprise surprise that's because you didn't tell it to keep going.
+The answer is you simply add a g to the end of that first s command the g flag to tell it to keep keep going.
+So the final example is the same as the second one but with a g in it and you will see that the result is hello world with no spaces and it's enclosed in these less than a greater than sign just to prove that there are no spaces there.
+And that's just there's sometimes you're experimenting with the regular expression with a bit of said and you're not quite sure what it's doing sometimes it's useful to do that type of thing just to prove to yourself that it works.
+Then you strip out that business of adding the limiters around the thing and say right and that's finished now I can move on to the next task so hopefully that that's useful.
+Okay well that's it for this time sorry it got so long it's hard to know where to stop really next time we're going to be looking at more of the said command set.
+We've only looked at one command so far so hopefully we're not going to take quite so long but I know we're not going to take as long to cover the next batch but hopefully you'll be following along with me and you'll find it useful.
+Okay then bye.
+You've been listening to Hacker Public Radio at Hacker Public Radio dot org.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show like all our shows was contributed by an HBR listener like yourself.
+If you ever thought of recording a podcast and click on our contributing to find out how easy it really is.
+Hacker Public Radio was founded by the digital dog pound and the infonomicon computer club and it's part of the binary revolution at binrev.com.
+If you have comments on today's show please email the host directly leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated today's show is released on the creative comments, attribution, share a light 3.0 license.

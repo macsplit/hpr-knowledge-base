@@ -1,0 +1,123 @@
+Episode: 1099
+Title: HPR1099: compilers part 2
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1099/hpr1099.mp3
+Transcribed: 2025-10-17 18:54:29
+
+---
+
+Hello, everybody.
+My name is Sig Flup and welcome to Miscellaneous Radio Theatre, 4,096.
+In this episode we're going to talk again about compilers, we're talking about compilers.
+This is a series where we talk about compilers.
+Last time we described the stages of a compiler and basically what high level and low level
+is.
+This time we're going to talk about at least one of the stages, we're going to talk about
+parsing, which is the second stage of compilation.
+The first stage is lexical analysis, but it's important that we talk about parsing first.
+I'll explain why in a bit.
+So imagine the big picture here is imagine a circle with finite state machine written
+in the middle.
+That's not what I'm going to talk about here, but it's important to realize that it's
+within an even bigger circle with context-free languages written in it.
+That's where we're going to start.
+Now there's even a bigger circle around context-free languages called Turing Machine Languages.
+This is the structured machine complexity and this structure is how the information about
+a program flows.
+It flows first through a lexical analyzer, that's a finite state machine, and then flows
+through a parsing stage, which is a push down finite automata, which is just a fancy
+term to describe the mechanism that implements context-free languages.
+Then flows into Turing Machine language with code generation.
+The reason why I'm not going to start with describing lexical analysis is because any
+circle in this model that we're imagining can emulate circles within it.
+So you could implement a lexical analyzer within a parser.
+Typically we don't do that, but you could.
+But let's talk about parsing.
+A context-free grammar is a grammar where every production rule takes the form of a non-terminal
+producing a terminal.
+Now you're thinking, SIGFLOB, what's a production rule, what's a terminal, what's a non-terminal.
+Let's relate it to English.
+A non-terminal is something like a paragraph.
+Paragraph produces more non-terminal called sentences.
+Sentences produce even more non-terminal called things like verbs, subjects, nouns.
+Verb subjects and nouns produce words, words, produce letters, and letters are our terminals.
+So the flow of production and the production of a grammar is the flow from non-terminal
+to terminals.
+This flow is called the parse tree, where terminals are the frontier.
+Let's take the simple grammar.
+S produces perenn, S and perenn, or S plus S, or S times S, or S divided by S, or ABC.
+This is simple algebra grammar where we have terminals of ABC and also plus multiply
+and divide.
+So let's see your compiling source code that looks like this.
+Perenn A plus N perenn times B divided by C. The top of the parse tree for this is going
+to be S because while that's the start of our grammar, S in our case produces S times
+S, S times S produces S perenn S on one end of the leaf, and S divided by S on the other.
+Perenn S and perenn produces perenn S plus S and perenn and so on.
+All these productions in the end produces a tree that describes our input perenn A plus
+B and perenn times B divided by C within its grammar constraint.
+The idea of a parser is validating that a particular input stream matches a grammar.
+Now, we can extend this grammar all the way to having file as the starting symbol to
+having bytes as the terminals, but we don't extend it that far in a compiler.
+In a compiler, the grammar is extended from file as the starting symbol to what are
+called tokens.
+Token production is what lexical analysis does.
+A token is a stream of terminals that can be assumed to be one terminal by the parser.
+Like the number 1337, it's made up of four terminals, but it can be summed up with one
+token, and that one token can be taken as one terminal by the parser.
+Another token might be a string, for instance.
+A file, a source code file for a very simple language produces declarations and functions.
+Plans produce symbol tokens or declaration plus equal sign plus constant and so on.
+When we talk about input streams, we don't have to produce the entire parse tree in order
+to do something.
+There's work to be done when we produce sections of the parse tree.
+For instance, in a function part of the parse tree, there might be a line of code section.
+We match a line of code, we do something, we match a function, we do something.
+And we match a declaration, we do something, and so on.
+So how does matching an input stream to a parse tree actually work?
+Well, it can be done with something called ship-reduced parsing.
+This is a bottom-up parser where we deal with bottom-up tokens instead of top-down productions.
+You can also call a ship-reduced parser a left-right parser.
+This is where we keep a marker on the input stream and reduce what's on the left and ship
+the marker.
+So our marker starts on the left of our input stream.
+Some reduction is done to the left side.
+It's shifted once again and some reduction is done to the left side.
+So the left side has non-terminals and the right side has non-terminals and or terminals
+and the right side just has terminals.
+Today we have a parser state that is A, B, C, marker, X, Y, Z.
+We first ship so we have A, B, X, marker, Y, Z.
+Now let's assume that in our grammar we have a production rule, D, produces, C, X.
+We then can reduce to A, B, D, marker, Y, Z.
+Reduction is the application of what's called an inverse production.
+Every time we do a reduction, we move the state higher in the tree we're making until
+we finally reach the top.
+Since we have a single state during the production of every bit of the tree, we check the left
+side of the state against production rules and when it matches a certain production, say
+file to declaration, file produced declaration, we can do something, bottom up.
+So what we do at every stage is build dangling nodes of what's called a syntax tree.
+We stitch the nodes together as we move up the tree.
+So our syntax tree of an entire program might look like this.
+Imagine if you will file at the top two declarations on the left, one function on the right,
+from the function we have two more declarations on the left and lines of code on the right.
+That's what we stitched.
+Performing all these actions, performing ship-reduced parsing, building parse trees, performing
+actions at every matching part of the parse tree, we stitched together another tree called
+a syntax tree and that's how a syntax tree is made.
+And that is parsing.
+And that's the end of this episode.
+Thank you for listening.
+And I look forward to recording another.
+Take care everyone.
+Bye-bye.
+You have been listening to Hacker Public Radio, where Hacker Public Radio does our.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by a HBR listener by yourself.
+If you ever consider recording a podcast, then visit our website to find out how easy
+it really is.
+Hacker Public Radio was founded by the Digital Dark Pound and the Infonomicom Computer
+Club.
+HBR is funded by the binary revolution at binref.com, all binref projects are crowd-responsive
+by lunar pages.
+Of shared hosting to custom private clouds, go to lunarpages.com for all your hosting
+needs.
+Unless otherwise stasis, today's show is released under a creative comments, attribution, share
+a line, read our own license.

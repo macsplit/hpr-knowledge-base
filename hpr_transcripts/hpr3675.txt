@@ -1,0 +1,806 @@
+Episode: 3675
+Title: HPR3675: Plan 9: An exercise in futility
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3675/hpr3675.mp3
+Transcribed: 2025-10-25 03:28:20
+
+---
+
+This is Hacker Public Radio Episode 3675 for Friday the 2nd of September 2022.
+Today's show is entitled, Plan 9 and Exercise in Futility.
+It is hosted by Binar C and is about 80 minutes long.
+It carries an explicit flag.
+The summary is I talk about the design of Plan 9 and how I use it.
+This episode is about Plan 9, an exercise in futility.
+That title is kind of tongue in cheek.
+I actually really enjoy using Plan 9, but it's kind of…
+It is kind of an exercise in futility for a lot of, I guess, actually useful things.
+So getting into it some ideas about Plan 9, it has been described as the uncanny valley
+of Unix.
+It's cool, useless.
+Ken Thompson, when describing Plan 9, said it does everything Unix does, only less reliably.
+And 9 front, one of the Plan 9, I guess modern Plan 9 forks, in their FQA, they say if
+you cannot imagine a use for a computer that does not involve a web browser, Plan 9 may
+not be for you.
+And the last that I have is no list in concatenation.
+So a little bit of history.
+The boys at a battle laps, they decided that Unix wasn't good enough.
+They wanted to build something better.
+I think in order to record a Plan 9 episode, I almost had to record an episode about Unix
+first, sort of as boilerplate to kind of understand why Plan 9.
+So the boys at a battle laps, they wanted to make a distributed multi-user operating system,
+composed of heterogeneous machines.
+A lot of the ideas are similar to Unix, but taken a little bit to extremes, like Unix
+philosophy pushed into absurdity.
+So for example, the idea that everything is a file, it becomes very apparent.
+And sometimes this abstraction can feel a little bit over-obstracted.
+That's the biggest idea in Plan 9, everything is a file, and the other biggest idea is
+the concept of private namespaces.
+Private namespaces make the concept of virtual file systems kind of look like babies first
+file system abstraction.
+So just like Unix Plan 9 started as a research operating system, both of these operating systems
+are enjoyed by hobbyists.
+Both of them are fun and interesting ways to use a computer, but the systems do diverge
+after the research similarity.
+The big aspect is that Unix's mainstream, everybody runs Unix except for the people who
+are running Plan 9 pretty much.
+And Plan 9 licensing, just like early Unix, it was proprietary, there were weird licensing
+issues.
+You know, you had to pay a bunch of money if you wanted to see Compiler to compile
+GCC on your proprietary Unix.
+Plan 9 had similar weird licensing things in the past, but now all of it is currently distributed
+under the MIT license.
+So what is Plan 9?
+I took this from the intro man page on Plan 9.
+So quoting, Plan 9 is a distributed computing environment assembled from separate machines
+acting as terminals, CPU servers, and file servers.
+A user works at a terminal running a Windows system on a raster display.
+Some Windows are connected to CPU servers.
+The intent is that having computing should be done in those Windows, but it is also possible
+to compute on the terminal.
+A separate file server provides file storage for large terminals and CPU servers alike.
+So this multi-machine Unix installation, you could think of it like, not a lot of people
+really run Plan 9 in this way anymore, I mean some people do is sort of as an exercise,
+but most people just run all of these services on a single machine so that your laptop
+can be one functional Plan 9 installation.
+So that means your laptop is functioning as the terminal, the file server, the CPU server,
+and depending on which Plan 9 fork you're running the authentication server.
+And in my notes I put, most modern Plan 9 users just run Plan 9 on a single machine
+because maintaining many machines to achieve a single usable operating system is really
+unnecessary.
+And I think it's because out of the people interested in Plan 9, like all 20 of them,
+one user, me, that's not enough to justify running for separate machines to get an operating
+system.
+I shouldn't, I don't really want to run separate terminals, CPU, file, and authentication
+servers, just so that I can write a little bit of C code.
+So use cases.
+The intended use case is a distributed multi-user network that's not on a single mainframe
+machine, and then later in the lifecycle of Plan 9 before it was abandoned, it was
+mostly for embedded programming.
+I put in the notes, Unix was too bad is good to be stopped.
+The actual use case, not the intended use case, the actual use case, I see most of the
+time is, you know, people using Plan 9 because it makes them feel like a Unix hipster.
+People pretending that Plan 9 is anything other than vaporware.
+People running Plan 9 just to post screenshots on abandoned forums and really operating systems
+tourism.
+I think that's a phrase I've kind of coined when I was writing about Plan 9 and sort of
+using Plan 9 over the last couple of weeks.
+So Plan 9 in the wild, what are some things that came from Plan 9?
+Unicode came from Plan 9.
+R4C came from Plan 9, the R4C system call, the 9P 2000 protocol, 9P is a way of presenting
+a file system over the network, the Microsoft Linux virtual machines that sort of discourage
+people from actually running Linux or an open source Unix.
+That uses 9P, although fairly poorly because SSH is faster, for some reason than using
+the native 9P Microsoft whatever.
+And also QEMUs for FS uses 9P.
+Various window managers for Unix sort of follow the Plan 9's window manager way of doing
+things.
+It's written by like nine fans, but not nine users, right, people who are fans of it but
+don't really use it.
+In quotes, cool idea, I'm adding it to Linux.
+A lot of Plan 9 ideas were sort of implemented into Linux, like private namespaces.
+The way of doing that on Linux is C groups, union directories, a lot of Docker looks
+a lot like how you would do things in Plan 9 with private namespaces.
+So the design, right, so let's talk about the design.
+The goal of Plan 9 was to build a distributed operating system that expands upon these
+Unix ideas, not to build something backwards compatible with Unix.
+Keep this in mind as I continue talking about this and why you might not want to use Plan
+9.
+So wanting to improve Unix, improve upon those ideas is kind of mutually exclusive to
+it.
+We want to port Unix user-land utilities to this swacking new kernel.
+Unix programs and large, really large programs like Firefox, they're difficult or almost
+entirely impossible to port to Plan 9 because of this design choice.
+So like some smaller tools are portable, but most of the big graphical things are not
+and I'll get into that as we keep going through my notes here.
+So part of the design distributed operating systems, so Plan 9 was designed to be a distributed
+operating system over the network.
+So a lot of the internals of the system are sort of oriented around networking.
+So on the single system laptop installation, like I mentioned previously, all the components
+that make a Plan 9 network work are actually running on that one system in a client server
+model.
+The file system is presented as a service, the CPUs prevented as a service, the terminals
+prevented as a service.
+This type of abstraction from physical hardware, it's kind of hard to describe and think
+about Plan 9 in this way.
+At least for me anyway, and I'll keep talking about these ideas and I'll get to a valid
+explanation of how this thing works.
+So when you think about Plan 9 as a heterogeneous network of machines, it starts to make a
+lot of sense.
+And if you think about it as sort of a single system laptop installation, it's a little
+bit harder to sort of wrap your head around how all the pieces come together to give you
+an operating system.
+So I had this idea when I was writing about Plan 9 or writing my notes, thinking about
+the client server model.
+So when you have like a lamp stack or a lamp stack and you're running a MySQL server,
+on that lamp stack, the database server is actually running on the same system as the
+web server and your PHP process is the client to the server that is the MySQL server.
+And they communicate over the loop back device on local host.
+So the design for the database for MySQL is to run it on a separate database machine.
+But because how these things are presented over the network, we can run MySQL on the
+same system as our web server and sort of have the two pieces pretend that they're across
+the network, but really they're just talking across local host on the loop back device.
+That's kind of how everything in Plan 9 works.
+Everything is a file system.
+The file system is presented as a server no matter what physical machine is running on.
+The CPU is also presented as a server no matter what physical machine is running on.
+The terminal is also presented as a server no matter what machine is running on.
+And on a Plan 9 installation, all of these services that you might traditionally think
+on a unique system can only function on local host.
+Like, you know, running X11 across the network, it's possible, but it's really tough.
+On Plan 9, it's really easy to do that.
+So the system is designed as if all of these components are running remotely.
+And the local machine is really only a client for all of these remote services.
+Where remote is sort of an air quotes because you can run, you know, the remote service
+locally, presenting everything over the network makes it easier to write code for,
+but it's kind of hard to wrap your head around the concept unless you think about it.
+So the 9P is the Plan 9 file system protocol.
+It's a networking protocol that makes the client server model possible.
+So internally, the file system is served to the client over 9P.
+Pretty much everything in Plan 9 talks to the system over 9P.
+So your text editors talk to the system over 9P.
+The windowing system uses 9P.
+The plumber uses 9P.
+So in Unix, sort of, the biggest idea is that everything is a file.
+But in Plan 9, it makes more sense to say everything is a file system that you can access
+over 9P.
+Other big design ideas, private namespaces, and union directories.
+So the most important aspect of Plan 9 and the thing that makes it kind of difficult
+to use sometimes is private namespaces.
+I had a little bit of trouble understanding this until I stopped thinking so hard.
+So a private namespace is when each process constructs its own unique view of the file
+system.
+It is a per process view of the file system.
+The easiest way that I can sort of think about namespaces and sort of a Unix analogy is
+like a virtual directory where you'll bind, use a bind mount.
+This is a use for a bind mount, right?
+Last episode I talked about, never using one.
+Now after using Plan 9 a whole bunch, consecutive days in a row after having not used it in
+a very long time, bind mounts are useful now.
+So you bind mount and link in a bunch of things into your virtual directory.
+Unix has virtual file systems, Plan 9 has virtual directories.
+The concept of namespaces allows a user to pull resources from all over the network and
+present them as a single local file system.
+It doesn't matter where these resources are coming from.
+It doesn't matter what physical machine it's on.
+It's presented as if it's all locally.
+So in order to construct a namespace, union directories are used.
+Union directories are when you bind several directories to the same directory.
+This is just like a bind mount.
+And this sort of distributed idea for computing.
+What this means is that if you're on a Plan 9 network and you're logging into your terminal,
+you only have to pull in the parts of your system that you want.
+You can sort of build your system.
+At runtime, pulling in components from all over the network, pulling in resources from
+all over the network and excluding those that you don't need.
+So it can be as light or as heavy or have as many resources pulled in as you want.
+The Plan 9 kernel only keeps separate mount tables for each process and using namespaces.
+Systems administrators can create isolated environments like a charute.
+That's like how containers or like a docker would work using private namespaces.
+So processes and their children are grouped together in process groups and this allows
+for inheritance basically.
+So because private namespace means per process view of the file system, we need some way
+to sort of have namespace inheritance that way or process responsible for mounting or
+remote file system doesn't exit.
+And now we don't have any, you know, where this file system is functionally not mounted
+in the current namespace.
+We need to be able to group processes together to actually accomplish something.
+So the per process namespace concept.
+It's a little bit confusing to at least me as a unix user, especially when binding or
+mounting resources.
+So when I first started using Plan 9, I was really confused because I would bind something
+in one terminal window and then switch to another terminal window and then I got lost
+because the thing that I had just mounted somehow disappeared.
+But really what it was, I didn't really understand this at the time.
+This was probably, you know, years ago, is that each window has its own namespace.
+So I have an example of mounting the boot partition.
+In one window you run 9FS, 9FS is just to strip the 9FAT partition, 9FAT is equivalent
+to having like a NBR DOS partition on a unix system.
+And then I list the files on that boot partition.
+And then in another window, the boot partition doesn't seem to be mounted and it's really
+confusing that, you know, on a unix system you type Mount Drive here and that file system
+is available for all users.
+But on Plan 9 it's not really per user, it's per process, which is a little bit of something
+you have to think about if you're unfamiliar with using a system in that way.
+So the second most important aspect of Plan 9 is everything is a file.
+And I think it's almost absurd how many things are files.
+So the kernel presents hardware devices as files bound to slash dev within the namespace.
+Devices are just files.
+Outside the namespace, devices are named with a leading hash symbol to help typically
+administrators and programmers to distinguish between what is a pseudo file that represents
+a device and what is a physical device.
+So physical devices bound to dev, easy administration, easy programming, everything is a file,
+and sort of pushing everything into this paradigm even if it doesn't always make the most
+amount of sense, it reduces the number of system calls quite greatly.
+Now I can't remember off the top of my head how many system calls Plan 9 has, I think
+it's either 50 or 150, it's not a lot.
+Compare that to something like Linux or FreeBSD when you have somewhere around 500 system
+calls.
+You can pretty much memorize all of the system calls on Plan 9 in a couple of days whereas
+trying to memorize all of the system calls on a large unit system would be difficult.
+So I have an example of everything as a file.
+So the clipboard in Plan 9 is called slash dev slash snarf.
+So you can read and write to dev snarf just like any other file, that's the pseudo device
+for the system clipboard.
+So in my example I cat slash dev slash snarf and it prints out whatever I had copied.
+And then the next command I run is fortune and then an output redirect the right angle
+bracket slash dev slash snarf and then I cat slash dev slash snarf and it prints out
+that fortune.
+Sort of the idea of being able to send a command output to the clipboard and use clipboard
+content really easily as if it were any other file.
+I think that's something although it doesn't really scale to large systems where we have
+to have the ability to know about mym type center clipboard in Plan 9 everything kind of
+pretty much just this text.
+So it's okay that it's just a text clipboard.
+So the display is called slash dev slash screen.
+So how you take a screenshot, so in my little terminal session I didn't take screenshots
+I just included text because text is more accessible.
+So I type file slash dev slash screen.
+It tells me dev slash screen is a Plan 9 image.
+So how do I take a screenshot cat slash dev slash slash screen, pipe it to ping and
+then write in right angle bracket right output redirect to screenshot dot ping.
+And then I do file screenshot dot ping and it tells me it's a ping image.
+So everything as a file or data streams it makes sort of scripting and meta programming
+really quite enjoyable.
+There's not a lot of like boilerplate C you have to write when you have all of these
+tiny utilities and everything is presented in a simple way where any any standard utility
+you might want to use will be able to understand how to access this resource on the system.
+So another thing on Plan 9 is that it has a message oriented file system.
+So this message oriented file system processes can offer services to other processes by
+placing virtual files into the namespaces owned by other processes and then file IO on
+this virtual file is interprocess communication.
+Similar to a unique socket but with significantly less overhead and significantly less difficulty
+to program all of the hard parts are abstracted is just file IO which is kind of a thing that
+I like about Plan 9.
+The other thing about that Plan 9 is about virtual file systems.
+So on Plan 9 there is the slash proc file system.
+The slash proc file system presents processes as if they were files in a file system.
+This makes writing programs that manage processes really easy and it reduces the number of
+system calls because you can tell a process exactly what you wanted to do.
+So this means you can kill a process, halt a process, sleep a process just by echoing
+that keyword into the processes file.
+So let me try, I have my Plan 9 laptop over here, let's try something.
+Okay, so I have opened my Plan 9.innie in a page, the page program is kind of like
+a PDF reader except it can read more than just PDFs.
+So if I do PS, AUX, scrap page, it tells me it looks like the process is 463.
+So if I do CD slash proc 463 and then I echo, kill into the CTL file, it kills the
+page.
+Some of these things are easier to demonstrate in like a video format or sort of images,
+but that's how you kill a process in Plan 9 is by echoing kill into slash proc, slash
+pid, slash CTL.
+And you can send other messages to that process as well, not just kill, but kills an example.
+And this sort of proc file system means that users can manage their processes using regular
+tools like cat, echo, LS.
+And then Linux borrowed the idea of a slash proc file system as well.
+Another thing that came from Plan 9 is Unicode.
+So Unicode is ubiquitous across the entire system.
+Although the implementation is not complete and it is not fully internationalized, a UTF8
+is there.
+And their Unicode is fully backwards compatible with ASCII.
+And thanks to Plan 9, we now have people who write exclusively using primitive hieroglyphics
+instead of words when they are putting text on the internet.
+Thanks Plan 9 for that, making it harder for people to read.
+Another thing about Plan 9, portability, just like Unicode was designed with portability
+in mind, Plan 9 is written in a strange dialect of ANCC that aids in its portability.
+So the system is self-hosting, but typically like installation images you will find or
+make yourself, those are not self-hosted.
+So how you would go about porting Plan 9 to one of these strange architectures are building
+an image for it is that you will download the generic AMD64 or i386 installation image,
+cross compile the system sources for your target architecture, wrap it up in an installer,
+and then install that on the strange architecture.
+And then after you've got this bootstrap cross-compiled thing, what you want to do is recompile
+the system so that the software you're running is self-hosting.
+Although the bootstrap intermediate step to get there is cross-compiled rather than self-hosted.
+And the compiler suite is kind of clever, each compiler and linker, and object files
+even.
+Our name according to the target architecture, and so there's an alpha numeric prefix
+and suffix for these things associated with linkers and assemblers.
+So zero C is for MIPS 3000, that's the compiler for MIPS 3000.
+One C is for Motorola 6800, two C's for Motorola 6800, 6080, 5C is for little
+Indian arm, six C's for AMD 64, seven C's for arm 64, eight C's for the 386, a case
+C's for Sunswork, VC's for big Indian MIPS, and then the linkers, so it would be instead
+of like six C for AMD 64 compiler, six L would be the AMD 64 linker.
+And I'll talk about compilers later, this is just sort of, you know, small details.
+File systems, so multiple file systems are supported on Plan 9, most of them suck.
+Most people, most operating systems, tourists, have only ever heard of fat, but I use the
+CWFS file system, it's kind of a strange file system, CWFS stands for the caching
+worm file system, so every night this file system makes a dump to what's called a worm
+drive.
+Now, worm stands for right once read many, typically at least in a historical context, your
+worm drive would be sort of a tape drive.
+So the actual hard disk layout would look like having a hard drive and then all of the
+content on that hard drive is backed up to more permanent storage.
+Sort of the idea behind a worm is that it's an infinite amount of storage because you
+can just change the tape or clean out files.
+We need no longer need them or remove old backups.
+I think in a modern context, something like ZFS, the sort of dumping thing, dumping to
+worm, it's kind of like a ZFS snapshot, except that ZFS snapshots make, it does like
+delta differences, so a snapshot doesn't take any space until you start making changes,
+but a dump to the worm drive instantly takes up space, because files that change are
+backed up and everything else is kind of like Simlinked.
+How you mount these dumps is you run the 9FS command, you do 9FS dump, that mounts the
+worm drive, and then you just CD to slash N, slash dump, slash year, year, year, slash
+month, month, day, day, that's where the backups are stored.
+So managing the file server and trying to uncorrupt CWFS, like I said, everything is pretty
+much just the files.
+So you can either echo commands into slash SRV, slash cwfs.cmd, so you can echo commands
+for the file server into that file, or if you type con-capital C, and then that path
+and open up like an interactive terminal.
+So you can actually run a plan 9 installation without a worm, but it's kind of a bad idea
+because these file systems aren't necessarily very reliable, there's no copy on right,
+there is no journaling.
+All that is there is sort of this nightly backup to rely on that also functions as built
+in version control.
+Data integrity is not guaranteed.
+Some other cool things about plan 9, two programs, Factotum and Sextor.
+So Factotum stores passwords in memory, this is kind of like how SSH agent works.
+And if you want to store these passwords to NVRAM, you can use Sextor, Sextor is almost
+identical to Factotum, the way you format your password strings.
+I don't use Sextor just because I'm a little bit wary of writing things to NVRAM over
+and over again, mostly because the NVRAM in most computers, that's where your BIOS is.
+And that partitions not necessarily meant to be written to over and over again, now
+you can create a partition on your hard drive that functions as Sextor, I just don't
+do it, I just type in the password every time for things and then I just don't reboot
+my system very often.
+So I really am only typing in passwords every once in a while, but a built in password
+manager is kind of an interesting concept.
+Those some known forks of Plan 9, I'll go over all of the forks that are dead and then
+I will go over all of the forks that are not dead, probably on life support.
+So Plan 9 from Bell Labs, sometimes you'll hear it called Labs 9, it's the original,
+that's abandoned, that's dead.
+Nine Adam, the domain has expired, it's dead, it's gone.
+Macarose, I think the domain still works for that one, but development hasn't happened
+in a long time.
+Harvey is an attempt to port Plan 9 to GCC slash clang, that's dead, gone.
+Nix, dead, gone.
+Johanio S, dead, gone.
+No nine, gone forever.
+Inferno, Inferno is sort of a continuation of Plan 9, it's in permanent limbo, which
+is funny because limbo is sort of like a, it's a programming language for Inferno.
+Now my life support category, nine front, that's the one that I use, it's actively developed,
+there's quality of life patches like a usable SSH client, a Wi-Fi support, audio support
+sometimes, except for recording, at least on my thinkpad, I can't record audio.
+Like general stability, the system doesn't randomly crash, USB support, I get client, those
+types of things that you would want to be able to use as a system, this kind of nine
+fronts really the only choice.
+Nine legacy that's still going on, nine legacy is just patches applied to labs nine, quality
+of life patches, I haven't used nine legacy or any of the patches, but I have used labs
+nine and comparing labs nine to nine front, nine front really does seem like the one that
+I think most listeners would want to use.
+And the last one is plan nine from user space, sometimes this is also called plan nine
+port, if you use this you're going to be laughed at, really it's useless, unless you really,
+really want to use Acme on Unix, or if you're just testing cross compilation, but I'll
+get into the compilers in a minute, I have links for all of these in the show notes.
+So you can visit all of these websites, if any of them are still up, I'm sure at least
+one of the dead forks websites, one of the domains has expired since I started recording.
+So now that we have a little bit of the family tree underway, some of the history, let's
+talk about what actually using plan nine looks like.
+So the plan nine experience in 2022, you see about this thing on a forum, you put plan
+nine of virtual machine, posted a screenshot, and then shut down the VM and continue using
+Ubuntu because you can't play video games on plan nine, and you can't watch videos on
+plan nine, that's what I see in most cases, people who want to try plan nine, hardware
+support and nine front is expanding, but it's still limited, I run nine front on my
+think pad X220, everything seems to just work, Wi-Fi works, VGA works, the ethernet port
+does work, the internal monitor works, audio works, recording doesn't work, but audio works,
+everything seems to work, and it is fairly stable, I've left it on for a week now, and
+it hasn't crashed yet.
+Some people run nine front on a Raspberry Pi because they have a Raspberry Pi image,
+but nine front on a Pi is difficult because none of the documentation for every other
+architecture lines up with how to actually do things on the plan nine.
+Also for example, mounting your boot partition on i386 or AMD 64, you do 9FS, 9FAT, and
+then you go to slash N, slash 9FAT, and that's your boot partition.
+On the Raspberry Pi, however, that boot partition is called PIDOS, and there's not really an
+easy, maybe there is now, but when I was trying these things, there wasn't really an easy
+way to mount that.
+There's no scripting duct tape, like the 9FS command, all the 9FS command does is, it's
+just a shell script, pretty much, that automate some of these things.
+I have ran a plan nine in KVM and QEMU, it works quite well, it's fairly stable.
+If you're an operating systems tourist, there's lots of options for you, for everybody
+else, try it on real hardware, it's a lot more fun on real hardware.
+I didn't add a K message, talking about ThinkPad support, on plan nine it's not called
+a D message, it's called a K message, and you get that by typing cat slash dev slash
+K message, let me check that, I think that's what it is.
+Yeah, it's cat slash dev slash K message, that's the equivalent of a D message.
+And I didn't add it, because either plan nine is going to work for you or it won't.
+Available software, so sort of an idea I had when writing this, good new might not be
+Unix, but plan nine isn't even trying to be Unix, it's not even pretending.
+So plan nine has a graphical user interface, unlike Unix plan nine was designed with graphics
+and mine.
+Some people have said that plan nine looks kind of like a small talk machine.
+I disagree that's really only at me, and even then it's a little bit more like, it's
+hard to describe, it's something you have to use.
+I think really the plan nine window manager, Rio, it seems to be really the only good stacking
+window manager, because it gets out of your way.
+And you can, you have to have a three button mouse to use plan nine left click middle
+click and right click are all used and you have to have a middle click and a right click
+in order to actually really do anything with the window manager at all.
+If you don't have a middle click, let's say you didn't buy a think pad with a middle
+click, you have some other janky old laptop, you can push shift, hold down the shift key
+and press right click and I will emulate a middle click.
+So the window manager is called Rio, it's a successor to the eight and a half window
+manager and Rio is really lightweight compared to X11 because graphical hardware support
+and sort of the way you access graphical hardware is built into the kernel and how
+you access this graphical hardware is using files and namespaces, that's how you access
+input devices to.
+So the window manager, it's pretty much just file IO, that's how you would program Rio.
+I think the easiest way to explain Rio is I think of a rectangle multiplexer where each
+rectangle is a client to a nine piece server, each having its own namespace and I think
+using Rio is kind of counterintuitive at first but thinking less hard made it a lot easier
+for me to use.
+I still have a little bit of trouble using a mouse becoming efficient, especially after
+using a terminal almost exclusively for years and years.
+I do prefer the way Rio uses a mouse over most other systems because using the mouse in
+Rio is pretty intuitive when you stop fighting it and thinking, oh this is like Windows.
+And I do prefer if I have to use a mouse, if someone held me down and said you have to
+use something that requires a mouse to be able to accomplish work, I would probably
+choose Rio.
+And sort of the argument for mouse-centric computing is that text editing is faster.
+The idea that if you can point the mouse directly over the text you want and just click,
+that's faster than using the arrow keys.
+I think this is correct for people who don't use a computer all the time.
+But for someone who uses VIM, the average VIM user is editing text faster than they can
+even think faster than the speed of thought.
+But most people aren't the average VIM user.
+All they know how to do is move the cursor with arrow keys and they sort of don't want
+to or can't memorize hundreds of VIM key bindings.
+For those types of people a mouse is faster and you know after all these years of memorizing
+key bindings I have forgotten the names and birth dates of all my family members, but
+at least I'm fast editing text without a mouse.
+The mouse controls are kind of confusing at first because it's sort of a click and hold
+pattern and then you hover over the option you want and then release.
+And the release selects the option.
+So in Rio, the right click menu is window management controls.
+That's controls like new resize, move, delete, hide.
+Middle click is text manipulation controls.
+So you highlight the text and then do the hold hover over the option you want and release
+to select.
+The middle click options are cut, paste, snarf, plumb, look, and send.
+Snarf is copy.
+Plum sends the highlighted text to a process or it will open the file with the appropriate
+program.
+Look, we'll search for the highlighted text and send will run the highlighted text through
+the command interpreter through the shell.
+And also under middle click, sort of my notes broke down here.
+Also under middle click is an option called scroll.
+This toggles auto scrolling or paging mode.
+The windows have a built in pager, which is something I quite enjoy using now that I've
+been using it a lot more and stop fighting it at least recently.
+And there's also a concept of mousecording.
+I can't really explain mousecording over an audio format, but it's kind of the idea
+where when you're on a keyboard, for example, if you're used to using something like Emax
+when you have these key cords, imagine that, but with your mouse.
+I typically don't use mousecording because I use the SAM editor, not so much the Acme
+editor, where the mousecording is really implemented.
+Rio and its windows, they also support a couple unique style keyboard shortcuts.
+Some of them are a little bit unfamiliar to people who might have used any somewhat
+posixie or born like shell ever.
+So control U deletes from the cursor to the start of the line.
+Control W deletes the word before the cursor.
+Control H deletes the character before the cursor.
+Control A moves the cursor to the start of the line.
+Control E moves the cursor to the end of the line.
+Control B moves the cursor back to the prompt.
+Control F is the autocomplete key.
+This is like tab completion.
+So on plan 9, when you push tab, it inserts a literal tab character.
+To do autocomplete, you have to push control F.
+And then the delete key is equivalent to control C on Unix, which cancels, or I guess, kills
+the running process.
+So in text windows, the arrow keys page up, page down, they all behave as expected.
+Home and end, keys scroll the page as expected.
+And these text windows have a built-in pager.
+There's no more command, there's no less command.
+And I think I kind of like this built-in paging.
+So for example, when you type, hypothetically, a man command.
+So if you type man in trial, that's the first page you should read if you start using
+plan 9.
+What it does is it prints the first top of the command.
+And then in order to see the rest of that man page, you have to scroll through the buffer.
+So instead of scrolling past the user and missing all of the text, you can use the space
+key or the arrow keys to page up and down.
+On the color scheme of Rio, Rio looks kind of dull, it's pastel, and this was an intentional
+design decision.
+The less vibrant colors are less obvious, and they fade away with usage.
+You don't even realize there's colors the more you use it.
+I think color schemes like tango, the Linux console colors, solarized, any theme that
+has ever been made for KDE, and Windows XP, these are examples of things that are very
+bright, very obvious, and not necessarily in a good way.
+Bright colors are subtly distracting, and it makes it difficult to concentrate.
+And typically a borrow Rio's color scheme for, like if I'm configuring DWM, because it's
+kind of just an anti-theme, and I think it's kind of charming.
+Custom color themes are also a thing you can do.
+You just modify the source code for Rio, recompile, and then restart.
+People will laugh at you if you do this.
+Setting a wallpaper is also possible, I don't do this.
+Moving on, like a big Linux system running GNOME, I typically just set the wallpaper
+to just a blank color, or if I do set it, you know, I have Windows covering it all the
+time anyway, so why should I even worry if I have to see a dull gray background as soon
+as I start my system, and then never once again after that?
+As for X11, the Equus X11 server can run through the Linux Compat layer, but the issue
+with the Linux Compat layer is it only supports 32-bit Linux.
+You have to be running a 32-bit Plan 9 system, and it's really unreliable, and the lack
+of an X11 server, this is one of the big reasons that Plan 9 has no programs.
+In order to port something like Firefox, not only do you have to port all of Unix, but
+you also have to port X11.
+It's a lot of things that people don't want, or don't want to do the work for.
+So the next thing, command line utilities, the shell on Plan 9 is called RC.
+I sort of took my handle from here, I think last year, I needed a handle, and I looked
+down and I see the Shabang bin RC, and that's okay.
+Obviously, everyone wants to be a cool opcode, a cool interrupt.
+Let's just pick this one instead, because nobody knows what Plan 9 is, and nobody wants
+to associate themselves with it.
+But I like it, I think it's fun.
+So RC is kind of like any other shell you've ever used.
+You might expect it to be like Bornshell, but it's not.
+Here are Unix shell concepts, pipes, file redirects, you know, two ampersands for and
+and two pipes for or or.
+All of those things seem to work just fine.
+It's all familiar, and similar scripting is not really positive at all.
+So if you want to write an RC script, you probably should read the man page.
+And various scripts as examples.
+As for shell utilities, they exist.
+A lot of the standard Unix ones seem to exist, although some of them are missing, especially
+if you use GNU core utilities a lot.
+There's a lot of things in GNU that aren't necessarily standard Unix tools.
+Like for example, the Schuff command, that's not a standard Unix tool, how you do that
+on Linux, not Linux on freeBSD is like, I think it's cat-r for random.
+So programs like op, op, grep, said, cat, tar, gzip, ed, they're all there.
+Editors, there are three, I guess they're technically four primary ways of editing text
+on plan nine.
+So you have ed, the standard editor, Sam and Akmi.
+There is no vi, except for a MIPS emulator.
+There is no emax, except for a man page explaining why there is no emax.
+I've primarily used Akmi in the past lately I've been using Sam.
+And I really like to use Sam because it's a graphical version of ed.
+And as we all know, vi is like a graphical version of ed.
+Of course different implementations, different usage paradigms.
+Some of the familiar vi commands are available in Sam which makes it easier for me to use
+after using them for years and years.
+And regular expressions, the way you would do them in VIM like a search and replace on
+a buffer.
+Those types of things are things that I require in a text editor, you know, said styles
+and text, research and replace.
+I do like Sam a lot, but it seems to corrupt files when the system crashes.
+Any have a file open that could just be anecdotal, but it's happened to me twice now.
+Of course I went back up to the file section, a file system section and cleared those corrupted
+files.
+Akmi is a window manager, it's a file browser, it's a terminal emulator, it's an email
+client and some people use it as a text editor.
+The coolest part about Akmi is the ability to write arbitrary editor commands and system
+commands in the menu bar and then execute them.
+This is hard to explain over audio at the very bottom of the show notes, there should
+be a visual demonstration of Akmi and also a visual demonstration of Rio.
+Because you know, explaining a graphical program over audio is difficult.
+So some of the supported networking protocols, IMAP exists, good luck, NTP exists, IRC exists,
+there are a couple clients.
+I think the one that comes by default is called IRCRC, yeah, that's the only one that
+exists.
+There are other non-default implementations, FTP exists, HTTP is typically with WebFS,
+so Mothra is the standard web browser, it doesn't support CSS, it doesn't support
+all of the HTML tags, JavaScript is entirely unsupported, another web browser is called
+ABACO that exists, I've used it a few times, it's hard to use but I think the way it renders
+pages is slightly better than Mothra, although Mothra is easier to use.
+There are various inferno vaporware, browsers you can use, the ports don't work, those also
+don't support CSS or JavaScript, some imported net surf to 9 front by leveraging components
+of ape, and I'll talk about ape here in a minute, a net surf kind of works, I think CSS
+kind of works, no JavaScript whatsoever, of course, and then there's the age-get program,
+it's kind of like curl but it behaves a lot more like the fetch program on FreeBSD, in
+that it defaults to printing to standard out rather than creating a file, so SSH, this
+is 9 front specific, I should have said that at the beginning of the section, but everything
+from here on out is 9 front specific, so SSH, it only works in conjunction with the VT
+command, so the VT command is a virtual terminal emulator, when you connect over SSH, you kind
+of have to be emulating a virtual terminal, if you've used like SSH through PowerShell
+and it behaves really strangely, that's sort of why you want to run a VT, that's my analogy,
+it's like trying to use SSH from like windowscmd.exe or PowerShell.exe, SSHFS, that's really the
+only way you can get files on and off of a plan 9 easily, because as I said, file system
+support is almost non-existent, you can also use SSHnet for proxying traffic, VNC works,
+I have attempted to play a video game over VNC, a video game running on my Linux system,
+but then I remembered that VNC plus Genome equals nothing works and you have to restart GDM.
+I had better success using, I think it must have been something small like XFCE or I3, it
+was probably I3WM connecting to that on the remote system, of course this isn't a problem
+with plan 9, it's a problem with Genome and the way it handles VNC, various torrenting software
+exists, but magnet links are supported, draw term and RCPU, those things exist, my response
+to draw term is no, don't even try it, good luck and we're going to laugh at you, of course
+9p, that's the one that you would have expected, now I have a security aside here, so
+although various server implementations for these protocols exist, I personally wouldn't
+allow them to touch the WAN, a lot of them are ancient, un-maintained, un-audited and easier
+to exploit, so prime example, a bunch of GenTumen, a bunch of boys on G, they found a path traversal
+of vulnerability in the 9 front website, in the actual HTTPD server, then they leveraged this
+vulnerability to exploit a vulnerability in the authentication system, to print all of the
+users on the system, they didn't do anything malicious with this bug, it was mostly ha-ha,
+these guys need to secure their web server, but the ability to own a system by sending
+a get request, that is all you need to know about the current state of security in plan 9,
+firewall, no disc encryption, unreliable access control, what,
+file system, here's something interesting about the file system, so CWFS has a
+poorly documented, in some cases, undocumented, special user called NONE,
+the NONE user is allowed to connect to fossil file servers, CWFS servers, and probably
+HDFS servers without a password, how you disable the NONE user is you enter your CWFS command prompt,
+you enter the server's command prompt, and you type no, none,
+don't even think about putting plan 9 on the internet, the Unix compatibility layer,
+it's called 8, it stands for the ANSI, POSIX, emulator, it doesn't work,
+it's almost entirely empty, there are lots of programs to write to get it to be sort of
+a POSIX complete, nobody wants to write these tiny programs, and I think there's a general
+attitude among plan 9 users, sort of that plan 9 is unique, and porting all of POSIX, porting
+all of Unix to plan 9 ruins the appeal of even using it, because plan 9 exists to improve
+upon Unix ideas, not carry the legacy of sort of the drawbacks to the Unix implementations,
+I think I almost agree with the sentiment of porting POSIX to plan 9, ruins plan 9,
+sex store in fact totem, my notes are broken, so there's some emulation layers 2 on 9
+Linux emulator, don't even try it, Gameboy, Gameboy Advance, NES, SNES, Mega Drive, Commodore 64,
+most of the game emulators seem to just work because they're very simple systems,
+and then there's another one, VMX, it's a PC emulator, it's kind of like QEMU, it's effectively
+virtualization, my experience, it's really slow, it almost works, it doesn't work, it will crash
+your system, it will corrupt your file system, in air quotes, it runs OpenBSD, Linux,
+and ancient versions of Windows with graphics support, I haven't had any good luck with it,
+I got OpenBSD, an OpenBSD installation about halfway completed before it crashed and corrupted
+a bunch of files, and then the next time I tried to install it, it refused to load the
+BSD.rd file to install it, there are various emulators also for obscure architectures,
+version control system, Mercurial used to come with 9 front, that implied Python 2,
+both of these things have been removed because nobody used it, CVS exists, but it's not on the
+base system, and then the 9 front maintainers wrote a native Git implementation, it is in the
+base system, it's bare bones, it mostly works, there are also various community maintain programs
+and software, so I have links, everything I have has a link in the show notes, they're almost
+everything, so the 9 front community has been collecting programs, various other communities
+have been collecting programs, these can be found at the Contrib Subdomain and the Wiki Subdomain,
+both are served as a port system similar to a BSD style system, except you can't just make all
+of them at once, there are no binary packages and the makes files, at least in my experience,
+the ones I've tried, they can be broken or just not even work,
+at one point a lot of, I guess ancillary third party programs were hosted on Bitbucket, but when
+Bitbucket, it was either subversion, when Bitbucket pretty much went to Git only, a lot of those
+old repositories sort of stopped existing, so let's talk about programming on Plan 9, so programming
+languages, instead of the make command, there's the MK command, the simplest syntax is identical to
+a Unix make command, if you know how to use Unix make using a MK file is identical,
+there is C, so the absurdities of Plan 9c, Plan 9c is syntaxically similar to ANCC, but it varies,
+ANCC is like when you read the K and RC book, the standard libraries on Plan 9 are also
+simpler and smaller, so in POSICC how you do a hello world, hash includes standardio.h, int main
+printf, hello world, return 0, on Plan 9, that same program looks like hash include u.h, hash
+libc.h, void main, print, hello world, exits 0, the interesting thing about Plan 9c is that
+you return strings instead of integers, that's why the main function is void, it returns the
+string 0, and sort of the idea there is, it's easier for debugging purposes to return a string
+if you encounter some error, then it is to return a number and then have to refer to your source
+code to figure out that number means, so the unit h header file contains cp, specific instructions,
+and libc.h contains all of the system calls, time functions, math functions, unit code functions,
+print functions, so how you compile a c program on Unix, you do cc, main.c, and then how you run it,
+dot slash a dot out, and there's your hello world, how you compile on Plan 9, this is if you're
+running an AMD 64 processor, remember how the programs for compiling and linking have a letter
+or a number to prefix for the architecture, so on AMD 64 you run 6c main.c, that's how you
+compile to an object file, you're on 6l main.c, that's how you link the object file, and then to run,
+you do 6 dot out, and you have your hello world, the architecture suffix is maintained, it kind of
+helps you remember what architecture it's for and what op codes it contains, and it also tells you
+that the binary is for what processor, this is useful for cross-compiling, so you can copy everything
+with like 6 dot whatever to your new installation image, so I have another example program here,
+the simplest Unixi program I could think of with buffers, so this program reads from standard in
+and writes to standard out, so in POSICC, at least how I would do this, hash includes standard
+h, int main, char buff, size 32, size t buff is size of char times 32, size t and red is equal to zero,
+while n red equals f read, buff one buff size standard in is greater than zero, f write buff one
+and read standard out, this writes whatever you put into standard in to standard out, and then
+I return zero in the program ends, and plan 9c, it's very similar but subtly different,
+so in plan 9c, hash include u dot h, hash include libc dot h, void main, char buff size 32,
+char buff size is equal to size of char times 32, I'm not sure why my buff size is a character here,
+int n red equals zero, while n red equals read zero, buff, buff s is greater than zero,
+write one buff and read x at zero, I have this source code in the show notes and it would be
+beneficial for you to look at it, it's kind of difficult to dictate source code and be able to
+understand it in any way, if it's not a shell script, at least for me anyway,
+so if you compare the f read and f write functions from
+pausicc to plan 9c, you'll see that the file descriptors are different, so in plan 9 standard in
+is file descriptors zero, standard out is file descriptor one standard error is two,
+really it's identical when the process starts these files are automatically open,
+and I did an interesting thing comparing the binary sizes between these two
+programs that are functionally identical, except that they are written on different systems
+for different systems and compiled with different compilers, so the plan 9 binary is four
+kilobytes and the gcc binary on Linux is 28 kilobytes, I also compiled the pausicc with clang,
+just as an experiment, it was also 28 kilobytes, why this is interesting is that binaries on plan 9
+are aesthetically linked, and at least for me it's strange to see a aesthetically linked binary that
+is smaller than something dynamically linked, and then using plan 9 port, I compiled the
+plan 9c code, and that binary was very large, it was 40 kilobytes, I haven't written plan 9c in a
+long time, I can't say a whole lot more so refer to the c programming in belabs and plan 9
+from belabs paper, there's also a debugger called acid, it's hard to use if you're not fluent
+in assembly, the next programming language is ancient go, I think go, or at least a modern go
+might run, but I don't, I've never ran go, my only experience with go is the Hugo static site generator
+and that it isn't very reliable, or at least when I used it a couple of years ago it was very
+unreliable, you can also write shell scripts using the RC shell, the last thing about using plan 9
+is Wi-Fi, so some Wi-Fi cards are supported on 9 front, I think pad X 220 uses the
+IWL drivers, the 9 front FQA is vague when it comes to using the drivers, good luck,
+so the big question, the big question is why isn't plan 9 more popular if it supposedly improves
+on these bad unix ideas, so sort of unix is just good enough, just good enough, we don't need to
+improve it, that's sort of the legacy argument, plan 9 is not better enough to beat out just good
+enough, another reason porting software is difficult or straight up impossible because plan 9 was
+deliberately written to not be backwards compatible, sort of if you port it they will come, plan 9 is
+kind of uncomfortable to use, if you have unix muscle memory, there's no modern web browser,
+there are no video games except there is a Doom and Quake source port,
+multimedia consumption is hard, and there's no Genu, therefore no emax, and I think really the
+final question before I conclude is why do people use plan 9 if it's so bad, I'm not sure about
+the other 20 people in the world who use plan 9, but for myself it's because I have a genuine
+curiosity and love for computing and I sort of have this motivation to learn obscure and unnecessary
+and boring things related to computers, it brings me a sense of satisfaction and enjoyment and
+accomplishment, sort of at one point Linux stopped being fun for me because I realized that all
+distributions are basically the same, I started exploring BSD after that and then I sort of realized
+that all unixes are the same, all unix-like operating systems are basically the same, I still have
+a lot of fun with BSD, but I am quite burned out on Linux and I have been for some time now,
+and I think when I sit down to use a computer my goal is always to discover something new,
+learn something new, explore alternative paradigms and have fun, but for a lot of people that's
+not there and go on a computer, I think for a lot of people plan 9 ends up being a tourism experience,
+but for me it seems like the final frontier of unix-y operating systems, I don't know nearly as much
+about plan 9 as I know about unix, but every time I swap out my free BSD hard drive I have
+a bunch of hard drives, but not enough laptops to run all of them, so I'll switch hard drives back
+and forth, every time I switch to my plan 9 hard drive it feels like I'm home in a strange way,
+even though plan 9 can sometimes be uncomfortable for me, it feels uncanny and sort of, I think,
+uncomfortable is the right word, I think sometimes honestly I'm willfully resistant
+to becoming an expert on plan 9, because what am I going to use next? What other operating systems
+are there to explore that are not only viable for daily use, but also actually usable,
+and when I think about using a computer, what do I do on a computer, learn about it,
+write about it, tell people about it, and sometimes write programs, and I think a lot of people they
+really use a computer as a media consumption device and sort of plan 9 is anti-media consumption,
+you know, it's possible to play video and audio, it's just difficult to do,
+and you know not having a modern web browser unless you can figure out how to get a virtual
+machine running, put Firefox in it, it's sort of liberating in a strange way, and I think really
+the way that I do use a computer which is terminal and web browser, typically web browser without
+a JavaScript, or what I'll do is I'll block third party scripts, scripts not from the domain
+that I'm contacting. I think plan 9 is viable for someone like me, maybe not other people,
+but for someone like me it's entirely viable, so my conclusion, so when someone says,
+how do I do XYZ on plan 9? My answer is don't search engines aren't going to help you,
+a man page is probably won't help you, a cis slash doc might help, reading the source code probably
+won't help, but most of all have fun, I think one of the things I love most about plan 9 is that
+it's still a research operating system, so there's a lot of components that have only been
+completed to sort of a proof of concept stage, and you know lack of feature completeness,
+lack of stability, that keeps things exciting where a big unique system is pretty much stable,
+stable in the sense that you can't just remove things or add things, or improve things
+for your own use because a lot of things seem to just work, and I think some final tips,
+you know, how do I do XYZ on plan 9? Just SSH to a Unix machine,
+put that inside of VT and you have to run the terminal reset command a bunch of times,
+also VNC, so my link section some further reading, the 9 front FQA, FQA is kind of like FAQ
+except it stands for frequently questioned answers, it's very humorous, there's good information,
+it's not always complete, and it refers you to the man pages and source code a lot, you can
+also read the papers in slash sys slash doc, so how you do that on your plan 9 system is you cd
+to slash sys slash doc, run the make command mk, and then cat the paper you want to read and pipe
+it through the pager program, the pager program being page, you can also read these online on
+cat-v.org, I have links for this, all that this is the links section, so there's links for everything,
+an interesting talk, plan 9, not dead, just resting, that's a talk similar to this one, maybe more
+on the how do I use this every day, not so much on the talking about operating systems design,
+I have a link for a visual demonstration of RIO and a visual demonstration of ACME,
+watch those ones if you're curious about how these things work and look,
+see programming and plan 9 from Bill Labs, that's a paper, I found some guy who wrote a
+plan 9 desktop guide, I page through it pretty quickly, there's not a lot of usefulness in there,
+I honestly think mantin pages are better, at least for a lot of the stuff I'm trying to do,
+which is not recreate elenix workflow on a different kernel, it might be useful for some people
+though, there's a youtube channel, I'm not sure how to say the name, c04tl3, he has lots of cool
+videos, lots of good information, and an introduction to operating systems abstractions using plan 9
+from Bill Labs, it's a PDF I found on archive.org and some of the
+ccode there helped me write a couple of small toy programs,
+so that's the plan 9 episode, because plan 9 is sort of a spiritual continuation of unix,
+I had to do a unix episode beforehand because plan 9 implies everything that's unix and then some,
+um, and I'm not sure what other episodes I could record from here, I've sort of
+exhausted the unique ideas that I think about, or I guess, the large big in-depth ideas that I
+think about quite frequently, so my request for shows, if anyone knows how to write
+hawk scripts with the awk programming language, that is something I want, also ed, if anyone
+knows how to use the ed editor, I would like a show on that, if you have any show requests,
+for me, leave a comment or send an email, if you have any questions about plan 9,
+I guarantee you that I will not have a 100% answer, but feel free to send an email,
+I quite like receiving and sending emails, or even if you just want to say hi, and again,
+future shows from me, if anything in here made you think I want to hear more, say something,
+I have a few ideas bouncing around, but these sort of fallen out of scope as I have been using
+plan 9 almost exclusively for the last couple weeks, so I'll have to revisit some of those things
+and start thinking about them again. Anyway, thanks for listening.
+You have been listening to Hacker Public Radio, as Hacker Public Radio does work. Today's show
+was contributed by a HBR listener like yourself, if you ever thought of recording a podcast,
+and click on our contribute link to find out how easy it really is. Hosting for HBR has been
+kindly provided by an honesthost.com, the internet archive, and our sings.net. On the Sadois
+stages, today's show is released under Creative Commons' Attribution 4.0 International License.

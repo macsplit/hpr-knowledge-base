@@ -1,0 +1,149 @@
+Episode: 3654
+Title: HPR3654: Use the data in the Ogg feed to create a website.
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3654/hpr3654.mp3
+Transcribed: 2025-10-25 02:53:56
+
+---
+
+This is Hacker Public Radio Episode 3654 for Thursday the 4th of August 2022.
+Today's show is entitled, Use the Data in the Og feed to create a website.
+It is hosted by Norrist, and is about 13 minutes long.
+It carries a clean flag.
+The summary is.
+How much of a site can I make using only the data from the feed?
+Welcome back.
+This is part two of my experiment to see how my chalk can get done with the data that's
+just in the RSSD for Hacker Public Radio or just the log feed specifically.
+If you want to check back part one was HBR Episode 3637, and then that episode talked
+about how I took what I felt was the most interesting bits from the RSS feed and inserted
+extracted the information from the feed and inserted it into a SQLite database.
+So today I'll discuss how I took the data that I had stuck in that SQLite database and
+created a static website.
+So a couple of quick things before we jump into the details.
+I think I probably could have skipped the database step, where I'd take the data from
+the feed and put in a database and then take the data out of the database and use it to
+build a site.
+I probably could have gone straight from the feed to what I was using to the process that
+I was using to build a static site.
+It was extra code and extra time, but that's how projects go sometimes.
+The first time you do it, you think you want to do it and you want to do it and then
+you realize there were some extra code or extra steps that you didn't necessarily need.
+One advantage of putting it in an SQLite database first, though, was it acted sort of like
+a cache so that every time you built a site, you wouldn't have to pull the feed in.
+And then the other thing I wanted to say real quick was I was really struck by just a total
+number of episodes out there for hacker public radio, it's a lot of work that's been
+put into building over 3,000 plus episodes.
+Just a quick thanks to everyone who's ever created an episode, I really, so my original
+intent when I started the project was that I would use Markdown to build a site and
+a lot of static site generators like Hugo or Jekyll, they sort of work with Markdown
+files where you build a bunch of Markdown and you throw it at the static site generator
+and it just builds a nice look inside.
+I started down that path, but then one thing about Markdown is that you can add inline
+HTML if you need to, and I started with just Markdown and I couldn't get it to look.
+It didn't look like I wanted to, so I started adding HTML elements and then by the time
+I got the site to look like a website, there was more HTML than Markdown, so I just kind
+of scrapped the Markdown base.
+Now I can hear all of you Markdown detractors out there saying, of course, Markdown is
+terrible if I was you ever try and build a website with it, and I'm a big fan of Markdown,
+I use it all the time, if you're going to do something like taking notes, writing
+documentation, I think Markdown is a great tool for doing it, but it didn't, this particular
+use case, so what I ended up doing was instead of, I'll talk in a second about the templating
+that I did, but instead of taking database, instead of taking data out of the database
+and templating it to Markdown, I just templated it directly into HTML and just sort of skipped
+the step of converting Markdown to HTML.
+A couple of the libraries that I used to do the work was one, the PWE Python library
+that's used to translate database calls into something a little more, Pythonic, I talked
+about that in the last episode, and then to do the templating I used, Genia, it's a pretty
+easy template language, it was something I was already familiar with, so it could seem
+like a good fit.
+So strictly speaking, I wanted to use only the data from the feed to create, or to recreate
+a website, and that proved to be hard, not impossible, you'd certainly do it, but
+if I wanted to introduce things like logos or headers and footers and a little bit of
+styling, you have to pull in some extra content.
+So aside from the data that I got from the RSS feed, I wrote an HTML header and footer
+for every page in the header, I'm pulling in the bootstrap CSS, so I can use bootstrap
+to do some of the layout using the bootstrap columns, and I've also got the HPR logo
+in there.
+And then in a footer, I basically copied the footer from the HPR site, so it's got links
+to related projects, and it's got the copyright information in the HTML.
+So I was able to build four different pages, or four different types of pages from the
+using the data from the feed, I built sort of a replica of the main page for HPR where
+it lists the most recent episodes.
+I also built a page per episode, and then I also built one page that lists every episode.
+So for the episode specific stuff, there's the main page that shows the recent ones, there
+is a all episodes page where lists every episode, and then there's one page per episode,
+and that's where you can kind of drill down into the episode and read the show notes.
+And then for the host, I did something similar where I built one page that lists every
+host in a table, it's got their host name, also calculated how many shows every host produced
+and I'll put that in there, and I'll put the data there last show, all that's in a table.
+And then for each host has their own individual page, it will list all of their shows.
+And there should be links, I tried to create links where it makes sense.
+So if you're on one of the episode pages, the host name, the name of the contributor or
+the host should be a link to that individual host page.
+So there's a lot of data on the HPR website that is not in the feed, and that shouldn't
+be surprising.
+The feed isn't meant to be a website or it's meant to replace the website and it's meant
+to give you individual information about shows.
+So I couldn't exactly recreate the website, the HPR website using the data just in the
+feed because there's some stuff that's just not there.
+So for example, on the host pages, each individual host has a profile that will list maybe
+a web page or an avatar or something like that, that's not in the feed.
+For individual shows, there's things like the tag information, the series, if the show
+is a part of a series, neither of those are in the feed.
+There's also a show summary, whenever you submit a show, you have to give it a short 100
+character or less summary, and that's not in the feed that I can bond, and maybe it's
+there, but I can bond it.
+And then finally, missing was the license, I couldn't find that in the feed information.
+And then of course, there's some web pages on the HPR site that I wasn't able to replicate
+because they don't have anything to do with individual shows, so they're obviously
+not going to be in the feed, but pages like what you need to know or how to help out
+or request the topics, there was really no way to recreate those from just the web page
+or from just the RSSD.
+So just a little quick overview of how the project works, I'll have a link later to the
+Git Lab page so you can see for yourself.
+But like I said earlier, I used the PUE to read from the SQL Live file.
+Then I've got a Python script that pulls the data out of the SQL Live file, aggregates
+it, kind of packages it up a little bit, and then uses Ginger templates to build the pages.
+There's a template for the index page or the main page.
+There's a template for the All Shows page where I list all the shows out.
+Each individual contributor has their own page and that's got a separate template.
+And then for the correspondence page or for every host on one page, that's got a separate
+template.
+So some things I'd like to do next with the project.
+One, I'd like to try and incorporate the comments, there is an RSS feed for comments.
+I haven't looked at it yet, but I think it would be possible to take the RSS feed for comments
+and match them with the RSS feed for the individual shows and then be able to show display the
+comments that are on the page or per show comments.
+I think I can recreate the RSS feed from the data in the, did I collect in SQL Lite.
+I know that seems a little, seems funny to me, kind of saying that out loud, but taking
+a RSS feed, sticking it in the database and then recreating a separate RSS feed.
+But I think just for the sake of trying to build the most complete site possible, I think
+that's something I'm going to look at, seeing if I can rebuild the RSS feed.
+I'm not sure how, but I think I would like to try and figure out how to get the pages
+that aren't in the feed into a static site, try to recreate the pages that I mentioned
+earlier, like the, what you should know and the pages like that, how do we create those?
+Then next, I mentioned one of the things that are that's missing from the RSS feed is tags.
+I think, I really think it might be possible to use some natural language processing or
+some keyword extractions or something like that and see if I can generate some tags.
+For the shows or keywords for the shows.
+And then sort of the final thing I'm not to do list is to modify how I grab the data from
+the feed and insert it into the database and there's two feeds for HPR, I think most people
+use the latest feed, which has got 10 episodes and it's also a full feed, it's got every
+episode in it.
+So what I would like to be able to do is the first time you run the Python script to build
+the database, the first time you run it, you use it to full feed and subsequent times
+it uses the most recent feed and quite figuring out how to do that yet, but it, so I'll have
+a link to the GitLab page in the show notes, I'll welcome full requests or comments in
+the episode or angry emails or just however you want it, you feel like you have an improvement
+or any suggestions or obviously welcome.
+And then I'll also link to Static site where, build a site, copy it up to a web host,
+it's, I'll read it out real quick, it's hpr.norsd.xlz, if you want to, you just want to look
+and see how the site turned out, put a copy out on the internet, think, I've got it set
+up to, do a daily update, but we'll see how that goes, and that's it, thanks for listening
+and I'll see you guys next time.
+You have been listening to Hacker Public Radio, as Hacker Public Radio does work, today's
+show was contributed by a HBR listener like yourself, if you ever thought of recording
+broadcast, you click on our contribute link to find out how easy it really is.
+Hosting for HBR has been kindly provided by an onsthost.com, the internet archive and
+our syncs.net.
+On the Sadois status, today's show is released under Creative Commons, Attribution 4.0 International

@@ -1,0 +1,550 @@
+Episode: 3877
+Title: HPR3877: KeePass X.C. audit review.
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3877/hpr3877.mp3
+Transcribed: 2025-10-25 07:09:04
+
+---
+
+This is Hacker Public Radio Episode 3877 for Tuesday the 13th of June 2023.
+Today's show is entitled, Keep Us X See Audit Review.
+It is hosted by some guy on the internet, and is about 43 minutes long.
+It carries a clean flag.
+The summary is, Scoti discusses the Keep Us X See Audit by Zorn Molotnikov.
+Hello and welcome to another episode of Hacker Public Radio.
+I'm your host, some guy on the internet.
+Today we're going to be talking about Keep Pass XC, specifically the audit of Keep Pass
+XC version 2.7.4 and the release after the audit of Keep Pass XC 2.7.5.
+Let's begin.
+Keep Pass XC version 2.7.4 was released on the 29th of October 2022.
+Let me be clear, I'll be covering the GNU Linux version of Keep Pass XC.
+I used the app image, so if you're using Windows or Mac OS, there may be bug fixes related
+to your version that I may not cover here.
+There were a number of minor fixes in the 2.7.4 release, such as the fixed clicking links
+in the entry preview panel, fixed the display of passwords in the preview panel, and things
+that add nature.
+So we're just going to sum that up to like quality of life improvements, or minor bug fixes
+yeah.
+It's still a great release, and I'm happy that they got the code audit.
+So on the 15th of April 2023, Keep Pass XC sent out the audit report.
+I received mine via RSS using the Thunderbird email client, and Keep Pass states in the release
+that they've wanted to have this audit since the beginning over six years ago, and they're
+happy to finally release an audit.
+It was completed on the 19th of January 2023, so after the completion of the audit, obviously
+you want to go ahead and make as many changes as you can, to improve the product based
+on the information released through the audit, get an update out, and then release the
+audit, or release them together.
+Now, the report that the audit was conducted free of charge for the Keep Pass XC team,
+and they give a few little snippets from the audit and the RSS feed, but I'm going
+to go directly to the audit itself, because they link to it in the RSS.
+So let's go over that audit.
+Now pardon me if I butcher the name here, but the author of the Keep Pass XC audit is
+named Zara Malatnikov, I'm just going to call him Zara for now now to keep things simple,
+and again I apologize if I butcher the name.
+I have links down in the show notes to all things mentioned here in the show.
+I'm going to just read a little bit from the top, sort of like that disclaimer, quote,
+this document is an independent security review of the Keep Pass XC password manager version
+2.7.4 functionality and central source code parts by me, Zara security consultant with
+applied security and applied cryptography basics knowledge.
+See my CV here, close quote.
+So he goes to explain that his interest in doing the audit for Keep Pass XC was there
+wasn't one, or at least not a recent one, he gives a nice little disclaimer saying that
+no one paid him or encouraged him to provide the audit, and follows up with quote, this
+review is not a recommendation or endorsement, close quote.
+So if you're choosing to use Keep Pass XC, you're doing so of your own volition.
+Do so at your own risk.
+Now one of the things that he points out very early in the summary, he says that Keep
+Pass XC provides sufficient cryptographic protection, and he labels what's normally
+referred to as the CIA, confidentiality, integrity and authenticity.
+So long as you're using a strong passphrase and the confidential random key file, now
+add with that you should be using the latest database file as well, those are like the
+caveats.
+And remember, this audit was performed on Keep Pass XC version 2.7.4, he also points out
+in beginning or or near the top of the article, ideally the application should warn on use
+of insecure formats and suggest ways to migrate to to the newest format, and he talks about
+how an attacker could attempt to swap the newer database with an older database and
+an attempt to gain access to the user's credentials.
+So there should be a warning there.
+The report goes further explaining how Keep Pass XC could store which latest version
+of the database was used by the user and spot undesired substitutions of the Keep Pass XC
+database.
+I like the statement here where he says, quote, Keep Pass XC is written well and exercises
+defensive coding techniques or excuse me defensive coding sufficiently close quote, now we
+start to get a little scary in the next statement here, oh my quote, the memory deallocation
+could be improved to not contain secrets after the database is locked.
+Close quote, oh my goodness, memory deallocation, you mean I'm a victim here, is using Keep
+Pass XC making me a victim to memory deallocation?
+Yikes, that's scary, I really hope Keep Pass works on that.
+We're going to go over the release notes for the 2.7.5 release which followed this audit
+and may even reach out to the Keep Pass XC team in time.
+Zara also mentions best practice for the key files that Keep Pass XC generates for additional
+authenticity stating that the key files must not be accessible to potential attackers.
+And personally, I use my key file a lot like a UB key, I have it stored onto a USB thumb
+drive, that thumb drive is encrypted, I insert it into the PC when there are about to unlock
+my key pass XP database, I have to first unlock the thumb drive and inside of the key pass
+XC program, there's a link to where the file is located, which is on the thumb drive
+once it's inserted and decrypted, the link will match up and then I can put in my pass
+phrase which matches with the key file to authenticate the session.
+After it is authenticated, I'm able to then remove the thumb drive from the PC, continue
+with my session until I'm done, lock the session, close Keep Pass XC, we're good to go.
+He states that his review focuses on the core features of key pass XC, focusing mainly
+on the database reading and writing features and the cryptography use.
+Stating quote, I could discover no major problems.
+Close quote, well I wish he would have said that the first time because I almost had a heart
+attack with that memory deallocation.
+Now here's an important tidbit in the summary.
+He mentions the sections of the code base, he was unable to audit at the time and he lists
+them here.
+TLTP, SSH agent, browser plugin communication, the auto type feature, key share password
+share mechanism, free desktop integration, HIBP support and database statistics feature.
+He mentions that these features could be subject for the next audit, once again giving
+a reminder that the audit only covers the core features of key pass XC 2.7.4.
+As of December 2022, completed in January 2023.
+That's it for the summary, we're now going to move into the detailed review.
+Quote, key pass XC is a relatively complex application written in C++ programming language
+using the QT framework.
+Close quote.
+He gives other details about how, you know, the code base is approximately 127,000 lines
+and that's excluding the libraries, so normally when you have big boy code like that, it's
+easy for a few bits to get a little messy, little jumbled up, you know bugs in the sort,
+but then he says these sweet words, quote, yet as the code is well structured, it was
+possible to review the core functionality independent of the rest of the code.
+Close quote.
+So that's like that, that chef's kiss right there, you know, even though this is a massive
+workload I got to look over, it's nice and clean.
+He speaks more about focusing his review on parts of the code relevant to encryption and
+storage of confidential information and the core functionality of the pro of the password
+manager.
+In this next piece, we're just going to sprinkle some love on top.
+I love this part.
+He talks about how in his professional practice, he's learned that the problem isn't usually
+the password manages themselves is that people aren't using them enough or they're not
+using them properly, like when we discussed having the key file, the random key file generated
+by key, key pass XC, not storing that on disk where the attacker could have access to
+it.
+And other things like not using the updated database file, you know, remaining on older
+versions of the database file while using a newer version of the key pass XC application
+itself.
+Yeah, big no no there.
+That's not good.
+He's saying that's not what he's used to seeing.
+He's seeing people just not using it as it was intended or as it should be intended.
+He talks about how the application interface is, quote, appealing and recommendable, thus
+my motivation to look under the hood and know if it provides protection that I could recommend
+as well.
+Close quote, see that just little little sprinkles of love right on top.
+Here's a nice statement from ZAR, quote, I focus on a particular scenario to also be able
+to consider the most central protection properties of the password manager and not to deviate on
+other various and general attacks on computing as a whole, like side channel attacks on
+cipher implementations close quote.
+So he's just showing you that he keeps a nice, tidy scope while going through this audit.
+Quote, the user will use the password manager on a trustworthy computer, the resulting encrypted
+password database if presented to an attacker in an encrypted fashion should be protected
+reasonably using cryptography selected by the password manager in the course of the
+review.
+I explain and sometimes extend a little this context, close quote, this is like that floor.
+We need to set, you know, where standards are the floor.
+We won't go any lower than this and what he's basically saying here is, look, we're not
+talking about a computer that's already compromised here, right?
+You need to have a clean OS and hardware and that's where we're basing all of the review
+going for quote, I leave out of scope scenarios when the host may run not trustworthy operating
+systems or where the host can be not trustworthy as hardware.
+Be subject to an environmental attack, EG side channel attacks, these attacks, although
+realistic challenge, not only the password manager, but the software with the passwords
+are going to be used.
+For example, browsers close quote, so given some examples of the attack surface, not only
+the operating system, but you know, many password managers have browser integration.
+So that's also a part of your attack surface and the browser, let's face it, that's that
+and if you have an email client, those are areas where you're most likely going to be
+getting your malware browsers are designed to go slip through the muck of the internet
+and do it daily.
+So I definitely understanding his need to narrow that scope and put everybody in a proper
+perspective because criticisms will come out in the future and begin to introduce all
+of these varying scenarios where the attack could come from this or that angle is good
+to give us all proper perspective quote, key pass XC supports integration with browser
+extensions.
+The communication between the password manager application and the browser extensions
+is implemented using secure and modern lib sodium style encryption, I personally trust
+this cryptography choice and salute the use of encryption to communicate with the browser's
+extensions.
+Close quote, lib sodium sounds like something an internet doctor will tell you to stay away
+from.
+Oh, oh, oh, here's one of those scary parts coming up right now.
+Go ahead and pull your covers over your heads guys quote, it is worth noticing though that
+being secure lip sodium encryption is not prescribed by standards like F.I.P.S. as of
+now close quote, even though I don't know who the F.I.P.S.S, which is going to call them
+fits.
+I don't know who fits are at this moment, but I'm going to look them up and then I'm going
+to issue a obligatory good heavens because they don't approve our standards and we're using
+them.
+Quote, thus when using key pass XC in a high secure environment where standardization of
+cryptography is mandated, I would recommend against the use of browser extensions.
+For private use in my opinion, this is a very good choice of encryption.
+Close quote, I personally pride myself on the limited use of browser extensions.
+Right now and I have one that I just can't quite get away from.
+It is the Firefox multi account containers, but I'll talk about that another day.
+We're talking about key pass XC in an audit right now.
+So I definitely understand wanting to limit your attack surface by not introducing tons
+of foreign code on different update cycles after being updated at all.
+Not to mention your browser may receive audits, but the extensions may not.
+So you have the variation in update cycles as well as not really being secured, some
+of which may even be proprietary.
+So if you have free and open source browser, proprietary extensions, different update cycles,
+yikes quote cryptography of key pass XC relies on two solid pillars.
+First of all, it uses rather standardize KDBX4 password database file formats, which we
+will review below.
+Second, to implement the cryptographic primitives, key pass XC relies on existing crypto library
+botan, I think it botan making a solid choice for it.
+Close quote.
+Ladies and gentlemen, this is the part where I need to inform you things and get a lot
+harder to keep up with and I may not be able to quote as much because we're about to get
+into the alphabet soup, where we start talking about things like quote, AES 256-CBC and HMAC-SH8256.
+You understand, so yeah, we're going to be doing a little bit less quoting now.
+Not to mention, Zara is going to be flexing his muscles pretty soon, you know, he, like
+our good friend, Clot 2, they both speak the language C++ and when you do that, you tend
+to have conversations in the dialect math.
+The last person I remember attempting to do that was black kernel, and we all remember
+what he said, in this next section, Zara tells us about the KDBX4 database format, he
+says quote, it is more secure than its predecessor and it adds protected stream functionality
+and authentication to the database encryption, close quote, and he recommends it from the
+older formats.
+Zara begins to tell us about his background as a professional in the encryption world,
+a professional cryptographer, right, super fancy, pinky in the air, then he goes on the
+name dropping spree, calling out all the big dogs like Stephen Gibson and Matthew D. Green.
+There are other names, I just, I just don't want to butcher them, I picked the easy ones,
+but no, no, all jokes aside, he mentions that he asked them to double check his work.
+All right, I'm going to gift you a nice little quote here, quote, long story very short.
+The database file consists of a public header and an encrypted body.
+The header is not encrypted and it does not have to be containing only public information.
+The body is encrypted using AES 256 bit CBC encryption, close quote.
+So as you see, we're getting into that alphabet soup here, I'm trying to navigate around
+it, but there's some nice tidbits I have to keep mentioning every now and again.
+He also talks about something that I'm assuming is a little bit of that professional cryptographer
+inside baseball, you know, saying that the plain text for AES are encrypted with Cha Cha 20.
+I don't know what that means, but I think I like saying it.
+I'm going to have to add that to my mastodon profile.
+Some guy on the internet has encrypted with Cha Cha 20.
+Now, after that, this is where he goes into his big brain move here, where he wants to
+obviously impress everyone by doing the math.
+Well, color me impressed because I'm not going over it.
+It's not good for podcasting.
+And I don't feel like taking the bottle of talent and all trying to figure it out, but
+there is this one part I want to go over here really quickly and I'm going to try to
+tip to around some of the alphabet soup here, but it's got a little bit of the math
+in here.
+So be warned if there are children in the room and you do not want them subject to nerd
+of the highest level programming gibberish pause now, all right.
+You have been warned, quote, composite key.
+This is a Shaw 256 hash concentration of hash incoming source keys that are used to protect
+the database.
+Shaw 256 open parentheses, Shaw 256 open parentheses pass phrase close parentheses plus Shaw 256 open parentheses
+key file close parentheses plus dot, dot, dot close parentheses in the quote, whoo, oh,
+man.
+I'm telling you.
+That math.
+But basically what we're talking about is protection on top of protection inside of
+protection with an extra layer of protection for protection.
+And that's why you don't hire me to do your, your talking points for you.
+Or maybe you do.
+I could use a job that if it's paying the big bucks, right, don't expect to get any
+work done, but I'll talk about it for you.
+Here's a nice moment in the details where he decides to speak English for a few seconds
+here, quote, entry, an entry of the database usually has at least these fields, a title,
+a username, a password, as well as creation time and possible custom fields.
+Close quote.
+Now he starts talking about the possibility of binary attachments and how to password
+field is usually protected with something called a random stream.
+And then he gets to the scary part, right?
+This is one of the things that, you know, again, put the blanket over the head, quote, quote,
+keep as XC does not support protect and memory attribute of these entries.
+Close quote.
+So if you only stopped reading here and didn't read anything else, you would basically run
+out of your house in fear because you were using keep as XC.
+Fortunately for us, I'm going to keep reading.
+A named entity containing a value security can be protected by the protected stream.
+If the protected attribute is set to true passwords are protected by default.
+This ensures double encrypted at rest using the protected stream and using the main
+cipher.
+Close quote.
+And then goes to explain how this is used to avoid plain text passwords in the core dump
+files.
+So you're safe basically now imagine some news organization is going to do what I just
+give a nice little example of pick a scary part and then tell everybody how it's the end
+of the world if you were using keep as XC.
+As if I haven't already started a new pandemic, a global crisis.
+And if I have managed to scare you, please feel free to contact Archer 72 for more information.
+Now we're going to that nice part that I like.
+I love that keep.
+Well, let me let me make sure I say this correctly.
+I enjoy using key pass XC.
+I wanted it to use the you be key on Linux natively.
+There are extensions, let's say that you can use to attempt to get this functionality.
+I chose not to use that.
+I chose to use the key file that key pass XC has native on Linux.
+You just have to know how to use it securely as I've mentioned before.
+So I was eager to get into this part as he goes into explaining how.
+Attacks against the key file can happen quote, a key that can be read out from a secret file
+and used to open the database.
+It is an optional mechanism a user may choose to use or not to use a file key.
+The pass phrase will still be needed to open the database security file keys might feature
+XML structure and be phrased as XML at the same time they are not authenticated.
+The user should keep the key file keys confidential and secure, free from malicious manipulation.
+File keys can be used by the user as a second factor authentication, EG by storing them
+on a USB flash and presenting the file to someone as someone the user has additionally
+to the pass phrase that the user knows.
+Close quotes English may not be the first language, but let me just try to clean it up just
+a little bit here.
+We talk about two factor authentication, something you have and something you know.
+The password and username, those are something you know.
+The second form of that authentication would be something you have, which would be the
+key file stored on a USB thumb drive.
+So the only way that you're going to be able to authenticate is if you can present that
+key file.
+Now again, you're going to want to also encrypt that thumb drive is just an additional layer.
+And I'm also going to say that you're going to want to have multiple of those thumb drives
+with that key file stored on them, put one in your fire slash waterproof safe or off site
+somewhere in a climate controlled environment because it is flash.
+And then you have the other one with you like I normally wear mine on my necklace, but
+because it jingles that took it off for the recording.
+You know, you have that thumb drive on there with the UB keys every time I move around
+it's clinking a lot.
+So yeah, that's what he's talking about here.
+Now there's another portion down in here when he's bringing up the database file, the KD
+BX4 database file, and he mentions something called magic.
+I thought it was kind of funny, you know, I figured you ultra nerds out there aren't using
+a whole lot of magic.
+You just kind of fabricate things into existing using, you know, languages and such.
+But is there actually like a library or a technique in cryptography, no one is magic.
+I'm going to have to look that up.
+I'll quote it here so that you know what I'm talking about because it probably you're
+probably wondering what what am I talking about here?
+You need some more context quote, KDBX4 files start with signature, which is in its own
+set of quotes there signature bites is what he's saying, but it this the word signature
+is in quotes.
+It is not a cryptographic signature, but to magic for bite, it's I N T S. I don't know
+if that's supposed to stand for in it, no, I don't know what it's and then let me close
+quote right there because it's it's going into super alpha numeric territory and we don't,
+you know, we're not going to continue with that as well as some more math being done right
+after that.
+So let's just move along to something a little bit more readable here where he talks about
+the header that header sounds kind of scary quote header same as database header an unencrypted
+portion of the database file located in the beginning of it security.
+The header does not contain any confidential information and is unencrypted.
+It is authenticated with hm ac c dated c database header close quote.
+So as you can tell, it's starting to get a little bit more difficult to read some of
+this, but we're we're going to get through it that a header had me a little bit nervous.
+I was beginning to wonder like what are they putting in the header or they're putting
+like the notes in the header because I have notes stored in my password files in my password
+databases and those notes contained, you know, keys and other things, right?
+You know, when you set up your TOTP and not the key itself for the TOTP and not that,
+but I mean, they give you like recovery codes just in case something goes wrong.
+I mean, I throw those additional 10 recoveries in there and I'm thinking, oh my, say it
+ain't so now for a good bit of this report, we're going to have to unlock our mouse.
+Our mouse has a feature known as the infinity shroll.
+We're going to use infinity scroll now to zoom all the way down on this document.
+If you're wondering why I'm bringing that up because tons of big brain language, math,
+alphabet soup, in general purpose, alpha numeric nonsense.
+It's still a great read and I'm I'm poking fun at it.
+I'm not saying it's a bad reported all I'm just having fun.
+This is my humor coming through here, but it's it's not a very podcast friendly document.
+So I'll just go on to tell you this.
+He discusses some attacks and other things on the database file gives wonderful insight
+on these, but again, you're going to have to you're going to have to read it yourself
+because it is it's a toughy now he also talks about attacks on availability in here and
+backing up your key pass XC database file, which if you may remember, I think during the
+New Year's Eve show or New Year's Eve poll show, I was speaking with a gentleman about
+passwords and password managers and I believe he discussed on the show or maybe was it another
+show?
+Well, I can't remember where it was, but one of the shows that I've done a gentleman
+discuss storing his key pass XC database on I think was Google Drive so that he can access
+it from his Android phone as well as his PC.
+And though I do not I don't shun this, you know, it's it should be safe.
+I personally don't do it though, just because it like extreme paranoia and these are some
+points that are discussed in this audit about storing your key pass XC database file.
+So wonderful information on security practices for the user, meaning just the old average
+some guy on the internet that wants to use key pass XC as well as if you're a big brain
+alien that speaks C++, I mean, you're going to get a lot from this as well at least I
+assume so because most of it is crazy talk.
+We got a little bit more English before we give up here.
+We moved to a section called defensive secure coding and I know if I don't know anything
+about coding, why in the world would I go to a section called defensive secure coding?
+That's because there's at least one spec there I can read.
+Cool.
+There are two pillars of defensive coding, really checking the input and the output well
+and maintaining memory well, close quote.
+Now I do remember the rust programming language being you know hailed for its memory safe
+this and that but black kernel never told us how to write the entire Linux kernel in rust.
+So obviously I can't make sense of the statement I just read to you.
+In this next section, I really wanted to do more quotes here.
+The memory protection and the allocation because this is the true hand ringing shouting
+good heavens, hoping it turns out okay, but there's there's lots of big brain talk going
+here.
+So I'm just going to have to sort of paraphrase some of this, but in his memory dumps
+my brain caught me just in time.
+I was about to say in his dumps, but you know, you got to be careful here with this kind
+of language.
+He says that he could not see any passwords and clear plain text from his dumps.
+You know, I just tested the memory and all that stuff, make trying to exploit the password
+manager.
+So no passwords were exposed there.
+However, ever done done done, he was able to see parts of the database XML and the dumps
+including user names and notes.
+He also stated it was also possible to see encrypted protected fields and the format descriptions
+as well.
+He mentions that the notes were completely readable.
+So notes stored in key pass XC version 2.7.4 if an attacker exploited that memory dump
+thing, yeah, your notes are 100% vulnerable.
+Now, as a non security professional, you know, I'm not a I'm not a cryptographic professional.
+I don't speak C++ with a dialect of math.
+So this sounds super scary and I'm ready to just delete my entire computer with a shotgun
+and fire, but that made delay this show.
+So I can't do that instead I will tell you that he says that some of these things that
+sound very terrible and horrifying, I actually expected because quote, a software that in
+the end of the day has to provide the user back with information the user has stored
+in the database close quote.
+So these are things that could be done better, could be made better, but it's also not
+the end of the world, basically some attackers already owned your box.
+So you've got bigger problems than just your key pass XC memory, it dumps memory allocation
+dumps.
+Now, one of the thing I'm going to point out here before we start to wrap this up, down
+in the networking section of key pass XC, Zara mentioned something that I mean, I just
+found out about in another story, not going to mention here, but I didn't know if
+Favocons had such potential for malicious activity.
+So he gives words of caution when downloading Favocons and when did the name change from
+icons or emojis, I guess, to Favocons?
+That's another thing.
+I don't know when these transitions occurred or why?
+You know, why do we have to have more words for things we don't need?
+Remember back in the day, it used to be called a PM, but today it's called a DM.
+You know, it used to be a private message now, it's a direct message.
+Remember, we used to have programs, and then we had applications, and now we have apps.
+I'm pretty sure in another couple of worlds, we would just call them things.
+You know, we have things more to the point, be careful with external information introduced
+into your password manager, plugins, Favocons, you know, those browser extensions and integration,
+all of these extend your attack surface.
+They're wonderful, especially in situations where accessibility come up.
+However, if you can get away without using them, it's for the best.
+So now he goes into the summary, he goes into his summary and recommendations to the
+implementation team.
+He notes that in his urgent corrections of high risk vulnerabilities.
+There are none.
+Yeah, all that scary stuff that I blew well out of proportion and possibly gave you a
+hard attack.
+Get it.
+It's actually none.
+It's kind of like that sensational journalism that's happening these days.
+I'm telling you, I do a news show on these PR.
+So when you read tons and tons of news articles, sometimes you can tell these journalists
+are just making crap up as they go along because there's a ton of like non-standard terms
+that are being used and you can tell it's just being sensationalized.
+So it's just a common weirdo on HPR like myself.
+I would just, you know, as an example here, I would tell you to be careful of attackers
+on the internet, right?
+In sensational journalism, in sensational journalism, they would take you to be careful
+of cyber gangs and criminal organizations.
+That's why I kind of, I kind of make an effort to try and, you know, calm down some of that
+language, but at the same time, I also want to make it fun for you.
+You know, you got to have a little fun when you read and some of this stuff.
+Otherwise, it gets super dry, but I don't want to mix in all of those terms like cyber
+gangs.
+I mean, seriously, are you serious?
+No, we're not using that.
+Or that one story we did with a Dutch gang, not Dutch gang, the Dutch authorities would
+they call it, not fishing, I think they called it a fishing or something crazy.
+Oh, no, no, it wasn't the fishing thing only.
+It was told.
+That's right.
+It was told.
+And I think, I think told stood for a telephone oriented attack.
+I don't know what the devent stands for, but it was stupid.
+Pardon me.
+Let's get back on track here.
+He mentions that there are some recommended improvements for the key pass XC implementation
+team.
+And much of it has alphabet soup in it.
+So I can't really read it, but I will be linking to it.
+And you can go over it and allow your eyes to swim in your head as you try to go over
+it as I have.
+There is one name that he mentioned in here, boom, boom, boom, I got to read this part
+out.
+If for those of you who have listened to the Oh no news, you're going to catch this part
+right here.
+Let's see if you can catch it.
+Detect non securely set KDF parameters, insist on improving them actively, warn the
+user, open parentheses, last pass should be an example of what happens otherwise.
+Close proceed.
+I was a close quote.
+I could keep a straight face with that.
+This is our just slam dunk last pass out here.
+I'm not going to speculate on it.
+Actually I will because it's funny.
+Zarr just totally in a classic Michael Jordan from the free throw line slam dunk on last
+pass in this in this audit and a nice little treat at the very end.
+Recommendations for users, that's right.
+Even though he forgot to turn off his C++ when he was speaking, he still offered them
+to us.
+All right folks, the show has come to an end.
+I know I've attempted to make this entertaining for you a security review of the key pass
+xc, 2.7.4 security audit, and after that audit, they came out with the 2.7.5 release with
+a offer these changes, add support for Botan 3, that was one of those security measures
+that were mentioned.
+So yay Botan 3, and if we could just get them to use a sensible name, they also improve
+the HTML export layout.
+So if you're exporting your passwords into the HTML format for storage, hopefully on an
+encrypted medium, the format there is improved.
+They also improve the look of the key pass xc logo and icons, which is always great.
+We like things to look modern as well as, you know, feel modern.
+So yeah, great.
+Now let's move from the changes down into the fixes.
+They fixed the TLTP QR code, maintaining square ratio, which I never used the QR code.
+I didn't even know they had one.
+So this is great to learn that they actually have, QR codes in key pass xc, totally got
+to go play with that now, probably never going to use it after I played with it because
+I don't trust it.
+Anything that needs a QR code to authenticate, you shouldn't trust.
+Some work done on the SSH agent, you know, they fixed the support for the AES 256 slash
+GCM open SSH keys.
+So again, a little bit out of a bit soup there, but you should know what I'm talking about.
+You're a geek.
+I know you are.
+You also fixed a few bugs in the preview widget and a few other things.
+Now, I'd also like to note, I don't see anything in here about that memory deallocation.
+You know, again, that the scope was made clear that we're talking about a secure
+system.
+Yes, we are.
+So if you're on an insecure system, that's where that would be a problem.
+If the attacker had already compromised your box, you would then be vulnerable to that
+type of attack.
+However, I would like to get some sort of information from key pass xc about expectations
+on seen some form of patch to, I don't know, limit that, you know, because being able
+to just dump from RAM, all of my notes and other things, just, yeah, yes.
+Another thing I'm wondering about, um, if you have that database file on a different
+system and you're accessing it remotely, when you, I'm assuming you're streaming a copy
+of the file over.
+Like it's downloading the file and then you use it on the device to, to, you know, decrypt
+and access to secrets.
+I'm hoping that you're not sending in for me, you know, you get what I'm saying?
+Like there isn't just the stream of data of you trying to authenticate with that.
+I'm hoping that's not how it works.
+I'll have to ask some questions about that.
+I'll send key pass, the key pass xc team some emails and hopefully try to get somebody
+on the show.
+Wouldn't that be nice?
+I'm sure they want to hear that some guy on the internet wants to have a talk with them
+record it and release it to a bunch of hackers on the internet, they, they step right up
+for that, right?
+I mean, who wouldn't?
+But that's all I got time for.
+After reading all of that math, ooh, boy, I need to get a bite to eat and go lay down,
+huh?
+I'll catch you guys in the next episode of hacker public radio.
+Take it easy.
+Bye, everybody.
+See you way there!
+You have been listening to Hacker Public Radio at HackerPublicRadio.org.
+Today's show was contributed by a HBR listener like yourself.
+If you ever thought of recording podcasts, you click on our contribute link to find out
+how easy it really is.
+Hosting for HBR has been kindly provided by an honesthost.com, the internet archive
+and our sims.net.
+On the Sadois status, today's show is released under Creative Commons Attribution 4.0 International
+License.

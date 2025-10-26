@@ -1,0 +1,161 @@
+Episode: 1362
+Title: HPR1362: Fixing a bad RSS feed
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1362/hpr1362.mp3
+Transcribed: 2025-10-18 00:14:13
+
+---
+
+Hello, this is Dave Morris. Today, I want to tell you about some experience I've had
+with our SS feeds that are a little bit bent. This hinges around the fact that I have
+written my own podcast management system, which I felt I needed because none of the available
+systems did exactly what I wanted. An old story, I know. So, my system is based on Bash
+Potter from Link, Link Fessenden TLLTS. Bash Potter is a single Bash script which reads a file
+of feeds, which are either RSS or Atom feed URLs, that is, and parses them using XSLT to
+get the enclosure URLs. It filters these against a history file, which contains a list of previously
+downloaded enclosures, and then it downloads any that are new. So, this method of doing
+things is pretty tolerant of badly formed feeds, because it's XSLT is pretty tolerant
+and is just pulling out a particular element of the RSS. So, I built a thing on top of this,
+which uses Postgres, a Postgres database to keep a lot of information about the feeds
+I'm subscribed to, and then I know what's been downloaded, and I use this to keep track
+of what I've listened to, what's on what player, I've got several players, and that sort
+of thing. So, I use this to delete episodes as I listen to them, and I generate reports
+and all manner of weird stuff. An example of the weirdness is that it tells me that I'm
+currently subscribed to 84 feeds, I do listen to a lot of podcasts. I've got 98 episodes
+to listen to, which adds up to 3 days, 10 hours, 46 minutes, and 35 seconds of listening
+time. So, that should keep me quite busy. The database contains the results of parsing
+the feeds in quite a lot of detail, and this parsing phase is intolerant of badly formed
+feeds. In the past year or so, I've noticed the number of badly structured RSS feeds,
+atoms not a problem, it's RSS that's the issue, and these of course, the script that does
+the parsing, which uses pearl, and a particular parsing module, it causes these to fail.
+Now, having heard so far, you might wonder why I pars or my subscribed feeds twice. Well,
+it's one of these systems that's just grown over the years. It's a bit reminiscent of
+some of the Wallace and Gromit films, I always think, some hair brain system like that,
+and anyway, it's a bit idiosyncratic, but it's more specifically because I run Bash
+Portal that my version of it overnight on my server, which is running 24-7, and then
+I do the post-processing part of it on my workstation where the database lives. Yeah, I know,
+and I'm going to rewrite this stuff. So, let me tell you a bit about the couple of
+the feeds that have given me trouble. The first one is the Mintcast feed. Now, I've been
+listening to the Mintcast for a while, and during the time that I've been a subscriber,
+they've had a number of problems with their feed. Two real problems. One was that they
+were suffering from the duplication of episodes within the feed, sometimes with different URLs,
+which is quite puzzling. This causes Bash Portal to download the different versions. They
+also suffered from mixing of MP3 and org episodes in the same feed, even though they offered
+two different feeds. They were getting crosstalked between the two. Well, I emailed the
+Mintcast guys, asking what was going on, and offering any help that I could give, which
+wasn't any, in fact. They told me that the problem was a WordPress bug, which, as far as
+I'm aware, has not yet been completely resolved. They have fixed the mixed audio issue, but
+not the duplication. The feed still suffers from this problem, and what I've done is I've
+taken the copy of the feed and edited it right down to its bare bones, and it's available
+to view in the show notes of this episode, in case you'd like to see what the structure
+of an RSS feed looks like if you've never seen one before. The other feed that gives
+me trouble. I've had others, but most of them have been fixed, but the one that still remains
+is the feed belonging to another podcast called The Pod Delusion. They have an extra feed
+where they have conference recordings and other things. What they've done with the structure
+of this is that they've put together episodes which contain multiple enclosures because
+the episodes may be contained several recordings from a conference. It's a perfectly logical
+thing to do. Here's conference X, here talks A, B, and C, but RSS doesn't allow it. It's
+illegal. Well, maybe not illegal. It's something that many parsers don't know what to do with,
+so it's not advisable. I wrote to the people at The Pod Delusion pointing out this issue,
+and they're going to look into it. I must say it doesn't hit all of the podcast that I've
+messed around with, but it certainly hits this The Bash Potter one, and also my parser,
+the database parser end of it, and G Poder doesn't like it very much either. Let's talk about
+solutions then. I've, because people have not managed to resolve these things, I've come up
+with local workarounds. The general principle I've used is to write small
+Perl scripts to do feed rationalization before they're fed to my podcatcher. I've got a script
+per feed at the moment because the two problems are different in many ways, and it's just easy
+to write two scripts rather than one generic one. What the scripts do is that they run on my server,
+and they run from a cron job, which is set up to run just before the main podcatcher runs.
+Each script reads the feed in question, and writes a corrected version to a place that's visible
+to the Apache web server running on my server, and then the podcatcher configuration file points
+to this corrected feed up on the server, rather than the original. And when the database back
+end bit runs, it looks at the same place. So what I'm working with is a fixed feed. So I wanted
+now to just walk you through the two scripts that I've written to fix this. The first one is relating
+to the Mintcast problem, and it's called Mintcast Fix. There's a Perl script, this is a
+Perl script which manipulates the feed and saves the results, as I've said. The full script, if
+you're interested in it, is available on Gatorius, and there's a link to it in my show notes.
+But assuming there's also a link to the script, an HTML version of this script, so that you can view
+it as I tell you about it, should you be so interested. And so I'm going to try and explain what
+the script actually does. It uses two Perl modules called LWPSimple and XMLRSS. LWPSimple is a generic,
+generic module for shifting HTTP data. And in fact, it uses multiple protocols. I forgot
+what LWP stands for now. I think it's Web Protocol, something. I can't remember. Anyway, it's
+the thing that actually pulls down the contents of the feed from the Mintcast site in this case.
+The second one parses the RSS data, which is an XML variant. So the script
+contains reference to the Mintcastog feed, which is stored in a variable called DollarURL.
+And the name of the file to which the modified version will be written, this is called Dollar
+Feedfire. Now, the next thing it does is to create an XMLRSS object, which will be used to
+parse the feed. The URL is downloaded using LWPSimple's get method. And if this fails, the script
+abortes. And it's then parsed with the XMLRSS parse method. Now, I'm using this because it's one
+of the few Perl modules that's able to handle RSS with multiple enclosures. I think there is
+another one. But in the main, these parses don't like it. They don't like multiple enclosures
+because it's not the intended structure, although there's nothing in the RSS standard that
+prevents it, but it's not the way it was intended to be used. And this is why people dislike RSS,
+I suspect, because it's not very well defined. Now, an RSS feed, if you look at the Mintcast
+feed that I've mentioned earlier, it contains a nested structure, which starts off with an RSS
+container, which inside that is a channel container, which defines the whole, the parameters
+of the feed. And then inside there are multiple items, and each item can contain an enclosure.
+So in the case of podcast, then there will be enclosures per item. Other sorts of feeds
+are not necessarily. So what we're doing in the script is to iterate through all of the items,
+which are presented as an array by the module. And we just walk through this and process it.
+In this particular script, we, because for some reason, other wordpress system generates
+a, doesn't generate an author entry. This particular script goes and pokes one into it.
+So what's actually being done here is that we're trying to reduce multiple enclosures down to
+a single enclosure. And we're working on the assumption that the multiple enclosures are all the
+same, which is when you look at the example you'll see is the case. So all the script actually does
+is it goes to an item. And then it iterates through the array of enclosures. And the first one
+that it finds containing a type of audio slash org, it simply saves that into the structure
+and stops the iteration. The reason this was done was because it was written for the case where
+you might have MP3s embedded in there as well. So you could just take the first one off the
+array in fact. So what's actually being done here is that the structure that was created by
+parsing is being edited in place. So once that's been done for every item in the feed, the feed
+simply written out into the feed file. And that's all, that's all there is. The pearl might look
+a little more complicated than that. The way in which this is being done is not ideal, I guess.
+The way that the XMLRSS module presents the data that it parses is it just gives you access to
+a structure, a pearl structure, which mirrors the RSS structure. So you've got things like
+an array of items, each of which can contain an array of enclosures. So it's a complex nested
+structure. A lot of modules wouldn't work this the way they would use accesses, which would give
+you more elegant and simple access to it. In the show notes, I won't go through this in there,
+just now. But in the show notes, there's an attempt to explain a bit about the way that pearl
+represents a raise of a raise of a raise within structures like this. It's not a pleasant thing to
+look at, I have to admit. But I doubt whether there are many languages which should be able to
+do this in a more elegant way. I think it's more down to the author of the module.
+Anyway, so that's pretty much all there is to say about the min cast one.
+If we look now at the pod delusion case, it uses the same method. It uses the same modules,
+and a lot of what it does is similar to the min cast one. The difference is that in this
+particular case, we're generating two XML RSS objects. Because the transmutation of one to
+the other is more complex, we need to parse the incoming feed into one structure and then generate
+a new structure to write out again. So there are two objects created, RSS in and RSS out.
+Again, we download the feed using the LWP simple, and then we parse it as before with the
+provisor that we allow multiple enclosures. We've still got a multiple enclosure issue here.
+Now there's a variable here called channel, dollar channel, which is a reference to the
+channel element of the feed. Remember I mentioned this in relation to the min cast feed.
+This is the outermost layer of the feed structure, which holds everything the attributes which
+define the feed as a whole. It's just things like the title, the link, the description, some of
+which are mandatory, those three are mandatory in fact. So what we do is to copy the title,
+the link, the pub date and the description from the input channel to the output one. Then
+there's another loop as before, which is walking through the items of the incoming feed.
+But the difference here is that for every enclosure found in the input feed, a new
+item is generated in the output feed. The new item that we're creating is initialized with
+the attributes taken from the input feed and has the enclosure added to it. So the result is that
+every enclosure, when we've got multiple enclosures, ends up in its own item, which may be a
+duplicate of the previous item. And that happens if the input item contains multiple enclosures.
+So the final step then is to write the newly created RSS out to the required file as before
+and then the script's done. So what we've done then is to de-duplicate the enclosures,
+making multiple items containing them. You wouldn't actually want to publish such a thing,
+but it's fine for my purposes. So this works fine. This is all working as I, as I would have
+wished. It shows that parsing an RSS feed into a database in the way that I've been doing things
+a lot more difficult than you'd expect. It's a lot more error prone.
+And as I said earlier, this in my impression anyway is down to the fact that RSS is not a
+well-defined standard and people interpret the standard in different ways and produce stuff
+that the various packages don't like. So I've finished off the show notes with a pointer to
+a nice tutorial on RSS, what it's all about and what the various fields are. In case you want to
+dig into that more deeply. And there are various links to the scripts in a readable form and
+HTML form for you to look at. So that's it.
+You have been listening to Hacker Public Radio or Hacker Public Radio. Those are
+we are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by a HPR listener like yourself.
+If you ever consider recording a podcast, then visit our website to find out how easy it
+really is. Hacker Public Radio was founded by the Digital.Pound and the Infonomicum Computer Club.
+HPR is funded by the binary revolution at binref.com. All binref projects are proudly sponsored by
+Lina pages. From shared hosting to custom private clouds, go to LinaPages.com for all your hosting
+needs. Unless otherwise stasis, today's show is released under a creative comments,
+attribution, share a life, lead us our lives.

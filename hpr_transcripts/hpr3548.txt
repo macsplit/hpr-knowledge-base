@@ -1,0 +1,300 @@
+Episode: 3548
+Title: HPR3548: Make a custom Git command
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3548/hpr3548.mp3
+Transcribed: 2025-10-25 01:15:13
+
+---
+
+This is Haka Public Radio Episode 3548 for Wednesday 9th of March 2022.
+Today's show is entitled, Make a Custom Get Command and is part of the series, version
+controlled.
+It is the 270th show of Klaatu and is about 20 minutes long and carries a clean flag.
+The summary is, Make a Get Subcommands with Shell Critics and Get Rent Pass.
+Hey everybody, this is Klaatu.
+In this episode, I want to talk about Get, specifically how to create your own Get Subcommands.
+You may have seen projects in the past that have added functionality to get.
+So you install the thing and then suddenly you have these new subcommands within Get.
+Get is kind of famous for having lots of subcommands.
+I don't think there's actually that many, but it does seem to be enough of a joke in
+the world that someone created sort of a website where it would give you fake Get Documentation
+for a bunch of fake Get Subcommands.
+It was actually quite entertaining.
+But if you do type in Get-Dash Help, I guess pipe it into less maybe, it doesn't even
+fill up a screen.
+That's not that many.
+So there's Get Clone, Get Init, Get Add, Get Move, Get Restore, Get Bicec, Get Diff and
+so on.
+So those are the subcommands or the verbs or whatever you call those, the second statements
+in a command that you use, I call them subcommands lately.
+Those are built in to get and in fact when you do a man get space clone for instance,
+you do notice in the name of the man page it's Get-Clone and that applies to any of the
+subcommands.
+You can do a man of Get space, any of the subcommands and it brings up a man page for
+a Get-Dash something.
+But if you do a witch on Get Space Clone, you don't get anything.
+So the Get-Executable itself is that user, bin, get or wherever it is on your system.
+You do witch, get, it'll tell you.
+And if you do, for instance, a file on that thing, on that executable, it is an executable,
+it's an else binary.
+So Get is parsing as a compiled option within Get, it parses what subcommand path you want
+to go down when you do Get space clone or Get space init or Get space, whatever.
+I'm making this point because I'm going to lever it or I'm going to do something different
+than that.
+But the principle is somewhat the same.
+Okay.
+So in order to create your own Get subcommand, I guess I could mention that I have created
+my own Get subcommand.
+And it's over on GetLab.com slash slacker media slash Get-Portal.
+I think I'll put a link in the show note, I guess.
+But it's called Get-Portal.
+Yeah, it's Slacker Media slash Get-Portal on GetLab.
+And it might even be Meridon GitHub.
+Anyway, it's a Get subcommand.
+So you type in Get space portal, whatever.
+And it does some things with some Get hooks and some Get commands and scripts.
+The point of it is that it manages, it's a very lightweight way to manage large binary
+blobs that are associated with your Get project.
+So it removes binary blobs from version control, which admittedly is not something you normally
+want to do with Get.
+And it was one of those things that was kind of particular to a project that I was working
+on, but continues to be particular to a couple of projects that I work on.
+So it's still a tool that I use all the time.
+And it's good because it keeps, it keeps big binary blob information out of the version
+control that I do need.
+But it keeps those large binary blobs associated with the project.
+And then there are things like get LFS and get annex.
+But honestly, those were both, I looked into them and they were both overkill for lots
+of different reasons, which I won't go into right now.
+Point being that I created this subcommand and I wanted it to feel like part of the
+Get system.
+I didn't want it to be another tool that people sort of had to remember to tack on to
+onto a project.
+It should feel integrated into the rest of the workflow.
+It wasn't necessary.
+I mean, it could just be a separate command, but I thought it might be nicer if it just
+felt like another thing that you do in get kind of fits into the workflow of your Get
+commands.
+You do a get add a get portal, get commit that that was the flow.
+And I felt like that was easy for people to kind of integrate into what they were doing
+anyway.
+So I wanted it to be, I wanted it to fit into into get very naturally.
+And the way to do that is to make it a sub command, making a script that you've written
+into a sub command of get is actually really, really easy.
+Get makes this very simple.
+It can be, well, it can be embarrassingly simple.
+It can also be quite complex.
+So I'm going to go over kind of two of them to give an example of what you might do.
+Okay.
+So first of all, before we go into into how to do that, I need to talk a little bit about
+get rev parse.
+So rev dash parse, rev parse is a sub command of get it's built in.
+And it's one that you may not have used before.
+You may have, I didn't start using it until I started doing a lot of get hook scripting.
+And then it becomes really, really useful because it gives you honestly kind of weird,
+weird functions that you don't really need outside of a script a lot of times.
+So for instance, get space rev dash parse space dash dash show dash top level.
+That shows you the top level of your get repository.
+And if you're a user, you're in a get repository, do you really need to know your top level?
+I mean, just look in the directory that you're in, right?
+Well, sure, but what if you're in a sub directory of a sub directory of a sub directory?
+The quickest way, potentially, to get your, you know, to sort of remember where you are
+is, well, honestly, PWD.
+We'll show you where you are and then you just kind of backtrack until you see the folder
+called myproject.get.
+That's your top level, probably.
+But again, if you need to know exactly where your top level is, you can do a get space
+rev dash parse space dash dash show dash top level.
+And it'll tell you home, so slash home slash class to slash my project.get.
+That's your top level.
+What is a top level directory?
+Well, it's, it's the outer bounds of the get repository.
+As far as get knows, that top level is the, the start of the world.
+That's where the universe begins.
+Get doesn't know there are directories outside of it.
+Get doesn't know it's on your computer.
+Get knows nothing other than the top level and everything below it.
+So get rev show top level shows you the, the directory with a hidden dot get directory
+in it.
+And you can, you can actually see that hidden directory with another get rev parse
+command called get rev parse dash dash get dash der and that shows you again, the top
+level and the hidden get level in, in the top level.
+This again, seems weird if you're just using get, you know, you, you probably don't need
+that.
+You just go to the top level and then you do an LS dash a or something and there's the
+hidden get folder where you can just go into the get folder yourself, although you probably
+shouldn't.
+So another cool rev parse one is get rev parse dash dash show dash CD up and that shows
+you how to CD to the top level.
+And so if you do, if you're in a subject, you have a subject and you do get rev parse
+dash dash show CD up, it returns dot dot slash dot dot slash dot dot dot.
+So if you're going to do a CD command and you, and you want to end up in your top level,
+get rev parse dash dash show dash CD up tells you exactly what you need to type in after
+CD.
+There are other functions to rev parse a bunch of different functions, but generally what
+I want to emphasize here is that if get get rev parse exists and it's got a lot of useful
+scripting utilities that will help you kind of get yourself above get, you know, it kind
+of gives you that sort of detached view of your get repository, which can be useful when
+scripting and it can also be useful when you're creating your own sub command.
+Here's more about that now that we know that get rev parse exists.
+So let's do a really simple hello world style implementation of this and then we'll do
+a more complex one where we're passing parameters and things like that.
+So I'm going to open up a text and I'm going to go to a demo directory so I don't clutter
+up my hard drive.
+Okay, that's good.
+So I'm going to open up a file called hello, no, get dash hello dot sh and the dot sh is
+somewhat significant is significant in this in this instance.
+So do add a dot sh if you're trying this yourself there are you can imagine different ways
+to do this, but the you'll see why I'm saying to specifically put a dot sh on the end of
+this one.
+So I'm going to just create this file shabang slash bin slash sh and then I'm just going
+to write echoes quote, hello, close quote, redirect slash temp slash hello dot txt.
+That's my exciting get script.
+That's the function that I want to give my users so that when they type in get space hello,
+they'll get a file in their temporary directory with the word hello in it.
+It's not very useful, but it's demonstrative.
+So now, so that that that file exists.
+So if I put that somewhere in my path, actually, I'll try mod it first, try mod plus x get
+dash hello.
+And then I'm going to move get dash hello dot sh into some location on my path.
+I have a binary, a bin told us slash bin directory in my home directory and that's always
+on my path.
+So now that it's there, if I execute get dash hello dot txt, nope, I'm an sh.
+Then if I do a cat of slash temp slash hello dot txt, I get the word hello.
+So that works.
+And now I'm going to trash slash temp slash hello dot txt because I don't want it to confuse
+me later.
+I don't want to false positive.
+So I've no hello dot txt in my temporary directory now.
+I've confirmed the script works.
+So of course, if I do get space, hello, it doesn't work.
+It tells me get hello is not a get command.
+And that's correct.
+What I can do now is create a second to file.
+And this one, I'm going to call just get dash hello.
+And in this file, I'm going to put a shabang bin s h and then I'm going to just give
+the path.
+I'm going to give the full path.
+You don't have to actually I won't just do get dash hello dot s h.
+So in this file called get dash hello, I am simply executing get dash hello dot s h.
+Now because get hello s h is on my path, I don't have to give it the full path here.
+You can if you feel nervous about it not being in your on in the user's path, but ideally
+you would have an installer that would kind of manage the paths.
+So get hello get dash hello, just launches get dash hello dot s h.
+I'm going to now move get dash hello to somewhere on my path.
+So again into my tilde slash bin folder.
+And now if I, if I type get space, hello, nothing happens because I forgot to cha mod plus
+x bin get dash hello.
+Okay.
+Now if I type in get space, hello, it doesn't tell me anything.
+But guess what?
+If I do a cat slash temp slash hello dot txt, there's the word hello.
+So file exists, even though I had moved it to the trash earlier.
+So this is a new version of that file.
+And that's how you make your own get sub command.
+So just to overview that again, what we did, we created one, one script file with a unique
+name.
+It could be anything.
+I mean, it could be penguins dot s h or just penguins.
+It doesn't matter as long as it's executable, long as it is, you can run this script.
+It's good.
+It prefer to call it something obvious, obviously related to the thing that I am building.
+So in this case, get dash hello was logical.
+But I wanted to distinguish this file from the front end file.
+This is kind of the back end business logic part of the of what we're doing.
+So it's get dash hello dot s h.
+That's put into your path created marked executable.
+You need to create a front end file for get to find.
+And that front end file needs to be the incantation you want people to be able to type into get
+as a sub command.
+So if it's get hello is what you want, then you need to make a file called get dash hello
+and put it somewhere in the path when you then type get space hello get knows to look
+in the path for something that matches that seek of that combination.
+And if it does exist, then get runs it get dash hello resolves to get space hello in
+get.
+Now in this case, my front end script was quite simple.
+It just launches get dash hello dot s h that's easy, but it can be more complex.
+So forget portal for instance, I need to pass arguments.
+You don't just type in get space portal there.
+There's other stuff you need to do like there's if you're going to add an image or a file
+to to your portal, you do get space portal space, add space, whatever file you want to add
+to your portal.
+So I needed those arguments.
+I needed to know what action the user was going to take are they adding something or they
+moving something.
+What are they doing with get portal and and what file are they targeting.
+So all those things needed to get passed through to to the actual the actual script that
+was getting run and and the hooks and all the things that were getting processed get rev
+parse is able to help you with exactly that.
+So if I go to get portal, I'll go into the file here.
+Okay, so here's the get dash portal command.
+And you don't really need to know what the get dash portal dot s h command is.
+It's a script.
+It has a bunch of different functions in it and does lots of different things depending
+on what kind of input it receives.
+But none of that's like that's just detail work, right.
+All we know is that we got a black box here called get portal dot s h and it needs some input
+and it'll provide output accordingly.
+So the get dash portal script to launch that is it's only like four lines.
+Shabang slash bin slash s h are equals dollar sign parentheses get space rev dash parse
+space dash dash s q dash quote.
+So s q dash quote is an option that get rev parse provides you to safely quote the rest
+of whatever command you're feeding it.
+So whatever is considered an argument or a parameter or whatever it gets quoted.
+So dash dash s q dash quote space quote dollar sign at sign close quote.
+So that's dollar sign at sign in in quotes and then close the parentheses.
+So the arg variable has just been set to the results of using get rev parse dash dash
+s q dash quote on dollar sign at sign which which represents to the shell that it it's the
+rest of the arguments.
+And second line is command or I just put cmd because I'm lazy didn't want to type cmd equals
+quote get dash portal dot s h space dollar sign arg close quote.
+So the command variable is simply executing get dash portal dot s h wherever it may be.
+I don't care.
+I have faith because the the the user has installed this somehow.
+So I have faith that get dash portal dot s h is somewhere in their path.
+So I'm just calling get dash portal dot s h space dollar sign arg where arg is of course
+the result of that get rev parse command that I just went through.
+And then finally the the final line is eval space quote dollar sign cmd close quote.
+That's it.
+You're done.
+So if I just go over to a back over to my demo folder here and do a get in it dot or I
+guess I could have just done get in it now I think and then I'm going to do while I need
+some content here.
+So I'm going to copy this pixel file that I keep handy from my home folder into my current
+directory.
+And now if I do get portal that is get space portal space add space pixel dot png then now
+I see that in my current directory I have a new directory called underscore portal which
+is the default name of the of the portal.
+It has a simlink from pixel dot png into the portal and that's how this that's how get
+manages this.
+And you do a get commit pixel dot png so you're committing the simlink rather than the actual
+binary file and I didn't add that yet get add pixel dot png there we go get commit dash
+in added a file close quote.
+And now I've got a get log that contains a record of me committing pixel dot png but I've
+got a repo without actually that does not contain pixel dot png it just contains a simlink
+to a known location underscore portal that contains the actual file that's what get portal
+does.
+It's simple in theory and works actually quite well if you if that sounds like something
+you want to try feel free to try it to been working for me really well for several different
+projects where I'm dealing with either really really large multimedia files or I'm dealing
+with so many multimedia files that just don't really matter to me that much.
+It's just the fact that there is a jpeg in this location so I use get portal quite a lot
+to abstract sort of the art from the craft and and it works out I mean it it it does remove
+things from version control so if that's not something that you want don't do that but
+if it is something that you want try it out get portal and and either way if you just
+need reinforcement of what I've just discussed in this episode that's the repository to
+look at get lab slash get lab.com slash slacker media slash get dash portal that's the that
+I'll have if you look in the bin file you can ignore all the you know the auto tools
+and the configuration files and stuff like that just go to the bin file there's get port
+get dash portal that's the front end get dash portal dot sh that's the the that's the business
+logic that's where it all happens that's the application that's the script there are
+some hooks as well so there are some things in there that that that you won't see but I
+think that those two files together should demonstrate really really well what I've talked
+about in this episode so I hope this helps you it's really fun and and cool to be able
+to just create your own sub commands don't get carried away I guess but it is it's a neat
+little trick thanks for listening talk to you next time
+you've been listening to hacker public radio at hacker public radio dot org today's show
+was contributed by an hbr listener like yourself if you ever thought of recording a podcast
+then click on our contribute link to find out how easy it really is hosting for hbr this
+kindly provided by an honest host dot com the internet archive and our sync dot net
+unless otherwise stated today's show is released under creative commons attribution share
+like

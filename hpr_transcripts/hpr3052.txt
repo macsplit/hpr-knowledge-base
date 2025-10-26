@@ -1,0 +1,175 @@
+Episode: 3052
+Title: HPR3052: Locating computers on a network
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3052/hpr3052.mp3
+Transcribed: 2025-10-24 15:51:16
+
+---
+
+This is Hacker Public Radio Episode 3,052 for Tuesday the 14th of April 2020.
+Today's show is entitled Locating Computers on a Network
+and is part of the series Networking. It is hosted by Ken Farlin
+and is about 22 minutes long
+and carries a clean flag. The summary is
+can explain some different ways to locate computers on the network.
+This episode of HPR is brought to you by An Honesthost.com.
+Get 15% discount on all shared hosting with the offer code
+HPR15, that's HPR15.
+Better web hosting that's Honest and Fair at An Honesthost.com.
+Hello everybody, my name is Ken Farlin
+and you are listening to another episode of Hacker Public Radio.
+Today I want to talk to you about locating computers on a network.
+So sometimes you might want to locate the device on your network.
+This might be a rogue device or it might be something new like a printer
+or an internet of things like both, whatever, really doesn't matter.
+In my case, I'm trying to track down some raspberry pies.
+So the current version of Raspbian now lists the IP address assigned to the device once it starts up
+but in order to see that you need to have a monitor attached
+and that might not always be available to you depending on where the pie is.
+So the most obvious way of doing this is going to your router.
+So this is the device that you like your Wi-Fi router or your supplied by your network provider
+or whoever that dishes out IP addresses, that is your DHCP server.
+And usually you'll be able to log in there and go into somewhere like network or LAN
+and you'll be able to see a list of all your computers.
+One tip to do is first of all, turn off, don't plug in the device to start off with.
+And go to that page on that device on your Wi-Fi router and make a list of all the connections that are currently active.
+And then you can plug in the new Raspberry Pi or Lightbulb or whatever.
+And then you should see a new addition in there.
+So if you're looking for Raspberry Pi, most of these devices will list it as Raspbian Repi Foundation.
+So give you an idea of what it is.
+Okay, that's not so handy because in my case, I'm trying to locate these devices automatically using a script.
+And basically this entire episode is going through the different options available
+and see what the best option would be to be able to go out and locate these devices and collect the MAC address and IP addresses of them.
+So before we go on to that, we need to talk a little bit about how Ethernet works and how it relates to IP addresses.
+If you want to know more about how Ethernet works, there's a nice short video called, how does Ethernet work and little animated presentation by Janos Pastor on YouTube.
+A link is in the show notes as well worth a watch, it's only about four or five minutes long and kind of goes through the basics for you.
+So I'm not going to know what device you're going to be trying to plug in, it might be a printer or something.
+So we're going to do this based on the ARP protocol.
+And the ARP protocol is called the address routing protocol and it provides a mapping between the permanent Ethernet MAC address, which is Media Access Control address,
+and there are two they often temporarily assigned IP address from the IP layer.
+So if you want, if you have a computer that's in the network 192168.1.1 and wants to talk to another device,
+it's going to need to know the Ethernet MAC address of the other device or the other device.
+So let's assume it wants to connect to the local printer, that's 192168.1.2, it's on the same network and it knows the IP address.
+If your computer has already been listening on the network for a while, it may have already heard that printer talk
+and already has the IP address and the MAC address in what it's called an ARP table.
+Now over time these entries are added any time a computer hears a new IP address and MAC address, it'll add that to its ARP table.
+But over time that table gets quite old and some entries are flushed, but that can also happen if too many entries are put in entries or flush out at the end.
+Leaving just the newer ones.
+So Linux has command called ARP, which will show a list of the IP addresses mapped with their associated MAC hardware address.
+So if you type ARP and one of the options that you can use there is the dash N, so it doesn't look up the address names.
+So an Ethernet adapter has an address burned into the chip.
+So it comes in six different bytes.
+So for example, FF, EE, DD, CC, BB, AA.
+So I'm usually separated by colon and it can be upper or lowercase letters, usually lowercase, but fine.
+So the first three octets, which is three groups of eight bits, which is three bytes, is the organizational unique identifier fire or the OUI.
+And the third, the second set of octets is the network interface controller specific one.
+And basically that defines the first few, the first part is basically assigned to a company.
+And the second part is what that company decides to assign to that device.
+So in the fictitious output that I'm showing here, you see 192.168.254.
+It's got an hardware address and you get 192.168.1.2 and that one.1.1.
+And they've all got addresses.
+So from the internet protocol point of view, all your devices in the house are probably on the same subnet or subnet or subnetwork to be more correct.
+But if you want to communicate outside the network, what's going to happen?
+For example, you want to ping the well-known server 8.8.8.8 to check to see if you've got an internet connection.
+And in your IP settings, you've also got a thing called a default gateway, which sends all traffic to that is not intended for the local network.
+You will also probably have a DNS server listed there as well with a fixed IP address.
+These are sort of critical pieces of infrastructure that you need to know about in order to be able to do other things.
+And they're usually specified by IP address and then you use the ARP tables to basically look them up.
+So to find your default gateway on your computer, you could have many IP addresses configured, but it's a good bet that the NetRQ and your new Pyron are the same one as the default gateway is on.
+So you can find the default gateway using the following command.
+So root that dash n and I'm just filtering there for something, any line that begins with 0.0.0.0, which means everything.
+So the destination is everything and then the gateway will be whatever the gateways in my case is 192.168.1.254.
+So this uses the root to show the root table showing the IP address and not the NetRQ names.
+The first column is the destination and so 0.0.0 means root everything else to and the two we get from the second column, which is gateway.
+So you can also use the following command to get that information, IP, space, root, space show.
+And if you just grip for default, you'll guess default via 192.168.1.5, dev, en0, protocol, DHCP metric is 100. So more or less the same thing.
+And if you just want to show the IP address, you can opt that and just print the second part.
+So that would allow my script to be able to find the default IP address if I ever needed it.
+So from an Ethernet point of view, we need to know what the MAC address is that is associated with this IP address, the 192.168.1.254.
+So that we can send a Ethernet frame to it.
+In our case, the address is in the art table, but if it wasn't, then your computer will broadcast to everybody on the NetRQ using a special address called FFFFFFFFFFFFFFFFFFFFFFFFFF.
+So when your Rooster and Default Gateway then replies, there will be an entry added in the art table.
+And I just show there a Wireshark example of what's actually happening on the NetRQ.
+So you can see this, one MAC address broadcast to everyone saying who has 192.168.1.254, and then reply back and tell 192.168.1.1.
+to which the Rooster replies back saying 192.168.1.254 is as blah, blah, blah, and the MAC address.
+So from there on, you can build your table.
+There's a nice little walkthrough on Wireshark and ARP on the wikiversity.
+So that will give you as all Raspberry Pi's start with B827EB or the newer ones, DCA632.
+So if your computer and the new Pi is on the same NetRQ, you can look for new MAC addresses starting with either of those two.
+There is one smidgen of an issue with this, and that is that you can't really rely on your ARP table to give you a full overview of what's on your NetRQ.
+So even though the IP address, all the computers on your NetRQ are in the same IP address, they might not be in the same broadcast domain.
+So from Wikipedia, switches act as buffers receiving and analyzing the frames from each connected NetRQ segment.
+Frames, destined for nodes connected to the originating segment are not forwarded by the switch.
+Frames designated for a specific node in a different segment are sent only to that segment.
+Only broadcast frames are forwarded to all other segments.
+This reduces unnecessary traffic and collisions.
+So two things about that, which means that all the computers may be on one big NetRQ and then your devices may be connected to different switches.
+For example, the Wi-Fi router downstairs and a cable switch in the back room and a NetRQ extender in the attic.
+So if the Wi-Fi router downstairs is talking to something else connected to the Wi-Fi router downstairs, the back room or the attic won't know anything about it.
+But if the attic and the back room need to talk to each other, then the downstairs router won't know anything about it.
+So that's a good thing, but it does mean that we can't rely on the individual ARP table because it may not be physically connected to the same switch that our Pi is on.
+But if we try and contact each and every IP address in the NetRQ, this forces ARP to do a who has traffic like we saw before.
+And the answers that come back will be added to the ARP tables.
+So we're going to have a look at some ways to force this type of discovery.
+Probably the most complicated from the point of view of this show is one that we're going to do first, which is discovery by ping.
+But you're guaranteed that regardless of your device, you're going to have these tools available to you.
+Ping is more or less universally on even the smallest of devices.
+And the ping utility is from Wikipedia again.
+It measures the round trip time for a message sent from the originating host to a destination computer that are echoed back to the source.
+The name comes from an active solar terminology which sends a pulse of sound and listens for the echo to detect the objects underwater.
+And just as by the way, you can't really trust this as a means of determining how fast the NetRQ is because it can be blocked or it can be prioritized depending on some of the NetRX.
+But it is a useful way to see if you've got a connection or not.
+So if I wanted to ping something I should could just try and ping say the default gate to 192.168.1.254, my case.
+And sends out continuous ping and you'll see 64 bytes received in so many milliseconds, etc.
+And you can hold down the control key. That will continue forever, which is kind of handy if you are disconnecting NetRX and you want to see if your connections come back.
+So cancel out of that you press and hold the control key and you press the C letter control C cancel.
+Now in our case we don't actually care about the output of ping because our whole point here is to generate traffic to see who's awake in a live.
+So we're going to redirect the output to DevNull and we're going to use the command with some additional options.
+So the dash N dash C1 dash uppercase W1 and then the IP address.
+And then we're going to redirect slash DevNull and then two we're going to redirect to one which.
+So that redirects or standard or to standard output which in itself has been redirected to DevNull which is just a bit bucket in the sky.
+So the options there are dash N is numeric account numeric output only so you're not going to look up the names of the addresses.
+The dash count is going to only send one ping and stop and the dash W is a time out of one second so if something doesn't reply it's going to stop.
+So this solution will try and ping every host on the network which would be a bit tedious if you had to do one by one.
+So we're going to do a script ripped.
+So it's a safe best that your home network will be on a range like 192168 that's something that zero to 192 that's 168 that's something that 255 usually that something is a one.
+This is not a safe assumption in an office environment but we can deal with that on later.
+So in order to do this there's a few things that we're going to try and do.
+We're going to find out what the base part of the address is the 192168 dot one and then we're going to ping each of them in turn.
+So I've shown you command there where you can guess the base part and then we're going to do a loop for node in one dot dot 254.
+So one open bracket to 254 which means the loop will continue the first time it will go through the node will be set the node variable will be set to one.
+Second time you go through it will be set to two second time close through it will be set to three.
+Then we're going to run the ping command with concatenating the base which is 192 dot 168 dot one then dot and then the node which will be one not two then not three.
+So that would actually take quite a lot of time especially on the larger network.
+So in order to speed it up what we do is we enclose the whole thing in we do the ping and we put the at sign, upper sign sign in the back.
+So to send it into the background as in it will just go run on the background and we don't care about the output.
+And we enclose it in the in braces in brackets which will fork each process each ping into its own separate process that will run and stop.
+So we don't even need to do timeouts. So the loop should go through very fast and each of the pings will be running independently.
+So the timeout the timeout will be in parallel as opposed to in series.
+So once you then do an ARP N you will suddenly see that you have a lot more computer hardware addresses in your ARP table.
+And if you pipe that through grip to find out you can then grip the two MAC addresses that you have and it will print the IP address of the Raspberry Pi.
+So in the script there I put a little script showing how that could be done using the ping command this entirely up to you to do it that way or not.
+So the next one you're going to need to have written permission from your network administrator to do because you're going to be using a tool called end map which is one of the lead hacking tools that is available to you on Linux.
+If you happen to be your own network administrator I will leave that up to you.
+And we're also going to use a tool called IP Calc and the reason we're doing this is not all networks are going to be as simple as being slash 24 which is network mass of 255.255.255.0.
+So might be bigger some might be smaller some might start in the middle might have four different chunks or whatever.
+So with this selection of tools here you can script your scripts in such a way so as to be able to determine the network that you that you want to probe.
+The first thing that we do is find the default interface which is root dash N we've done this before and then we use I have config for that interface which is a zero one and we look for I net and with that we will get the
+network and subnet mask that we're using which is kind of important because we can then pipe that into IP Calc and that will give us the which is basically a tool for displaying how
+network addresses are assigned is very useful to actually if you don't have it you should download it and play along with it.
+So for example IP Calc 192.168.1.1 slash 255.255.0 tells me that the address is 192.168.1.1 the network is 192.168.1.0 slash 24 the network mask is 192.255.255.0 which is 24 in shortcut.
+The broadcast address is 192.168.1.255 and then it tells me additional information like the address space is for private use.
+It's a class C address minimum host is 192.168.1.1 maximum host is root of about 254 and the number of hosts on the network are 254.
+So essentially that by manipulating that command you can get the bit that we want to pipe into NMAP which is 192.168.1.254 and then we can go NMAP-SN 192.168.1.0.4 slash 254 and that will start an NMAP scan for you which will do the same thing and populate ARP.
+The dash S and the dash N is no scan port and that option tells NMAP not to port scan after the host discovery but only prints out the available hosts that respond to the host discovery probes.
+Now that one is a little bit complicated and convoluted so I wanted to include it here but I'm unlikely to use it because if I'm going to the trouble of installing NMAP I would equally go to the trouble to install.
+ARP scan which is by far the easiest way to do this so it's a one liner here again we got through all this absolute and then you tell us at the very end the one liner to do it.
+So ARP scan is a two links in the show notes and basically it does what it says on the tin. ARP scan dash dash interface ENO-101 which is not the interface I'm interested in.
+Dash dash localness it will go ahead and figure out how big or small the network is. Dash dash numeric it will not bother doing a lock up of the IP address.
+This is to domain two host names and dash dash ignore loops will ignore duplicates to come back and that is the only thing you need to do and it will print off IP address MAC address and also Raspberry Pi trading limited and Raspberry Pi foundation.
+So that's pretty much it so whichever one of these you choose to use or not I hope it kind of makes you a little bit more familiar with the network and how things work.
+I had a look in the in the previous shows that we've done in previous tags and I see very little shows about networking in general which surprised me so if people want to contribute some shows on that topic feel free to do so.
+And as ever tuned in tomorrow for another exciting episode of hacker public radio.
+If you ever thought of recording a podcast and click on our contributing to find out how easy it really is.
+Hacker public radio was founded by the digital dog pound and the infonomicon computer club and is part of the binary revolution at binrev.com.
+If you have comments on today's show please email the host directly leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated today's show is released under creative comments, attribution, share a light 3.0 license.

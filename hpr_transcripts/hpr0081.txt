@@ -1,0 +1,178 @@
+Episode: 81
+Title: HPR0081: Linux Boot Process Part 3 - Boot Prompt Parameters
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0081/hpr0081.mp3
+Transcribed: 2025-10-07 11:09:30
+
+---
+
+This is the important factor for crafting art.
+Well, they're fighting for air, when it's all ready then, we stretch our necks to
+stand, but they're too quick to combat, hold the body for ransom, cause the mind is a billionaire.
+Hey, this is Dan, that one in a hacker public radio, a little late, no excuses, I'm lame,
+but anyway, today we're going to talk about boot prompt parameters, stuff you can pass
+in a kernel through a boot prompt, and before we do that, let's take a quick review of what
+we talked about already regarding boot loaders, which would be primarily the way that you would
+pass information to the kernel upon boot. So we talked about in the past two major main
+boot loaders, one was Grub, and the other was Lylello, and of course Grub is the boot
+loader of the gods, we all remember that from my previous episode. Now, Lylello and Grub both
+get installed typically into the master boot record or into the boot or root of your
+boot portion of your file system, your partition, whatever you want to make bootable again, it
+could be a separate boot partition or it could be just your root partition and it installs
+itself into the first 512 bytes right there of that partition. Now, if you're going to
+install Lylello or Grub into a partition as opposed to the master boot record, you are
+going to need another boot loader and a master boot record that could initiate the boot
+loading process from that said partition to kick in Lylello or Grub at that point in Grub
+terms is called chain loading, which you could chain load and allow you to kick into the
+boot partition and you'll be golden and good to go. Anyway, Grub, Lylello, again the deficiencies
+between from Lylello compared to Grub is that you have to be careful to initialize Lylello
+anytime you make a change and that's going to also be important that if you want any of
+your boot parameters that you save in your Lylello.com file to take effect, you're going
+to have to rerun Lylello after you edit your Lylello.com. The Grub menu. LST file, you
+will not have to edit or re-initialize Grub after you edit it automatically pulls it up.
+It's not a problem. So that's another win for Grub right there. Now, let's talk about
+boot parameters and what you would actually use boot parameters for. Boot parameters,
+there are basically two types. One either gets passed to the kernel or it gets passed
+to a driver or a module. Now, let's not call it a module at this point. Let's call it
+a driver because when I think of modules, I think of modules that are not compiled into
+the kernel but are separate and get called during the boot up process or you call them
+manually later on down the line. Anyway, you can't pass parameters where you don't pass
+parameters to modules so to speak that are not compiled into kernel. You only pass those
+to drivers or modules that are compiled into the kernel. So you pass boot parameters
+to the kernel, to the driver that's compiled into the kernel. You can also pass information
+to the in-it process or to change the in-it process. Again, the boot prompt allows you
+to pass this information. If you're passing it to a driver, you're going to specify just
+like any other boot parameter. We've already looked at some boot parameters to begin with
+when we talked about the different image settings, particularly for Linux and Lilo and
+Grub. One of those was the RO for Read Only. One of them was root equals for specifying
+the root device and there's other parameters like no ACPI and a few other things. You
+could pass in-it equals to change the in-it program that runs instead of running the in-it application.
+You could change it to bin.sh and we'll cover that in just a minute. Now, when you are going
+to specify a boot prompt parameter, a couple of guidelines you need to follow. One, there
+are no spaces in the argument. It's going to be RO for Read Only or in-it equals slash
+s bin slash in-it. There would be no spaces. It would be just all one line. You do not
+put any spaces inside each argument that you pass. Every argument must be separated by
+a comma. You don't need to pass spaces in-between those. It would be in-it equals slash s bin slash
+in-it comma root equals slash dev slash HDA. There would be no spaces at all in-between
+there. You don't want to put any spaces in there. Now, you can, well, we'll cover this
+in a minute. Anyway, each argument can accept up to 10 integers, integer arguments, or
+you know, 10 different values plus one string. So just be aware of that. I really don't
+see anybody ever getting to the point of reading more than 10 integers for each argument.
+So, sequently, if you need more than 10, you could just, you know, recall that same argument
+with the rest of the integers or primers that you want to add. So, you know, you probably
+never ever need to use more than 10. Okay, so how are parameters sorted? Now, there,
+of course, we talked about their stuff that goes to the kernel, their stuff that can go to
+a driver, their stuff that you could pass to the boot time that changed something like
+in-it, what gets run at boot time. So basically, the way it does is it processes the parameters
+and it looks for a special command. Some of those special commands include specifying
+rather than rather to mount the root file system, start the first mount to be root rewrite
+or read only, or whether we are passing a root file, you know, saying the root partition
+is this, that's a special command. That gets processed first. If it's not a special
+command, it looks to see if it's a setup for a device or the kernel specifically. If it
+finds it's something like no ACPI, so it doesn't initialize, I'm sorry, if you were passing
+like back in the day when I was creating a router off of 486, I had two network cards in
+there. And to specify which network card I wanted to be, the ETH0 device or ETH1, as
+I believe these were ISA cards, I had the pass to them, the IO address and the IRQ address
+right off the bat, so it would be like IO equals 0x 110. And I think it was interrupt equals
+whatever the values were for that card, so that it would assign via the module that was compiled
+into the kernel, it would assign the device that matches that to ETH0, so that was kind of passing
+a parameter off to a module. If it's not something for the kernel or the module, it checks
+to see if it's an environmental value variable in the form of something equals something.
+And if that's not the case, it passes whatever's left to the init application.
+For instance, if you were to type in the name of your kernel and single or specify it in
+it run level of 1, 2, or 3, that 1, 2, or 3, we get passed directly to the kernel.
+Now remember, something like init equals slash bin slash SH would be an environmental
+variable being passed, so it wouldn't run. That would be like on a third step.
+It wouldn't necessarily pass that information in it because it wouldn't run in it.
+So there's just to be aware of that.
+Now, once you get the system up and booted, you could actually check what boot parameters
+were passed to the kernel and everything to your system by looking in the directory,
+looking in the PROC directory at a file called CMDLINE command line.
+That will show you the boot parameters passed to the kernel at boot up time.
+Now, along my triple EPC right now, and if I go and look at my, if I cat my command line file,
+I see that what was passed to the kernel at boot time as boot parameters were the quiet, read right,
+VGA equals 785, which specifies a VGA mode, IRQ pole, and then root equals slash dev slash SDA,
+specifying dev slash SDA. And you might say, well, Dan, what do some of those mean?
+Where do I find out what kind of boot parameters I pass? Well, that's a great question.
+There's a couple of different places you can look.
+Okay, so let's re, let's go back, take a quick look at the boot parameters that were passed to the triple EPC.
+Again, the first one that we came upon was quiet.
+Now, what quiet means is, do not pass or disable log messages, do not enable logging for the kernel.
+So it disables logging messages, nothing gets logged, that's quiet.
+All right, now, read right, again, if you recall, when the system boots up,
+it will first mount the root partition, read right, or read only, or whatever.
+This specifies the kernel, it will specify the right, read, root, the amount at read right.
+VGA equals 785, that's an environmental parameter.
+That says to set the mode for VGA to 785.
+What that actually means, there's a nice little, usually in a write-up in the grub menu list,
+or I believe on a Wikipedia, and how the boot parameter, how to specifies what those modes are.
+And what I can tell you about 785 is, so if you're looking in that file I specified,
+we're saying that we're looking at 785.
+And what 785 says to do is to set the frame buffer resolution, VGA mode to 64K,
+and at 640 by 480 screen resolution.
+So it's a little higher than 16, it's 64,000 kilobytes, 64K.
+Now, if we wanted to go 800 by 664K, we would specify 788,
+a setting of 795 would be 1280 by 1024 at 16 megabit color, 16 megabit color, 60 million color.
+So, you know, that's pretty simple right there.
+Again, you could probably find that in your grub menu list, or on the boot parameter, how to,
+now the next one we have is IRQ poll.
+IRQ poll will force the kernel of the search for all handlers for an interrupt,
+that it finds that it's not handled.
+So it'll pull the IRQ for that.
+And finally, the last parameter is root equals devSDA1.
+So it sets the root to the device, ScuzzyDiscA partition1.
+So it's the first ScuzzyDisc on the root partition.
+Now, where can you find a lot of this information, what boot parameters that you can pass?
+Well, you're going to have to call some of this from different resources.
+One, you can rack your brains out trying to pick through these sources for the modular or kernel section of the kernel that you want to reconfigure or pass parameter to.
+You might find it in the top of the source code, you might find it in the middle, you might find it in the end.
+It's really difficult to find a lot of these things in the source code, unfortunately.
+Which is why the kernel-parameters.txt file in the kernel documentation is a godsend for a lot of this stuff.
+It is a wonderful utility.
+If you have your kernel sources, you go into the documentation and look at the file kernel-parameters.txt.
+And that'll list probably the majority of the prompt-parameters that you can pass.
+And what they mean and some of the different values that you could pass to them.
+Read the how-to, the kernel-boop-round how-to is a great place to look at.
+Some of the more common parameters that one might pass.
+And it's a fairly old document that gets updated with some frequency.
+So a lot of the information in there, while some of it may not be applicable to modern systems, is still very valuable.
+So I'll give you an idea as to what you need to do.
+And of course, if you're having a problem with your system, look at the forums, mailing lists for the distribution that you're using.
+And chances are there may be something if you're having a problem booting that you, or how we're being detected properly, that you could pass to the boop-round to assist this.
+Now, I said to you before that if the module is not compiled into the kernel, that you wouldn't pass parameters to it.
+And that is true.
+There's a different way of passing parameters to modules that haven't been compiled into the kernel.
+So I'm trying to cover that at another time.
+But just a little nugget of information for you that you could take away is there's a couple of different files.
+Depending on the system, how your system is handling this, it used to be a file called modules.conf or conf.modules that was handled.
+The blackware used to use that, I think it still does actually.
+The RC.modules file would call that modules.conf or slackware RC.modules file had a list of all the different modules that it would probe for.
+And you can uncomment a section in there like if you had a certain sound card, you can uncomment that.
+And it would automatically probe for that card using the values there.
+You can call them manually using the mod probe or the insmod command.
+Mod probe is better to use.
+So you wouldn't pass those parameters off to the modules.
+Now, of course, there's other systems like you dev that handle some of this in the hotplugging where you would specify the different parameters in their configuration files.
+But those are for another day.
+So today we just talked briefly about the Linux boot prompt and what stuff you could pass there.
+A few other things I want to reiterate to you is that if you hose your system, you can't get into it.
+You forget the root password or something.
+Sometimes you can get back into it and fix your system by booting into the single user mode, which would be the name of your kernel.
+And then you could pass either the number one or sometimes allows you to go in there by type again, single, s-i-n-g-l-e.
+And it'll boot into user, a single user mode.
+And you can do stuff like run FSCK on your disk, fix your, you know, do a partition check, get into stuff.
+Now, a lot of distributions these days, a lot of distributions require you to log in as root.
+It provides root password to get into the system single user mode.
+So if you forgot your root password, you're going to have to go in there another way.
+And wipe out your root password or change it by editing the password file from another distribution.
+Anyway, that being said, you could also pass, you'll get into single user mode by passing in it equals slash bin slash s-h.
+And that will pull up a shell instead of running in it and allow you to run a bad shell just like that.
+So that is basically the boot prompt out to.
+And if you have any questions, email me at danathelynicslink.net.
+And if you have any comments, either post in the comments section on AcroPublic Radio or send me the comments, danathelynicslink.net.
+I wish you a wonderful day.
+And thank you for your patience on this.
+And I hope it wasn't too choppy and disjointed.
+Have a great one and enjoy your happy hacking.
+Thank you for listening to AcroPublic Radio.
+HPR is sponsored by carro.net.
+So head on over to C-A-R-O dot N-E-T for all of us in need.

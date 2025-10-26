@@ -1,0 +1,161 @@
+Episode: 3937
+Title: HPR3937: Adventures in Pi-Hole
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3937/hpr3937.mp3
+Transcribed: 2025-10-25 17:37:30
+
+---
+
+This is Hacker Public Radio Episode 3937 for Tuesday, the 5th of September 2023.
+Today's show is entitled, Adventures in Pie Hole.
+It is the first show by Newhost Noodles, and is about 8 minutes long.
+It carries a clean flag.
+The summary is, Noodles recounts their experience getting a pie-hole server.
+Hello listeners of Hacker Public Radio.
+I'm Nate, also known as Noodles, which is probably the name I'll put in the title as my
+host name.
+And I know Hacker Public Radio is constantly asking for contributors, so I figured I'd
+start and contribute my own.
+I'm going to put this in the emergency queue, since I figure not much of this will change
+over time, especially since it's just a recount of exactly what my experience in this was.
+But yeah, I hope you guys enjoy.
+So this is titled, Adventures in Pie Hole.
+And pretty much just as an aftermath story, I've already done the setup for the pie hole,
+and I wrote it down after I set up the pie hole.
+So it might be missing a few details, but you'll get the general gist of how this went
+down.
+So what exactly is Pie Hole for stuff?
+Well, it's a DNS and DHCP server that allows for easy network side ad blocking, along
+with the nice customizations of being that.
+A DNS server is kind of the server that your computer might ask, so if it asks, hey, what's
+Google.com, that DNS server will return the IP address of Google.com.
+And a DHCP server is the server that gives out the IP addresses on your network.
+So the first step here is to actually get it running.
+And I did this using Docker Compose on my NAS, which even though I call it a NAS, it's
+really my centralized server, that's just kind of what I call it.
+After a quick copy and paste from the pie holes read me, I was pretty much up and running.
+I set up a singular system and use this as a DNS server, and after that, I figured
+I was setting ready to go.
+But I wasn't quite satisfied there.
+I wanted automatic DNS setting for any device that connects to my network.
+Of course, I could just set the DNS upstream.
+I use OpenWRT router, so I could just set the DNS server in there, but not good enough
+for me.
+This means I've been missing out on automatic per client information since when setting
+up a DNS server for OpenWRT, it only sets itself to forward any DNS requests up to
+this DNS server, which means from pie holes perspective, all the requests are coming from
+the router and nowhere else, and I wanted per client information.
+The solution here is to set up pie hole as a DHCP server.
+Keep in mind, you know, I'm not giving it a tutorial or anything.
+So let's just go through what I did first.
+The first step was to turn on the DHCP server in pie hole.
+This was pretty easy, just a checkbox and click save.
+Awesome.
+I disabled the DHCP server in OpenWRT, and it was all set.
+A few restarting of some network devices later, like my phone and my laptop that I was
+using to set this up, and they all automatically connected to the pie hole server, worked like
+a charm, and they got IP addresses from it, and everything else like that.
+Next up, I set up tail scale.
+I use head scale, which is kind of like the server side of tail scale, but one that you
+can host yourself.
+But the setup is pretty much exactly the same as if you were using tail scales UI.
+I set in the config to override the local DNS, set the name server to the tail scale IP
+address of the server, and turn on magic DNS.
+Voila!
+Now to restarting the tail scale nodes, and make sure that on the server you set it not
+to accept the DNS from tail scale.
+If you don't do that, you'll get an endless loop of trying to use itself as a DNS server,
+it's just no good.
+Alright, and after that, it's all set.
+I checked the dashboard, and it's already blocking DNS requests.
+I can see all my tail scale devices in there.
+Perfect.
+Awesome.
+Then I made a bit of a whoopsies.
+It was fine and great, but what I went to reboot my server, which I do weekly, something
+bad happened.
+The interface for the server didn't come up.
+It's a problem since it's the DHCP server from a network, so without that networking,
+the network was dead in the water.
+It can't give out IP addresses.
+What's going on?
+I go ahead and access my server directly, no matter how hard I try, I cannot connect
+to the interface.
+What's the big deal?
+Well, this is actually pretty simple, and a question popped out ahead that got me there.
+How does the server even get its IP address?
+When I set up pi-hole, it was just using the IP address that the router had given it
+earlier, which was more than happy to use.
+But the moment the router didn't have a DHCP server, the NAS had no way to get its own
+IP address.
+So what's the answer here?
+Well, it's actually pretty simple.
+Just give the server a static IP.
+Make sure you set a static lease in the DHCP server of pi-hole, and then I use network
+manager.
+You just set a quick static IP and make sure it's DNS points to localhost.
+And then everything is done.
+It worked like a charm.
+All right.
+Crisis averted.
+Just submissing networking knowledge happens to the best of us.
+So what's next up on the list?
+The default add list is kind of small.
+Let's just go see if we could find some new add lists.
+Apparently, this is a little bit more difficult than you'd think.
+A quick search on duck.go only came up with an equivalent search on GitHub.
+Not very useful.
+You have no idea the trustworthiness and stability of these add lists.
+So another search leads to a Reddit article, and that leads to a different list.
+Awesome.
+An add list list.
+This is firebogfirebog.net, and it's exactly what I needed.
+I went ahead and looked into these lists and added a few of them.
+Perfect.
+Firebog automatically sorts them by most stable to lease stable.
+So most likely to work versus a little bit more aggressive, but might break things in
+the process.
+All right.
+And the fifth step is maintenance.
+So what exactly do I do for maintenance of this server?
+Well, I use Docker Compose pool, and then I use Docker Compose up.
+Of course, this isn't always it.
+I use an AB update scheme, so I'll actually copy the container over to a different container.
+Update that.
+Run it.
+I also, I still have that old container that I can go back to, but you still get the
+idea.
+Update to taking care of automatically by this, and just keep the server up as long as possible
+since this is what runs your DHCP server.
+And of course, I wasn't happy with just that.
+I wanted to move it off my main nest.
+There are a few reasons why I wanted to do that.
+For first, I liked having the magic DNS from tail scale on my server.
+I like being able to access my other computers using the server as kind of like a jump post.
+Number two, I wanted to have a computer that I can have on all the time.
+If I needed to update my server, it ends up taking down my whole network, or maybe some
+other problem happens with my server, and then I'm dead in the water for my network.
+And I don't like that dependency there.
+What I did was I ran it on a Raspberry Pi 3.
+I used Arch Linux arm, which is what I already run on my NAS.
+I used Arch Linux on there.
+And then I just followed the same exact steps for that.
+I made sure that I set it as a static IP and just set it up on there, and it works wonderfully.
+I don't have to worry about whether, oh, I need to reboot my server because I changed
+this configuration file.
+I don't need to worry about that anymore.
+It's on a different computer now.
+So yeah, that's mainly my adventures in Pi Hill.
+I hope you guys enjoyed this pretty short recounting, and if you have any feedback or
+anything like that, I will have some contact information in the show notes.
+And I'll also have the original article that I wrote in the show notes as well.
+Thank you guys for listening, and make sure you support Hack Republic Radio, contribute
+yourself, and more importantly, just enjoy the content that it releases.
+Thank you guys for listening.
+You have been listening to Hack Republic Radio at Hack Republic Radio.org.
+Today's show was contributed by a HBR listening like yourself.
+If you ever thought of recording a podcast, then click on our contribute link to find out
+how easy it really is.
+Posting for HBR has been kindly provided by an honesthost.com, the internet archive and
+rsync.net.
+On this advice status, today's show is released under Creative Commons Attribution 4.0 International
+License.

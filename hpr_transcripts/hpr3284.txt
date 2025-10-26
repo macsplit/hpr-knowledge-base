@@ -1,0 +1,454 @@
+Episode: 3284
+Title: HPR3284: Introduction to gdb
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3284/hpr3284.mp3
+Transcribed: 2025-10-24 20:11:09
+
+---
+
+This is Haka Public Radio episode 3284 for Thursday 4th of March 2021.
+Today's show is entitled, Introduction to GDB and in part of the series, Compilance, How They Work,
+It Is Hosted by Klaatu and in about 24 minutes long, and Karina Clean Flag.
+The summer is a really friendly introduction to the new debugger.
+This episode of HBR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HBR15.
+That's HBR15.
+Better web hosting that's honest and fair at An Honesthost.com.
+Hey everybody, this is Klaatu.
+You're listening to Hacker Public Radio in this episode I want to talk about GDB.
+That is, Gnu Debugger.
+It's the application that you get sort of by default, I think, whenever you install GCC.
+You probably don't know what to do with it if you're anything like me.
+It's there, you know it exists, you can read the man page, but, or the info page, which is even more extensive.
+But you're just not really sure what exactly you're meant to do with it.
+Maybe you do try it out, maybe you're brave, you fire it up, you try a couple of things, and it just doesn't give you a whole lot of feedback.
+Well, heck if I know, I don't know how GDB works either, but I have been messing around with it lately, and it is kind of an interesting concept.
+And there's a couple of different ways to use Gnu Debugger.
+You can look at a core dump, a crash file, through GDB, and learn information from it.
+And sometimes that is, you can do that from GDB itself, or you can do it with journal control, or something like that, in with system D.
+Whatever method you do, you're technically invoking GDB.
+So that's one method of doing it, but you can also just open up, you can use GDB as kind of a command before your command to launch a command within GDB.
+The catch here is, and this is something that I found out later than I would have preferred.
+The catch is that the executable that you are debugging must have been compiled with debugging symbols in it for you to get really the full GDB experience.
+So here's what we'll do as a little demo.
+We'll do a, I don't know, G. Let's do a Debug dot CPP. Seems like a reasonable thing to do.
+So we'll just drum up a really quick and easy C++ application.
+So we'll do a hash include less than IO stream greater than symbol hash include less than, actually that might be all.
+No, let's, let's do this hash include less than standard lib dot H greater than symbol.
+And then we're going to do using namespace standard semicolon int main parentheses parentheses curly brace, and we'll start the random timer.
+It's just srand parentheses time parentheses null close parentheses close parentheses semicolon, and then we'll do int.
+Let's do penguin equals rand parentheses parentheses percent will do I guess eight.
+So that'll give us an integer from zero to seven.
+And then after that, we'll do a C out and just deliver ourselves a message.
+This is a message from your friendly coder new line in line semicolon.
+And then we'll make another variable called int kiwi equals three.
+So we're hard coding that that value. And then finally, we're going to do a print f.
+Oh, that means we're going to need to hash include standard IO dot H up here at the top again.
+I'll dump this code into the show notes.
+I mean, not that it's anything really, but yeah, maybe I won't actually just be silly to have this online.
+But print f penguin is set to percent s close quote comma penguin and then print f again.
+Oh, better put a new line after that and a new line after this.
+And kiwi is set to percent s backslash and close quote comma kiwi close parentheses semicolon.
+Okay, so now I've got a little C++ program here.
+So if I do a G++ debug dot CPP, which is what I just called this application debug dot CPP, then it compiles as a dot out.
+So that apparently is successful. So we're all good, right? We can we can ship this application because it compiled correctly and nothing's wrong.
+So if I do a dot slash a dot out, we expect this to run successfully. I'll hit return.
+Looks good so far. It says this is a message from your friendly coder. That's a good sign.
+Oh, last sign or last line is segmentation fault.
+So I didn't get my penguin is blah and kiwi is blah lines at all.
+So something somewhere broke, we can probably assume that it broke well after the message that we inserted for ourselves, the message from your friendly coder message.
+But we're not really sure where, where after that, it could have possibly broken down.
+Well, let's try running it with gdb then. So gdb a dot out.
+Actually, I'll do a dot slash a dot out and it gives me a sort of a little message from gdb telling me some information that we don't care about so much.
+But it does tell me that it would it's reading symbols from a dot out done.
+And so if I start, I'll type start at the gdb.
+So now I'm in an interactive console with gdb.
+So I don't have my bash prompt. I have my gdb prompt.
+And if I type in the word start, then that starts the application running within this console.
+So first it says temporary break point 1 at 0x44, that's some kind of memory address.
+I don't really understand what that is. And it says starting program is a dot out.
+It gives me the location and then it says temporary break point 1 0x bunch of zeros 400 a 44 in main parentheses parentheses.
+Okay, cool. So somehow there was a break point created.
+We're not really sure why, but the break point is it has been created so that when it reaches the main function, it checks back in with you.
+So that's just an automated break point that has been imposed because the main function is a pretty common function.
+You can insert your own break points at various places.
+And there's also a watch points and some other point.
+So you can kind of control the flow of information from gdb.
+But right now we're just kind of we're just taking this tour.
+So we've already started this application.
+Technically, it's still running sort of in the background, or it's idling in the background.
+So to continue past a break point, we type in the word contin u, c-o-n-t-i-n-u-e, hit return.
+And that's when we get this is a message from your friendly coder.
+So that's to be expected.
+And then we get program received signals, sig-s-e-g-v, segmentation fault.
+And it gives me an address, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0
+0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0S, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x, 0x
+All of these commands, the stop, continue, quit.
+Those are in the info page for GNU Debugger
+or the GNU Debugger documentation.
+There's a good cheat sheet out online.
+Cut, I'm sure there are a bunches
+of good cheat sheets out online.
+But seeing just kind of all the commands and the topics
+laid out really helped me.
+So let's see, quit, got that.
+It tells me there's still a process running,
+there debugging session running, should I kill it?
+Yes, it's okay to kill that.
+Now I'm back on my bash prompt.
+So I can do a G plus plus and then dash G.
+Now dash G compiles Debug symbols
+into my resulting executable.
+And I'm going to name that resulting executable
+with a dash O Debug test and then space Debug.cpp.
+And again, Debug is just the name,
+the arbitrary name I've given this application.
+I could have called it anything.
+I could have called it simple example, whatever.
+So I'm doing G plus plus dash G for Debug, dash O
+for output Debug test.
+And then Debug.cpp is my input.
+Hit return, it works.
+Now I'm going to do an LS dash L L.
+Yeah, LS dash L on A dot out.
+And then again on Debug test.
+And again, just for fun Debug.cpp.
+So what we got here is we've got the A dot out application
+is 11,6124 bytes.
+Whereas my Debug test with those Debug symbols compiled
+in 22,952 bytes.
+So basically, double, basically.
+And then Debug.cpp, just as a matter of interest, is 338.
+So the source code, tiny compiled thing, quite a lot bigger,
+compiled with Debug symbols, quite a lot larger.
+And that is why as far as I understand,
+that's generally speaking why Debug symbols are not something
+that you are likely to just inherit for free
+when you download an application.
+They're not going to, it doesn't make sense.
+Generally speaking, I don't think
+to distribute it with the Debug symbols built in.
+Let's see how the output or the interaction
+rather of GDB differs though.
+So we'll do gdb.slash Debug test and see what happens.
+Well, it says that everything's good to go, I guess.
+Reading symbols from Debug test done.
+So I'll click error, not click, I'll type start.
+And once again, we're kind of seeing expected output here.
+So we've got the temporary breakpoint at 0x400A48
+file Debug.cpp line 9, starting program Debug test.
+So all ready, we're seeing a little bit more information
+than we had before.
+It's telling us the file that we're working on
+and even the line number at which the breakpoint occurs.
+So if I switch over to a different terminal
+and open up my Debug.cpp and emax, for instance,
+I'm doing an emax, because I know
+that I have line numbers in that application.
+I can see exactly where I'm sitting right now
+at line on line 9, which is quite nice.
+And it tells me that line 9, well, so it tells me
+that there's a temporary breakpoint 1
+at the main function of my code.
+And that line 9 is srand time null.
+And if I look in my emax thing, here
+is line 9 srand time null.
+So that lines up, that correlates.
+OK, well, everything's fine so far.
+So I'm going to do a continue.
+And then it tells me, this is the message
+from your friendly coder.
+And then it tells me, Penguin is set to parentheses null
+close parentheses.
+So I got a little bit more output this time than before.
+Specifically, I kind of see the last thing
+it attempted to do.
+And I can tell, I can surmise from this
+that Penguin is set to null.
+Well, that should definitely not have happened,
+because I set Penguin to something random.
+And so it shouldn't be null.
+It should be an integer 0 through 7.
+So maybe something's going on with my random function.
+Maybe I miss typed, or I miss, maybe my syntax is incorrect
+for the random part of this setting of variable.
+Possibly not.
+But that would be certainly one thing we could consider.
+And then the other thing that we could consider
+is the printf line, where it keeps sort of telling me
+that it's kind of failing.
+It's telling me that the printf line has some kind of error in it.
+So it's hard to tell from this output for me, at least,
+whether the error is in the initial setting of this variable,
+or whether it's in the printf statement itself.
+So we can quit out of this, I guess,
+and go back up to my code.
+And I guess this is debugging, right?
+This is how that works.
+So I guess we could look up the RAND function somewhere
+and determine how RAND is supposed to work.
+We know that as far as I know, we're
+supposed to initialize a seed.
+And that can be done in a couple of different ways.
+But you can, well, I guess it could be
+a couple of different ways, but for the RAND function,
+you do Srand, and then give it some source
+of entropy.
+So it looks to me like that's correct.
+So it looks to me like the printf statement
+is the thing that's wrong, and that's kind of supported.
+I'm being so dismissive of that first theory,
+because it does appear to be on the printf line
+that the crash occurs.
+The RAND function appears to pass muster,
+because we get this message, this is a message
+from your friendly coder.
+So I feel like if the RAND function was the source of the error,
+then I believe we would be seeing a crash
+before we got to our friendly coder message.
+And many of you probably already know what the problem is here.
+But printf, if we were to kind of look
+into our syntax of printf, we would
+realize that we said penguin is set to percent S.
+And the percent S stands for string,
+but our variable penguin is set to an integer.
+So if we switch the percent S to D, percent D,
+and percent D for both of our printf lines,
+and then save that, and then go back to bash,
+rerun our g++, dash g, dash out, debug test, debug.cpp.
+And now we'll do the gdb again, debug test.
+Symbols are loaded, OK, cool, and we'll start.
+And this time it says, OK, so it stops again.
+It says temporary break point 1 at main.
+So we're sitting at line 9, and then we could start.
+And nope, not start, sorry.
+No, continue, continue.
+And then we see all, we see that there is no crash.
+We get the, this is a message from your friendly decoder.
+Penguin is set to seven.
+Kiwi is set to three.
+And then it tells me that inferior one process 14597
+exited normally.
+So there was no seg fault this.
+And that's a very brief tour of gnu debugger.
+So let's look at a couple of the other things
+that gnu debugger can do.
+So we'll start this up again.
+And as you can see, or as you can hear,
+I can just, I'm still in gnu debugger,
+and I've still got my debug test application loaded
+as sort of in that session.
+And so I can just start it again.
+I don't have to leave gnu debugger
+and restart gnu debugger pointing at that application again.
+It's, this is my session.
+So I'm still at my gnu debugger prompt.
+So I started and it hits the temporary break point at main.
+And I can do cool things like next.
+Well, the next line, it tells me, is line number 10.
+And so that is, of course, the penguin setting
+to getting set to a random number.
+And I guess we could watch that.
+Yeah, let's do that.
+I'm going to do a, I'm going to start from the top again.
+Tells me, do I want to start at the beginning?
+Yes, I do.
+So I've started at the beginning.
+So now I'm back at line number nine.
+I'm going to establish a watch point.
+W-A-T-C-H watch penguin greater than one.
+So more often than not, this will trigger
+when penguin gets set at all.
+Because I mean, it is possible that penguin gets, hits zero.
+But I'm going to bet that we don't get there that often.
+And I'm just going to, I'm going to watch penguin.
+For any time it's set greater than one.
+Okay, it tells me that it's created a hardware watch point
+for the condition of penguin being greater than one.
+And then I can also, for instance, I could set,
+I could set a break point arbitrarily myself.
+But I feel like we've already,
+we already have a break point in here at the main function.
+So I don't know if that's really all that exciting.
+I guess we could though.
+I could say break, break at line.
+What is it, 12?
+It should be line 12 is when key we get started.
+So actually let's break at line 11.
+So I'm just doing break 11, break 11.
+And now there's a break point to tell us about,
+and in the file debug.cpp line 11.
+Cool.
+Now if I continue two things should happen.
+One is that I should get an alert if penguin is greater
+than one or yeah, one.
+So that that should be like two and up.
+And I should get a, I should,
+if things should stop at line 12 or 11, 11.
+Yep, 11, okay.
+So I'm going to press, I'm going to type continue.
+And I get a couple of alerts.
+I get, it tells me that it's continuing.
+And then it's telling me that the hardware watch point
+for penguin greater than one has been triggered.
+The old value for that watch point was false.
+Meaning we didn't have it on record yet
+that penguin had been set to anything greater than one.
+The new value is true.
+Meaning the condition we were looking for has now become true.
+And we'll get back to that in a minute.
+And then the next alert that we get is that a break point
+has been triggered, which delivers us to line 11,
+which is our little message from your friendly coder line.
+And now we're in a paused state.
+So this is, I mean, you can see kind of,
+you can see the power here.
+If you've developed an application and you're just trying
+to figure out why isn't, you know, why do I get here?
+But that value keeps getting dropped.
+Well, maybe that value isn't being set.
+Maybe your syntax is wrong or maybe the thing
+that you're parsing it with is doing it wrong or whatever.
+But you can see the power here.
+If you know, for instance, the variable
+that you're looking for or a condition of that variable
+that you need to catch, you can get that information here.
+And you can arbitrarily just pause whenever you want.
+Like, if you know the line that's confusing,
+everything is on 112, then you can pause at 113,
+and then investigate what happened just now.
+So for instance, if I want to get some information
+about a variable, I can get that information.
+So we know that penguins greater than one,
+but we don't know what it is.
+It hasn't told us that.
+So let's just do print PRI and T space, penguin.
+And it tells me that dollar sign two equals four.
+So there you go, penguin is set to four.
+That is greater than one, so that makes sense.
+And then I could even print, can I print Kiwi?
+Have we been by Kiwi yet?
+Let's try it.
+Print Kiwi, dollar sign number three is zero.
+Okay, well, what if we went to next?
+That's 12, the 12th line int Kiwi,
+and then up up print Kiwi again.
+No, it's still set to zero.
+Well, what if we go to the next line?
+Okay, well now we're on 14 because 13 was a blank line.
+We're at the print F line.
+Now let's try printing Kiwi.
+Oh, there we go, dollar sign five equals three.
+So now we know that Kiwi has been set as well.
+So we got penguin, we got Kiwi,
+and we've got the rest of the application really,
+and we could just say continue at this point, I think.
+And sure enough, we get penguin is set to four.
+Kiwi is set to three.
+So we got confirmation, I think, on both values
+that we got from our print statement.
+So they've been retained correctly.
+Now it's also telling me that the watch point has been
+deleted because the program has left the block
+in which its expression is valid.
+Meaning there's a certain scope to these things,
+and that scope has expired.
+Oh, we are now out of scope
+because everything's been resolved.
+Everything, the program is exited.
+Return, return zero has happened.
+So I think from this, you can kind of,
+I mean, there's obviously a bunch of stuff
+that I'm not talking about here.
+And, well, I guess I could talk a little bit more
+real quick about some things.
+Okay, so we're gonna start back from the beginning.
+Yes, we are.
+And then we're going to, I think we're going to,
+we're going to do another break.
+We're gonna do break at what was it line 12 or something.
+No, 11 was what it was.
+We're gonna break it 11, and we're gonna say continue,
+arbitrarily, or freely, continue,
+because we know that we're gonna stop at 11.
+And we're, here we are at 11.
+So now if I print penguin again, I get a two.
+But the cool thing about this is that you can also,
+you can get, you can get the value of penguin
+in a couple of different, by a couple of different means.
+So for instance, and this is the one,
+I mean, I could do, for instance,
+print backslashu penguin.
+And that gives me, oh, no, it doesn't.
+I typed that in wrong.
+I, not backslash, forward slashu.
+And that gives me the value of penguin
+as an unsigned decimal.
+So that's pretty much what I would have expected.
+Now I could do forward slash o penguin.
+And that gives me a zero two.
+So that's the, that's the octal version
+of that, of that variable, or not version,
+but the, the data, that, the data of that variable in octal.
+We could also do forward slash f,
+which will give me the value of that variable
+as a floating point.
+And I think the, the really neat one is forward slash a,
+which gives me the address space of that variable, zero x two.
+So now I'm gonna do a break at, I think it was 14 and continue.
+So we get our kiwi value loaded.
+And then I'm gonna do print forward slash a of kiwi
+and I get the address space of kiwi.
+So that's, that's some interesting
+and possibly useful stuff.
+I don't know what kind of depends on what you're looking for,
+I guess, but I find that pretty interesting.
+You can also show the type of a variable.
+So for instance, what is kiwi type is int?
+Perfect.
+Well, that's useful to know.
+Maybe that would have helped us determine the problem
+with our print f value when we were trying to print f strings
+instead of, instead of digits, for instance.
+There's a heck of a lot more you can do
+and this is really just kind of my initial exploration
+of Gnu Debugger in a way that,
+I don't know, hopefully because this is kind of on the level
+that I can use it right now.
+This is, this is really fancy to me.
+So hopefully something basic, if you're at the point
+of not really knowing what to do with GDB,
+maybe this has helped you get maybe interested
+in dipping your toes into it.
+Because yeah, there's, I'm sure a lot more information
+I could be gleaning from Gnu Debugger,
+but in terms of where I'm at with programming
+and certainly debugging programs,
+this is kind of a, this is already really, really useful.
+So if you think it sounds useful for you,
+by all means, try it out.
+And if you think that I'm using this only a shred
+of its potential, then by all means record an episode
+about what you do with GDB
+and that way other people can learn.
+Thanks for listening.
+I'll talk to you next time.
+You've been listening to Hacker Public Radio
+at Hacker Public Radio.org.
+We are a community podcast network
+that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows,
+was contributed by an HBR listener like yourself.
+If you ever thought of recording a podcast,
+then click on our contributing
+to find out how easy it really is.
+Hacker Public Radio was founded by the digital dog pound
+and the Infonomicon Computer Club
+and is part of the binary revolution at binrev.com.
+If you have comments on today's show,
+please email the host directly,
+leave a comment on the website
+or record a follow-up episode yourself.
+Unless otherwise status,
+today's show is released on the creative comments,
+attribution, share a life, 3.0 license.
+please click on today's show.

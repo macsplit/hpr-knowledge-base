@@ -1,0 +1,380 @@
+Episode: 2669
+Title: HPR2669: Additional ancillary Bash tips - 12
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2669/hpr2669.mp3
+Transcribed: 2025-10-19 07:14:58
+
+---
+
+This is HPR Episode 2669 entitled Additional Ancillary Mashtips 12 and in part of the series
+Bash Crypting.
+It is hosted by Dave Morris and in about 28 minutes long, and Karim and Explicit flag.
+The summary is making decisions in Bash Part 4.
+This episode of HPR is brought to you by an honesthost.com.
+With 15% discount on all shared hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's honest and fair at An Honesthost.com.
+Hello everybody, this is Dave Morris and welcome as usual to Hacker Public Radio.
+So I'm doing another show today about making decisions in Bash.
+And this is the 12th episode in the Bash Tips sub series and it's the fourth of a group
+of shows about this subject of making decisions in Bash.
+In the last three episodes we saw the types of tests that Bash provides.
+We looked briefly at some of the commands that use these tests.
+We looked at conditional expressions and all of the operators Bash provides to do it.
+And we concentrated on string comparisons which use glob and extended glob patterns.
+Which was a novelty as far as I was concerned, I have to say I hadn't really appreciated
+it.
+That was a capability until I dug into it.
+But this time we want to look at the other form of string comparison using regular expressions.
+Now the regular expression feature appeared in Bash Round 2004 in Bash Version 3.
+They can only be used in extended tests.
+That's the ones where you use double square brackets around your expression.
+And it took a few sub versions of Bash before this regular expression feature stabilized.
+This is me looking back through the history of what happened.
+So it's just to warn you that if you are researching the subject and find old regular expression
+examples make sure that what you're looking at refers to versions greater than 3.2.
+So in order to use regular expressions you use a new operator which is an equals followed
+by a tilde.
+And that's used in other languages and purl is one that springs to mind.
+But that seems to have been accepted as a regular expression operator.
+The string of the variable to be matched usually be a variable of course is on the left
+side of the operator equal tilde operator.
+And the regular expression itself is on the right.
+It's never the other way around.
+So I've got first of all a simple example of the use of a regular expression in Bash.
+And of course I'm referring forward to things I'm going to explain a bit later on.
+So my example is an if statement and if command followed by an extended expression, extended
+test.
+And inside the double square brackets we're comparing a variable called server, so it's
+dollar server equals tilde, and then it's being compared against a regular expression.
+And that regular expression is checking to see whether the server contains either hacker
+public radio or org or hobby public radio and talk all.
+And if either of them match, then the if command outputs an echo, this is hbr.
+Now things to note here, again I'm referring forward, the regular expression is not enclosed
+in quotes.
+And it was the same when we looked at the globe and extended globe patterns in the last
+episode.
+Putting them, putting the expression in quotes of either sort will cause it to be treated
+as a string and not as the regular expression.
+In this particular case it begins with a carrot or a thing of circumflex which anchors it
+to the start of the text.
+And inside afterwards, after this carrot is two alternative sub expressions which are enclosed
+in parentheses with a vertical bar between them.
+So the two strings are hacker and hobby.
+So you're prepared to deal with a string that begins with either hacker or hobby, then
+it's followed by public radio.
+There's a full stop before ORG and because that's a regular expression, metacaracter, it
+needs to be escaped with a backslash.
+The regular expression ends with a dollar which anchors it to the end of the text.
+The return value of this comparison returns zero which is true if the string matches the
+pattern and one which is false otherwise.
+The regular expression, if it's syntactically incorrect then you get a return value of two
+which is also false but you can find out more about it from the value if you needed to.
+You can make it case insensitive by using the shell option, no case match.
+We mentioned this.
+This is very similar to the things we talked about last time with regard to glob patterns.
+So again I was saying here that if you enclose a regular expression in quotes then it's treated
+as a string not a regular expression.
+So that's a little little different from what you will find in other languages.
+The common convention is to store the regular expression in a bash variable and then use
+it as the right hand side of the expression and this allows a regular expression to be
+built without worrying about the characters it contains being things that have another
+significance to bash, things like an exclamation mark or a backslash and indeed parentheses can
+cause bash some problems.
+If as you declare the variables you define the variable it's enclosed in quotes then all
+of those problems go away.
+When you use the variable if you enclose that in quotes then it's the same problem as
+before it treats the expression as a string not as a regular expression.
+Now it says in the documentation that if any part of the regular expression is quoted then
+that part is treated as a string.
+The actual quote from the the GNU bash manual is.
+Any part of the pattern may be quoted to force the quoted portion to be matched as a string.
+Now you would expect this to allow regular expression meta characters to be used literally
+inside these quotes but I've not managed to get this to work and I haven't found any
+advice while researching it.
+I've not found anybody who's managed to get this to work nor indeed who be bothered to
+try as far as I can see.
+So I thought what I'd do at this point was to put together a script which tests the
+meta.
+I did this for my own purposes in the first instance and I thought that might be useful
+for you to look at.
+You can download it it's called bash12 underscore EX1.sh and it's all linked in the long
+show notes of course.
+So this is a complete standalone script and it does the thing of comparing a server with
+the hacker or hobby public radio.
+So it begins with a declaration of a variable called server to contain hackerpublicradio.org.
+Then there's a for loop which sets a variable RE.
+I tend to use RE throughout these things just as a shorthand for regular expression and
+that's followed by in and then there's a list of strings and each of these strings is
+a regular expression.
+There are three of them and they do different things.
+So the first one is the regular expression we saw earlier on.
+The second one in the second one is enclosed in single quotes but the full stop the
+dark or period before ORG is enclosed in double quotes.
+The third one is enclosed in double quotes but the dark is enclosed in single quotes.
+So that's a list of things to set RE to.
+The next line is the do line.
+Then inside the body of this loop we echo the regular expression we're actually using.
+Then we do the test so it's again a case of if and then in double square brackets dollar
+server equals tilde dollar RE.
+Remember RE is that value that's being set to a list of regular expressions.
+Double brackets semicolon then echo this is HBR else echo no match FI to close the if
+then done to close the loop.
+If you run this you get back using regular expression and then it shows the first one
+and it says this is HBR so it matched that first one.
+Then it uses the second one and it says no match and the third one no match.
+At the moment I don't understand this.
+If you want to have a go at playing around with it and making it work then please do so
+and let us know the outcome because I would really like to know what that definition
+in the documentation is trying to say it makes little sense to me.
+It makes sense but it doesn't work.
+Let's look at regular expression syntax then.
+Now if you've been following some of my other shows I've done show one series of shows
+on said and currently doing a series with be easy on orc they both have regular expressions
+in them and we've talked about the operators and so forth in them and this is similar
+but not the same needs me to talk about it a bit but I'm going to fly through it fairly
+rapidly. I've got a table of all of the expressions that you can use the operators to be more
+precise that you can use in a regular expression.
+So what is a regular expression?
+It's a pattern that describes a set of strings.
+Regular expressions are constructed in a similar way to arithmetic expressions by using various
+operators to combine smaller expressions.
+Elemental building blocks are the regular expressions, the components that match a single
+character.
+Most characters including all letters and digits are regular expressions that match themselves.
+So putting an A letter A in a regular expression means match and A. Pretty obvious.
+There are meta characters that do other things as we'll see in a moment but if you want to
+treat that meta character in a non-meta way then you proceed with the back slide.
+It's slightly confusingly some regular expression operators contain backslashes, beginning
+with backslashes and that's just worth bearing in mind and as I was alluding to before there
+are various types of regular expressions used by various tools and programming languages.
+So said and ork are different.
+Bash regular expressions use a form called extended regular expressions, usually written
+as ERE in capitals and I've got a list of all the meta characters.
+You'll also find ERE type expressions in GREP.
+If you do use GREP space minus capital E then the regular expression that you used there
+would be ERE style, that's what the E stands for.
+Let's wedge through the list of operators and what they do.
+So the first one is the dot or full stop which just represents a single character.
+When we're into modifiers, the first one is the asterisk.
+It modifies the item to the left and it means that the item matches zero or more times.
+Question mark is actually another modifier and are they always modified to the left?
+That means the item matches zero or one time plus modifies again and it matches one or more
+time.
+It into modifiers which consist of numbers in curly brackets.
+So open curly bracket then a number, close curly bracket means it modifies the expression
+before it to match exactly that number of time.
+If you write it as open curly bracket number comma nothing, close curly bracket then it
+means match that number or more times.
+I'll just use n and m to refer to these numbers from now on as I've done in the text.
+Open curly bracket n comma m, close curly bracket means make the item to the left match between
+n and m times.
+So 1 comma 3 would be between 1 and 3 times.
+The next one, I'm not sure it's legal but it works, is open curly bracket then nothing
+or a space if you wish comma m.
+So it means between zero and m time.
+So comma 3 means between zero and 3 times.
+Just to save you typing the zero I suppose but I'm not sure I'd recommend it.
+I just put it in there because I typed it by accident and it worked.
+You've already seen the carrot which anchors the expression to the start of the line.
+It's referred to as matching the null character as a sort of virtual character considered to
+be at the start of the line.
+Dollar does the same sort of thing for the end of the line.
+Then there's a sort of range or a set enclosed in square brackets, single square brackets.
+These are a list of letters so you might put abc or something in there but you can also
+use ranges like A, I and C which means everything from the first letter to the last letter and
+it can be digits as well.
+We've seen these in other contexts if you've listened to any of my other shows.
+The vertical bar separates two regular expressions and is used to present two things or multiple
+things that might be alternatives in a match.
+In parentheses can enclose multiple alternative regular expressions.
+It groups regular expressions together which you can use in alternatives and in other contexts as we'll see.
+Then we come to some of the backslashed ones.
+Backslash lowercase B matches the empty string at the edge of a word.
+It's either edge, either at the front or at the back.
+Backslash capital B matches the empty string provided it's not at the edge of a word.
+I've never used that so it seems a little odd.
+I think it's more that if you want to signal something in the middle of a word you could use that.
+But like I said, I've not really used it, I've not seen it being used very much.
+I should have done some examples of it and I didn't, sorry about that.
+Anyway, the last two are backslash and the less than sign.
+That matches the empty string at the beginning of a word and backslash greater than sign matches
+the empty string at the end of a word.
+These are very very similar to what's used in said and grip.
+As said and orc and grip of course those grip includes these.
+So that's pretty much my summary of regular expression.
+What I want to do now is dive into some examples that you can ponder and see how you use this
+stuff because it's pretty dry until you actually see some working examples.
+What I've tried to do is to generate entire scripts that you can run for yourself and they're
+all downloadable.
+One of the things you're often wanting to do is to match a blank line or a line which
+only contains spaces or indeed white spaces the term.
+And you would do that by a regular expression that consists of a carrot followed by a dollar
+which means a line that contains nothing just to start an end.
+You might put after the the carrot a thing that represents a number of spaces.
+You could actually put a space and then an asterisk means zero to as many as you want
+spaces.
+But what I've used here is a different format which I'll go into a little bit more detail
+on about later.
+But it consists of square bracket, pair of square brackets so it's one of the set type
+thing.
+And inside it is a thing called a character class which consists of another pair of square
+brackets.
+And inside it there's a word with a colon each end of it.
+So in this case it's open square bracket, colon blank, colon closed square bracket.
+So that's a special character class which represents characters which are referred to as
+white space.
+So it's things like a space and a tab.
+So here's my downloadable script which is called bash12 underscore ex2.sh and it's got
+in it a declaration of a definition of a regular expression which has got a carrot at the front
+and a dollar at the end.
+Then it's got two character classes in it.
+The first one is two open square brackets, colon digit, colon, two closed square brackets.
+So that's a character class inside a set.
+And follow that with a plus.
+And what digit means is any numbers naught to nine.
+There's a bit more to it than that but I'll leave that for the moment.
+That's followed by the blank that we've already seen.
+That's followed by an asterisk.
+So what you're trying to do there is to match a line that consists of any number of one
+to two more digits at the beginning followed by any number or including zero blanks, white
+spaces.
+And there's a while loop and the while, the test part of the while is read hyphen
+r line.
+So it's reading into a variable called line and it's using minus r because it disables
+the treatment of backslashes where backslash might mean backslash n might mean a new line
+or whatever that turns out off.
+The done part of this while we have a redirection, so it's a less than sign which means the
+information is to come from whatever's on the right hand side of that.
+And what we have the right hand side is a process substitution which we looked at in an
+earlier show which consists of a less than sign and then a thing in parentheses.
+The thing in parentheses is cat space minus locus n space then in double quotes dollar zero.
+What it's doing there is catting whatever dollar zero is with numbers.
+Dollar zero is the name of the script that you're running.
+So inside the loop we do a test in extended, an extended test for the double brackets.
+We compare dollar line equal tilde dollar r e and we're using one of these command lists
+type thing.
+So after the two closed square brackets we've got two ampersands and then continue.
+So if the line matches the regular expression that we declared and saved in the variable
+r e then we will continue.
+Here is a command that causes a loop to skip any further, commands within it, go to the
+end and then loop further, continue the loop.
+And after this we've got echo and we're echoing the variable line.
+That's followed by an example of running it, simply run this script and all it does is
+it prints out itself but it prints it out without blank line.
+And the reason we added a number of digits at the beginning of the regular expression
+is because we use cat minus n to cause the lines to be numbered.
+And you can see that you get line one, you don't get line two because it's blank.
+You get line three, four, five, six, not seven because it's blank.
+So the overall effect is to print all the lines which are not blank, not blank after
+the line number that is.
+So what I did, because I've introduced this character class business, we've seen it
+in passing in other contexts.
+But I've got hold of a table which I borrowed from a website and put into the notes here.
+There's a reference to where I got it from.
+This is part of the positive specification.
+The character class is such as the square brackets, call on digit, call on close square
+brackets.
+We're in an appendix at the end of this of these notes, so hope for me you'll find that
+useful.
+So example two then, try to make something with a few more regular expression operators
+in it.
+This time I've got an expression which begins with a backslash, less than, which matches
+the start of a word, a dot followed by in curly brackets, four comma, close square bracket.
+Then we've got a square bracket, it's TL, which is say that curly bracket thing matches
+four or more characters.
+The TL matches either the letter T or the letter L, follow that with ING and then a backslash
+greater than which matches the end of the word.
+So what we're doing here is we're trying to match words ending in ING with it where the
+ING is preceded by a T or an L, so Ting or Ling, with four more letters preceding it,
+four more characters to be exact.
+And the script uses the dictionary in user-share-dict words as I've done before in other scripts
+to process.
+So bash12ex3.sh is the script and it's pretty simple.
+Apart from that regular expression, I just went through, it's got a loop which reads
+from a process substitution and in the process substitution we're using, the shuffle command
+which I've used before, we're using the argument minus n100, which means shuffle, shuffle
+is for getting random words from a file, random lines from a file, and the minus n option
+requests the number, the file as user-share-dict words.
+So what that loop is doing is it's grabbing 100 words from that dictionary file and it's
+feeling it to the same sort of regular expression in an if type thing and it's echoing the line
+of it if it matches.
+So I won't go into further details because it's similar to the previous one, that respect.
+So I ran it for testing purposes and it came back with three words which were air mailing
+end of the LNG and is long enough squinting and intersecting.
+I think it is that to generate the old battery, whatever it is, a passphrase thing that
+was quite popular at one point.
+So we stored the regular expression in a variable and I just made the note that, as I said
+before, it's wise to do that, but in this particular case there are characters in that
+regular expression in which would have been misinterpreted by bash and I tested it without
+and the expression practically doesn't work, at least I couldn't get it to work.
+If there's some combination of backslashes or something in there that would make it work
+but the simplest thing is just to put it in a variable.
+For three, again, nothing world-chattering, but this one is a script which checks an argument
+that you give it and it checks to see that it's a properly formatted ISO 8601 date which
+consists of four digit year hyphen, two digit month, two digit day with hyphen in between.
+The regular expression in this case consists of a circumflex or a carrot followed by in square
+brackets, zero hyphen nine. We could have used that digit to carry to class but it seems
+still the boreus for this sort of case. Close square brackets then follow that in curly
+brackets four. So we're looking for a four digit number, that's the year.
+In parentheses we have hyphen because that's what's going to follow the four digit year.
+Then in square bracket zero hyphen nine square bracket then that's followed by in curly brackets
+two. So we're looking for two digits at that point and then we close the parentheses because
+we're going to do that twice and then after the closed parenthesis we have in curly brackets
+a two and then the dollar for the end of line. So it's just a short hand way of saying we want
+four digits, a hyphen two digits and a hyphen and two digits and because the hyphen and two
+digits part is repeated we can put it in parentheses and add a repeat count on the end of it.
+So the other thing in the script is that the next bit of it contains an F which checks the
+variable dollar hash which is a universal thing that you find in all the script which is the
+count of arguments. We want one argument and if that's not equal to one then nobody's given us
+an argument so why they're given us too many. We echo a usage message which says how to use the
+script. It will echo the name of the script followed by ISO 8601 date then that's followed by an
+exit one so of course the script tracks it with an error flag in the case you used wrongly.
+Then assuming everything's good you just compare dollar one which is the first argument that you
+give it with the regular expression that was created earlier and if it matches then it's a valid date
+if it doesn't match it's not a valid date and there's a few examples of running it further down
+which way simply type the command bash 12 hyphen underscores say ex4.sh with no argument that comes
+back and says now this is how to use then I did one with 2018 hyphen 09 hyphen xx and it comes
+back and says no that's not valid because the xx and then I gave it today's date actually the 15th
+of September and it says it's a valid date. Example 4 is quite similar to the previous one and
+this time we're checking that an IP address in version 4 star IP address is valid and give that
+as an argument but it does a bit more sophisticated validation than an example 3 but I just put that
+in for a bit of interest it's not a regular expression type thing there are ways that you could
+use a regular expression in this context but we we're going to deal with how you do that next time
+so the regular expression in this case because an IP address consists of four groups of one to three
+digits and the digits have to be the numbers I should say should be in the range 0 to 255
+and each group is separate from the other one by a dot so that turns into a regular expression
+which consists of a carrot open parenthesis in square brackets 0 hyphen 9 closed square brackets
+and then curly brackets 1 comma 3 so that's 1 to 3 digits then follow that with the full stop
+preceded by a backslash close parenthesis and then follow that with in curly brackets 3 so we're
+going to have three of those three of these three up to three digit numbers with a full stop after each
+one and do that three times and that's followed by 0 to 9 1 to 3 of them that that makes the
+the group of four so that's pretty simple regular expression in which I can see that the scripts
+have been called with with one argument and putting out a usage message otherwise and then the
+next thing is an if statement which compares dollar one with the expression so if if it matches
+and we do a bit more testing if it doesn't match then we simply say it's not a valid IP address
+so the thing that's being done inside the the true branch one where it does match what looks
+if it matches it matches the regular expression is a for loop where we set a variable d to the
+contents of dollar one after it's been processed with parameter substitution the parameter substitution
+use is that the full stops are replaced by spaces so the for loop sees four numbers separated by
+spaces and will iterate through them so for each one we test it to see in an extended test whether
+it's less than 0 or it's greater than 255 and if that's true then we echo a message to say
+that it's not valid IP address and we say which number in the four groups is invalid and then exit
+within a one as an error but if that passes then we can just echo with the fact that the IP
+addresses valid so I ran a little test on this ran it without an argument just to prove that it
+it does the right thing there I ran it with 192168.0. so that's not valid because there's a missing
+group of digits on the end missing number on the end gave it 19216805 and that's valid
+and then I tried it 1921680256 and it says it's not valid IP address because it contains 256 which
+is out of range so that's downloadable as bash 12 underscore ex5.sh so that's my set of examples
+and next time we're going to finish this whole subsection by looking at how you can do capture
+groups inside bash's regular expressions we've seen these in the context of said and organ
+so parentheses are used either to define alternatives or to allow modifier to apply to sub expressions
+as we've already seen but they also define capture groups and we've seen this before if you've
+been following my series so we'll look at this next time and that's that's all we're going to do
+this time. Okay, bye.
+You've been listening to HEPA Public Radio at HEPA Public Radio.org. We are a community podcast
+network that releases shows every weekday Monday through Friday. Today's show, like all our shows,
+was contributed by an HBR listener like yourself. If you ever thought of recording a podcast
+and click on our contributing to find out how easy it really is. HEPA Public Radio was found
+by the digital dog pound and the infonomicon computer club and it's part of the binary revolution
+at binrev.com. If you have comments on today's show, please email the host directly, leave a comment
+on the website or record a follow-up episode yourself. Unless otherwise status, today's show is
+released on the creative comments, attribution, share a like, 3.0 license.

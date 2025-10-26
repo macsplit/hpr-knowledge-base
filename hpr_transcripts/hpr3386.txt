@@ -1,0 +1,213 @@
+Episode: 3386
+Title: HPR3386: What's for dinner?
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3386/hpr3386.mp3
+Transcribed: 2025-10-24 22:30:10
+
+---
+
+This is Hacker Public Radio Episode 3386 for Mundy, the 26th of July 2021.
+Tid's show is entitled, What's For Dinner? It is hosted by Dave Morris and is about 22 minutes long
+and carries an explicit flag. The summary is some scripts and a database for randomly choosing
+which meal to cook. This episode of HPR is brought to you by an honest host.com.
+Get 15% discount on all shared hosting with the offer code HPR15. That's HPR15.
+Better web hosting that's honest and fair at An HonestHost.com.
+Hi everybody. Welcome to Hacker Public Radio. This is Dave Morris. I want to talk today
+about a bit of software that I've written and I'm entitled to show what's for dinner
+and about some scripts and a database that I've written for randomly choosing which meal
+to cook on a particular time. Now I have two grown up children. I live on my own these days
+but every week, pretty much every week, they come over for dinner. I cooked dinner for them.
+What I normally do is to prepare something for the Wednesday and make enough of it so we can
+also eat it on the Thursday and that's every week when they're around and always around. I normally
+do the cooking as I say but we're gradually evolving to think where some of the meals in the list
+managed by one of the kids. Anyway in 2019, I thought it would be useful if I had some sort of a
+random chooser to decide what we should do for next week because before that I think we'd just
+been saying what are you fancy next week and they'd say oh could you do blah blah blah and I would
+do that but we'd sometimes they'd go oh I don't know, you choose. So I like to solve these
+such problems with a bit of software. Initially I wrote a bash script I called it choose meal
+and it used a simple CSV file of meal names and the date last eaten so we could avoid choosing
+the same one too often. This was not very good. It showed its weaknesses quite quickly. It wasn't
+long before choose meal got rewritten in Perl which is the scripting language I prefer to use
+still these days. Languages go in and out fashion Perl was fashionable when I was working and I wrote
+a lot stuff in it. I've not really had a great desire to move on to other scripting languages.
+Perl is not fashionable anymore but it does the job pretty well. I do rather like the way it does
+it. It's stuck in a rut probably but there you go. Anyway this time I decided to use a database
+and I chose sqlite to create it and the database is pretty simple it just contains two tables.
+One for the meals themselves just a simple description. I'll come on to what I store in seven
+a minute and there's another table for the history of the choices made. It was partly because
+that was a way of avoiding choosing the same one too often but it's also quite nice to produce
+historical reports I thought. Now in 2019 the design of this system was very specific to our
+needs one choice per week on a Wednesday so it was not something like I could hand over to anybody
+else which seemed like a bad idea. I mentioned this to Ken when we were all coming 2019 he said oh
+that sounds interesting and I thought ah yeah but it's tailored for us not for anybody else.
+So in late 2020 during the lockdown and all that stuff the covid era and in early 2021
+I redesigned this system and I'm going to talk a bit about what I did in the redesign in this show
+and in May 2021 a more general design was added to the public GitLab repository that I'd set up
+and I began preparing to make this show. Just taking a while I'm not very quick at doing these
+things. I'd never intended this system to hold recipes as such partly because I have a collection
+of recipes that I've constructed from various sources online things recipe books and so on
+fiddle around with them and so on. I've typed them up in LibreOffice and then I printed them out
+put them in a folder and sometimes I do things which are multi-component like when we have curry
+I pick things components for that so there's no hard and fast recipe menu for that particular one.
+So it doesn't seem appropriate to hold the recipes in the database or even references to them
+but the more I think about it the more it might be something that I would like to do in the future
+but don't hold your breath. So brief chat about the database itself. In case you're interested
+the overall design developed is coming on and what I hold for each meal is a name a unique name
+because it's a key. There's a figure which is the delay between occurrences of the meal so if I
+a lot of them we've just got 28 so every every 28 days it can come up but some of them really
+popular and I make it so they could come up in like a couple of weeks. I also keep a record of when
+the meal was last eaten so it's easier to work out whether we're in the delay period from last
+time. I can enable a disable a meal sometimes we disable them when we've got a bit fed up with them
+or maybe they're seasonal. They also store notes about the meal just sort of general hints to
+myself to don't forget to buy whatever it could you could you could make this more fancy you could
+make it give you a shopping list or something or components of a shopping list or something like that
+but I'm not really bothered about doing that. I can manage perfectly well as it is it's going to
+it's probably domain it's sitting there on a get repository so if you if it sounds of any interest
+to you you're perfectly welcome to fork it and mess around do your own thing the meal history
+stuff is just a thing that links back to the meal table so it's got an ID in there meal ID
+then the date of entry of the log it's it's a log table effectively then the minimum number of days
+at the time the meal was chosen because I might be fiddling with that number so it's useful to keep
+I think anyway the date this meal was previously eaten is there and date that it was last eaten
+so there's a way of tracking back through the history of a given meal to see the dates on which it
+was eaten and the the number of days between it all that sort of stuff some of which I use but it's
+just more more me messing around or anything else I quite enjoyed playing with databases the history
+table is written automatically using a trigger in the database so when something changes in the
+the main meal information table then the the log is written so I've got two scripts that work with
+this system one is called choose meal just like the original one was and it makes a random choice
+from the database there's also manage meal which is something I wrote later which allows the
+management of meal entries in the database and can do all the report generation and that sort of
+stuff they both purl scripts they contain embedded documentation if you call the script with the
+option hyphen help then it will give you a brief summary of the options and I'd use them you
+also get more in-depth information by using the option hyphen man page where it will print the
+entire documentation so they're all on the git repository on git lab and I've linked that in the
+notes the idea was that if you wanted to install this you could clone the repository and maybe
+keep a copy of the repo locally and then make another copy of it rather than running a
+different thing out of the repo copy repository copy put it in a different directory up to you
+if you want to do it there's an installation section later on in the notes that I'll talk about
+briefly before you can use this thing you have to have a database and you need to put some meals
+in it the number of meals you add to it depends on how often you plan to choose stuff what delay
+you set and so forth so it's entirely possible for you to set things up so there's not enough or
+the time between them is too long so that the chooser can't actually choose anything so
+there's no I haven't come up with a simple way of determining that I suppose it would be possible
+but it's a factor that you'd need to consider if you were working with this the database can easily
+be populated with this managed meals script using the hyphen add option you can add meals in a disabled
+state and then enable them later which I tend to do because I make them disabled while I'm maybe
+experimenting with the the best recipe and switch them on so they become eligible for choice once
+I'm happy with the recipe there's a summary option which lets you see all of what's in the database
+you can list a given meal with a hyphen list option and you can add hyphen full to that
+to get the notes as well now on the repository I've tried to write some pretty comprehensive
+instructions and I'm not going to duplicate them here really because what's the point you can
+go and read them there I just wanted to give you the flavor of it you might be saying well
+this is of no interest to me whatsoever and you know maybe you're going to hit the delete button any
+minute but in case you find it interesting you can go and look at the repository and decide whether
+you want to go further with it so the choos meal script does the random choosing what I normally do
+each week is to run choose meal with the hyphen verbose option and then and then put on the hyphen
+dry hyphen run option that means it will have a go it'll make a choice but it won't save it
+and it'll also tell you what it's choosing from because not all the meals in the database will be
+eligible at any given time because of the delay number usually I get like four or five options that
+it says are going to choose from and then it makes a choice so by default when you run it it makes
+a choice for the current date but you can you can make it choose a future date by using the hyphen
+date equals and then date using the ISO 8601 format is preferred I did try and write this so it could
+handle different date formats but I haven't quite got it to the point where it will it will handle
+as many as I expected I'd be able to to deal with the script itself can't be given a date like
+next Friday but if you use a command substitution as the date and you use the date command
+where you specify next Friday returning an ISO 8601 date as an example in the notes then that
+that does the job and it makes a pretty good turn and he's fairly easy way you've got a type of
+bit more brackets and dollars and stuff but it's it's okay then there's an alternative which is
+if you want it you you want it to just choose for the same day each week as I do and that should
+be the default but if you want to choose something special you could still override that then there's
+a configuration file which specifies what your default date is I mentioned briefly what the
+configuration file looks like it's a jam or file it's called dot choose meal dot yml but you can
+provide other names if you want to to pursue it somewhere else I won't read out what I've written
+here which tells you that how to lay out the file but basically you're declaring which which is your
+preferred weekday if you're letting it make its own choice of day and in this case the name of the
+weekday is Wednesday and the language used is English you can't actually write another language
+just because the library underneath can handle that so yml is a bit of an odd thing to use it's
+pretty simple to to write but it's a bit fussy about spaces and stuff think I've in the repo
+quite an example that you could just edit your own desires if you wish I've also mentioned that
+the file is similar in structure to the json if that's something you know better and I've shown
+what it would look like in json form there's an online tool various tools that will convert from
+yml to json so let's talk about installation if you wanted to install this it's a bit involved but
+it's often the case with scripts and libraries and stuff I tested this on Raspberry Pi which didn't
+have in any of the things that I have on my desktop machine so I found in order to get this to work
+I needed to install various things I needed to install git the thing for managing repositories
+sqlite 3 which is SQLite and pearl dock pearl hyphen dock which is the which contains tools for
+displaying documentation in pearl files so I explain how you could get the repository and I'd
+prefer to put these sorts of things in a directory called git with the capital g if you make the
+directory go to it and then run git clone then it will create a directory underneath there with
+the contents of the repository so and if you want to update it at a later stage because it's
+under development this thing you can go to that directory whether where you just put the repository
+and type git space pull to get the latest updates now I decided to put all of the stuff from the
+all the yeah all the all everything from this repository into another directory which I call weekly
+underscore menus with the capital W and I've got an example of an rsync command I think rsync
+is built into you're going to need to install it if you're on a Raspberry Pi which grabs everything
+out of the repository apart from files under the directory dot g it and buns them into that directory
+so you could run that after if you wanted to do it that way you could run that after you did the
+git pull you wanted to now there's quite a lot of pearl modules that this the script used
+10 maybe actually count them the way you get them with pearl is not
+dissimilar from the way that you get Python libraries with pip but with pearl you you're probably
+best to use a thing called cpan m which is short for cpan minus cpan is a pearl thing
+comprehensive pearl archive network so you can you can do what I've suggested here which is to run
+use curl to download the cpan minus tool and you need to use a pseudo option to install it
+you might be asked for a password but on the pie I was using the default user lowercase pie
+I wasn't prompted so it's pretty quick to download and install so then you need to
+cd to the weekly menus directory and then you can use a file called modules underscore needed
+and feed that to the cpan m thing but there's an example of how you do that and I won't go into
+detail with it here since it's pretty pretty straightforward and it's explained here in the notes
+and you can actually rerun this at later stage and it will update any modules that won't need it
+so having done that makes you it can take a while by the way there's 77 modules that got installed
+in total because there's some of the modules I'm using have dependencies so on on a system that
+doesn't have any pearls stuff on it you are going to have to download a fair bit but if you run
+it again a later date to update things it will take far less time because all the dependencies
+should have been satisfied so the final step in installation is to create the database and to do
+that there's an example here running sqlite3 command making a file called meals.db which is the default
+database name there's a file called meals underscore db.sql in the repository and that contains all
+the commands needed to build the database then you can go in use the managed meal tool to add meals to
+it and I've got an example shown here so how you do that if you're in the business of adding
+the meal haggis neeps and tatties to your database I suggest that if you're into using this you take
+regular backup of the database and I've included a script that will do this
+and I run this every day at 21 55 and the reason I choose that time you could use any time you like
+is that there is a master backup that runs at 10 o'clock at night every day so this makes sure
+that the backups of the database get backed up to the master backup the script simply runs
+sqlite in its backup mode and there's the the data in a file called meals underscore db followed by
+a date and timestamp it also compresses it using bzip2 I mentioned here how you could
+restore it if you if you happen to have lost your database for whatever reason you could restore
+it from from a backup these cron script will actually delete old backups it's got a 140 day limit at
+the moment but I'll let you fiddle around to that as the mood takes you it's it's not the best
+way of making the backup least you've got something to fall back on I write it to a back to a direct
+subject it called backups and it's it's good I have I have on occasion screwed up the database but
+that's because of development and then I've been able to pull back breathe version from the from
+this file but as I said I have a thing that does daily backups to an external disk which is a bit
+better hopefully you're doing something with regard to backups that will handle this so what's
+next for this system it we're going to do in the else with it well if I get any feedback I might
+look at doing some other stuff there was a brief to do list here as a possible things
+I might add to it I might add the ability to include or link to recipes so if you had a preferred
+way of cooking hackies neeps and patties then it would be good to point to a recipe for that
+and I also might just do some general tidying of the of the code there are a few issues that
+I spotted as I was preparing this show nothing very very exciting so finch off with are there
+some links I'm appointed at pearl five just in case you don't you do not have to speed with
+what pearl does these days pearl five is still being developed at quite quite rapid rate there was
+a version of pearl called pearl six that came out and it's totally different from the original
+pearl pearl five so it got renamed as racco and and that seems to be coming along quite nicely
+it's not going to be as popular as python and um another other scripting languages but it it has
+very interesting features to it so it's it's worth being aware of it there's a pearl seven
+in the making which will be the next updated pearl five obviously because they're to skip six
+and if you don't know what ssqlite is then check that out because it's a really clever way of making
+a small as it says here it's fast self-contained high reliability four featured sql database engine
+you just make one file in which you can put a four pretty sophisticated database for three which
+can do sort of things that a lot of the big expensive ones can do not all of the things that they
+can do but but quite a lot and it's pretty easy to use from all sorts of languages and you probably
+got it in in your setup somewhere it sits behind things like music players like it's on probably
+on if you've got an android phone it's probably in there behind something or other because it's just
+so easy to make a little database to to manage stuff with sqlite and i've also linked here to the
+Git library book for weekly menus so i hope you found that at least mildly interesting and you
+might indeed go and look further at this thing and and adopt it and if you do let me know okay then
+bye bye
+you've been listening to hecka public radio at hecka public radio dot org
+we are a community podcast network that releases shows every weekday Monday through Friday
+today's show like all our shows was contributed by an hbr listener like yourself
+if you ever thought of recording a podcast and click on our contribute link to find out
+how easy it really is hecka public radio was founded by the digital dot org pound and the
+infonomican computer club and it's part of the binary revolution at binrev.com if you have
+comments on today's show please email the host directly leave a comment on the website
+or record a follow-up episode yourself unless otherwise status today's show is released on
+create a comments attribution share light 3.0 license

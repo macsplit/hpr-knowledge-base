@@ -1,0 +1,401 @@
+Episode: 2733
+Title: HPR2733: Writing Web Game in Haskell - News and Notifications
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2733/hpr2733.mp3
+Transcribed: 2025-10-19 15:57:00
+
+---
+
+This in HP are episode 2007, 133 entitled, writing web game in Haskell, news and notifications.
+It is hosted by Tuku Toroto and is about 47 minutes long, and Karina Cleanflag.
+The summary is, Tuku Toroto talks about the game they are writing in Haskell and convoluted
+news system they made.
+This episode of HBR is brought to you by an honest host.com.
+Get 15% discount on all shared hosting with the offer code HBR15, that's HBR15.
+Better web hosting that's honest and fair at An Honesthost.com.
+Hello, I'm Tuku Toroto, Tuku Toroto for a short, and you are listening to Hacket
+up the radio.
+This episode is again about making a game in Haskell, this time I will be focusing on
+news and notifications.
+This part actually took quite a lot of jackshaving and it turned out to be pretty complex.
+I, even while writing show notes, I spotted at least one corner where code could be simplified,
+so I did go and simplified that before recording that episode.
+I'm not entirely happy how complex this thing turned out to be in the end, but I also couldn't
+find anything in the way.
+And I'm mostly concentrating on the server side implementation, because client side
+isn't that interesting in my opinion.
+So what are the news and notifications?
+In this case, there are messages that the players will receive, and something not really
+has happened in the game.
+It might be that the new planet has been discovered, of course, the construction project has
+been finished.
+We have encountered a new stabilization or something like that, something not related to the players.
+And it's also possible for players to write public messages to the all members of the
+action, for example, if they want to communicate that to some good location where every
+version will be, or most will be heading to mine minerals, for example, or if they want
+to coordinate some other action-wide actions.
+I could have implemented this whole thing, but it's just sending back and forth messages
+as a strings, and that would have made things a lot easier and a lot safer, and I would
+have been done with these ages ago.
+But I wanted a system where entities are hyperlinked.
+So if you are viewing a news about the discovery of a new planet, there will be a hyperlink
+in the message to one that you can click to actually take you to that planet, and another
+one that you can click to do the star system where it was found, as the size of the game
+grows, and there are more things going on hyperlinking news to entities that are about
+making things much easier.
+For example, if you have, say, a thousand planets, and then you get a message that one
+of those planets has a severity of clue, clue, clue, clue, clue, pandemic, it's much easier
+than if you can just click at the news and view the planet and then start dealing with
+that pandemic instead of that, you have to go to some display and then search for the
+planet and sort things and then try to find out.
+So links where mandatory.
+OK, I would have lost a plane HTML from the server type, but this would have tied the
+client and the server and the database to closely together and I wanted to avoid that.
+I'm writing quite a bit of code and definitions on the show notes, so if you have a chance,
+it might be a good idea to pull those up and follow along as I explain what I have been
+doing here.
+So, there's a, on the server, there's a server and client communicates with over REST
+AVI with sending messages on this kind of mostly adjacent and there's a three new resources
+for the clients to interact on the server side.
+These are defined in the config slash rules file and the first one is slash up with slash
+message that handles get and post methods, then there's a slash up with slash message
+slash hashtag news ID that handles delete.
+This is a resource that takes up.
+Well, these resources are in the server address slash happy slash message slash number of
+the message you want to deal delete and then the third one is a slash happy slash icon
+that handles get message messages again and this one is used to retrieve some icons
+that the client can use to display those news because some of the news have a configurable
+icons mainly the ones freedom by the freedom by the users, there's a, there's a adjacent
+set of icons that can be used there.
+I'd be focusing on the first one of these resources, a slash a slash message because that
+alone has a quarter lot of things to talk about.
+Database, these are, this thing is defined in the config slash models file that for the
+news, there's only a single paper news that also has the JSON article, meaning that
+you can serialize, easily serialize that for and for and it has four fields content,
+Fox 90 date and dismissed.
+The content is just plain text field where you, I will be serializing the news.
+Fox 90 is a, which faction this news conscience about date is when it was posted and dismissed
+tells if it has been read or not.
+The system means that when somebody in the faction says that okay, I've got this news,
+I don't want to see it again, it will disappear from all of the members of the faction.
+Did it suboptimal, but I haven't done to write the better, better system, you individual
+players could say that okay, I've got this news.
+And the reason I'm serializing the news items to news articles into the JSON and
+stories, JSON to database is that there's really many kinds of different kinds of news
+and if I wanted to have a relational database, it's with fields to each and every of those
+different types of news.
+That would mean that either I would have a one table that has a critical amount of columns
+and not all of those columns are used for each news entry or I would have to have multiple
+tables, basically one table per news entry and that would get also pretty complicated.
+So I tried to choose the list version of some here and decided that I will be serializing
+data into that content field.
+So then on the server side, because there are many kinds of messages that I said, I will
+be concentrating part to quality of one part, discovering a new planet.
+Everything else, every other type of news works in the same way, except use of written
+news.
+They have a slightly more complicated thing because users can choose what kind of icon
+to use each item to write, but that I thought it still works in the same as any other
+news entry.
+So all news articles are of the same type, you imagine it would be called news article.
+And this means that when I had a new type of news article, I have to have a new value
+constructor for, so there's a single location where there's a list of all the positive news
+items.
+And all these articles have a, so that every different type of news have the own value
+constructor that takes a single parameter, that single parameter is a specific type that
+contains all the information specific news.
+So for example, our planet found has a parameter, planet found news and that planet found
+news is a record that has a planet name, system name, these are strings, then it has system
+ID, planet ID, these are keys into, into four rank keys in the database, and then it has
+the new state that tells when this planet was discovered.
+And so when let's imagine we have data in the database already, I'm not going to go
+how to get it into the, it's not that complex.
+So given that we have our data in the database, how do we get that stuff into the, from the
+database into the, into these objects, well, firstly, load a news object or news object,
+depending on how many we want and what kind of query pattern parameters we are using.
+And then we have to turn that, the screen that is, that is adjacent into a, use article
+and for that there's a part news function that has a type of news to maybe news article.
+It is maybe news article because it might be that there has been an error and something
+incoher has been written incorrectly into the database.
+So this signifies, signals that the parsing may or may work as usually is case of the,
+in the JSON.
+And it pretty dense, it's decode dot, let, two lazy, wide string dot, encode, udfh,
+builder dot news content.
+And this is because, because of the, the, the, the JSON, the JSON library they are using,
+it's free thing, we have to jump through couple hoops, couple hoops here, you cannot simply
+decode text, you have to have a lazy byte stream that, for lazy byte string that has been
+encoded with the udfh, so there's couple of x, that, that's for that reason.
+This is free thing, you know, one free style, so in, if you are, if you are, if you have
+function that has multiple steps, and you have temporary values, and you are not using
+those values more than one slide, you are basically just doing step one, and the result of
+that step one is set to the step two, and the result of that, the two is set to the, as
+a parameter to the step three and those steps, don't take any other parameters, you can
+simplify things and write a point free style, this essentially forms a pipeline, so, and
+you can read the dot in that, in that definition as a off, so, parse news equals to decode
+of, to lazy byte string of encode udf builder of news content, so basically, whatever news
+content produces is set to the encode udfh builder, and what that produces is set to the,
+to lazy byte string, and what that produces is, set to the decode, and whatever that produces
+the result of the parse news, there's also a, I'm not specifying a parameter to the parse
+news, this is a, because the parameter of the parse, parse news is only used as a, as a, last
+last, last parameter to the news content, so, we can use, eta, eta reduction, this, this
+comes from the lambda calculus, the name of origin, isn't important, but it's important
+is that you can omit that parameter, no need to write that, write that up, the, long, you,
+you, you could write this whole thing out as a long form, when it will be that parse
+news, is equals to let content equals to new content news, udfh encode equals to, encode
+udfh builder content content in the result of the previous that, and byte string equals
+to lazy byte string udfh encoded in decode byte string, so, which version to use is, in my
+opinion, the matter of spyland precedents, one has to remember that while the, in, in
+this case, the point freestyle leads to pretty good code, it, you can get into the really
+messy looking and hard to read code, if you are overusing that, especially if you are
+overusing that with the code, where the point freestyle, that's not come from, come naturally,
+but you have to do some tricks to get it further, okay?
+So, now we know how to parse a, when we have news, how to make that, then that into the
+news article, similar, there's a, you know, two other functions that deal with entities,
+entities, something that is stored into the database, that has a, it's basically a
+couple of key and the value, so, basically it's key of the throw and the, throw in a database
+and the values of the throw then into an object, and list of another, another third function
+is for dealing with the list of entities, I'm not going to go through the implementation,
+they are pretty small, I'm sure you can, I'm sure that anyone could, figure out how to
+write those, given with a little bit of time, so, one note how the parse news entities
+function filters out all the news, that it, it didn't manage to turn into news articles
+or if there's a, if you're loading a list of, news, from the database and then you are
+parsing the JSON data and turning them into the, news articles, all the, all those ones
+that couldn't be parsed are discarded, so, the parse, new parse, the news entities function
+therefore has a type of list entity news, to list of tuple containing key news and
+news articles, so, we end up with a list of tuples, the first item is the primary key
+of the throw and the second item is the news article, the one that has been parsed from
+the JSON and turned into an object, okay, for that, in the parse news there was tick-or-function,
+we are calling tick-or-function, that is something that comes with the JSON and that requires
+that whatever we are parsing is, is capable of working with the JSON, it has to, it has
+to have an instance of a from JSON type class, so, meaning that if you have some JSON and
+an instance of from JSON type class you can try to parse data into that object and conversely
+there's a two JSON type class that deals with turning an object into a JSON and instead
+of writing this by hand, in this case I relied on the Android Haskell to generate it for
+us, because then I can just write dollar, parenthesis, desired JSON space, default options
+space, to hypen's news article closing pattern, this is, this will instruct that during
+the compile time Haskell compiler will generate from and to JSON instances for the news
+article, and I'm happy with the default options, because I'm just storing this into the
+database loading it into the database, it will never leave the server, so I'm not that much
+concerned how the how the JSON actually looks like, if you wanted to optimize things you
+could even turn each and every field into a single letter, unique single letter of course,
+but I don't think that makes a difference in this case, and it will obfuscate the JSON
+really terrible, it won't be human-readable at that point at all, so now we have news articles
+on the server side, but these aren't really, I mean, these are useful already, but these
+are not really useful for the players, because players need to be able to read these articles,
+so we need to turn them into the surprise surprise, JSON and sent them into the over the
+wire to the client side, and here comes the first problem, the first big problem that
+I was fighting for quite a long time, each type and type class instance form are unique
+there, so you can have multiple declarations of the same type class for any type, if you
+in our case, because we have two and from JSON instances defined for our news article,
+we cannot define new ones, so there are pre-options we can do here, we could send the same
+data to client that gets stored in the database, and I didn't want to do this, because it
+would type the server and client and the database two times together, I could create a new
+type, that is identical to the news article, it would basically just write the news article,
+and then I could define the two and from JSON instances for that new type, or I could just
+declare a completely new type that has no relation whatsoever to these news articles, just
+copy data over there and then turn it into JSON and use that, or object for communicating
+with the client, basically a data transfer object, I went for the third option because it's
+flexible and allows us to have some extra data here, that isn't present on the database,
+but it's derived from somewhere else, and this one part where quite a bit of complexity
+comes from, so the first test is to define our data types, and concentrating on the
+client font is here, but every other news work in the same way, so these are pretty
+much copies, so we had a news article data, so now we have news article TTO, and it has a
+value constructor, star font TTO, and it has a single parameter,
+planet font news TTO, and then the planet font news TTO is a record type that holds
+in this identical data to that planet font news, and in theory I could have
+extra data here already, but not in this particular case, so we need a way to move data
+between this, I don't know, real news articles and TTO objects, and I decided to implement
+a writer type class for that, and generalize things, and this type class is written as a class,
+parents to change in D, parent to close, arrow to TTO, C, D, 5, C, arrow, D, where,
+and then to DTO double colon, C, arrow B, there's a, the probability doesn't
+make much sense when, heard over the audio, if you have a chance, now you could
+go down to check the show notes, basically what this tells us is that we have a type class
+to DTO, that takes two parameters, C and D, and the D parameter has to implement
+two JSON life class, it has to have an instance of two JSON life class, meaning that this
+whatever D is, then we turn into the JSON, and it also tells that, because it's a
+multi parameter type class, it also tells that if you know the C, you automatically know the D,
+that C is the, what defines the D, meaning that for any C, there's only one D,
+and it defines that one function to DTO, that takes one parameter C and produces a value
+of D, that this is a, this is a pipe thing in the end, is the, what declare that
+it's a, that the C defines the type of C defines the type of D, is called a
+functional dependency, and without it, this compiler might or might not be able
+to deduce the depending on the context, so it's the code that follows after
+the call to, to JSON doesn't use, for example, doesn't use the, this is a value
+use of the, of fields of the D, if it's a very general use, only using a, some,
+for example, a type class, functions defined in type class, the compiler might not be
+able to deduce what the D is, so that's why I'm using a functional dependency here,
+and including couple links, into the show notes that talk more about this,
+and explain it in more data, the, the detail, so then just have to write
+instances to all of our news article, and news article DTO, times that,
+that, yeah, different instances of the, to DTO, these basically are just copy,
+copying over data from one side to the another, and I'm not going to read that
+out because it's a, it's a boring, it's just taking the, plain, planet name of the
+DTO equals to planet name of the, news article, and the, system name of the DTO
+equals to, system name of the article, and just read it, I'm fairly confident that
+if, if one would know, template Haskell, they would just automate this part completely
+that, I don't know if, so I had to buy it by hand.
+Okay, and the final, final step is that I've wrapped this up with a news
+DTO that has a common data, data that is common to all news articles,
+so here, here we have a primary key, news, DTO ID, and then we have the
+content, this is where the, this is part where you put the, for example,
+planets on this DTO, and the icon has a text, because I didn't want to
+code on the client side, hard code state that when we are showing a planet one
+news, we are using this icon, we are, I'm going to give on the, on this data
+that gets turned into the JSON, a URL to icon that is distributed news icon,
+news article, and then the client side can decide to use or not use that one.
+So, how do we are getting these icons?
+So, our, our DTO instant hat has answered with that.
+So, instance, instant of mapping from the couple of key news, news article,
+we are mapping from a couple, let the third parameter is the key news, news article
+and the second parameter is the icon map, news article, DTO, and this icon
+map is something that knows how to turn the, how to tell that, for any given news article
+DTO, this is the URL where you will find the icon that you can use to display it.
+And we are parametralizing the icon map, because we might have an analog case
+if we want to use the icon map for it.
+Some of the news that the user, user wrote, they probably have a different, different logic
+to figure out which icon to use.
+So, with this one, the constructing of news DTO is a,
+basically just constructing a new, news DTO where we can say that the ID is the,
+ID of that news article.
+The content is the, content and the news icon is run icon map icons content,
+because content is the DTO that, in this case, defines what kind of icon to use.
+So, what is an icon map, actually?
+This, this, I'm, this part I'm pretty happy, this turned out to be a pretty nice
+in my opinion.
+So, icon map is a new type, meaning it's a, in this case it's a,
+a record of a one, one field.
+So, new types can only have a, one, one type parameter.
+I mean, sorry, one parameter to the value constructor, or one parameter in,
+if they are, that's a record.
+And this, this, uh, a record has a, one field run icon map that is of type A to text.
+And this A comes from the parameter, from the type parameter of the icon address.
+So, what is the type of the icon that we are having?
+We can use that, that type and turn it into the text.
+And then we just, actually, that text will be a link to the URL.
+Uh, for example, in the, these article DTO, there's a case,
+function, there are case structure, saying that case article of,
+planet, uh, planet found DTO arrow.
+So, meaning that's been, when we are dealing with the planet found DTO,
+we are in tuning of the value.
+Render, dollar, static, A.
+Images, underscore, news, underscore, planet, underscore, B and C.
+So, this, uh, um, well, the, wait, the Haskell, um,
+yes, it deals, deals, deals with the resources that they actually present at the compile
+times and they get turned into pipes.
+So, when I have a, in my static, in my, in my static folder,
+folder called static, there's a folder called Images, there's a folder called news,
+and in that folder, there's a planet dot B and C file.
+That gets turned into the type called Images, underscore, news, underscore, planet,
+underscore, B and C, meaning that I can refer to that with static A.
+That turns into the root and compiler will catch if I misnip it or the resource
+isn't presented during the compile time.
+And render function will take this root and turn that into the,
+turn that into a text, it will tell that if you are talking about this type of
+root, in this particular case, the URL of it is this text.
+And this, in this, this is something that, uh, yes, it does for us.
+And you can get that render function with get,
+you are, you get URL render function call.
+Um, so back to JSON.
+Now that we have icons, we can go back to the JSON's.
+So, uh, um, now we have a data transfer object that is completely filled out.
+It has a, it has our news article inside of it.
+Sorry, it has our news article, DTO inside of it.
+And it has the icon and it is the ID that tells the way,
+where in the database it came from.
+We need to turn that into the JSON.
+And I wrote the, the two JSON and from JSON instances by hand,
+because I wanted to have a full control of what the JSON looks like because I want to send.
+Nice look, JSON to the client because it's nicer to work with.
+And it's just polite thing to do.
+And not to, not make life of the whoever is writing the client hard.
+I could have, I could have used template Haskell for some of them,
+because you can, you can, for example, you can write your own function that tells,
+tells to the template Haskell, how, how the, uh,
+field names are constructed, for example.
+But I, I, I just went and wrote all, all this part out.
+I just went and write all this out by hand.
+I, I think it's a good access to do that once or twice.
+And when you understand fully how things are working,
+then you can start moving into template Haskell and thinking that if you could automate this thing.
+Uh, here's a, um, we are actually just creating a JSON that has fields,
+ID, the content ID again, contents that, content, content that actual news article,
+DDO, third into JSON.
+Then it has a tag that is just a string that specifies which pipe of news we are dealing with.
+So the client side doesn't have to guess and try to figure out that we have three fields.
+So what kind of article did this might be?
+It has icon that is a link to that icon and it has the start date telling which date the news article was written.
+And yeah.
+So time to put all of all of it together.
+So in the handle function, handle a function.
+This is the function that actually handles the incoming HTTP request to that,
+to that target source that we define in the config roots director of file.
+So it's called get apimessage a, the name name of the rule in the config file was apimessage a,
+and the get in the beginning satisfies that this handles the get request.
+And it has a two lines.
+First one is a, you know, parenthesis, and the score, comma, and the score, comma, FID,
+parenthesis, I wrote to the left happy require, require a fraction.
+This is a, this is some, this is what does the authentication.
+It checks that the user has locked in and that they are meant to offer a fraction.
+If they are not a member of a fraction or if they are not a, if they have not locked in,
+they will be given an appropriate HTTP response.
+I think 300, 400, 400 is the correct correct trans for all three.
+I think is that not authorized.
+I don't remember that from top of my head.
+And in, and in the body of that response, there's an explanation in a JSON, what went wrong.
+And then then the next line is load all messages, FID, meaning that we are loading all the messages specific to a given section.
+And loading all the messages is basically just reaching over the data phase.
+We are, we are loading all the news that are forced for the given fraction.
+And that has not been marked right already and sort them just ending by new stage.
+So the new response of returns first.
+This is the part, this way in the, in the query, I have that news, this missed equals equals on comma false.
+This is, this is where in the future, I want to have a system that instead of, instead of controlling,
+if the news has been, news article has been read.
+Instead of controlling that with a single field in the database, because then it's a fraction wide,
+I want to have a bit, bit more logic so that we are using the identity of the locked in user and reading from a separate table.
+And what enter is, has this user already marked at that rate and used that information to filter out what data we are returning to the user.
+But that's for this user. There was, there is so many things to do that.
+Something just has to wait, wait for another day.
+So these, these are loaded messages, these are entities, this is a list of entities.
+And we need, luckily we have a past news entities, function that we can use to turn this into a past message.
+Now we have a list of tuples at the first item is a key and the second item is a news article.
+Then we grab the, I request the render function.
+It's a render arrow to the left, get your URL render.
+So here's a thing, the past message is a, now the past news entity is a so called pure function.
+It only depends on the data that you are given to it is a parameter and it only returns data, it does not do anything else.
+So that's why we have, we have to use let value equals to the function call.
+But get your URL render is a monotic function meaning that it has a, it has a context on, on which it works.
+And, and that context for example contains, well, it can contain whatever.
+As we put, put into that context and there's a lot of different things and different ways of dealing with contexts.
+But in this context, in this case, the context is used to reach for the configuration that tells you which address this server is running.
+So that we can turn, so that we can have a function that can turn our static root into the actual URL.
+That's why we are using the arrow to the left here.
+I would love to be able to explain in detail how, how the whole monotic thing works.
+It's a super, super simple thing and it's just simple thing that it's awfully hard to explain.
+Well, there's a gazillion or even more tutorials on the, on the internet.
+So, hold on to explain what monocles are.
+And most of them are failing horrible because they are using a, not anecdotes, but then they are trying to simplify things and they are trying to use examples that are naturally correct samples.
+Well, I'm saying that if you don't understand them, don't worry because if you keep using them someday, you'll just realize that these are awfully easy and simple, but they are awfully hard to explain.
+Well, and to be able to use them doesn't really require you to understand the theoretical foundation, so I don't understand all of that either, just use them.
+So, now that we have that render function, we can make a icon map that is used for the user icons and then we can feed that to another icon map that is used for the news article details.
+The reason we are using two icon markers is that the user written news has their own logic that dictates with what icon, which icon to use and the news article DDO and news article DDO is a different kind of logic and because the user written news are part of the news article.
+So, news articles, we have to have this two level structure that together understands how to deal with all these special cases.
+And here you can see, if you are looking at the show notes, here you can see a good example where the 0.3 notice 0.3 style gets into the realm of unreadable gold.
+I am thinking that I should go back and fight this out and make it more readable because it comes so much into one line.
+It reads as I returned $2,000 to JSON $MAT, open parents to DDO, no full stop actually, open parent, flip, open parent, close parent, open parent icon that render user icons,
+a bunch of close parents, parsed messages. So, what this does is that it will take those parsed messages, turn them into the first or construct a tuples out of them so that you have a tuple of a news entity,
+sorry icon of a ID and the news article and then the second item in the top is the icon macro and then that is set to the to DDO so that you get a data transfer object from that and then that you turn that into the,
+you do that to hold list of articles and then you turn all of them into the to JSON and then you return that data to the client finally.
+So, that's basically what happens when you are loading the news articles and this recording is a long enough order, sorry about that.
+So, I can't go into how the deleting and posting is work. Well, I can quickly over them, deleting is basically just you authenticate the user and then you use the parameter that they passed as a path for the part of the URL to load a user article from the data.
+Actually, you don't even need to load a news article, you just delete that news article from the data.
+Delete a row where the ID equals to that test in ID and the faction ID equals to the faction ID of the logged in user is because if you are not including the faction ID,
+that ID the players could be deleting out of faction's news and that we can have.
+Posting a new entry is basically you authenticate, then you read the body of the request that should contain a JSON and then turn this into the news article.
+And this is basically a reverse operation to hold the thing that we suspend through and then you save it into the database.
+And the final step is to load all of the entries from the database turn into JSON and return that into the client.
+Okay, I think that's about it. If you have any questions, comments, ideas, I would be happy to hear them.
+And the easiest way to catch me nowadays is either via email. That's, I think that's all visible at the hacker.
+I can hack a public radio page. Oh, at the very first, they are, I am a two-twirt at Martin. So, so I am two-twirt, I don't know.
+I don't know.
+To find out how easy it really is, Hacker Public Radio was founded by the digital dog pound and the Infonomicon Computer Club and is part of the binary revolution at binwreff.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise status, today's show is released on the creative comments, attribution, share a like, 3.0 license.
+Thank you.

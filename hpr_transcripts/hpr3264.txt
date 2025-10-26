@@ -1,0 +1,165 @@
+Episode: 3264
+Title: HPR3264: Intro to Nagios
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3264/hpr3264.mp3
+Transcribed: 2025-10-24 19:54:04
+
+---
+
+This is Haka Public Radio Episode 3264 for Earth Paper Fourth of February 2021.
+Today's show is entitled Intro to an Argyome.
+It is hosted by Norris and in about 20 minutes long and carrying a clean flag.
+The summary is, introduce some Argyome basics and walk through setting up Argyome Ubuntu.
+This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+I know just Nagios on the requested topics page and I'm not an expert with Nagios but I do use it and I know a little bit about it.
+I know some of the principles behind how Nagios works.
+Hopefully today I can give a useful introduction and review some of the principles of Nagios.
+Nagios is a network monitoring tool so you define some things you won't Nagios to check for you and then Nagios does those checks and alerts you if those checks fail.
+Nagios has a web UI that it's normally used to see the status of checks.
+There are some basic administration tasks you can do from the web UI, stuff like enabling and disabling notifications, scheduling downtoms or forcing an immediate check.
+Nagios is primarily configured by text files. You have to edit the Nagios config files to do stuff like adding servers or customizing some of the check commands.
+There is a commercial version of Nagios called Nagios XI.
+Nagios XI requires paid license and include support. It has some extra features, things like wizards for adding hosts and it makes it easy to clone a host.
+I've used Nagios XI but I personally don't find the extra features very useful and definitely not worth the price.
+I think probably the biggest reason people would use Nagios XI is if they work in an enterprise that requires paid commercial support for software.
+The community version of Nagios is referred to as Nagios Core which is what we'll focus on in this episode.
+The Nagios Project has some official documentation which I don't really like for something like this.
+The Nagios documentation is a lot like a man page or if you need to know something you can look it up.
+But if you're just starting out or if you're looking for a tutorial for how to get started, it's probably not the right place.
+It may be possible for someone to read the documentation and install and configure Nagios for the first time but it took me a lot of trial and error to get a Nagios server working especially if I was just looking at the official documentation.
+Outside of the official documentation most of the Nagios installation guides I found online recommend downloading and building Nagios from the Nagios site.
+My general policy is to use packages instead so normally I like to stick to OS provided packages to make long-term maintenance easier.
+You may not always get the latest feature release but installation and updates are usually easier.
+I know not everyone's going to agree with me here and we'll want to build the latest version from Nagios but regardless of how you want to install Nagios, a lot of the principles I'll talk about today will still apply.
+Making the assumption that most listeners will be familiar with Debian and Ubuntu so I'll go over installing Nagios on Ubuntu using the Nagios packages in the Ubuntu repository.
+Before I go over the installation I'll talk a little bit about some of the pieces that make up Nagios and the Nagios checks that are for either hosts or services.
+From the Nagios documentation a host definition is used to define a physical server workstation or device etc.
+Something that resides on your network.
+A service definition is used to define a service that runs on a host.
+The term service is used very loosely and can mean an actual service that runs on the host or some other type of metric associated with the host.
+Normally a host or check using ping if the host responds to the ping within the specified time frame the host is considered to be up.
+Once a host is determined to be up you can optionally check services on that host.
+To start the installation the first thing you need to do is install the package.
+In this case have to install the package named Nagios 4.
+It'll pull in all the dependencies it needs.
+One of the dependencies it pulls in is a package called monitoring plugins.
+I'll talk more about that monitoring plugins package when we dig a little bit into the checks.
+The primary user interface for Nagios is a CGI driven web application usually served via Apache.
+If all you do is install the Nagios for package the web UI is functional so we'll need to make a few Apache configuration changes.
+The Nagios configuration file for Apache contains a directive that's not enabled in Apache by default.
+The first thing we'll do is enable some Apache modules on Debian and Ubuntu that's usually done with that A2 in Mod command.
+So in this case we'll use A2 in Mod to enable off the Z underscore group file and off underscore digest.
+Then obviously you need to restart Apache.
+The next step is to enable users in the Nagios UI. We'll do that by editing
+Etsy slash Nagios for slash CGI dot CFG.
+Look for the line that says use authentication equals zero and change that to use authentication equals one.
+Next we need to modify Apache to require a logged in user.
+There is a Apache file that ships with the Nagios package.
+It's an Etsy Apache to comps enabled and then the name of the file is Nagios for dash CGI dot comp.
+We will change the line that says require all granted to require valid user.
+The installed config file limits access to Nagios from only local host so you can only access it from local host.
+That's not really useful for us in this case so we need to edit that same file again.
+Look for a line that starts with require IP and then just delete that line.
+The last thing we need to do is create a basic auth user.
+I normally create a user where the user name Nagios have been but it can be anything.
+We'll use the ht digest command to create a password file and with the Nagios admin user and password in it I'll have the specific command in the show notes.
+Now all we need to do is restart Apache and Nagios with the surface commands and the Nagios UI will be fully functional.
+Nagios uses a collection of small standalone executable scripts or programs that perform the checks.
+The result of the checks are either okay, warning or critical depending on the exit code of the check.
+If the exit code is zero the check is okay if the exit code is one so warning and if the exit code is two that's critical.
+The check commands are standalone applications that can be ran independent from Nagios.
+Run them the checks from the shell is helpful to better understand how the checks work.
+The location of the check commands can vary depending on how Nagios is packaged but in this case if you follow along those the checks will be in userlib Nagios plugins.
+Looking at the names of the files and the check directory should give you an idea of their purpose.
+For example it should be obvious what check underscore HTTP and check underscore ICMP or four.
+So to get an idea of what the command looks like when you run it from the command line and what it outputs.
+If you cd to the userlib Nagios plugins directory and then run .slash check ICMP localhost that's checking to ping localhost.
+And then you can see it prints out okay and then it prints out some stats about about the ping how long it took.
+If there were retries stuff like that.
+Most of the checks can be ran with dash h for help.
+The little print usage statement about how that individual check program should be used.
+The checks can be in any language as long as it can be executed by the server that's running Nagios.
+Most of the checks that ship with Nagios are written in C and compiled but it's really common to have checks that are written in a scripting language like Perl or Python or Bash.
+If you're interested in the programming language that the checks are written in you can use the file command and it will tell you if it's a text file or
+Perl script or in this case with check ICMP it's a
+elf binary.
+So now let's talk a little bit about how Nagios configured the primary configuration file for Nagios is in
+Etsy slash Nagios 4 slash Nagios.cfg.
+Nagios.cfg has a directive that will load additional files in this case it's where I put all my user-generated files.
+There's a line that says configter equals Etsy Nagios for slash comp.d.
+So anything you want to add to Nagios you can put in this comp.d folder.
+So usually I'll put everything I generate for Nagios in the comp.d folder and then use get to keep the directory under versing control and have a backup of the Nagios config files.
+So before Nagios can run the check programs we looked at earlier there has to be a command definition that Nagios can use.
+There are some predefined commands in Etsy Nagios 4 slash objects slash commands.cfg.
+The Debian package monitoring plugins basic contains several command definitions that are loaded by Nagios
+and that those command definitions are stored in Etsy Nagios plugins slash config.
+So let's look at one of the commands if we look in the directory Etsy Nagios plugin slash config.
+There's a file called ping.cfg and there we can see some of the commands that are defined.
+One of them is named check-host-alive and then if you find that in there you can see the command line is
+actually one of the one of the programs we looked at earlier in the Nagios plugins directory with some additional arguments.
+Then commands are defined the command underscore name and command underscore lawn are both required to be set.
+The command line is the path to the executable that will actually perform the check and the optional arguments.
+Most of the checks will require a dash capital H which is the host address that the command is going to check.
+The check-host-alive command also contains arguments that set the critical and warning thresholds with a dash c for critical and a dash w for warning.
+So if you look in the ping.cfg file with the commands in it, look at one more just to get an idea of how the commands can be different.
+There's another similar command but instead of check-host-alive it's called check underscore ping.
+The difference is that check underscore ping requires that you pass it to arguments one for the warning set point and one for the critical set point.
+Talk of the second about templates.
+Hosts and services require a lot of reused variables.
+The object definition is normally used templates to avoid having to repetitively set the same variables on every host.
+Nagios ships with predefined variables for hosts and services that will work in most cases.
+And Ubuntu the templates are defined in Etsy Nagios for objects templates.cfg.
+The template definitions are the same as other object definitions except they contain
+the phrase register space c row which designates the object as a template.
+I'll show how the templates are used when I go over the host and service definitions.
+So one of the main sort of points of having something like Nagios is that you get notified when some checks fail.
+So by default notifications are sent via email to Nagios at localhost.
+The easiest way to get notifications is to configure the Nagios server to forward emails to a monitor
+email address. Since a lot of networks block sending emails directly email forwarding can sometimes be
+challenging. In a follow up episode I'll cover setting up post-dix to relay mail through a
+mail sending service and maybe some other methods that you can use for getting alerts.
+About a fault. Nagios is configured to monitor itself localhost.
+Now monitoring localhost can be useful but you probably want to add some additional servers to
+monitor. Have a look at Etsy Nagios objects localhost.cfg if you want to see how the checks for
+localhosts turn off on. So let's add something else to monitor. We'll use google.com as an example
+just because it's something that's easy to check. So we'll create a file named google.cfg and we'll
+put it in the config directory that we talked about earlier at see Nagios for slash comp.d.
+The files that you put in that directory can be named anything as long as they end in .cfg.
+But I like to have one file per host and I like to have the file name be the name of the host
+that we're monitoring. So in this case we'll create a file called google.cfg and I'll have
+a copy of that file that show notes. So the first thing we need to put in google.cfg is the host
+definition. The only thing that's really required in the host definition is host underscore name
+and then the remaining requirements are going to be met by using the generic host template.
+Next we can add a service to check. The easiest thing to check for google is just HTTP.
+The host name, service description and check command are the things that have to be
+defined for the service. There's other requirements for service definitions but we can use the
+generic service template to meet those requirements. So now that we've added google.cfg
+Nagios has to be restarted to pick up the changes. Before we restart Nagios,
+before I restart anything I like to check that the syntax is valid. So for Nagios you can run
+Nagios 4 which is the main Nagios binary then dash v and then give it the path to the main
+config file at the Nagios 4 slash Nagios.cfg. That'll print a summary of the Nagios configuration
+and if there's any errors or warnings they'll be printed at the end. Warnings are not
+fatal but you should probably look at them. If there are any errors that'll keep Nagios from
+restarting. So if you run the check it'll tell you if there's errors. So before you restart
+Nagios you need to look at the errors and see if you can figure out how you can change the google.cfg
+file. So now that we've got something to monitor we can take a look at the Nagios UI.
+If you go to the HTTP and then the server hostname and then slash Nagios 4 on the left side there's
+a menu and under the host tab you should see the two local host and the host we added google.com
+and you can also see the service checks for those two host. I've already made the mistake of
+mentioning a follow-up episode so now I'm committed. So next time I'll try to cover some enhancements
+we can make to the basic Nagios setup we talked about today. I'll try to go over like I already
+mentioned some ways to get notifications. I'll talk about some of the other monitoring plugin
+packages that are in Ubuntu. I'll look at writing a custom check and then we'll look real quick
+at SNMP and how we can use SNMP to monitor host load average and disk usage. And as a bonus for
+this episode I'll include in the show notes an Ansible Playbook that I used to build Nagios servers
+while I was developing the notes for this episode. Leave a comment if there's some other aspects
+of Nagios besides the ones I mentioned that you'd like me to cover. I'm not going to make any
+promises but I'll do my best. Thanks for listening and I'll see you guys next time.
+You've been listening to Hacker Public Radio at HackerPublicRadio.org. We are a community
+podcast network that releases shows every weekday, Monday through Friday. Today's show, like all our
+shows, was contributed by an HPR listener like yourself. If you ever thought of recording a
+podcast then click on our contributing to find out how easy it really is. Hacker Public Radio was
+founded by the digital dog pound and the infonomicon computer club and is part of the binary revolution
+at binrev.com. If you have comments on today's show, please email the host directly, leave a comment
+on the website or record a follow-up episode yourself. Unless otherwise status, today's show is
+released under Creative Commons, Attribution, share a like, 3.0 license.

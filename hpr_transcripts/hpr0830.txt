@@ -1,0 +1,566 @@
+Episode: 830
+Title: HPR0830: Peter Hutterer Interview at X.Org Developer Conference (XDC) 2011
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0830/hpr0830.mp3
+Transcribed: 2025-10-08 03:11:29
+
+---
+
+This is Marcos again. This is my second interview at the Exorg Developers Conference in
+Chicago with Peter Hutterer. He works on the Input system of Exorg.
+Okay, so here is the second interview with an ex-guy. I'm here with Peter Hutterer, right?
+He's the class enough.
+Well, actually I'll let you introduce yourself.
+Yeah, so I'm Peter Hutterer. The current input maintainer of the ex-server and most of the input drivers.
+And yeah, I work for Red Hat in sunny Britain as of three years now, actually.
+So just a bit over three years now.
+And you got started an ex with PhD?
+Yeah, I did a PhD at the University of South Australia in Adelaide and as part of the project work
+was doing near, I had to add multi-input device support to essentially an application.
+But that turned out to be, let's just say hard, given the conditions that we had.
+And eventually I figured out that the only way to get that to work was to actually hack ex.
+And that's how I got started. And that was back in 2006 at the age of five years ago.
+So this is all part with your project successful, your PhD thesis project?
+Yeah, so PhD passed in 2008.
+And all the project work got merged into the ex-server in 2009 or got released in 2009.
+And that was all the XI-2.
+So if you had an example of the extension version 2, that was 80% of that was the PhD project.
+What's the difference between version 2 and the version 1?
+There is a version 1, which was I think first merged or published in 1994.
+The main reason why there is an ex input extension is that the core protocol, the very basic ex input, sorry,
+the very basic ex events for input.
+It's not confused to terminology there.
+Only a law for ex and why and a set of buttons and a set of keys.
+So in 1994, the added the ex input extension to allow for arbitrary access essentially.
+So that's how you get things like pressure, tilt, and so on and so forth as you have on tablets, for example.
+Unfortunately, the way it was designed wasn't overly useful.
+So it worked for the GIMP, for example, used it for tablets for pressure or not.
+But one of the basic design decisions was that only one client at a time could actually use the device,
+which isn't quite how we use it these days.
+So we got a rid of that restriction early on.
+But one of the big things that ex are two does is just adds a whole bunch more information that you can get from the device,
+how you can use the from the device.
+It natively integrates hot plug-in, which was only tacked on top of the other one of the first version.
+So hot plug-in didn't work up until about five years ago?
+Hot plug-in technically worked in ex input 1.4.
+That was when the matching events were added.
+But because the regional protocol specification didn't cater for it,
+let's just say there were some bits missing and clients that didn't know about 1.4 couldn't necessarily deal with hot plug-in
+because the device just disappeared and then they would get errors afterwards and didn't know why.
+It's not really that any client cared that much about it,
+but it could lead to client crashes in some cases.
+Now, ex input, that's actually different than like the error, sorry, the multitouches.
+It's different from gestures, right?
+I know.
+So I confuse the two.
+Ex input, it's a bit of an overloaded term.
+So there is ex input, which is usually the term we use for the ex input extension.
+Ex input deals with anything input related.
+Right now, the target devices are mainly keyboards and any point of devices.
+So my touchpad tablets ends on as a fourth.
+Tablets as in graphics tablets, not as in...
+Oh, like the iPad or something or the Galaxy Tab,
+because I'm thinking traditionally the term tablet referred to a walk on tablet,
+what artists use.
+So, ex i2, ex input extension 2, is essentially the sign around keyboards and mice as well.
+So we've had some ongoing efforts to get multitouch working native Linux.
+They've been going on for, must be over a year now,
+because we've had quite some talks last year in September at the last X-12 conference.
+And I believe as we speak, Chase is pushing out the first snapshot release
+for the protocol specification for multitouch support.
+Okay.
+So I think by the time this interview is over, there should be a mail.
+And I'll see that on the mail list.
+Oh, very cool.
+And how long before we see that actually show up in public dusters or the average person?
+So this is the protocol specification,
+which is essentially the publicly visible client API.
+And the difficult thing about that is the way a protocol specification goes.
+Once there are, it's essentially set in stone and they're really, really hard to change.
+Or virtually impossible to change.
+You can only amend them and add stuff or change the behavior in later versions,
+but you need to keep backwards compatibility.
+So this is why this part took so long.
+Ubuntu has as of 10, I think version 1010 has a multitouch implementation.
+Is that the stuff that Chase kind of demoed last year?
+Correct.
+Okay.
+Yes.
+Unfortunately, the reason why this is an upstream,
+is the did most of the development in secret
+and internally agreed on a certain approach to that.
+And when they published it,
+they were already committed to shipping it in the next Ubuntu version.
+But upstream, we pretty much looked at it and said,
+no, this is not the right approach.
+Amongst other things,
+their implementational center they're not having the gesture recognizer inside the server.
+Or at least partially inside the server.
+And we first said, no, we want gesture recognition all done in the client.
+The exerver should only handle touch events as they come in
+and send them to the right client,
+but shouldn't have any complex knowledge of that.
+So does each client then have to do its own interpretation?
+Is there like a gesture stream in that room?
+So ideally, so the current Ubuntu has since,
+as we went through the protocol and revised it and revised it,
+they kept updating their own client stack.
+So I believe to have a current stack that works with that new protocol
+or at least is close to being working.
+Unfortunately, I said it's not quite up-streamable
+because it's layers and layers of hacks based on the previous one.
+So you can't merge it indirectly.
+And there's a lot of architectural work that we need to get that to integrate properly.
+So it's pretty going to take a while before the FSU has to full implementation.
+Okay.
+In terms of how this is going to be used,
+I think the implementation to have at the moment
+that do have a global gesture-recognized demon running in the background.
+I think one of the target implementations
+will be the GTK QT and the other big toolkits
+will support gesture recognition in the toolkit.
+So if you're right, say your GTK or normal application,
+instead of registering for a massive interest,
+say it can register for pinch event,
+and then GTK will handle the events accordingly,
+and just send you, hey, a pinch just occurred instead of sending it or touch data.
+Okay.
+Which would also mean that if the toolkit handles it,
+the one of the big advantages that this is consistent across any application
+using that toolkit, which the same effect can be achieved with a global demon.
+So client-side architectures, it's still a bit in flux.
+We might see some changes to that.
+To be honest, I don't know what the ideal integration would be.
+Something got to figure out.
+I think there's probably going to be a lot of trial and error.
+It's quite easy to get something going,
+whether it's going to survive a couple of years or not.
+I really don't know which one the right one is.
+Well, it's one of the reasons, because I know,
+and I've said this too, why is it taken so long?
+It's just infinite.
+You've got a couple of fingers, you draw it,
+but it's a lot harder than that, right?
+It's not just a couple of other things.
+Touch is very complex when you consider it on a general desktop.
+So getting touch supported in a new API that you define yourself,
+in a windowing system that doesn't have any legacy,
+and that runs every application fullscreen is very, very easy.
+I've done that in the past for a couple of other things,
+just as prototyping.
+It's quite simple.
+It's hard enough to define a good API, of course,
+but just getting in running is quite simple.
+So if you look at the current multi-touch systems that are out there,
+you look at the most prominently the iPhone, iPad,
+even Microsoft Surface as one of the standalone ones,
+but the same with Android and, of course, all the pat,
+tablets coming out now in Android.
+They all run the applications in the fullscreen.
+So you don't actually have to worry.
+You see a touch, dragging things between two windows.
+Yeah, exactly.
+You see a touch, and you don't have to worry about
+does this touch go there and the touch that occurs right next to it
+is this in the same window still?
+Is this outside of the window?
+Is it the window behind the other window?
+Or does it still belong to the first one?
+Because it's two-finger swipe.
+But these are just managed to click just outside.
+And it gets even worse because in the end picking,
+so selecting which window to center is always an X-Y,
+specific X-Y coordinate.
+Most users' fingers are actually larger than a single pixel.
+So you suddenly have to define which area of the finger
+is the hotspot.
+And then you have to do picking based on the hotspot.
+And that can lead to confusion because the user might think
+his touching is still inside the window.
+But that one hotspot might just be one pixel outside
+and suddenly is sending the coordinates to the next window.
+So the hotspot, no matter how fast someone's finger is,
+is still just one pixel all throughout?
+Yeah, because that's how you...
+I mean, there is no simple technical solution to that.
+They aren't technical solutions, but they're likely to fail.
+The right solution to fix all these problems is to design a UI
+what this won't be a problem.
+So they have any UI element large enough that if you press
+next to it, you're not going to...
+nothing is going to happen essentially.
+So that's why buttons, for example, you want to separate them
+far enough that if you don't hit the button,
+you don't actually need to click the button next to it.
+You want the button large enough that the average finger will cover it.
+So is that... does this...
+going to work on a smart, will X with this full multitouch?
+Is it going to work on the smaller devices, too?
+Like Android?
+So devices, there's a more specific way for a larger device.
+The size of the device for the multitouch that we've specified,
+no, it doesn't really matter.
+So you can run it on a 2x2 screen if you want to.
+I'm going to display much on that.
+But the size of the screen doesn't matter as such.
+When I'm using interface, it needs to be designed for it.
+I'm talking about the higher level, so I'm talking about norm, kd,
+whatever actually using the face you want to run.
+Okay.
+So because X doesn't know about the concept of buttons.
+X knows about rectangle surfaces that an application can draw into.
+The next terminology they're called windows,
+but windows is a bit overloaded so people can get confused.
+In the end, X knows about the number of regular rectangle surfaces on the screen
+and doesn't care what's inside those.
+So a button usually is used to be a rectangle on the screen
+that's painted to look like a button and register this button event.
+So it really was a thorn window.
+Yeah, it really was just a surface to the X-erber.
+And what the client would do is, as you press the button,
+the client would send a new pixel to the server saying,
+repaint this window now and then the button looked like it was depressed.
+But the X-erber didn't know about that.
+The X-erber has no concept of widgets at all.
+And that's been in recent Toolkit versions.
+That's even gone to a point where we have client-side windows now.
+So all the X-erber sees these days is pretty much just one big correcting.
+All that's the applications main window.
+And everything inside is just handled by the Toolkit.
+Okay.
+There's a Toolkit and this probably is doing outside the topic.
+But so the Toolkit basically just draws one big window.
+And everything in there is converted like a pixel macro something,
+exactly.
+And the Toolkit handles where are the buttons.
+If you click a button, it just refreshes that portion of the windows.
+So the X-erber has even less knowledge of what's happening inside.
+And that's also one of the reasons why we didn't want gestures in the servers
+because the X-erber has no knowledge what's actually happening.
+So it cannot easily interpret gestures which are highly contextually dependent.
+Because the same data that you get in from a two-finger movement
+could be a two-finger swipe,
+but it could be two separate fingers just moving two objects.
+And you don't know that unless you know what you're actually moving.
+And the X-erber doesn't know that.
+So that's why we're pushing everything to the client side
+because that's why you have the context.
+So if everything's going to client side eventually,
+the X-erber will get smaller and smaller.
+Yeah, the X-erber these days because we moved them into graphics out as well.
+The X-erber's main part these days is handling input.
+And handling input essentially means you get data from the device.
+You figure out where to send it to and you send it there.
+That's pretty much what the X-erber's base target task in the input is.
+Oh, I like something like that.
+Yeah.
+All right.
+So I've got a list here.
+I'm asking Peter the questions as well.
+You can see recently.
+So in recent developments,
+as we just said,
+the big thing is multitouch that we're currently working on
+because that's also the buzzword of the year,
+of the last two years.
+Oh, wow.
+I don't think we're going to do any cloud-related stuff.
+There's going to be a recent change that we just pushed out.
+At least the protocol spec was still waiting on the X-erber implementation
+to get pulled in, actually,
+so that patches are made in smooth scrolling.
+So traditionally,
+the X-erber implemented scrolling is button presses.
+Historical reasons are also barely the details.
+But in X, when you scroll up,
+that's actually button four press.
+When you scroll down, it's button five press.
+And the clients...
+Oh, it's always four and five in the old X-erber.
+Yeah, exactly.
+So the C-erber X is mapping.
+If you ever saw that,
+that's exactly for that.
+Okay.
+The problem with that is it's discrete buttons.
+So if you scroll a lot,
+or you scroll very fast,
+all you see is a lot of button events forming past.
+Okay.
+And that can, in many cases,
+it's just not fluid enough.
+So the change that we pushed out
+and it only works with X-erber two clients.
+And the new enough to support the new input extension
+is that we also forward
+the same information as actual X-erber values.
+So if you scroll up by,
+you know, two and a half rotations of the wheel,
+you actually get an X-erber value of say minus 20.
+Okay.
+And because there's a couple of reasons
+what is this beneficial one is that you get
+the actual event value.
+So instead of you get the value of 10,
+if you scroll very fast,
+the mouse will send you one value of 10
+because you've scrolled very fast
+and within one time frame.
+So in the past,
+that would have been 10 separate buttons,
+but it's all separate.
+Now you just get one that's just 10.
+So the client knows this was a very fast scroll
+and can update accordingly.
+Okay.
+The other thing is that you get sub-pixel scrolling.
+So if you scroll very, very little,
+there's a couple of free flowing.
+There's one logitech mouse
+where you can actually unhinge the scroll wheel
+and it just keeps on rotating.
+So you essentially give it a push
+and it just keeps on spinning until you stop it.
+Yeah.
+Or until eventually.
+And so you just scroll on all time.
+So you can essentially just scroll in more or less infinitely.
+So that means you're like a 10,000-page pdf or something?
+I don't know what people actually use it for.
+I don't know.
+You could probably set it up to be very, very fine grain scrolling.
+And then you have a very, very fine grain.
+I'm kind of the document.
+I'm not quite sure.
+I've seen, I've played with the mouse once.
+I think in a shop somewhere.
+But yeah.
+Okay.
+That's pretty much all I've had to do with it.
+So hopefully that will make scrolling a bit more user-friendly.
+Although I have to say we call it smooth scrolling,
+but that's just the input side of things.
+It's going to take a while until the output side of things
+will actually update to render fast enough.
+It'll actually appear smooth.
+Okay.
+So I think a bit of name might have been continuous scrolling
+instead of smooth scrolling because that's a bit of a lie right now.
+All right.
+But that's, so it's just, it'll be released soon.
+And then yeah.
+This will be in the next XO version.
+So the protocol is out.
+The next XO version is five and a half months from now.
+Okay.
+So after this app point can start supporting it?
+Yeah.
+So we've pushed a protocol out now.
+The library support is there.
+So applications can start writing in instead.
+Okay.
+It's just, it just won't get the new events yet.
+So, you know, they can have the code.
+It'll come off.
+It just will never see the events because the current XO
+just doesn't generate those specific events.
+Okay.
+Both the applications are going to do upgrade.
+Yeah.
+So when you do upgrade, it'll just be there.
+Also, we've seen, especially with XO2,
+we've seen the inertia that norm three, I think,
+is the first big toolkit to support XO2.
+And they've only started it as it's a norm three,
+which came out very shortly ago,
+but we've had it since 2009 in the next year.
+And we've had it stable for a little bit longer than that.
+So you see there's inertia of, you know, nearly two years
+just to get anything into the client stack.
+Okay.
+So it's a smooth scrolling.
+We'll probably see in the fall spring of 2013.
+Well, XO2 is a really big change.
+So it's a smooth scrolling.
+It's a lot smaller on top of that.
+So hopefully that gets accepted much faster and multi-touch
+the same thing.
+We'll probably get to accept much faster.
+There's a much bigger use case for it.
+So I look forward to seeing that stuff.
+Yeah.
+It's one of the, you know,
+there's the most recent change, I think.
+It's probably the most interesting one for the general population.
+Okay.
+Any less interesting, do you think it's
+might still be interesting to hear about?
+We've had a ton of changes to the walk-in driver over the last year.
+I don't know.
+Jason, I don't know his last name.
+He's working on it.
+He's working on it.
+He's working on it.
+Yeah.
+Yeah.
+Yeah.
+So Jason is working for walk-in,
+and both him, me and a couple of other guys from the community
+and Ping from walk-in as well.
+We've been just working like crazy on that driver.
+And I can say that finally,
+it pretty much works out of the box.
+For most tablets, even though, especially for bamboos,
+we still have troubles.
+We don't have enough information about the devices often enough
+as sometimes we just, this weeks,
+for none of us has time to work on it.
+So it's a bit of an up and downhill slope.
+I can say that the driver definitely works better for most people
+than say a year or two ago,
+but we're definitely not there yet to just be a plug-in or just work.
+So it's a good segue into the next question.
+So if people want to help, say,
+all the HPR parties,
+and I guess people don't work, I don't know.
+If they want to help out on the input stuff or walk-on driver,
+what can you say about that?
+I mean, generally people tend to get into development
+and it's either they have a device that doesn't work
+or they want the feature.
+And that's usually the best way to get into it is that,
+you know, you have a tablet that doesn't work.
+You figure out how to make it to work.
+In most cases, it doesn't even require that many changes.
+In most cases, it just requires someone to actually have the device
+and be willing to test to be willing to figure out where exactly it goes wrong.
+And then, you know, either ask for help or figure it out themselves.
+We get plenty of people and say, look, my tablet isn't working.
+And then we say, oh, I've just tried this, this, this, and it works.
+So do you need people?
+Oh, desperately.
+Yes.
+So I can confidently say, I'm hopelessly overloaded.
+So at the moment I'm maintaining three main input drivers
+or FDF synaptics and the walk-in driver
+and sort of cool maintaining mouse and keyboard,
+although I don't actually run them.
+I still try to cut releases for them.
+And I'm maintaining a couple of other input drivers
+that we only get testers for every two years pretty much.
+Wow.
+I maintain the whole input subsystem.
+I'm going to be working on the multitouch service implementation
+and a couple of other things.
+You're a man.
+I'm rather hopelessly overloaded.
+So especially, I think everyone who used to touchpad in the last year
+so has probably seen that touchpad hasn't seen the love that it needs.
+So you're playing for that?
+No, I'm totally kidding.
+Pretty much, yeah, it just did not have time.
+Pretty much everyone who has touchpad, that's your work.
+Yeah, touchpad would be a really, really interesting or easy way to get into
+because most people have the device.
+So it's not that hard to test.
+It's not expensive hardware.
+Pretty much everyone has a laptop these days.
+So if you're willing to make the touchpad work better, go for it.
+Cool.
+I'd be too happy to see patches for it.
+I have to admit, I've got a patch set of about 10, 12 queued up just in my inbox
+that should make it a lot better to go now.
+But the next thing is going to be, you know, proper multitouch support
+for touchpads at the moment.
+We're primarily limited to one or two chisels, like two finish scrolling and whatnot.
+The current on the touchpads that are in most people's current laptop
+and maybe that's two journals to say.
+But they run their synaptic touchpads?
+There is four different types.
+Synaptics, Alps, Elentake and the Mac ones that are used to be my Apple touch.
+I think they don't exist anymore.
+But the new ones are BCM 7495 or something like that.
+I can't remember what the actual numbers are.
+Do they all support multitouch, or at least two or more touch points?
+Or...
+Each.
+Yeah.
+Within touchpads are interesting because there's several that don't give you any information.
+It would be even remotely useful.
+So one of the laptops I've had in my hands just recently was a Lenovo X220.
+And they have a relatively new touchpad that supports two fingers.
+Either a clickpad, so it doesn't have any physical buttons.
+You press the whole or the lower end of the touchpad works as a button.
+And it knows that it can support two fingers,
+but it doesn't tell you the coordinates of the second finger.
+It just tells you there's a second finger.
+Which makes it really hard that when you move the first finger,
+you put it on the touchpad, you move it down to where the button is supposed to happen.
+You press the button and then you try the second finger to scroll to drag an object.
+You never get those coordinates.
+So all you know is around, you just know there's still a finger down?
+Yeah, it just gives you...
+It only gives you the coordinates of the first finger, which would be somewhere in the button area, no?
+But that's the one that's not moving.
+So...
+So you really need to drag down with your second finger.
+You can still leave your finger, which is kind of funny.
+If you haven't found out, there's probably some magic way,
+how you can move your fingers to still make it work,
+but it's going to be tricky to figure out that most people won't.
+So from their point of view, the touchpad doesn't work.
+So from our point of view, we just don't get enough data to make it work properly
+and it requires a lot of effort to decipher that.
+So if we're really lucky, there's a touchpad designer, developer, hardware guy.
+Listening to this...
+Yes.
+And I'll drop you some hints and help hopefully.
+Yeah, and please design your hardware better.
+This is depressing sometimes.
+But as far as under the Apple touchpads, for example,
+they give you full finger information of everything that's on the pad.
+Some of those, like Chase Lash, you have one that had like 10 touch spots?
+Possibly. I don't know what the PCM's do.
+How many do support, I think?
+Not infinite, but in a large amount.
+So in the kernel, we currently do up to court tab, which is four.
+Okay.
+After that, I think just a normal multitouch protocol just kicks in anyway.
+So...
+Okay.
+Well, cool.
+Well, I won't keep you from that presentation, which actually just about over anything else you want to bring up.
+Did I forget to ask her?
+Yeah, if anyone interested in hacking eggs or maybe any open-source project, don't be scared of starting.
+It's more or less an open secret to the basically didn't know see when to start attacking an eggs.
+The first couple of days I've mostly spent on figuring out why this even compiles,
+because I had never seen Kurningham Gritchey Functions style declarations before.
+And it was essentially sitting there with a programming seebook, trying to figure out what that means.
+I knew I had done see before in a very, very basic manner, but that was essentially a Java programmer.
+Man.
+How many years ago was that again?
+Six years ago, five years ago.
+Yeah, so in six years you went from no one basically...
+Yeah, six years ago, you were my level and now you're the input.
+Yeah, so...
+You know, you don't need to know everything to get something done.
+You just pick what you want to work on and then you learn.
+As you do, you learn.
+I'm still learning a lot every day.
+So there's no into it.
+So don't be shy.
+Get in.
+Yeah, just do it.
+Yeah, just do it.
+Yeah.
+Very cool.
+Well, thank you for your time, Peter.
+You have been listening to Hacker Public Radio at Hacker Public Radio.
+We are a community podcast network that releases shows every weekday and Monday through Friday.
+Today's show, like all our shows, was contributed by a HPR listener like yourself.
+If you ever consider recording a podcast, then visit our website to find out how easy it really is.
+Hacker Public Radio was founded by the Digital Dark Pound and the Infonomicom Computer Club.
+HPR is funded by the binary revolution at binref.com.
+All binref projects are crowd-responsive by LUNAR pages.
+From shared hosting to custom private clouds, go to LUNAR pages.com for all your hosting needs.
+Unless otherwise stasis, today's show is released under a creative commons,
+attribution, share a line, details or license.

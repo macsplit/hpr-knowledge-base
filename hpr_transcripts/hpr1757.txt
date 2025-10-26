@@ -1,0 +1,232 @@
+Episode: 1757
+Title: HPR1757: Useful Bash functions
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1757/hpr1757.mp3
+Transcribed: 2025-10-18 08:53:23
+
+---
+
+This is HPR episode 1,757 entitled Useful Bash Function and in part of the series Bash
+Crypting.
+It is hosted by Dave Morris and in about 28 minutes long.
+The summary is some Bash Function that may be on use in your crypts.
+This episode of HPR is brought to you by an Honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15 that's HPR15.
+Get your web hosting that's Honest and Fair at An Honesthost.com.
+Hi everyone, this is Dave Morris, I'm going to tell you today about some more Bash Things.
+I quite enjoy writing Bash Scripts.
+I think Bash is quite a good scripting language considering it's a Shell script.
+The reason I like it is because compared to some of the scripting languages I've used
+in the past of a similar type, it's pretty sophisticated.
+I used the CSH Shell at one time and I don't reckon it's anywhere near a sophisticated
+as Bash.
+Anyway, I've got to write quite a lot of scripts and the moment my little side project is
+to write myself something where I can manage the whole process of preparing a show for
+HPR and this suite of Bash Scripts is getting quite complicated and along the way I'm writing
+quite a lot of functions to do various tasks between the scripts and things.
+So I thought it might be useful if I just set off on a journey of describing some of
+these functions for the benefits of anybody who's interested, maybe set up a scheme
+whereby people write stuff or share stuff that they've written under the heading of Bash
+and on HPR.
+Anyway, there's a series on Bash on HPR.
+So I've got a couple of functions I'm going to talk about today.
+They're designed to be used in Shell Scripts.
+There are a few others that I have which I use on the command line because you can effectively
+build yourself a command by setting up a function in Bash.
+I'll leave them for another time.
+What I tend to do now is to store the various functions that I need for a particular project
+in a file and then I source them in my script and in the notes and the longer show notes
+that I've provided, I tell you how I usually put them in something called function under
+school lib.sh and then in the main script I look for this file, check that it's there
+and if it is then I source it using the source command in Bash.
+So that just loads all these functions and means you can share them around like a library.
+So the first one of the two I'm going to talk about today is they're both fairly simple
+but quite, I like using them anyway, I spend a little bit of time fiddling around with
+them to try to get them the way I want them.
+First one's called pad and its function is to just simply write bits of text to the screen
+in a formatted way.
+What I wanted to do is to put out a message with a line either to the left or to the right
+or around the message so that it was highlighted on the screen if probably I'm a keen CLI user
+so I tend to write bash scripts that do this sort of stuff, talk to them through the CLI.
+So the arguments that this script requires are, there are four of them, the first one
+is the text that it's to display then the next one is the length that it's to put this out in
+and then the third one is the character is going to pad it out with and the last one
+is LR or C, the letter LR or C where the default is R which means pad to the left or center
+the text.
+There's some examples in the show notes that show how, for example, you could use it to
+output a title centered in a line of 40 characters so I want to tell you, there's no point in
+me reading these when they're in the notes hopefully you can refer to them.
+By default if you just put in pad space and then in single quotes a hyphen then it will
+output 80, 80 hyphons so it's just a useful way of drawing lines across reports and things.
+So I've included the code, it's only 33 lines including comments and I'll just walk you
+through an explanation of what it does.
+Now I think I've probably said in other talks about scripting that I use VIM as you
+I'm sure you know and I use a plugin for Bash which is called Bash Support and it will
+generate boilerplate for you so you can get it to plant the template for a function in
+the thing that you're developing and as part of that it generates a comment header to the
+top of it and the example I've got here shows it shows what it produces just a template
+to be filled in.
+So the functions pad line 10 you see it being declared then lines 11 to 14 are declarations
+of a bunch of local variables.
+I like to do this as a way of passing arguments into a function so I like to name all my arguments
+with local names.
+I use the local specification to make sure that these things are local to the function
+don't leak into the calling script.
+So I put argument 1 into a variable called text.
+What I do is I use the Bash parameter manipulation feature called display error if no or unset.
+These have really catchy names which simply checks to see that there is a value when it's
+doing the setting of the thing and if there isn't it will abort the script with a message.
+So I'm using this to do a sort of usage message so if I happen to call this pad function
+wrongly it will generate an error message with the way that scripts often do to say no
+this is how you use it.
+Length, char and side are the variables that hold the next three arguments and they all
+default.
+So length defaults to length of 80, char which is the padding character defaults to a
+hyphen side which says which side the padding is to go defaults to which means pad it on
+the right.
+There's some other local declarations that are on line 15 as well.
+One of the things that this script, this function needs to cater for, it doesn't cater
+for every possible problem but it's relatively easy to use it in a way where you might cause
+it to break if you try and give it text which is longer than the long as or longer than
+the length that you specify so if you give it a piece of text 40 characters long and you
+ask it to pad that to 40 characters that's just silly.
+So there's a test on line 17 that says if the length of the text variable is greater
+than or equal to the padding length that you've asked for then just simply print the text
+and exit the function, exit tidally so it'll just print it, not even bother to pad it
+because it makes no sense to do so.
+On lines 19 and 20 the other two arguments are processed so the char padding character
+argument we only want to cater for one character there so for some reason or other more than
+one's been provided just chop the first one off and use that.
+These are all using bash parameter manipulation features which I did a talk about which is
+referenced in the notes and also the side the LRC thing, you might provide that as a
+lowercase character and so line 20 forces it to upcase just to make it easier to test.
+The main aspect of this, the meat of this function is line 22, line 22, 23 really.
+22 it uses the print F feature to generate the padding characters and the way it does that
+it uses the minus V option which puts the result of the print F into a variable so a variable
+is called line.
+The format spec is percent asterisk s, what that means is put out a string of some length
+where the length is provided by one of the arguments of the to follow so the argument
+that's provided is a simple calculation which is the length specification defaulting to
+18 if you remember minus the length of the text so really the padding length is to be the
+amount of pattern, the number of padding characters to be that the remainder after you subtract
+the length of the text and then the second argument to print F is a space enclosed in
+single quotes so what that will do it will put out an arbitrary number of spaces into the
+variable line. Why spaces? Well print F is only about outputting strings and numbers and
+things and the only thing you can put out repetitively is a space. So line 23 then takes all
+those spaces and converts them to the character that you've asked for to be used for padding it
+does that from the one line. So then all that's needed is for the function to decide how it's
+to to to produce the final final padded output. If the specification of side was R then it's
+to put it on the right if it's L on the left and if it's C is put in the center so R and L are
+fairly simple they're dealt with in a compound if statement which says if it's R then put
+the text then put the the padding characters on the on the right if it's an L put them on the
+left and if it's C then take the padding characters split them in two and put them either side of
+the of the text and if you look at lines 30 and 31 you can see 30 computes what half of the
+line is and 31 chops off the first half outputs the text and chops off the second half I do it
+that way but just in case that it's a it's an odd number so that you get the you're going to get
+slightly imbalanced pieces either side so it's fairly simple I mean it does what I need it
+it might be a little bit too simplistic you might not like it very much so if you wanted to
+pad something with spaces it won't do it because it's using spaces internally to generate the
+string and then it converts them to to characters and the way I've designed it doesn't really
+cater for that suppose I could change it to make it deal with that I hadn't really thought much
+about it until I was writing these notes and I haven't done anything further with it it might be
+too simple for your taste but it does does what I need and it's hopefully something of interest
+that you might want to develop if you do then come back and tell us what you did that would be
+interesting these are as I say basic functions as part of my toolkit I'm using for script development
+and the next one I have called yes underscore no and it's simple as a simple thing you use to ask
+a question and wait for a reply which is something my scripts are doing fairly often the way I've
+constructed it is so that you can use it as if it's a sort of boolean function that you'd use in
+a high level language and you'll see that there's an example of an if statement so it's if exclamation
+point yes no so if not yes no and then yes no is followed by a prompt string which is the thing
+you're going to ask the user this case it says do you want to continue and then there's an
+optional default value that follows that which in this example is no so it will actually prompt you
+with do you want to continue question mark space and then it will it will offer you the no
+as an option so if you just hit return it would it would not continue you can see that it would
+return true or false and then it's being negated so if it returns a false then that will be turned
+into true and it will exit whatever bit of code it is that you're running this in so it just
+returns a numerical answer true which is zero in bash and one which is false the anything non zero
+is false I think in in the bash environment so let's have a look at the code of this one this is
+another quite short function it's only 35 long 35 lines along including the comment and it does
+the similar sort of thing lines 10 and 11 are sorting out the arguments puts the first argument
+in a variable called prompt and if there isn't there isn't an argument then it will abort things
+with the message the second argument is is a default and that in the in in the the definition
+of default it's actually stripping out spaces so the thing where it says dollar open curly brace
+two slash slash space slash close curly brace that means strip out all spaces remove
+replace all spaces by nothing because we don't want to cater for responses containing spaces we
+are only prepared to deal with y for y or yes actually y or y e or y e s as the as the yes returns
+to anything else as the null return so it does that there just simplify matters lines 14 of 15
+the 14 to 16 I should say are dealing with the the default instance so if there is
+a default value provided then the default variable is replaced with itself preceded by a minus i
+in a space and I say in the notes that strictly because this this is I'm actually making an option
+for a command but further down strictly the after the minus i there should be a quoted string
+but since I've made sure that the value of default is never going to contain spaces and you'd
+want to quote it if it did contain spaces then I've short circuited things a bit there made it
+a bit simpler so line 21 is the main read which gets the puts out the prompt and gets the answer
+and it uses a minus e option which invokes read line read read read line library which is what
+you will get on the command lines thing that lets you do editing at note all the various control
+keys and stuff that let you do line editing and so forth so it'll use that in the read it doesn't
+by default so you can't do things like backspace and delete things and add stuff to a line so I
+always do this it's then followed by the the value of default default variable now if there was
+no default then it will be null so nothing will be be substituted there at the time the read is
+but if it if there is a default value it will there will be placed there a minus i and a string
+then minus p followed by the prompt which is enclosed in double quotes as you see because it
+will pretty much certainly contain spaces that's the prompt that you're going to get when the when
+the reader's invoked and the result of whatever's typed in will will be returned in the variable
+and an s now line 22 is capturing the result of the read the read will either return a true value
+if it worked if it did did its thing correctly or it will if it was aborted for whatever reason
+it will return a non-zero now one of the things you might do is press control d control d is
+end of file and if you ever do that to a read it it causes the read to abort because it's not
+it's it's it's got an end of file indication and I'm catching catching that eventuality in the
+script so lines 23 to 26 are looking for a non-zero return from the the read and if that happens
+then the message readaborted is put and the script the function I should save returns with a
+false value it's fine it's slightly confusing fault is one but you know it's just the way you
+have to live with it so that's really just catering for what happens if you do control d otherwise
+we pass on to line 28 where the the result that came back is forced to uppercase that just as
+before makes it easier to check the results then the line 29 I apply a filter to the to this
+returned result where anything that is not the characters in yes and the words yes and no
+is removed might be slightly controversial I mentioned a bit more about this later we at that
+point will have the answer in the the form which is the easiest to check if statement that begins
+at line 30 and ends at line 34 is then checking to see if the answer that was given
+matches with the word yes and it does this using the bash regular expression syntax and you see
+the equal followed by a tilde that means the the thing on the right is in regular expression the
+regular expression is an up arrow which means anchor this to the start of the line we don't
+expect there to be anything at the beginning of the line other than the answer and it's got a
+dollar at the end which means we don't expect anything else after it before you reach the end of the
+line and then we look for a Y optionally followed by an E or an E and an S so catering for a Y
+as a response a Y E as a response or a Y ES as a response and only that if we find
+any of those conditions any of those items then those characters I should say then we have a
+positive result all the question mark in the regular expression case you didn't mention that the
+fact the regular expression the E and the ES are in in a bracket in brackets that means that
+just encloses them as alternatives and the pipe symbol between the two alternatives is an OR
+the question mark means the E and the E and the ES options can be omitted totally so you can
+just have a Y that'll that'll be what returns your positive result and anything else anything
+doesn't match it at all will return a one which is false so that's it it might be a little bit
+controversial doing it this way I came up with this idea thinking oh that's quite cool but having
+thought more about it I'm not sure I'm right if you type an example I put in the notes
+something silly like yep great as a response that will be stripped right down all the
+all the characters other than yes no will be stripped out of there and it will resolve down to Y E
+so it'll be the Y from Y and the E from great so that's a match you might also if you type
+yeast why the hell you do that I don't know but there you go that also matches because it's got a Y
+and an E and the rest will be stripped away depends if you think that that is deeply stupid
+that your yes no thing can take stupid answers and make decisions on the basis of there being
+something it looks a bit like yes in there then you might want to skip that bit that strips out
+the yes no stuff online 29 I might do that later actually I'm not sure the other thing you might
+not like in this design is the default the default the way this will work is that in that
+that example early on in the notes do you want to continue whether default is no then the answer
+will already be provided but if you wanted to say yes you can't just press return obviously because
+that will return no you'd have to delete the no the default value and you know there's
+there's some potential annoyance there I just hit control w which is the universal
+delete back to the start of the line and then press Y and that would that would do it
+better than wine return of course so it suits me sometimes so I define it irritating slightly
+but you know depends on your your particular tastes I hope you find that useful that's the
+end of me talking about these things for today I've given you some links to stuff about
+writing functions there's a lot to learn I find the Linux documentation project stuff quite
+helpful it needs some careful study but it's it's pretty good and the sources of these two
+functions are available in one file that you can download which are also linked okay that's it
+thanks a lot bye
+you've been listening to hecka public radio at hecka public radio dot org we are a community
+podcast network that releases shows every weekday Monday through Friday today show like all our
+shows was contributed by an hbr listener like yourself if you ever thought of recording a
+podcast then click on our contributing to find out how easy it really is hecka public radio was
+founded by the digital dog pound and the infonomicon computer club and it's part of the binary revolution
+at binrev.com if you have comments on today's show please email the host directly leave a comment on
+the website or record a follow-up episode yourself unless otherwise status today's show is released
+under creative comments attribution share a life 3.0 license

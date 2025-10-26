@@ -1,0 +1,291 @@
+Episode: 2908
+Title: HPR2908: Modeling opinions in space game
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2908/hpr2908.mp3
+Transcribed: 2025-10-24 13:04:30
+
+---
+
+This in HPR episode 2988 titled, Modeling Opinion in Space Game, and in part of the series,
+Haskell, it is hosted by Tuku Toroto, and in about 35 minutes long, and Karima Clean Flag,
+the Summer Inn, Tuku Toroto talks about Modeling Opinion.
+This episode of HPR is brought to you by AnanasThost.com.
+Get 15% discount on all shared hosting with the offer code HPR15. That's HPR15.
+Bitcher web hosting that's honest and fair at AnanasThost.com.
+Hello, you are listening to the Hacker Public Radio and this is Tutur Tottenham of Making
+at Space Game in Haskell. Today, we continue with people, this time with the Opinions.
+There is some more code around this time, but it might be a good idea to follow it,
+shown once I try to keep the amount of code that I'm reading aloud to the minimum though.
+So, Opinions. Different kinds of people get along with each other at a varying degree.
+And in the game, this is modeled with the Opinions code. It can range from minus 100 to 100.
+The 0 is neutral, minus 100 is the worst, and 100 is the best possible.
+And Opinions may affect to the things like trade deals or marriage proposals or declarations
+and such. And current system is somewhat limited. There are two things that are taken into account.
+Currently, there's a trade and relations. Trades are defining things about characters.
+You can be, for example, brave or coward or diligent or whatever. These are well-straighted.
+So, for example, two brave characters automatically like each other a bit better than
+prey than coward. And relations are relations between characters like parent and child,
+automatically we like each other better than just a random person. And two rivals will hate each
+other so much that it takes a lot of work to work over that. So, parent and child have a positive
+opinion of each other or that relation contributes positively to the opinion. And two rivals will
+have a negative opinion of each other. And to make things even complicated, all this is based
+on the interlevels which may lead into the incorrect results just like in the real life.
+So, if you don't have inter of some character, you don't get as good as good information about them
+than if you have the inter. And the report, there's always reports
+that have a whole different levels of information. And this is modeled in the report
+press would data. That is, that's for internal use only. Client never sees that one.
+And it has two things that actually three things he's struck off.
+Confidence level, like what level of confidence you have on this result. Then there's the
+opinion score, attention to minus 100 to 100. And they might be a list of opinion reasons.
+It tells you that why you don't like somebody or why somebody else doesn't like,
+why two characters that are not you don't like each other or like each other. So, this is as a
+reparture result. It's a numeration with three value constructors feeling level that takes
+opinion score as a parameter. Reason level takes that takes an opinion score and a list of opinion
+reasons. And details level that takes an opinion score and a list of opinion reasons.
+So, if you only have a gut feeling of something you you too get a score, but you don't get a
+list of reasons. If you have reasons level, then you have a, then you have a score and a list of
+reasons. And if you have detailed level, you have a better or better detailed information about
+this. There you have a score and it's the reasons. Two last cases look similar, but they turn into
+a little bit different explanation and attention into the client. That's why I'm giving them separate.
+Okay, and a reparture result has semi-group and monoid instances because I want it to be a monoid
+so that two results can be combined. So, if I have two reparture results, I can just use the
+diamond operator to smash them together. And the result is that the scores are added up and the
+opinion reasons those lists are just concatenated. And then because there's three levels, the
+feeling level reasons level, deep level, the A, when you combine two of those, reparture results,
+the confidence level of the new result is the lowest one of the two. So, if you combine two
+detailed level results, you're going to get a detailed level result. But if you combine
+feeling level and detail level, you get a feeling level result. The scores are still added up
+and the lists are opinion reasonable lists are concatenated. And the empty instance, sorry,
+empty, you need for reparture result is a detailed level without opinion score of 0 and the empty
+opinion reasonable list because you can combine anything with this value without that combined item
+changing to anything. I wrote the, I wrote the instance declaration show note, they are not
+particular interesting, I think, but if you if you want to have a look, they are basically
+they are just combining the scores together and lists together and keeping the lowest of the level.
+Okay, now that we have a reparture result that we can use to give track of the, what's what's
+the, what's the result of opinion calculation we can get, get started. The, so, so like I said,
+there's two cases or two sources, however you want to, however you want to think about it. And
+first I'm going to tackle the opinion based on its rates. So, if you have two persons and
+you know what rates they have, you can calculate or compute what's the, how they like each other.
+And here's a thing, it could be between a player character and somebody, or it would be,
+then the, then the results would be that how much the player character likes somebody and how much
+that's a mother character likes the player. Or it could be between two, two, two different characters
+that are not the player character. Then the, then the result will be how, how well they like each other
+based on the information what the player has. This is, this isn't always true,
+player might not have all the information available. So, in that case, it's just the,
+the best, the best ability, the result is calculated to the best ability.
+So, current system is based on comparing two lists of the rates. So, you need to, if you want to know
+how, how the characters like each other, you have to have all their traits as a list.
+So, if you have a present brave, that's a good, that gives you an opinion bonus. If you have two
+ambitious characters, that's right, that gives you an opinion bonus. And this doesn't work on the
+traits that alone cause an effect. So, if you have a character who, if I had a character in a game
+who would have a hypothetical trait called dislikeable, which would, of course, everybody do,
+dislike him regardless of their traits. This system cannot handle it. You have to have
+two traits that can repeat the calculation. So, that, that is something that I need to add up,
+at some, at some later point. So, I have a function, the basic, basic, very bottom function
+is a trait, their opinion. That is, given two traits, trait vibes, for example,
+trait and trait. And it returns, maybe, a couple of opinions go, opinion reason. So, maybe,
+it's returned, because it doesn't necessarily, if you have some combination of traits that don't
+cause bonus or malus, then it's, it doesn't necessarily does nothing. But if there's some
+combination of traits, for example, trait and trait, then it returns just a couple, with opinions
+go, let's say, five, or then, and the opinion reason of two trait characters automatically
+like each other. So, given two traits, it will tell how that trait, how that combination affects to
+the, affects to the opinions and the reason, reasoning behind of it. And in order to have a
+nice format for, or audata, we have a little help of function, trait score, that takes two trait
+types, and returns, a couple of opinions go, a list of opinion reasons. This is just a
+small help function, that takes the result of that previous combination. And in case of nothing,
+it returns empty, which is a couple way, the opinion score is zero, and the opinion reason,
+list is just an empty list. But if there's a, if there's a value, if the calculation
+produces a value, then it returns an opinion score, a list of one item. So this might look up
+bit silly, why do I want to do it like this? But this is because, a couple of opinions score,
+opinion reason isn't a monoid, you cannot combine them, but the, a couple of opinions score,
+list of opinion reason is a monoid. Because, couple, the both elements are monoid,
+is a monoid. Opinions score is a monoid, because zero is the empty element, and the addition
+is defined as a, that combination function, opinion reason is in the monoid, because it's a,
+I mean, you could, it's not that, it's not reasonable monoid, because if you combine two opinion
+reasons, you would get an opinion reason as a one long string, two strings has been combined together,
+that does not make any sense. So, but if you make, make it a list, then you can combine two lists,
+you just add them up. So, two, two reasons cannot be added up in a sensible way,
+but two lists of reasons can be added in a sensible, sensible way, you just combine the list.
+And, all this means that, if I use, if I'm making tuples of opinion score, list of opinion
+reasons, I can combine them with that, damal operator, and that will be handy, at some later point,
+during this episode. Okay, so, in order to calculate the score, based on the trait, we, we do it
+like a, there's a bit code, that there's a function trait score, that takes a list of trait type,
+person intel, analyst of trait type, analyst of person intel, and producer report, report, report,
+result. We need that, there's the first trait type is for the originator, and the
+person intel, intel for that person, and the second trait type and person intel is for the target,
+the names are kind of arbitrary in this case. So, I have two, two characters, I have
+list of the trait, and list of the intel, that we have available of those characters,
+and based on all this information, we are going to produce a report of result.
+Inside of the function data, if it checks that the intel contains, both intel contains trait,
+so we have a trait information of both of these characters, if so, we are going to return
+detailed level, result with a score and reasons, if we don't have traits on those two characters,
+then we are going to return feeling level, result with only score, and most likely in this case,
+the trait list will be empty anyway, and how we are going to calculate the score and reasons,
+this is our reading aloud, this is our open parent score,
+common reasons, close parent, so we are making a tuffle, and this is distracting it,
+automatically so we get two values, score and reasons, equals m-conquat,
+to the trait base, score, time and to the originator phrase,
+download after this target phrase, so that's a quite a bit of stuff,
+packed in a small space there, I'll go and try to unpack and explain that a little bit,
+so the trait base score is a function that expects two trait type values as parameters,
+so but we call it with two lists of such values, and how we are doing this is that we are
+putting that time or dollar between trait base score and first parameter, that means that it creates
+a list of functions of the first parameter comes from the originator phrase list,
+but second parameter hasn't been given yet, so they are waiting for that second parameter,
+so trait base score, time and dollar originator phrase creates a list of functions that are waiting
+for the second parameter, first parameter comes from that list,
+after this diamond after this target phrase means that we are taking that list of functions,
+and for each of those functions we are calling with all the parameters or with all the values
+coming from the target phrase, so that diamond after this applies each function to each value
+of the second list, and the result here is that if we have a two list, if those
+elements, if those lists that we have both have two elements, we are going to get four function
+cores, and how we are going to get a list of four results, so the trait base score will be
+called first, first it will be called another hundred percent of the order order is, but it does not
+really matter, the first element is the first element is the trait base score,
+chord with the first element of the borrowed list, second is the first element of the first list
+and second element of the later list, third one is the last second element of the first list and
+the first element of the second list and the fourth one is the second element of the
+first list and second element of the last list. So it just calls with every possible combination.
+So this is a list applicator that we are using here. I might have talked about this at some
+last point. But the end result is that we are going to trade Tesco with combination,
+all combination with all combination of two lists of parameters. So now we have a peak list of
+a report results but we are not interested on the peak list of report results. We want one list
+of one report result and then we are using Mconqat to that list of results. Mconqat is a
+general function that when given a list of monoids, you will just combine them together. So this
+uses the time operator that we know that when we define the semi-group for the report result
+and monoid for the report result. This is why we did it because now we can just call Mconqat
+to that long list and it will combine all those values. It will take the empty value,
+time and it will do the first value of the list, time and it will do the second value of the
+third value list until the end of the list. So let's match them all together. The result is that we have
+a double of opinion score list of opinion regions and then we, because we define this as an open
+parent score, comma regions close parent on the left side of the equal sign. We are taking the
+double apart and ending up with the value of score and value of regions and these we are returning
+from our trade score function. This is probably kind of convoluted and bad explanation but if you
+have a chance to look at the show notes, it might probably, I hope, make some more sense.
+So based on the available Inter report result of correct level is created.
+So if we know the threads of the port persons, we get details level and if we don't then we get the
+feeling of result. And this is how we get the opinion or opinion result of the
+based on the trade scores. Sorry to trade in the inter. So the second part of the
+puzzle is the opinion based on the relations. This is even more convoluted. This I'm not
+100 percent happy but I couldn't figure out better later on doing this.
+So this is a, this is a basic somewhat similar but it's a bit more complex. So the
+intel here is two dimensions, the relationship visibility and level of detail. So you can have
+a base opinion in the choices for opinions and detail opinions. And that second dimension is
+opinion of two people, other than your character. So I hope that we will be a bit more
+clear when I explain that. So the relation score is just like, again, it's a person in the list
+of person in the list of relations and we are going to get a report result out of that.
+And we need to take account of what level of intel we have about opinions and on
+what detail. This is the enough function or intel. Visibility is unique relation,
+visibility is that existing in relation in that particular case and the score is computer
+present relation. So in the code, in the account, in the relation score, intel,
+relation equals to m-conquat. So the relative report or intel score,
+so that I'm going to do the visibility. So we are calling a real report function with the intel
+we have available about this particular case, score that we calculated depending on the relation,
+we have outlined the visibility that we have. This is an entity so that this can't be followed
+without show notes, sorry, sorry about that, but I couldn't get this clean no matter how I tried.
+But so the bottom line is that the real report function is the one that is doing most of the work.
+And for that, you are going to give a parameters of opinion in the list,
+opinions, a couple of opinions called list of opinion reasons, relation, visibility,
+result, result, result. But what it does here, it's first it tries to find
+matching intel of what this particular case, like depending on the
+what type of relation it is, is it a familiar, is it a public relation, which is known to everyone,
+is it a familiar relation, not only a small group of people, or is it a secret relation,
+known only to those two particular persons. So it tries to find a visibility that matches.
+And if there's no matching visibility, then you just get a feeling level, the result, if there's a,
+if there's a matching, matching a visibility, you can get a feeling level,
+a reasonable level, or a detailed level, depending on what type of information you have
+for that particular character. Because like I explained it earlier, if you have two characters
+that need a one of them is you, and you are trying to figure out how much they, what's the opinion of each other.
+You have to have intel of those characters, which traits is easy, because you either have that
+information or you don't have that information. But when you're trying to figure out how they
+like each other based on the three relationships they have, you have to have an intel on
+relationships. Of course, and that intel has a, that level that you can have an intel on,
+you always have an intel on public relationships, because they are public. But you might have a,
+you might not have an intel on the upper, the secret relations, because you know,
+the secret. You have to, you have to work on to get that level of information out of them.
+And you can have, because you have two characters, you could have a full intel on one character,
+and you could, you would have a thin minimum intel of the another character. And based on that
+info information, you can try to guess or compute what, how would they like each other.
+And this is based on the intel you have, this cannot take into account, but intel,
+those characters have about each other. For example, you might have an intel, secret intel about
+both characters. That will tell that they are, they dislike each other, utterly, because of some
+relationship they have with some thought person. But because those two characters don't have that
+intel about each other, they might have only a public intel about each other. They don't know about
+that secret relation that another character has. So the opinion of each other is different than what
+you, what you compute it to be. So this is, like, you cannot, you cannot know what those characters
+know and calculate the relationship score, opinions score based on that. You just don't,
+you just don't have that information. You have to go based on the information you have about
+those characters and make that best effort estimate. Okay, so that's why this is the
+convoluted and not giving correct results. So to put all of this together, we combine results
+of these two functions. So we have, we have an opinion result based on the traits and we have an
+opinion result based on the relationship, relationships. And we can combine these with the
+animal operator because they are just two, two opinion results which is done more than to get
+one result where the scores are summed up and the reason lists are connected together and
+confidently level is lower off the two. So that, that one monoid and semi-group
+instantly declared earlier that gets quite a bit of use and I found it really handy here. And
+when we add more factors that might affect to the system or to the opinion, it's just
+with the time of the results together. It should work just fine. Okay, so now that we have
+a very important result, we need to transfer into some information that we can return to the client.
+And here we have an opinion report. The opinion report is the thing that we are returning to the client.
+We are not returning that opinion report side because it, it, it, it is a bit too much of
+information. We could feel that that information with the client, but we don't want to do that.
+We want to return to the client only the information that they actually have access to and actually need.
+So we have a function report result to opinion result that they've done.
+Reparture result and retention of opinion result. And because opinion, opinion report is a,
+it, it's a number of three values. It's a base opinion report of beta, with the opinion feeling.
+Oh, it's an opinion, the reason report with opinion feeling and list of opinion reactions. Oh,
+it's detailed opinion report with opinion score list of opinion reactions. So it matches
+to that, to that report result by that we defined earlier with, bit, bit of changes.
+So if we have a, if we have a, we feeling level at report result, we are going to get a base opinion
+report with opinion feeling and opinion feeling is a, a number is just negative, neutral positive.
+So we are going to turn that score that we spend a lot of effort to calculate into just a value,
+is it a negative feeling, neutral feeling, positive feeling. I think the, anything below minus
+15 is negative and anything above plus 15 is positive and minus 15 to be positive 15 is
+neutral feeling. So if you, if the character doesn't have enough intel that's going to get a,
+okay, I have a negative feeling or I think that car person has a positive feeling about that
+person. If they have a, however, if they get an opinion reason report from the
+computer, then they are going to get an opinion reason report. Then, to the client, here we have a,
+again, we have opinion feeling. So it's an, a kind of negative, neutral positive, but we have a list
+of reasons. So character can, can quantify if, got feeling a little bit better, like I don't like
+that character because they are ambitious, ambitious and I am ambitious, so they are dangerous for me.
+Or I bet this character likes that auto character because they are both cardiners, for example.
+So again, you just get that feeling, but you have a bit more information why you get that feeling.
+And the last one is that if you have detailed level,
+detailed level report, you are going to the detailed opinions report where you have
+actual score and the list of reasons. Here you can, here you can quantify things like
+this character has an opinion of 25 of that another character because of this list of reasons.
+And that's about, that's about what the opinions are currently. So by guys head,
+Robert Erburtza based on the intel, in case of place own avatar, they have full intel of their own avatar.
+So that's why the opinion about some other person is based, based on holy, on what we know about them.
+But in case we are talking to somebody else's opinion about us, or person A's opinion of person D,
+then we don't have, we don't have all that information, or we might have more information
+that those other characters have which leads to incorrect results, but that's how it goes.
+You know better what your yourself are thinking than what some other person is thinking.
+So there's a change of misjudging things.
+Okay, food or plants, I want to add more things that affect to the opinions,
+like that single thread thing, like you might have a generally dislikable character,
+that should be easy enough to add. It would be neat to have a history of actions.
+Like if you know that there's some character who has consistently been really great,
+you might like them slightly better because of that.
+Or if there's some character who is a history of destroying planets,
+you might dislike them quite a bit because of those history of actions they have done.
+Culture could be a one thing that we could affect here. You have, you are, you probably,
+as a character, probably doesn't like characters coming from different culture as much as
+members of the own culture. And age could be thrown into mix. So if you are in a,
+you know, maybe folks in the space, maybe some old general might naturally dislike young officers
+or might like them depending on what kind of traits they have that old general.
+Or if you have some really old general who is of opinion that nobody under,
+under age of 50 should be a officer of some level, some certain level,
+then that might affect to the opinion of the people around them.
+So I'm going to finish it here. Questions, comments, feedback is always welcome.
+Even better is if you record your own Hacker Public Radio every so,
+this day to reach me nowadays is either email or very much there,
+I'm due to but most of them that show so, hardass.
+You've been listening to Hacker Public Radio at Hacker Public Radio dot org.
+We are a community podcast network that release shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast and click on our contributing to find out how easy it really is.
+Hacker Public Radio was founded by the Digital Dorf Pound and the Infonomicon Computer Club
+and is part of the binary revolution at binwreff.com. If you have comments on today's show,
+please email the host directly, leave a comment on the website or record a follow-up episode yourself
+unless otherwise stated. Today's show is released under Creative Commons,
+Attribution, ShareLite, free dot org license.

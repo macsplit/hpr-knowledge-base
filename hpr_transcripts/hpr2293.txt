@@ -1,0 +1,327 @@
+Episode: 2293
+Title: HPR2293: More supplementary Bash tips
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2293/hpr2293.mp3
+Transcribed: 2025-10-19 00:57:55
+
+---
+
+This is HPR episode 2,293 entitled, more supplementary mash tips and in part of the series
+Bash Crypting.
+It is hosted by Dave Morris and in about 38 minutes long and Karimanec's visit flag.
+The summary is finishing off the subject of expansion in Bash Part 2.
+This episode of HBR is brought to you by An Honesthost.com.
+At 15% discount on all shared hosting with the offer code HBR15, that's HBR15.
+Better web hosting that's Honest and Fair at An Honesthost.com.
+Hello everybody, this is Dave Morris and welcome to Hacker Public Radio.
+This is the next episode in my series on Bash Tips.
+This one's called More Supplementary Bash Tips.
+This particular one is Part 2 of a series, a pair of shows about the expansion of file
+names.
+Now, in the last episode, 2278 in this sub-series or whatever you'd call it, was talking
+about the whole business of using asterisks and square brackets and question marks and
+so forth when writing expressions that were to be used in the context of file names.
+And I said I'd be talking about extended pattern matching, which is another way of looking
+at this.
+We're matching patterns with expressions that are called globs.
+There's an extended version of it and I said I'd talk about it.
+In a future episode, well this is it.
+Now there are five different ways in which you can use this extended pattern matching
+feature and in order to enable it, you need to switch on the x-tglob option using the
+Shopped SHOPT command.
+We looked at this in the last episode.
+Now one thing I discovered in looking at this was that on all of the systems that I run,
+that is Debian, KDE, Neon and Razbian, x-tglob was on by default.
+I've tried to work out why this was because I hadn't set it myself and I discovered that
+the default mechanism for doing Bash completion was setting it because I believe it's part
+of the Bash completion mechanism itself.
+So it used to be that you had to opt in to get Bash completion.
+This is when you're typing a command and you hit tab during the typing of the command,
+whether you're typing the name of the command, you're not quite sure how to spell it, maybe
+you hit tab and you get back a list of all the commands it could possibly be.
+And also, if you've typed that first part of the command and you're not sure about arguments,
+if there are well-known arguments, then the completion knows about this.
+It's quite clever actually, but anyway, if you're running these versions of Linux,
+these distributions, then you seem to get it by default.
+I haven't got any non-debian-derived versions around, so I don't know if it's the same with
+Fedora and Sousa or whatever.
+Anyway, let's get back to these patterns, extended pattern matching features.
+There's a list of them and they consist of a character, then parentheses and inside the parentheses
+are a list of patterns, be one or however many you want, they are must be separated by a vertical bar.
+You can also put patterns within patterns, if you wish.
+So basically, I'm going to go through the list of different patterns very briefly,
+and then I'm going to dive into some examples of how they work after I've just gone through the list.
+So the first one is a pattern which matches zero or one occurrence of the thing that you're
+searching for, and that's a question mark followed by this pattern list in parentheses.
+The next one matches zero or more, it's supposed to zero or one, and that's an asterisk followed
+by a parenthesized pattern list. The next one is plus, and then an open parenthesis, a pattern
+list, a closed parenthesis, and this matches one or more. So we've had zero or one, zero or more,
+one or more of a given pattern. The at sign followed by the parenthesized pattern list matches
+just one, just choose one within this list, so it's sort of an array-like thing. The final one
+is an exclamation mark followed by the pattern list in parentheses, and this is an exclusion type
+thing. It matches anything except one of the patterns. Now my researchers show that this is a
+relatively new feature that's come up in the more recent recent versions of Bash, not quite sure
+when it came about, but it's a year or two old perhaps. It doesn't seem to be all that well documented
+in as much as it's just basically the list that I've given you, and you really need to work it out
+yourself where it actually means. What I'm doing here is trying to enlarge on this documentation
+and explain what it actually does. There are some similarities to regular expressions,
+so the question mark is used in a regular expression as is an asterisk and a plus, not an at sign
+to my knowledge, exclamation mark though, yeah. So there are similarities, there's similar thinking
+going on here, but it's done differently. Now I added a warning here in the notes to say that,
+as I was researching this, there'd be a lot of confusion about what these are for and how you
+use them, and it included me. I was included myself in the confused people until I managed to get my
+head around it. These patterns are applied to each file name, so the assumption is in the majority
+of cases you'd be using them to match a number of files. As we saw in the last episode,
+ABC asterisk means files that begin with ABC and end with anything else, so you're trying to match
+files, and so we're doing it per file, so all these things about one or zero or more or whatever
+relate to elements of a file name, not files in a directory. So I explained it here by saying that
+if you wrote down the pattern, and these are all in lower case, a, question mark, oh,
+parenthesis, b, closed parenthesis, c, that means it matches a file which begins with an a,
+it's then followed by zero or one instance of b, and ends with a c, so it can only match that the
+sequences, that's all you typed, the sequences abc and ac, so one's got single b and the other one's
+got no b. I'll be going onto some examples, which include this particular one in a minute.
+Some of the confusion that this can cause, and I must admit, it took me some number of days
+to get my head completely around this. I found people in a similar state of confusion on stack
+exchange, and I've listed some of the articles that I found where people were explaining how this
+worked. It took me even though it took me a while, but I got there, I think, and so I'm giving you
+the benefit of my research now. So they're all linked, and you might be good idea to go and read
+if you want to get into this stuff. So let's dive into the examples then, and it turns out
+that the 33,800 files that I generated in the last episode beginning in directories A to Z,
+et cetera, et cetera, not that useful when demonstrating how this thing works. When I created them,
+I hadn't fully got my head and my own extended pattern matching. So however, they have some use,
+so I'm going to use them. In the notes here, I've created some other files just to make things
+a little bit easier to understand, hope, anyway. So I've got a sequence of commands here that I've
+typed to do with this. And first of all, I've changed directory to path name expansion directory,
+I created before, or mentioned it last episode. Make a directory called test, and in it, I create the
+files A, B, B, C, A, B, C, A, C, and A, X, C. We're going to use these expressions to fish various
+ones of them out. I also created the files X, X, X, and X, X, X for the same purpose. And then I've
+listed what's in this directory test so that you can see. In my list of commands, I've also switched
+on X, E, X, T, glob, just to remind you how to do it. And just in case you haven't got it switched on,
+if you want to follow along with this and do the same tests. Some of my examples are actually
+derived from the stack exchange articles that I mentioned. And so they're sort of not totally
+original, but I've adapted them a bit. So let's start with the match 0 or 1 occurrence.
+Question mark, and then a pattern list in parentheses. So if we want to ask for
+files which have, begin with an A, followed by 0 or 1 occurrence of B and end with a C, then
+I just mentioned this example. I've got the command echo space test slash A, question mark,
+open parentheses, B, close parentheses, C. And I get back test slash ABC and test slash AC.
+So that demonstrates the point I was mentioning before when I was warning about this stuff.
+If you just get back two files from that directory and they are the ones that match these
+criteria. Now the next example under this heading, I've added an X in the parentheses with a
+vertical bar separating it from the B. And that's to say I want to get back the file AXC,
+which I created specifically to do this test obviously. So I won't read out the full command
+because I think you probably can follow along without me doing that. But it's all written out in
+the notes. So the pattern list has become teeny bit more complicated since there are two characters
+in there with the vertical bar between them. So now I thought I would do an example using
+the large collection of files that I created. And I'm trying to search all the directories
+that start with the vowel, all their single letter anyway, all of the directories that are vowels.
+And I'm looking for files where I don't care what the first letter is for that's cheating a little
+bit because the way I created them each, each directory contains files that begin with that same
+letter. So but what I want is the first, the second letter of each file name to begin either with an A
+or a B. And I want the numbers. Remember that the files consist of things like A, A, 0, 1,
+txt. So I want the first number to be either a 0 or a 1. And I want the second number to be either
+a 0 or a 1. Or I want files where they begin with an A or a B and end where the two digits are
+5, 0. So I'm asking for some fairly, fairly weird subset of files. But there's a lot of files in
+these directories which is part of the thinking when I made them. You'd want to be able to pick out
+specific file names easily. So I'm using the LS command to do this. I'm using the option
+minus W50. I think I mentioned it last time this limits the output width. I'm just doing it so it's
+more readable in these notes basically. And I've also used the minus X option which lists files in
+row order rather than in column order. So the actual expression is, I think I might need to read
+this one out. Though you might have difficulty following this along with this if you don't have
+the notes in front of you. So the first bit of the expression is in square brackets. And it
+consists of the vowels A, E, I, O, U, closed square brackets slash. Then we have a question mark. Now
+this question mark is the prelude to an extended pattern. So it's followed by an open parenthesis.
+Inside the parenthesis is a question mark. So this question mark means an any character, any
+characters to go here. Then it's followed by in square brackets A and B. So remember we want
+we want the second letter of these files to be either an A or a B. And then it's followed in
+square brackets by zero one. Another square bracket is zero one and then an asterisk. So that's one
+of the patterns in this expression. There's vertical bar. Then we've got question mark again.
+That's the any character. Then in square brackets A and B, closed square bracket five zero asterisk.
+So that was the second case where we want things that begin with an A or a B that have the
+second letter A or B, I should say, followed by the digits five zero. And after that asterisk is
+the ending parenthesis. So we get back a block of files which I've listed in the notes. And we've
+got examples like a slash a a zero one dot txt. That obviously matches. And it goes on we also have
+a slash a a five zero dot txt. So we got that one. And we get similar line for a B and another one
+for e where e a and then we get this we get similar for the the directory i where we have i a zero
+one etc etc. And so it goes on to the final letter u. So I think I don't know I certainly sat
+and thought about this example for quite some time in order to make it useful. I hope it is.
+There's some points to think about in relation to this. We're using the match zero or one occurrence.
+The question mark followed by things in parenthesis even though there are no cases where there are
+zero matches. Okay. That's okay because we're getting the benefit because I wanted to do this
+weird thing of getting files that whether the digits were zero one and zero one zero or one and zero
+or one or five zero. We can use the alternation capabilities of this expression in the vertical bar.
+We needed to use the asterisk in the sub pattern in order to include the dot txt suffix on the file.
+So otherwise we wouldn't have got anything but there are other ways of doing it. And I've shown one
+in the notes. I'm not going to read that one out because it's it's quite complex but using the
+the wild card is potentially dangerous. If you put a wild card asterisk on the end outside the
+closed parenthesis then that remember matches anything. So what would happen? It's slightly counter
+intuitive but it's just some experiments to prove that I was right. It results in this complicated
+expression, this extended pattern being ignored and you just get back everything or maybe it's not
+being ignored but because you've got an anything type wild card on the end then it it includes all
+the files that the complex expression would would return but it also includes everything else.
+So a file that doesn't match the extended expression will match the anything. I think that's
+a better way of putting it. So what I did was I didn't a little example where I echoed
+used echo with this pattern and then counted the number of files that came back with a using the
+WC space minus W command to count the number of words and I got back 40. So that's the number of
+files that were returned in the LS. There are ten lines four columns that could have worked out
+itself but that wasn't the point. I then put an asterisk on the end of that expression
+and did the same count and I got 6500 words back. So that shows that what I just said
+the all files were matched by this this expression is true. Then I did an echo of the square
+bracketed vowels slash asterisk meaning find go to all of the directories A E I O and U
+and return all the files in them and then counted them and I get back 6500. So it proves the point
+that putting an asterisk on the end will result in the expression matching everything. So let's go
+on to the next example where we look at the match zero or more occurrences extended pattern.
+So we're going to use this ABC business again and in this case we're looking for a followed by
+zero or more occurrences of B followed by a C. So because using zero or more we get get back a
+BBC because that's more than zero. It's two B's. We get ABC which is one B and we get A C which is
+no B. So that all matches. I added an X into that list in parentheses with a vertical bar
+and that included AXC into the list. So I hope you find this useful. I certainly did find this a
+useful way of understanding how these things work. The expression is being compared to every
+file in the directory and certain files then being returned that match this pattern. I also did a test
+with the files with X's in their names. I looked for asterisk open parenthesis X close parenthesis
+dot DAT and I got back XXX and XXX. So there were no instances of zero X's followed by dot DAT
+but if I'd created a file called just dot DAT it would have matched but it would only have been
+shown if dot glob was set as we looked as we saw last the last episode. So I then did various
+experiments using the big collection of files. We might from one to find for example all files in
+the directory A but begin with two A's and with numbers in the range one to three. So what I did was
+an LS command. I won't give you all the options but the expression was A slash asterisk open
+parenthesis A close parenthesis. So that's saying I want zero or more A's. Well there aren't any
+there aren't any cases of zero A's but there are cases of two A's. They will begin with A anyway.
+That's then followed with asterisk open parenthesis square brackets one hyphen three close square
+brackets close parenthesis dot TXT. So that returns a bunch of files nine files whose names are
+AA11 AA12 AA13 and then AA212223 and 313233. So it's actually doing it that there are two of these
+match extended extended pattern matching expressions here two of these zero or more patterns.
+Now as I was doing this I wondered why I sort of semi thought I would only get back
+than the files AA1122 and and 313 but then I realised what I was actually asking for. I wanted
+a number of numbers zero or more numbers and there will be any zeros where there was a one or a
+three a one two or three in these positions. So that's why I got 11121321 etc etc.
+A given example of how you could do this without using these extended pattern matching things
+and it's certainly possible. I did also give an example of how you would get a list of
+just AA1122 and 333 but it's quite an unpleasant expression but it proves a point that can be done
+but you'd have to be pretty desperate to do that. I won't expand on this one in the spoken part
+because it's it's really hairy. So let's go on to the plus open parenthesis pattern list
+close parenthesis thing match one or more occurrence says. So again we're using the abc
+example so a plus open parenthesis b close parenthesis c and that means one or more b's between the a
+and the c so that returns abbc and abc the one with no b's obviously match because we're looking
+for one or more added the x and I got back axc as before. Now the next one looks for specific files
+in the big lists of files and this time I'm looking in directories a and b for files that begin
+with an a or b an end with 0 1 dot txt so this expression in an ls is open square bracket ab
+close square brackets slash asterisk open parenthesis a vertical bar b close parenthesis so that a
+or b both acceptable then an asterisk and an o1 dot txt so that returns all of the files like a a
+0 1 all the ones are ending 0 1 anyway and any any any letters can follow the a or the b so
+but that could have been done without using extended stuff as I've given an example of how this
+could be done alternatively. He's again pretty esoteric I know but these features are quite advanced
+I guess though I think if you if you do need to do this type of thing and fish out specific files
+from directories this is quite a powerful way of doing it and you might find that it's that it
+turns out to be more useful than it appears first of all I think if you if you if you think there is
+any potential for it's use for yourself then you really want to be looking at these notes again
+I think to um to get your head around them if you your brain works anything like mine does anyway
+so example 4 on set of examples for is match one of the given patterns well that was an
+amp is that um an at sign sorry followed by a parenthesis list my example is a at open
+parenthesis b closed parenthesis c and I just get back a b c because I'm asked for a then a b
+out of a list of 1 which is really silly but it gives it makes it makes the point of I should have
+thrown a few more examples what I do I have added another example I've added x to that list
+this b vertical bar x so you get a b c and a x c it's a silly example but I hope it makes the
+point so I thought well how about making some more example files to do more interesting
+searches so I've done this sort of thing before I created a file a directory called words
+and then I populated it with random words from the user shared dict words file
+which you should have on your system as well I think all Linuxes have it so we've got make the
+words followed by a while loop while read words and we call on do then word equals and then I've
+got an expression here I've used this before so I won't read out which strips off the apostrophized
+ends to these words because there's quite a lot that are the possessive versions of the words
+then I the next line word equals then I've got an expression which reduces every word to
+lowercase form just to make it a little easier then I use the touch command to create a file in the
+directory words using this variable word so if the word that it's just been returned was banana then
+it's going to create a file called word slash banana and it's an empty file and it's good for
+playing around with the end of the while loop is denoted with a done statement or whatever that is
+then there's a less than sign meaning that that loop is to take its its input
+for the read from a thing I've mentioned this mechanism before in earlier episodes in this series
+and what it's doing is it's taking the the data from a process substitution which I talked about
+in episode 2045 and it's using shuff which is a means of getting random things out of a file I've
+asked for a hundred words minus n one hundred and user shared dict words that's all in parentheses
+I'm not not going to mind you detail with this because you should be familiar with process
+substitution and anyway I've typed it all out here so that that generates a hundred words
+files with words as their names in this directory if you do this if you try this you'll get different
+words of course then I thought okay I will try fishing out particular words which have characteristics so
+I wrote an expression another ls command and I used an extended pattern matching expression
+where I wanted to get one or one of the one of set of sub patterns so let me read out what this is
+so we've got words which is the name of the directory slash asterisk at open parenthesis ee vertical bar
+oh oh vertical bar t h vertical bar ss close parenthesis asterisk now in this particular case
+it is asking for words that contain two e's two o's a t h or an ss and it's in in close it's
+topping and tailing this extended pattern matching expression with an asterisk with two asterisk
+I should say and that's because we're looking for this sub expression inside a word so we get
+back things like commandeering because you've got two e's in it we get back woolly because it's got
+two o's in it where we get back ingress it's got two s's in it and so on there's not very many of
+you you you might get more if you try this yourself or less that was really just demonstrate
+what you could do it with these types of extended pattern matching expressions so the last one
+example five is the match anything but one where it's got a vertical it's got an exclamation mark
+and then a parenthesized pattern list so my demonstration was where I'm looking for a for files
+that begin with an a contain which do not contain a b between the a and the c and I get back
+a b b c a c and a x c and you might do a double take when you see a b b c um well that's because
+there are multiple b's between the other letters and the pattern actually says only one so the
+file called a b c doesn't come back because it only contains one b and we've asked to have files
+don't contain one b but we're okay to get back with file that contain two b's so I then thought
+well how would you exclude the file a b b c and I ended up with an expression which consists of
+a exclamation mark open parenthesis plus open parenthesis b close parenthesis close parenthesis c
+so plus b means one or more b's and that's put into one of these negation match anything but
+expression so you've got nested expressions and what we get back is a c and a x c we don't get a
+b b c because we've said we don't want any b's between the a and the c so it's a demonstration
+of how you can nest these patterns patterns can contain patterns I've done one searching the
+the list of loads of directors and loads of files thing and at this time I'm looking for files
+in the directory a where the first letter is a which they all are anyway and the second letter
+is not in the range c to z and that expression was a slash a the first letter is an a yes
+exclamation mark open parenthesis open square brackets c hyphen z closed square brackets
+asterisk closed parenthesis dot txt so I get back load of files but basically they're all files
+which don't contain a c or a z after the initial a I thought I'd do another one where I'm searching
+the directory of words using this negation thing and I've made end up making quite a complex
+pattern let's say they're all quite complex and I wanted to get words that did not have particular
+pairs of letters so I've got a nested I've got nested expressions rather than read it all out
+in detail the inner expression isn't at and then in parenthesis a list of double letters like
+b b and c c separated by vertical bars and that expression has got an asterisk each end of it
+and it sits inside parenthesis with an exclamation mark on the front so it's saying here's a list of
+any one of these pairs of letters and the pairs of letters can exist anywhere inside a word
+and but I want you to do the the converse return words that don't contain these double letters
+so I didn't list a whole lot there was a 81 words of the hundred came back and they all didn't
+contain these two letter sequences but again you you can try these yourself if you want to
+I thought I'd finish off by mentioning that these patterns can be used elsewhere other than in
+ls's and echoes and things that were searching for files and we've seen how these globs the general
+globs style patterns can be used when for example manipulating bash parameters and we looked at that
+back in show 1648 way back when and I demonstrate to the sort of thing that you you might want to do
+create a variable x to contain a string which consists of three letter a's three letter b's and three
+letter c's in sequence then I echo it back using dollar open curly bracket x that's the variable name
+slash a slash hyphen close curly bracket what that means is I wanted to do a pattern substitution
+and I want to replace the first instance of a with a hyphen so we get back hyphen a a bbc ccc
+so that's all we've seen this it's all good stuff if we replace that single a with one of
+these extended pattern matching things then get different different result so what I've done
+is to use one of these one or more expressions a plus and then a parenthesized a so it will match
+the three a's at the start of the string and it will replace it replace them with a hyphen
+you get back one hyphen followed by bb ccc and that's because the expression matches the three a's
+and the pattern substitution will replace what's effectively a group of a's with one hyphen
+yeah if we'd wanted for whatever reason to replace all of the a's with hyphons you wouldn't
+be using this extended pattern thing at all you would simply use the double slash capability
+I've put an example of how you use it I won't read it out you can also use extended pattern matching
+elsewhere such as in case statements but I won't go into detail about case statement because I've
+not talked about it before it's something maybe to be done later on in this series there is a stack
+exchange question about it and there's some quite useful details in there and I've listed put
+in a reference to it anyway to summarize any way that you could use a file type pattern match a
+globe type thing then you can use extended patterns sometimes it doesn't make any sense but you can
+do it but of course you must have ex-t geo being exed glob set in order for it to work so let's
+finish off with conclusion here till I started investigating this stuff I didn't think I'd find
+them all that useful took me a while to understand how they worked but I must say I now find them
+quite powerful and I think I will use them in future script so that I'm going to write
+bash extended patterns are similar in concept to regular expressions but they're written totally
+differently so the bash pattern hot asterisk open parenthesis dog close parenthesis is the same
+means the same as the regular expression hot open parenthesis dog close parenthesis asterisk
+so they both match the words hot and hot dog and the difference is that in a regular expression the
+asterisk means that the preceding expression may match zero or more times and it can follow all
+sorts of different expressions the extended pattern is not quite so general I just thought it was
+worth saying that because sometimes these these patterns and regular expressions can be confused
+confused by some people now I hope this episode's helped you understand these bash features and
+that you find them useful some point down the road and that's the end of bash expansion and all
+of that good stuff so I hope you found it useful all right then bye
+you've been listening to hecka public radio at hecka public radio dot org we are a community podcast
+network that releases shows every weekday Monday through Friday today's show like all our shows
+was contributed by an hbr listener like yourself if you ever thought of recording a podcast
+then click on our contributing to find out how easy it really is hecka public radio was found
+by the digital dog pound and the infonomican computer club and it's part of the binary revolution
+at binrev.com if you have comments on today's show please email the host directly leave a comment
+on the website or record a follow up episode yourself unless otherwise stated today's show is
+released on the creative comments attribution share a live 3.0 license

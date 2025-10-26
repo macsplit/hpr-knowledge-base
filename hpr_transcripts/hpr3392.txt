@@ -1,0 +1,221 @@
+Episode: 3392
+Title: HPR3392: Structured error reporting
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3392/hpr3392.mp3
+Transcribed: 2025-10-24 22:35:56
+
+---
+
+This is Hacker Public Radio Episode 3392-4 Tuesday, the 3rd of August 2021.
+Tid's show is entitled, Structured Air Reporting, and is part of the series' Haskell it is hosted
+by Tukuta Oto, and is about 29 minutes long, and carries an explicit flag.
+The summary is two turtle talks about how she improved build times, by breaking down air
+reporting to smaller parts.
+This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+Hello, this is Tula Turto, and you are listening to the Hacker Public Radio.
+Today's episode is about air reporting.
+In Episode 2020, I talked a little bit about validation in Haskell, and then I have been working on
+that a little bit more, and improved how the errors are now reported.
+So this episode will sort of continue from that episode.
+So, Tukuta when I wrote the error reporting, I had a, well, I basically wanted to have a unified
+way of reporting errors, so that when the server sends an error report to the client,
+it's always in the same format, it's an adjacent response that has a machine-readable code
+for the client process, and then it would have some human-readable message that can be shown
+to the end user. And how I originally wrote that I had a one-type error code that basically
+enumerated all the possible error cases that could happen on the server side.
+By the way, a lot of the code I'm talking about in this episode will be in the show notes as
+usual, so that error code had long list of possible errors that could happen on the server side.
+And then I had four health functions, error code to status code, which takes error code and returns
+in there. And this one is for designing what HTTB status code the servers would be returning.
+So, for example, if there's a, for example, the client's, in example, if the client tries to
+upgrade the intrigue, stats of the person in the game, that defines how good that person is
+in the intrigue. And if that upgraded value is too low, then this, we would be raising the,
+stat is too low error code. And the error code to status code would turn that to the 400,
+so that would indicate that it's a tag request. Another function, status code to text,
+takes this integral status code and returns the byte string. This is for the HTTB response again.
+So, for the 400, it would return a tag request. And then the actual need of the problem,
+error code to text. This takes the error code and returns a textual representation of that,
+something that can be shown to the end user. And in this case, it would be stat intrigue is too low.
+And then the final function is racist errors. This takes a list of error code and returns handler
+for app unit. This is, this is the thing that the handler function, that's the function that
+is handling the user request calls when it wants to raise an error. If the, if that list contains
+any error codes, then it uses the, these three functions I mentioned earlier and construct HTTB
+response. So in our case, it would be HTTB 400, that request, that would have a body response
+body of JSON, that will contain an array, that will contain an object, that would have a
+code element containing another object that has a tag status to flow and content in rig. This is
+machine-readable part. And then it will have an error element that contains stat intrigue is too low,
+text, this is the part that gets shown to the user. And this works pretty fine. I was
+happy how this worked. But this has a problem. All the, all the possible errors are enumerated in one
+type. So that type will grow longer and longer and longer. And every part of the system that wants
+to report an error is referring to that type. Meaning whenever I add a new error to the enumeration,
+then all the places that refer to that type, that depend on that type, will have to be compiled.
+And of course, that triggers a cascading effect because all the modules that refer to those
+compiled ones need to be compiled and so on. So the picket type grows and the more places it is
+referred, the slower the compile time will be because it triggers quite a big compilation.
+And I didn't like that. So I wanted a solution and thought that I could break that error code type
+into smaller types. So instead of having one huge error, I would have a, for example, person
+creation error type that would list only the errors that would happen when you are creating a new
+person. And then there would be an account error that would list all the errors that relate to
+the account. And these types will be defined in different modules close to, close to
+place where they used, used. Which means that if I add a new person creation error,
+then only that module will be compiled and all the modules that depend on that module.
+So there's still a compilation coin on, but there's a lot less compilation coin on.
+But here's a problem. But I cannot have a, I cannot have a list that contains two different types
+in it. Like that. Race if errors takes a list of error code. And if I have multiple types,
+I cannot, I cannot, I cannot put multiple different types of values of multiple different types
+in the same, the list always has to contain the same, same type. But I decided that I worried
+that a little bit later. First, I wanted to split the huge error code type into the smaller types.
+So I defined person creation error that is at just a numberation of all the errors relating to
+the person creation. And then use the template Haskell to derive to JSON and from JSON functions
+for this specific type, these are, these functions can be used to serialize and then serialize
+person creation error to and from JSON, which is what I'm sending to sending and receiving from the
+client. And then I wanted to have a way of getting the HTTP status code and that error description.
+Previously, there were defined as functions that took the error code. But now I have to work on
+multiple types. So answer was to define a type class. Type class is sort of kind of similar
+than interface in object-oriented programs, but slightly different. Because in object-oriented
+world, when you define an interface, you define a set of functions or methods that you have to
+implement when you implement that interface in Haskell, that part is the similar. But in the,
+for example, in the sheet shop, when you define a class that implements an interface, you have to
+implement those functions and methods when you are defining the class. In Haskell world,
+when you are defining a data type, you're not actually telling that this has that specific type
+class. You are doing that separately. So you can have a data type and then you can, in addition to
+that definition, you can define the type class instances for that. Which means that if I come up with a
+completely new type class that I need, I can define an instance of that for the already existing
+types. I can, for example, take the Boolean type and say that here's the instance of my type class
+for the Boolean. So I'm adding new functionality that can be used to handle the Boolean
+without having to modify the Boolean. That's the big difference.
+In any way, anyway, so I defined a type class called error code class A. And the definition
+goes like a class, error code class A, where HDTV status code, a double colon A, a row int,
+description, double colon A, a row text. This means that any, any instance of error code class
+has to have two functions defined. HDTV status codes, that takes that data type A and turns that
+into the int. And then there has to be the description function that takes that data type A
+and turns that into text. And these are the ones that I'm using to
+turning the person creation error into a HDTV status code and to the user-readable message.
+That status code to text that I mentioned earlier, that takes the status code and turns that into
+the HDTV message, like that request, for example, that I could use as is. I didn't have to modify that
+because that takes an int, returns a binary, yeah, byte string. Sorry.
+Okay, so to define the instance of error code class, I just wrote wrote instance error code class,
+person creation error, where HDTV status code equals slash case, status to low,
+a row 400 and anywhere at all the cases. So HDTV status code is a case analysis basically.
+So if it's a, if the, if the error, person creation error is the status to low,
+then I'm returning 400. If I have a could not confirm data of third, then that's 500.
+That's a, the internal server error, there's something really fishy going on in case if a
+person doesn't have a date of third. And then the description is again a,
+a description equals slash case, status to low, s, a row, status, plus s, plus is to low.
+This is the textual, textual, that's the name of the status, that is to low. So when,
+when I'm raising a status to low error somewhere, I'm creating a status to low error somewhere,
+I have to, I have to tell what status to low, is it intrigue or is it a
+diplomacy or is it a martial skill or something else. So I have to tell that this specific
+status to low and then it's reported to the user that, hey, by the way, you try to do something
+funny or the program try to do something funny and this status to low, somebody has to fix it.
+So, and of course, since I had multiple types of different conscious error, I had to
+define this error code class instance to all of those types. It's pretty mechanical work.
+You just list all the error cases that you, you can have decide, but HTTP status, they should
+result to and what textual representation to the user should be given.
+But then the bigger error, so I need to, way to put these different kinds of error into same list,
+and that's, that's not something that Haskell can do in Haskell. A list is always
+the regular list is always of all the values inside of it has to be of same type.
+So, if they have to be a same type, I thought that maybe I could sort of have a helper type and
+grab these specific specific types into that type. So, I define the new type as data E code A
+equals E code A. So, this is a, this defines a type E code that can, that has a one constructor,
+also called E code that takes one parameter A. So, it can wrap anything.
+And, but the problem here is that the resulting, resulting type is a E code A. So,
+if I'm using it to wrap a person creation error, the resulting type is E code
+person creation error. And if I use it wrap common error, then I, the resulting type is E code
+common error. And these are different types. So, I need to, I need to, I need it a way that I could
+wrap type values of types. And somehow lose the type of the wrapped value in a way that the
+resulting, resulting type would always be the same. So, and then of course, the another thing is
+that I need that the previous definition that had only the data E code A.
+It doesn't have, well, it can be anything. It could be indexer, it could be a boolean,
+it could be a some map or any type. So, I cannot, I cannot, I cannot, I cannot turn any type
+into a error report. I have to, I, all the data that I wrap needs to, needs to have a
+instance for the error report class. And also, I need to have an instance for the two JSON. So,
+that I can serialize them to the JSON data and send them to the, send them back to the client.
+There's several ways of doing this, but I chose to use general, generalized algebraic data types
+against for the short. That's an extension that has to be turned on. That's not in the standard
+Haskell. So, I had to have a pragma language cards in the top of the file. And that allowed me
+to define the E code as a following data, E code, where E code, double colon, error code class A,
+comma, JSON, A, tick, arrow, A, arrow, E code. So, what that, what that means is that, that defines a
+type E code that has a one constructor, also called E code, that constructor takes a one
+parameter A and returns a E code. And that A is constrained. It has to have an instance for the
+error code class and to JSON. So, it has constraints, which is what we wanted. And also,
+the resulting type is E code, not E code A. So, we essentially have, with this constructor,
+we can wrap suitable types, resulting types will be E code. So, we have lost the type
+information there. We know that the value that has been wrapped, it has instances to the error
+code class and to JSON. So, we can still use functions from those type classes. But that's
+all we need to do with that. So, we still need that A to turn this E code into an error message.
+But that, that is, that is, that was easy because everything we wrapped with the E code has
+error code class type class defined with. So, I think I could just define
+instance error code class E code. So, I'm defining an instance of error code class for the E code,
+where the status code is just the, is HTTP status code E R. Sorry, HTTP, HTTP status code R and
+description is description R. A, meaning that the, when you are asking HTTP status code from the
+E code, it's the HTTP status code of the fractal value and description of the E code is the
+description of the fractal value. And then I wrote an instance for the, of the JSON E code.
+So, turning this E code into JSON. So, I can serialize it to the client. I wrote that instance
+by hand. I could have derived that automatically, but I wanted to have a final control.
+I wanted to decide by myself how, what, what is the format and structs of the JSON.
+The code, code is on the, on the show notes, but basically it's just the serialized, when,
+when you are serializing E code, you are creating a JSON object that has three fields, HTTP code,
+that is that status code, fault code that is, that fractal value turned into JSON.
+So, in case we have a, just on, for example, error, first name is empty, then that first name is
+empty, because it doesn't have any parameters, it's just turned into the string. So, fault code will be
+the first name is empty. In case, it's a status tool, that takes a, where the constructor takes
+parameters, then the fault code will be an object that has a tag, status tool load and condensed
+in trig. Tag is the constructor that was used and condensed is the, all the values that were
+touched to that constructor. That is the machine readable part and the error description is the
+description A, that's the user readable part in our case, starting trig is too low.
+And now I could just define the racist errors in terms of the list of E code,
+returning handler for app unit, meaning this is a function that you can call from the handler
+function and it doesn't return any values, but if it, if, if the, if the errors, it will send a
+status JSON. The code is on the, on the show notes, but basically, first we check if the list contains
+any errors to begin with and if it does, then we take the first element of the list,
+call HTTP status code function to that, to get the status code. And if for some reason,
+even if we checked for the, for the condensed, condensed of the list, if for some reason it would be
+end here, then we would be using 500 internal server error. The message is the status code to text
+function called with the, that code. So, for example, a factory quest or internal server error.
+And then the, we would call send the status JSON, give it the status, with the code and the message,
+and body of errors turned into the JSON. And this, this works pretty, pretty neatly. So,
+then since all the errors, so, so this use, this uses E code, as a, as a parameter. So,
+I cannot give a status to low value to here. I have to wrap it to the E code. So, I have to
+basically call it E code, lower status to low, quotation, start in a intrigue, quotation mark.
+And having to manually wrap everything to the E code, it's bit tedious.
+So, I define the helper function, status to low, that takes a text and returns an E code.
+And that basically is just status to low s equals E code, lower status to low s. So,
+it doesn't contain much logic at all. It just takes that string that you give to it.
+It uses that to create a status to low value and wraps that value into E code.
+So, that just makes things a little bit easier for you to less typing, basically. It
+saves a little bit of spiking. And another thing is, if I at some point in the future,
+sorry, if I, in some point of the future, decided that I want to change how the internal,
+internal of this error reporting works. I can just change the internals and then update all the
+functions that I'm using, using to create these error values. And hopefully, whatever these
+functions are called, don't need to change at all. So, a little bit of future proof in here,
+but the main idea is that I'm just, I just wanted to save a little bit of typing. And this works
+pretty well. I get a faster compilation times. I got, I get the same error messages on the client
+side as before. And this is nice. There's a different solution to this problem, right?
+Instead of having those wrapping, wrapping everything into the E code and having all those
+different, different types that you use to create those errors, I could have just defined one
+record code, E code that would have filled HD deeper code that is in and description that is text.
+So, instead of having a typed errors, I would, I would just use record. Whenever I would want to
+report an error, I would just create an, I would just create a new E code record,
+put a suitable HD deep HD deep code and suitable description on it. And that would, that would
+work just fine. The drawback with that approach would have been that I would not have any control
+over what gets reported. I could have a HD deep code 1, 2, 3, 4 and description something funny
+happened. Or I could make a typo. Somewhere I would be reporting a, I wanted to report with
+error code 400 and I could mistype that action to 499. And compiler wouldn't be able to catch that.
+Of course, I could still have a helper function that is to low, that takes a parameter of text,
+that returns an E code and instead of that, status to, status to low function, construct this E code
+record. But I just basically decided to record with the first, first option when I was thinking
+about this, there isn't that, there isn't that big difference in the end result. Actually the
+end result is the same. It's just a little bit, little bit difference in the internals of the
+machinery of the things work. Okay, that's, that's it. So this is, this is how I, I
+broke one huge error code type into, into smaller types and improved the compilation times
+of my project. If you have any questions, comments or feedback, I can be reached with the email
+or at theferiverse, where I am, todurdoattech.lgpt. Have a happy hacking.
+You've been listening to HackerPublicRadio at HackerPublicRadio.org. We are a community podcast
+network that releases shows every weekday Monday through Friday. Today's show, like all our shows,
+was contributed by an HBR listener like yourself. If you ever thought of recording a podcast
+then click on our contributing to find out how easy it really is. HackerPublicRadio was founded by
+the digital dog pound and the infonomicon computer club and it's part of the binary revolution at
+binwreff.com. If you have comments on today's show, please email the host directly, leave a comment
+on the website or record a follow-up episode yourself. Unless otherwise status, today's show is
+released on the earth. Create a comments, attribution, share a light, 3.0 license.

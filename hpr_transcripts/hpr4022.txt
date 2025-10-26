@@ -1,0 +1,248 @@
+Episode: 4022
+Title: HPR4022: dumping roms for fun and profit
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4022/hpr4022.mp3
+Transcribed: 2025-10-25 18:45:37
+
+---
+
+This is Hacker Public Radio, episode 4,000, and 22 for Tuesday 2 January 2024.
+Today's show is entitled, Dumping Roms for Fun and Profit.
+It is hosted by Brian in Ohio, and is about 17 minutes long.
+It carries a clean flag.
+The summary is using 4th to do something useful.
+Hello, Hacker Public Radio, Brian in Ohio, here I'm out from under my rock.
+And before I start into the meat of this show, I wanted to mention a couple things.
+First off, I was listening to the No Agenda Show, if you don't know what the No Agenda
+Show, it's a twice-weekly media deconstruction podcast, link in the show notes.
+And I heard Pokey was at one of their meet-ups, they have meet-ups all over the world.
+And Pokey was at one in whatever local area he lives in, and all I have to say is Pokey.
+If you have time to do a No Agenda meet-up, you probably have time to record a show for HPR.
+Enough said.
+The second one was the episode that I recorded about the Z80 membership card.
+I got the link to that show, got posted on a site called Two Stop Bits.
+Two Stop Bits is kind of a hacker news, kind of news.
+People throw links up and things that they think are appropriate and interesting.
+And Two Stop Bits is about retro computing.
+So that showed it up there, and a guy, I'm assuming it's a guy, BX Parks, he left the comment,
+and his comment was that he doesn't like podcasts.
+He thinks they're too slow for the data.
+He gives some words per minute stuff, and that's fine, that's his opinion.
+He then proceeds to write a long post about the Z80 membership card.
+And he then, I would go to another site, and there's somebody that posted something about fourth,
+the language fourth.
+And he posted there that he thought fourth was terrible, that it's unusual,
+and not only that nobody ever does anything useful with fourth.
+So this episode is about me doing something useful with fourth.
+And what it is is dumping the prom from an old 1990s single board computer.
+And so this continues my mania of trying to learn more about Z80 computers,
+and eventually building my own Z80 computer.
+I know it's nothing new, but I've never done it, so it's new to me.
+And there's no episodes about this in HPR from what I can tell.
+So I got this device via eBay, KGG through people up in Canada,
+and I paid $20, that's about $700 Canadian dollars, and for the device.
+And it's a cool little computer.
+It's got sort of a cyberdeck kind of feel to it.
+It's got actually a kind of a decent keyboard.
+It's got a little one-line character LCD that's not very good.
+And it's got a part for adding cartridges.
+It's got some built-in programming.
+It's got some games and some typing tutor.
+It has a basic interpreter on it, so you can actually do some programming on it.
+And so to me, it's a device that seems like it would be cool to do some changes.
+Mostly, the first thing I would love to do is
+swap out that single-line LCD for maybe a 20 by 4,
+or even I've got some 4 by 40 character LCDs, big ones.
+Something like that would make it kind of cool, and then figure out how to store files
+on some other peripheral, et cetera, et cetera.
+So the place to start with a device like this,
+well, there's a million places to start.
+The place I decided to start was to figure out
+what the underlying programming, what's built into the device.
+And when I opened it up, I'm not surprised.
+It's got a read only memory, which was pretty sure
+would have all of the code necessary to run all of the games and all that stuff.
+And so what I looked at the device, and it's a very neatly laid out
+single-sided PC board.
+And all of the devices, there's no secret devices.
+Nothing with names scratched off like they do now,
+because this was in the 90s when people were cool.
+And so the prime on the device, and yes, it's a prime,
+is a TC53100CP, so first off, proms.
+So, prom is a kind of read-only memory.
+The difference between a ROM and a prom is a ROM
+is manufactured with the code built-in,
+whereas a prom is a sort of a generic device that is programmed,
+but can only be programmed one time.
+And unlike other, you're probably more,
+what you hear about more now is e-proms, where they're electrically
+erasable proms, so you can read them, write them,
+erase them, put a new stuff on them.
+This is not that kind of device.
+It's a one-time done, one- once programmed, and that's done.
+But fortunately, it's a pretty easy pin to access to.
+It's a, in a dip package, dual-in-line package, a 28-pin device,
+and there are all kinds of e-prom readers out there.
+Some of them are pricey, some of them are less pricey.
+You can make your own, and that's what I did with this,
+because there's really no way that I could see easily
+to find something to build or read what's off of this device.
+So, but with an Arduino, some fourth code, some wires,
+you can dump an e-prom.
+And this is how I did it.
+First thing I did was I used an Arduino mega running flash forth.
+It's the same Arduino mega that I was using
+to do some of the Z80 timing stuff that I did a couple
+up a few episodes ago.
+And, excuse me, the reason I would use an Arduino mega
+is because it's got lots and lots of ports, lots and lots of IO.
+And I needed it because this device is a 28-pin device.
+Like I said, it's actually a, has a 17-bit address space.
+So, it has one mega bit of memory on the device.
+That's mega bit, not mega byte.
+It's had, which is ranged in 128K of 8-bit bytes.
+So, the device has normally a 16-bit address
+but you'd be able to access 64K of some kind of memory.
+Because it's got that extra bit, it doubles that.
+And so, I was kind of thinking that this is somehow divided
+into two pages of ROM.
+And that the processor would access that in two different ways.
+What I'm thinking as I get started here.
+But to figure that out, we're going to need to dump the problem.
+So, I desoldered the problem from the board.
+I put a socket there so I could replace, put it back on the board.
+And then, actually dumping the RAM with the interactive
+nature of fourth was pretty, pretty straightforward.
+Just took a little bit of a, a little bit of a programming session,
+but the, the, the way it would work, I saw from the data sheet
+of the device. I would, you need to set an address, a valid address.
+And then, you would enable the chip with the chip enable signal.
+And then, you, it outputs data on the data bus, which is an 8-bit bus.
+And then, you could read the data.
+So, what I ended up doing, the tricky parts were actually the,
+the physical wiring. There was a lot of wires to get this thing hooked up from,
+so there's a, there's a wire to, I had to wire it up by port.
+And the ports on the Arduino Maker kind of crammed together.
+And I've got a picture in the show notes.
+So, it's kind of a wiring mess, but got to wire it up.
+And then, there was, the next kind of fiddly part was,
+was some of the timing issues.
+The Arduino Mega goes actually pretty fast at 16 megahertz
+for a device of this, this, this, this vintage.
+And so, I had to work out some of the delays and timing of when to put,
+how long to wait after settling the address bus to, to enable the chip to read the data.
+And I just took a little experimenting.
+Well, again, with the interactive nature fourth, it was really easy to do.
+And once I got settled on some good values, I, a delay values,
+I hard-coded that into the program.
+And then, I was able to start reading the, the data off of the chip.
+And what it does is it, it, it, it puts an address on the bus,
+does that chip enable signal, puts it on the data bus,
+the, the Arduino reads that, a bit of data from the, from the,
+from the, from the, from the, from the data port, excuse me.
+And then, it outputs it to the serial terminal.
+And, and that just, that's, then you go through the whole address space
+and you can get every, every byte of code now.
+That, that's written out in ASCII text.
+This is, but what it's on, the chip is actually, is actually hexadecimal, right?
+It's binary.
+And so there's, there's a little bit more to, um, to this and just capturing it that way.
+Uh, once I saw that I was getting reliable, uh,
+data, and what I meant by that is I could read it once and read it again,
+and read it again, and, and I was getting the same data out.
+I figured at that point, if it's getting the same thing every time,
+it's probably working.
+It's either perfectly broken or perfectly working.
+So I, so I was optimistic and thought it would be perfectly working.
+Uh, and then I just modified the, the, the fourth code, uh, to output the data
+on the serial terminal as intel hex file format.
+Uh, if you have, don't know what intel hex file format is,
+listen to the last show I did.
+If you don't like e-speak, you can read about it in Wikipedia.
+And if you don't like that, I'll just tell you that basically what it is,
+is it takes binary data, turns it into ASCII text,
+and shoots it out to something on a file,
+so that you get a readable code, a readable record that's an ASCII.
+And that's what I did.
+It, uh, this, this thing went through, uh, I think I did 16, uh,
+bytes at a time, created the, each record with a crop proper checksum
+and the proper header, and it would go on to the next, uh,
+bytes all the way through the address space, uh,
+creating this large hexadecimal file.
+I'll put a snippet of that in, in the show notes,
+just, uh, but not the whole thing, it's pretty big.
+And then, uh, uh, it just spit that out onto the serial terminal.
+Now, you can use any kind of serial terminal to do this, uh,
+you can use minicom, or, um, putty, or, uh,
+whatever people would use on Windows or Mac, I have no idea.
+But anyway, that's, I use actually EMAX.
+EMAX has a built-in serial terminal, uh, mode,
+and I just used EMAX to dump out the file, the data into a nice file,
+and then I just, uh, copied and pasted that and saved it as an intel hex file
+with a dot hex, uh, a dot hex, um, ending on the file.
+Uh, and, but that's, so that's it.
+I've got, what's, I did that a few times.
+It actually took about an hour to dump all this data
+and write it out to the serial term, uh, I did it a couple times,
+and verified it using diff to make sure it was the same stuff.
+Did it actually probably about three or four times, to be honest?
+And it actually was spitting out the same data every time,
+and so I was happy with that, and then I just saved it to a file.
+In two pages, page, page one, uh, with that upper byte set at zero,
+eight, and then the second time through with the upper byte set at one,
+and, um, well, now they, now you've got an intel hex file.
+Well, what can you do with that? Uh, well, there's,
+there's a tool called hex to bin, and it's a tool used for converting hexadecimal files,
+either Motorola Intel format into binary files,
+and you need a binary file to, to be able to disassemble it,
+to, to turn it, because the binary file is the machine code,
+and the, the machine code was created by an assembly program,
+and it's, you know, you write out assembly code, the assembler assembles it into
+machine code, and you end up with a binary file that you upload to your,
+to your, to, in this case, they, uh, the, the manufacturer of this device
+uploaded to this prompt. Um, what I'm trying to do is the reverse. I'm,
+I've got now a binary file, and I wanted to turn back into that assembly language program,
+so that I can do some analysis. And so first step was to turn it that, um,
+that Intel hex file that I created with a fourth device,
+you doing something useful with fourth, and, uh, I, uh, then, um,
+that took that hex file, ran it through hex to bin, and that created a
+binary file. Now, then you take that binary file, and you have to run it
+through a, uh, a tool called a disassembler. And there are,
+there are actually a lot of Z80 disassemblers out there, at least not for Linux,
+but there is one, it's called Z80 DASM, it's in the show notes, and, um,
+I, uh, run that, ran that, uh, binary file through that disassembler,
+and it generated what looks like reasonable assembly code. It's a big program,
+and you have to also, uh, when you're using a disassembler, you have to recognize that
+it's guessing it all the, all the, the values, and some of the values that it thinks are valid,
+uh, they are actually valid upcodes for the Z80, but really they're just data. And so you have to
+sort of, luckily, this, um, you, you then, after you've disassembled it, you, it has a, um,
+you can use another, uh, program to look at that, that disassembled file, and you can see it'll
+have, uh, your hex code, your assembly code on one side, and then it'll have hex code on the other
+side, and you can, um, kind of make guesses at what's data and what's not data. Some of it's easy,
+some of it's text, and you can say, oh, that's definitely text that's data, but some of it's,
+uh, probably numbers or something, I'm not sure, this can be take a while to figure that out.
+Uh, uh, in that light, there's another tool called Guidra. Guidra is, uh, product of the NSA,
+and it actually, for some reason, the NSA has decided that the Z80 processor is a,
+a worth supporting in their, in their, in their, in their tool, which is a huge tool.
+Um, and they, uh, maybe there, maybe they're disassembling old Game Boy cartridges,
+because that's all Z80 stuff. Anyway, so Guidra is out there is another way of analyzing that
+a binary file, and so, uh, and that's right now. Got, I've got a couple of tools to work through
+this code. Um, the goal for me now is to find some entry point into, into the code that has, um,
+that, that where I can see where key presses are being captured, where, and where data is being sent
+to the LCD, and then after that, I'm going to have to figure out some kind of, uh, different,
+something to, um, replace that problem, uh, some kind of e-prom. I'm not probably
+have to make a little board or something to, uh, to make it fit the right, uh, to fit the pin out,
+but other than that, shouldn't be too hard. And then I can start uploading new code and see,
+seeing how it falls. If I would really like to be able to figure out how that LCD works,
+we're, what port it's using, uh, and then put on, write something more standard, uh, uh, uh,
+uh, need, because there's all kinds of LCD drivers out there that are, that are, that are the Z80
+can use. Uh, so that's where, that's what I'm trying to do right now. Um, so there'll be updates on
+the project as it progresses. Um, I did reinstall that problem back into the device, the device still works,
+so that didn't damage or anything was in the process. And, uh, so that's where I'm at, uh, beginning
+of something new, some more learning, and hopefully some more HPR episodes. So thanks for listening.
+This is Brian and Ohio signing off, and I just want to remind everybody, the best way to make a
+fire with two sticks is to make sure one of them is a match. Goodbye.
+You have been listening to Hacker Public Radio at Hacker Public Radio does work. Today's show was
+contributed by a HPR listener like yourself. If you ever thought of recording broadcast,
+and click on our contribute link to find out how easy it really is. Posting for HPR has been kindly
+provided by an honesthost.com, the internet archive and our syncs.net. On the Sadois status,
+today's show is released under Creative Commons, Attribution 4.0 International License.

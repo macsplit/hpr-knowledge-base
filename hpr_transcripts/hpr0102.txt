@@ -1,0 +1,211 @@
+Episode: 102
+Title: HPR0102: Linux Professional Institute Certifications Part 4
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0102/hpr0102.mp3
+Transcribed: 2025-10-07 11:31:39
+
+---
+
+.
+Hello everybody and welcome to another episode of Hacker Public Radio.
+My name is Ken Fallon and we're going to continue on with the series on LPI learning certification.
+Just give you an overview of what we're going to be talking about today.
+The topic for today is Scuzzy, S-C-S-I.
+And we're going to be skipping over two sections,
+the modem section and the sound section for two different reasons.
+The first is because I don't like talking about modems, I hate them.
+And luckily, a person from Germany has answered the call and will be stepping in to do the episode on modems.
+If there's anyone else that can do something on Linux sound systems,
+with particular reference to, well, it doesn't necessarily need to be anything to do with the LPI certification.
+But basically the documents that I have refer to utility-called S&D config,
+which I can't find on any system that I have roaming.
+So if there's anybody out there who knows a lot about Linux sound in general,
+also with specific reference to what might come up in the exam, that would be great.
+But I would be very interested in hearing LPR's topic about that
+or a whole series of topics about the sound subsystems on Linux.
+And that said, if there's people out there who have LPI certifications,
+I'd really like to hear from you.
+It was something as simple as sending in a recording,
+or, you know, with comments on a section that I've done,
+or with an ideally great take a section and roam with it,
+because I recently got my employer to pay for LPI book.
+It's the O'Reilly one in a nutshell.
+It's a desktop quick reference guide.
+And the lads and work were laughing that a nutshell book would run to
+559 pages.
+And for our reference, what I'm going to be covering today is page 17,
+and that's not including a lot of pages about on the introduction.
+So at this rate, we'll be finished in the year 3000.
+So I really do need people's help with this.
+And the good thing about it is if you just know one particular topic,
+you can do a quick episode.
+I'm following a particular line of what we're going to be covering.
+So we're doing hardware and architecture now,
+shortly we'll be going on to Linux installation and package management,
+designing hard disk layout, installing boot manager,
+which I'm not going to do, because I'm going to borrow dance
+on the whole series on that.
+So possibly if you just wanted to give a quick summary of all the stuff
+that Dan is covering on what of that is relevant to the LPI certification,
+please do that.
+Moving on again, we have the Macon installed programs from source,
+managing shared libraries using Debian package management,
+using Red Hat package management.
+So if you would like to volunteer for any of these topics,
+please do so.
+I love people to come on board.
+If you go to wikibooks.org and look for the LPI certification book,
+the table of contents just describes all the topics that's going to be coming up.
+What I like to do is just put a list beside those,
+and people can jump in with any of the topics.
+And you know, if there's like dance,
+grow, and lie low thing with the boot managers,
+if that's already been done,
+then just five minutes and ups of what's important about that
+will kind of get us going.
+Okay, where are we now?
+Yes, I'm also interested.
+If you're not interested in actually recording a technical piece,
+I am interested in hearing feedback about what the exams are like,
+what you should be reading, what study you should be doing,
+what books you would recommend,
+fire off those in an email to me,
+that would be great, ideally a sound recording.
+Then I don't have to do anything except slap it on to the end of a regular program.
+Okay, now let's get started.
+I'm going to be taking a lot of the information for this topic
+from Scott Muller's Upgrading on Repairing Servers,
+also from the LPI Linux certification
+and a nutshell quick reference book from O'Reilly.
+And of course the IBM documentation.
+Scuse stands for its pronounced Scuse ZZY,
+and it stands for small computer system interface.
+It's a general purpose interface used for connecting devices to PCs.
+It was originally developed or kind of started its life
+with this structured associated system interface.
+And it's a flexible system.
+It's not just for disks, hard disks,
+it's used for tape devices and ready to raise and that sort of thing.
+So you see quite a lot in servers,
+not so much in desktop as well.
+You've seen quite a lot through Scuse emulation on CD-ROMs.
+And you're also seeing it in serial ATA drives,
+also appears Scuse devices.
+So, okay, a Scuse is a boss,
+and it can support seven or 15 devices in total.
+Multi-channel adapters exist and can support seven or 15 devices per channel.
+So if you have a big server, you might have,
+I don't know, loads of these channels in there,
+each supporting 15 devices are seven or 15.
+And a Scuse host adapter can be installed on a PCI or PCI express card,
+or it might be built into the motherboard,
+typically what you see in some services,
+that there's a few built-in on the motherboard,
+and then you can buy additional cards.
+And the host adapter functions as a gateway between Scuse boss and the PC system boss,
+and each device on the boss has a Scuse controller chip built-in.
+That means your tape devices and your hard disks and everything else
+all have a Scuse controller on them.
+And the Scuse host adapter doesn't talk with the hard disk,
+it actually talks with the Scuse interface controller built into the device,
+and that's more or less the same way that we saw with ATA drives earlier on in the series.
+That's more or less it for the history of it,
+and we're going to talk about the different types of Scuse devices.
+Now Riley has the most Scuse 1, Scuse 2,
+white Scuse, fast Scuse, fast white Scuse, ultra Scuse, ultra white,
+sorry, ultra SCSI, ultra wide, ultra 2, wide ultra 2.
+We will move on to Scuse IDs.
+The IDs are, I've mentioned already, seven, and you can have seven or 15.
+And where those numbers come from is the number of dress lines that they can be.
+So only a bit boss, which would be fast, it has three dress lines,
+which works at two to the power of three, which is eight devices,
+or for a 16-bit there are four dress lines, which is two to the power four,
+which means there are 16 devices.
+Now one of them will always be the controller.
+So you subtract one from that, so you have seven and 15 possible devices per channel.
+And just read something from the refer to the IBM documentation here.
+Every device, including the controller, has a number, or what's called an ID.
+For eight bits, because the ID range from zero to seven,
+white Scuse adds numbers eight to fifteen.
+Now our devices may only use the ID numbers of zero to seven,
+while white devices may use the numbers zero to fifteen.
+Traditionally the controller is assigned the ID of seven.
+Usually you will set this either with a jumper,
+or it might actually be done in software.
+Because the devices, they have a priority, so the priority runs from zero,
+lost to seven, the highest.
+So controller has the highest priority of seven.
+The extra IDs have higher priority, so eight is the lowest and fifteen is the highest.
+The overall priority sequence is eight, nine, ten, eleven, twelve, thirteen, fourteen, fifteen,
+zero, one, two, three, four, five, six, seven.
+You address devices on a Scuse boss using three different things.
+So you have the channel, which is like a particular controller.
+So if you have two controllers in there, you might have a channel zero channel one.
+And then along that you have the Scuse ID,
+which you just talked about, which goes from zero to seven,
+or zero to fifteen, depending on whether you're using faster,
+why just sixteen to two bit.
+And then at the end of that you have a thing called a long.
+Now a long is a logical unit number.
+And there you see those for controllers that have accessed multiple logical devices
+using a single Scuse address.
+So one of those Scuse devices might be a Ray controller
+and have four physical hard disks connected onto that.
+And the first one of those would be zero.
+And the next one would be one, two, three.
+The long idea is to be able to address additional devices connected on that.
+A few other things that are as you need to know about Scuse is the cable length.
+It's depending on the specification might be 25 meters depending on termination or twelve meter.
+It operates like a channel.
+So at the end of each cable it has to be terminated.
+So it's terminated usually on the controller.
+You don't necessarily need to worry about that.
+But you need to keep it in mind.
+And at the end all the devices come off it.
+But on the end you need to make sure it's terminated.
+And the termination might be you press a button on the tape drive.
+If that's the last device on there, there might be a termination button on and off.
+Or it can also be a physical cable, physical device that you plug in to Scuse cable itself.
+And that will offer the termination.
+In the O'Reilly book there's a warning about mixing 8 bits and 16 bit terminations.
+Because you might put an 8 bit on a 16 bit cable and terminate the first 8 devices while the other ones are left on terminated.
+And they don't respond and you don't know.
+The next thing we will move on to is on a Linux system.
+How they are dressed.
+And they are usually where we've had slash dev HDA before HDB, HDC.
+With Scuse, it don't have the idea of a A and B controller.
+So it's just a B C D E F G H. Right down along.
+So here I have a server with several disks S D A, S D B, S D C.
+And that's all very well and all very nice.
+One of the things is tape drives will have a device ID of slash dev, slash S T.
+And a Ray controller device might have a S D C.
+Now Ray controllers I've known from being a Mark UM.
+They might just present the disk as a S D B C or something.
+They might also present it as something else.
+So what I'm going to do here on server on Mark is I'm going to do D.
+M E S G to get boot up kernel messages.
+I'm going to grab that with the minus I and look for PCSI.
+And here we have some devices D D V slash C C IS S,
+which is actually a compact Ray controller.
+And then it goes into slash C D D 0 P 2 Yats.
+Depending on the server itself or their Ray controller card
+and the drivers that come with it.
+So that's my friends is pretty much it.
+I'm going to give you on the exam from the O'Reilly book
+you should be familiar with Scuzzy ID's termination
+and the Linux Scuzzy device naming for the 102 exam.
+So thank you very much for listening. That was it.
+Just to round up again what we were talking about was your ID's,
+bus speeds, what a loan is, how they are dressed in Linux
+and that you need to terminate them.
+If there's anybody else who wants to give me an episode
+on the sound recording, that would be great.
+If you are interested in doing an episode on hack-up of the radio,
+please do so.
+It's really cool and interesting to hear people from all over the world
+to throw in different topics.
+I never cease to be entertained by it.
+Thank you for listening to hack-up of the radio.
+HPR is sponsored by Carol.net.
+She'll head on over to C-A-R-O-DOT-18 for all of her TV.
+Thanks for watching.
+Thanks for watching.

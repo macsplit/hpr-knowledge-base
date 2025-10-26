@@ -1,0 +1,233 @@
+Episode: 664
+Title: HPR0664: A Little Bit of Python: Episode 13
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0664/hpr0664.mp3
+Transcribed: 2025-10-08 00:36:39
+
+---
+
+Welcome to syndicated Thursday on HPR today. We present a little bit of Python
+Welcome to a little bit of Python episode 13.
+I am Steve Holden. Who are you guys? I'm Andrew Cushley. I'm Brett Cannon. And I'm Jesse Norler.
+So probably the piece of news we'd like to start with this week is the forthcoming arrival of 2.7 beta one, right?
+2.7 is I think shaping up nicely to my regret I didn't manage to finish the what's new in Python 2.7 article in time.
+I originally aimed to have it done for beta one but missed that because it's it's US tax season and I had other things going on.
+So my new target is going to be finishing it for beta two, which it will be in another month sometime in May.
+But it certainly makes my job easier because now the pace of change will be slowing down a lot.
+Certainly sure. Yes. There have already been refusals to add new features to the release now that we're in beta.
+The think Benjamin release manager is being pretty sticky about I was Benjamin managing 2.7 or is it Barry?
+It's Benjamin. Yeah. He's I think being suitably sticky about not just adding any old feature to the sort of release once we get into beta. And I think that's a good thing.
+Yes, I think multi processing taught us all less than on that one. Would you say Jesse?
+Oh, yes.
+Multi processing taught us all a valuable lesson about scrolling features in at the very, very last moment, which is you don't do it.
+I seem to remember being against it, but I was a voice in the wilderness at the time.
+Another new feature was accepted for Python 3.2 this week, have 31 47 written by Barry Warsaw, defines a new directory layout for storing PYC files.
+Does someone want to talk about that or should I continue?
+Well, you can by all means continue, but maybe I could summarize, first of all, by saying that the the essence of the proposal is that where possible.
+Python is going to now, instead of storing the dot PYC files in the same directory as the source, it's going to create a dunder pi cache directory in the same directory as the source.
+And the dot PYC files that will be created in that directory include versioning information, which will mean that for the first time it will be possible for multiple versions of Python to share the same source tree.
+And have a different respective bytecode files filed neatly alongside, but not directly next to the source. Is that a fair summary?
+Yes. Oh, sorry.
+That's okay. I don't mind two people agreeing with me. It's a bit unusual to have any at all, but there you go.
+So, right, yes, please do feel free to elaborate, Andrew, since you've been more involved with it than I have.
+The motivation for this comes from the Linux distributions, where you often want to install something that's pure Python code that would be compatible with with pretty much any reasonably recent version of Python to five or to six, or even three X.
+For a Linux distribution, it's very hard to actually express the dependency upon Python in the dependency rules for the package.
+And so the aim is to share these directories across implementations.
+What will happen is Python 3.2 will write its PYCs in this directory, and the file name will include Python 3.2 or C Python 3.2.
+And Jython could write its own files, which contain something like Jython 26 dot class as the file name.
+And eventually probably Unladen Swallow will be writing its LLVM intermediate bytecode files and other things in there.
+And all the stuff can go in the cache directory and leave the source directory pristine.
+I think that sounds like a very good idea is the situation gets more and more complex. It would be impossible to find your dot PY files amongst all of the dot classes and having knows what else.
+Yeah, it's definitely going to be a nice organizational boost is a side effect of all this since you're not going to have you're not going to double the number of files you have by any of with PYC files next to all your source files.
+You're just going to have that one little directory now and everything else just gets shoved into there out of out of out of mind and just out of the way.
+And raise your hand if you've ever wanted to clear out all your PYC's and then accidentally deleted all your Python files because you're just from muscle memory type star dot PY enter me, you do.
+In fact, I never met making such a silly mistake.
+I think I've probably made it several times.
+I think I've done it multiple times in the same day actually, Andrew.
+Well, actually speaking of accidentally deleting source with your bike code, this also will fix the problem of people doing source on purpose, but not lean the bike code.
+I'm sure we've all had situations where we've deleted an old file, but still had it getting imported because the old PYC was left in the same directory.
+And this will actually change that such that if you have source, it will then go into the dunder PYC pie cast directory to get at the bike code.
+But if there's no source, there is no search into that directory. So ditching this source file will not and it will not allow that directories PYC to be actually pulled in.
+So no more worrying about moving files and having some old modules only reappear out of thin air.
+Yeah, I remember that Django at one stage was having some real problems because they weren't overwriting dot PYC files that were left.
+I think the position there was that a new installation would come along.
+And they'd overwrite one of the dot PY files, but they didn't specifically as part of their install procedure removed PYCs, which were therefore newer than the recently installed files, which came in with the dates that they had on the tar file.
+So basically if if you compare if you run an old version of Django later than the release date of a newer version, when you updated it, you still have kept your old dot PYC files in certain cases and that led to a lot of a lot of confusion for beginners at one stage.
+I'm not quite sure whether they for well, I know they've taken steps to avoid those problems now, but it does just go to show that there are pitfalls for the unwary and I think we can all agree that the few as such pitfalls exist.
+The better language PYC is going to be.
+Well, there's there's also there's also an aspect of this that before we started recording Brett and I were talking about too, which is one of the bones of contention with this proposal was the fact that there's quite a few of us myself and concluded who are frequently in the position of having to ship source list distributions.
+That is to say typically is part of your build process you actually call compile or compile all on your Python modules and then you strip out the dot PYS and ship to the customer only the dot PYC files.
+And so part of the pet process a lot of us discuss this and there's a lot of back and forth as to, you know, should we support this we not support this.
+The answer is that this pep is going to continue to support that mechanism outside of the dunder pi cache directory.
+And so basically if there's a PYC if there's a PYC file that is not in the cache directory, it will load that if the banshing dot PY file does not exist.
+If there's a PYC file inside of the pie cache directory, but food at pie doesn't exist, let's say, then an import error will be raised.
+So there's kind of a middle ground with the support for sources distributions.
+Shall we move on to summer of code.
+That would be a good idea because I know arc Riley has been working very, very hard indeed.
+And I'm not quite sure exactly where we're up to, but last time I exchanged email with arc.
+He said that we had some very, very good projects this year.
+I do know that he's trying to emphasize projects, which will move people towards pie since free this year, which I think is a good thing.
+Yep, and actually as of this morning, I just signed up to be a mentor for gsoc.
+So I'm actually filtering through all the proposals today.
+Cool. And that's something that anybody's entitled to do.
+I don't know how well supplied with mentors.
+They are this year, but it's certainly true that every project needs an experienced programmer or somebody experienced to help the student through the project.
+And it's a fairly significant task. I mean, the students are actually doing what roughly $5,000 worth of work.
+So it's a significant number of weeks work over over the summer.
+If you've got, if you see one of the projects that you feel you could mentor, then by all means feel free to sign up and offer to act as a mentor.
+We need more people involved with some of code.
+And in fact, I think that arc Riley is actually going to be pushing the PSF to run similar projects without Google support as well, although heaven knows where we're going to get the money for it.
+But it's certainly something that I think would be worth funding.
+Yeah, so I mean, it's looking at the proposals and everything else like that.
+I mean, I'm pretty sure they're still in need of mentors. So definitely anybody listening to this recording after we're done with this reach out to arc Riley and offer to help out from what I understand of the project.
+And this is my first time volunteering the mentor.
+Really what it is is basically you are the point of contact is a mentor. You're the project manager.
+Ultimately, it's your job to stay on top of the student, make sure the deliverables are hit that are outlined in the proposal.
+Type up summaries basically coach them through basic project management and getting things done, but also serving to them as, you know, a code reviewer and also putting them in contact with the wider community so that they get their patches accepted, figure out how to become part of an open source project if this is the first time doing it.
+So really it's, it's great. It's a, it's a great project. This in a ghop, which is the Google highly open participation.
+Yeah, basically, these are the things that I think existed when some of us were already in school.
+We may not have spent our summers blowing things up and generally terrorizing the rest of humanity.
+Or listeners who are unfamiliar with the summer of code, Google summer of code or G sock is a program aimed at college level students through which the students can learn how to work on open source projects.
+Students write proposals describing what they want to work on. They want to add a module to Python or write a new program that does something.
+And students are paired with a mentor who is an existing already experienced developer on a relevant project.
+The job of the mentor is to then help them work with the community and hopefully get their work accepted.
+But G sock actually pays the students, it pays them around four to five thousand dollars for three months work over the summer.
+So this really replaces a summer job for the student and gives them an opportunity to learn open source and also to rack up some relevant experience if they're computer science students.
+Sure, as far as the students are concerned, this would be something that would look good on the resume as well as getting them into the ways of open source and helping them to discover whether they actually like working in the open source environment.
+The final short item we have on our list this week is kind of an odd one.
+It's the US Securities and Exchange Commission possibly mandating the use of Python for expressing algorithms.
+So the Securities and Exchange Commission has the job of it's a government agency that has the job of monitoring the US capital markets stocks and bonds and that kind of thing.
+And you can tell how effective it is by the fact that we just had to provide the US banks with hundreds of billions of dollars to stop them from going bankrupt and thereby destroying the entire banking system.
+Ouch!
+The SEC recently published some new draft rules for how asset backed securities need to state their regulatory compliance.
+And these draft rules, the new rules require the firm managing securities to post statements of their assets encoded as XML.
+And it says, in addition, we are proposing to require, along with the prospectus filing, the filing of a computer program of contractual cash flow provisions expressed as downloadable source code in Python.
+So the motivation is rather than an investor having to trust a rating agency to figure out how much security would return, in theory, the investor could download the XML and download this Python program and run the Python program and get output that would be the predicted cash flow.
+I should point out to people who are interested in actually getting involved with this, that the SEC proposal is actually 667 pages long.
+So the bits that start to discuss Python begin on page 205, but I think given the horrendous complications involved with these collateralized debt obligations, which are in fact the securities that did get all the banks into trouble.
+I think anything that makes this whole system more comprehensible and more accountable can hardly fail to be a good thing.
+My initial reaction to it was why use Python, why not use s expressions or, you know, a simple sort of list bish subset.
+But I think if the motivation is that investors will download and run this code, then maybe Python is a better choice.
+The expressions will be better if you wanted to analyze the algorithms in some way, or you could automatically compile them into Java or C sharp or whatever and embed them in an application.
+But it seems to me it would be a reasonable task for the SEC to produce maybe a small customized IDE for running these things.
+I'm just wondering whether the Python software foundation needs to take out insurance against the potential adverse effects of any bugs in the system that may result in financial losses.
+That doesn't the warranty though cover it.
+It does in fact, yes, if you use Python for something that damages you then it's the obligation and the liabilities is on you, it doesn't pass to the Python software foundation at all.
+I was merely being a little flippant.
+Now I have a question.
+I am a, obviously the SEC is not proposing Python for use out of the blue air. How much is Python actually used in the financial industry? I know of it being used in some firms to do like automatic day trading, but does anyone know exactly how much it's actually already being used out there.
+When you say up there, do you mean New York or up in the financial world generally? I mean, I certainly financials generally, but, yeah, there are many, many trading companies who are expressing their trading algorithms in Python now and they are also using Python increasingly in the back office systems, which handled the, you know, the post the work that comes after the trades.
+So it is a very popular language and it's getting more popular all the time.
+Then I suspect, I'm just thinking that the pragmatism outweighing everything is probably a good idea from their perspective, right, because if all the traders already have some infrastructure for running Python and some expertise somewhere, whether it's in house or a consultant.
+Thanks so much easier for them to actually do this, probably less fighting from them to have to learn some new as expression language and also pragmatically any programmer could theoretically pick up the program and learn instantly if they happen to know Python will a whole new sub language.
+As expressions would have much more startup cost.
+I think in theory, it's a cool idea. I think that I think it's a choice of Python is relatively interesting. If not, if nothing room for the fact that I to question how much Python is actually being used inside of these financial industry behemoths already.
+And I mean, maybe they picked it just simply do the fact that it's it's painful. If not, it's not impossible, but it's extremely painful to make code that is not understandable or easily easy to read, right, it's difficult to obfuscate most Python code.
+But in the same breath, I think that more hands off approach of just simply saying this needs to be in an open easy to read interpreted language. I mean Python Ruby to an extent, there's plenty of other languages out there that could fit the bill for this. So I'm kind of I'm kind of questioning why the SEC is chosen to almost mandate the use of Python.
+Well, let's just say it's an interesting piece of brand recognition for the Python language.
+It is, but at the same time, it's it's one of those things where yeah, I'm of two minds. It's it's I'm one of those people who tends to say, you know, don't do something like this with a heavy hand. And that's exactly what the SEC's done.
+But it's got a pass first to remember it is just a draft. Yeah, it's a proposal. It's nothing more at the moment.
+Do the rules need to have language saying that numerical calculations will be done using the decimal module, not floating point.
+Well, it'd be interesting to see what happens with this, right? If this actually passes in suddenly all financial institutions must publish stuff in Python code, it'll be interesting to see what proposals or or such that come from the financial industry into Python itself.
+They come for and say we want to switch to turn all the role floating points into decimal automatically.
+Here will fund speeding this up. It'll be interesting. If this does happen, what what's going to happen in terms of now, throw money this way.
+This leads on to a very interesting question, which was actually raised at PyCon by a gentleman called Tim Cooper, who was recently elected to membership.
+Over the Python software foundation, and I think the best way to introduce this would simply be to run the short interview that Tim gave me at PyCon to explain one of the activities he was hoping to get going while he was there.
+So I'm at PyCon talking to Tim Cooper, who is one of the delegates who comes over from the UK pretty much every year, I think Tim.
+Yeah, for the last five years, first time was in 2001.
+Okay, and you've just seen it being asking only about whether particular types of presentation materials are available.
+Yeah, I'm very interested in presentations to people, customers, typically with money who can use Python, who do use Python, and for whom it might be an education to realize that actually, if they gave money back to this or other open source projects, that money would be well used.
+And to give them the opportunity to provide funds from their coffers, where I'm thinking banks, large pharmaceutical firms, for example, people where each of us would have some natural connection because of our consulting or employment opportunities.
+Right, that's a very good idea, and of course the more people who do help with that kind of thing, the more that the Python team can do stuff together.
+So really what we're saying is that you can contribute by making donations as well as contribute by writing code.
+Yeah, yes, and also I think the piece of the puzzle in the middle is making a good clear message, an ambiguous message about how to do that.
+Is the key, having a very good or short PowerPoint presentation or something that would be easy for people to have a good leave it with them, CDs, that kind of...
+So something you're like marketing to.
+A bit lighter than an elevator pitch, but something you could give to a board in five or ten minutes.
+Yeah, good idea.
+Yeah, good idea, thanks very much.
+So we're actually standing at the back of the Python language summit, and Michael Ford has now reconvening, so thanks for your time.
+Let's keep you again later.
+So one of the interesting things, I mean, you probably know as Python software foundation chairman, one thing that exercises my mind a lot is how we can actually get more funding, because I think it's important for the PSF to start trying to divert funds towards the development of the language, as well as the many other worthwhile activities that we do fund.
+And I think that Tim had a very interesting take on that. I think that I know Tim happens to be fairly well connected with the banking and the pharmaceutical industries in the UK.
+And the point to make the point to those industries that if you give money, it will be well used and that the Python language will improve as a result is a very interesting one.
+And I think one that we ought to be as a foundation supporting so that we can try to better support everyone who's trying to develop the Python language in their various ways.
+You're here, but I'm biased.
+I think most of the people here talking are biased.
+I don't actually consider myself a developer, even though I have the commit bit, but I'm biased because I want the foundation to be providing the way with all for development to continue.
+Certainly, but at the same time, you know, how do you go and ask a company for money? What's what's the deal here? I mean, why, why aren't we getting people turning up on our doorstep in huge numbers saying, please, please take this money and develop Python better.
+And how can we persuade them to how can we actually interoperate with people who want particular developments to take place in Python without spoiling the open source scratch your own itch kind of environment that it's traditionally grown up in.
+Well, so I mean, it's this is something I've thought long and hard about too, especially at Python where it's I was, I was, I was talking discussing this with people in the context of being kind of put up to a board of board of directors position for the PSF.
+And thinking about this and also thinking about this is somebody who's worked at most multiple closed source proprietary companies who wants to, you know, a divert money into the Python software foundation more and more.
+This is kind of an interesting question too, because it's a lot of these companies do have itches that they would like to see scratched.
+But then again, I don't think they understand what the PSF is and if they were to invest that money, what they would get out of that right it's actually easier and less stress for them to just hire on people and maybe give them a couple of hours a week to scratch that itch and open source it or in most cases from what I've seen.
+It's they hire on a Python hitman or contractor for like a bit of term to scratch the rich and they keep that itch nicely scratched inside internal for, you know, until the end of time.
+So I think part of part of raising the money and part of getting companies to really see that there's value in donating the money to the PSF is starting out small, you know, approaching some of the sponsors and saying hey listen is there's something you want fixed.
+We're looking at sponsoring a couple of developers to go through either the bug Q or or improve this area or improve this domain.
+Yeah, allowing them to do basically targeted donations. I don't want them to sit there and say well, we want you to pay to do two point next development until the end of time.
+But rather more to the point of, you know, sponsoring somebody like Mark Dickinson to improve the exactly what we were just talking about for the financial industry improving the math capabilities of Python in general.
+But we have to start small and we have to, you know, really show them if you invest your money with us. This is what you're going to get out of it.
+Yeah, okay. Well, I mean, then it's certainly true that there was a sponsored sprint.
+Now, let me see, was it four years ago now, something like that, we had the need for speed sprint in Iceland and that the primary sponsor of that event was a financial trading company who did use Python extensively.
+And as far as I know, they didn't get some useful speed ups out of the Python language. And I believe they're still working with Chris Tismer on psycho, which is a further speed up thing.
+But yeah, I think the thing that surprised me about that sprint was how willing the developers were to accommodate the requirements of people who were basically prepared to put their money where their mouth wasn't saying, well, look, we really do feel we need better performance in specific areas.
+And I found that quite encouraging.
+And I think we just have to continue on that and kind of push that from a PSF bent one of the ideas. I think I mentioned to you, Steve was, and I wanted to propose the board is actually starting to sponsor, I mean small amounts of money, but basically doing monthly sprints and basically going to people and say, listen, we want to hold a Python core or Python porting to three sprint one every month.
+And I believe you like a couple of hundred dollars for pizza and beer or whatever you need.
+And what we want to do is we want to give you money and we want to say get like 10 people in a room and just beat on the bugs and beat on the tracker or pour apps to three and start, you know, putting this putting the seed in everyone's ear so that they start understanding what the PSF is trying to do.
+It would be a very good thing as you observe, we do need to start small because funds aren't exactly coming out of our ears at the moment, but I think if people saw positive results, then companies might be more prepared to contribute to towards that.
+It's fundamentally it's a marketing problem. We have to start small and we have to market the hell out of those small movements, right.
+Not only do we have to say put up in great big bold letters, wherever we can, the PSF is holding, you know, sponsored sprints for X, Y and Z, you know, we have to put in big bold letters, right.
+Even if we're only doing a couple of hundred dollars, right, we're investing time to coordinate it to plan it to fund a little bit.
+And then once once we get results, we have to basically plaster those results as far and as wide as we humanly can.
+Because the point is that a lot of the market, a lot of the problem is fundamentally a marketing communications problem.
+And I think that that's something that's plaguing, you know, the PSF and Python to a certain extent in general.
+Oh, yeah, sure. I mean, one of the one of the repeated discussions I've had with various people in the Python world is has been my attempt to get people to understand that marketing isn't actually a dirty word.
+Some people in the in the programming world seem to regard it as as an activity that's that's fundamentally counter to what we're trying to do.
+In the development of Python, but all marketing really is is trying to get people to understand your ideas in such a way that they will appreciate your needs and that you can fulfill some of their needs really.
+Sure, yes, in advertising terms, it does get horribly abused sometimes.
+And there's a guy called Seth Godin, I don't know whether any of you follow Seth's postings, but he's a marketer who's very, very into the idea that the traditional forms of marketing what he calls interruption marketing are now going away.
+So the traditional form of marketing your product has been to spend huge amounts of money on things like television advertising, which basically interrupts people all the time.
+And he says that what we now need to move to is something he calls permission marketing where basically you're marketing to the people who actually want to hear your messages. And I think if the if the PSF can find a way to do that kind of marketing it will actually be much more successful than if it tries to use a scatter shots or broadcasting approach.
+Well, yeah, go ahead, Brett.
+I was just going to say, I totally agree with Steve's point about need the market and I think a real world aspect of this is, for instance, Python is used by like every Linux distribution out there and practically every Linux distribution actually has like a kernel Linux kernel core developer on staff to act as like an in house consultant, but then basically just improve the general general usability and bugs of the kernel, which is fantastic.
+And it showed that it is totally acceptable and OK with open source community to have someone on staff to work on open source.
+But it's interesting when you look at Python, for instance, where it has just as much use as Linux in lots of places.
+And yet I honestly be on Guido getting 50% time at Google to work on high level stuff that he wants. I don't know of any other core developers that were gotten paid specifically just to work on cleaning up the language or improving it.
+Now we've been lucky enough that we've had only in swallow guys to work on performance, but I've never I don't honestly, I can't think of anyone that could be wrong. That's been paid flat out just to fix bugs and just improve the language in general.
+I'm not sure that most of the employed Linux kernel developers actually can just work on general random stuff.
+Certainly, there are Python core developers like Barry Warsaw, canonical and Gustavo Niemeyer, who have been working on Python related tasks for their employer or David Malcolm at Red Hat.
+I don't think Python is in that bad a situation, but I don't think the Linux kernel isn't necessarily that good a situation.
+It's just I think there are far more Red Hat probably has a significant team of kernel people.
+Well, it's quite I mean, it's definitely improving, right? Barry's pep work, which just happened was on behalf of canonical and David Malcolm's work is just happened this past year. So it's definitely a new development, but I mean, and hopefully it's a trend that will continue.
+Sure, and that takes us back to Tim Cooper's point of view, which is that in order to get some momentum behind this movement, perhaps what we really need to do is to develop a planned approach to where we can actually send someone to talk to a bank or a large corporate, another large corporation of some kind.
+And say, well, look, if if you're a big Python user, and if there are deficiencies in the language that you'd like to see overcome, or if there are features in the language that you'd like to see added, then it is possible by donating funds to the Python software foundation to fund those developments.
+And as I say, the important thing is that we get the developers behind us in saying that that's an acceptable goal.
+Well, if he gets a quarter bell far, I think it's totally acceptable.
+Sure, I mean, I would like to be able to fund sprints where, you know, every say every three or four months, we had a similar kind of sprint to the one that we have at Python, because Python, of course, being the kind of the largest
+Python conference and the one that attracts probably most international or rather most transatlantic cooperation, Python gets the largest sprints, but that's only once a year.
+Now, I think it would be really good if we could put a sprint together, maybe once a quarter or three times a year or even twice a year outside Python, where we could actually get a bunch of significant number, maybe 12 or 18 core developers together to try and move things forward more quickly.
+And to make sure that things were more comprehensive and coherent in terms of development so that, you know, we didn't have this problems of putting features in late because the releases don't happen often enough and so on and so forth.
+This week's Python for beginners, the very first, but something that we hope will become a regular feature, I thought that I would start out just by describing how to start making use of Python, so this is for real beginners, people who've never actually run Python from the command line.
+And the first suggestion I would make is whether you have a Windows system or a Unix or Linux machine, open up a command window and just type the word Python and see if anything happens because it's increasingly likely that when you buy a new computer system, Python is going to be installed on it.
+That's particularly the case in the Unix and Linux world, although there was still a large number of Windows system vendors who don't appear to have caught on yet, I understand that he will at Packard are using Python to configure their PCs and so therefore it's very likely that an HP computer, all beta Windows computer will will have Python on, but if you don't have Python on your Windows machine.
+The simplest thing to do is to go to www.python.org and on the home page, if you look down the left hand side, you will see that there's a bunch of links and under quick links, you'll see documentation and Windows installer.
+Now, if you click on that Windows installer link, you don't even need to store the installer and run it as a Windows user, if your Windows user should it should ask you do you want to run or save this file.
+And you can actually tell it to run the program, it will download the installer and you will have Python for Windows installed on your machine, just like that.
+It really is amazingly easy to install, I was giving a course last week in Buffalo Grove in Illinois for a bunch of firmware programmers and they were actually amazed at how easy it was to get Python onto their laptops.
+If you're not familiar with running programs from the command line, you need to go to a subsection of the Python.org website.
+That would be Python.org slash doc DOC slash fact FAQ for frequently asked questions slash Windows and if you go there, there is a bunch of frequently asked questions by Windows users that explain various things like how you can configure your Windows system.
+So that when you do type Python into the command interpreter, then the Python interpreter runs and all that kind of stuff.
+Not only that, but if you go to that page, you will also see in the links down the side that Python has thought about you because it provides a beginner's guide link as well.
+And if you follow that beginner's guide link, you'll find that there is information about starting to program, there's information about various different versions of Python, there's information about books that you can read, there's information about tutorials.
+So there's a lot of information about about Python available. The last piece of advice that I would give you is as a new user, once you've downloaded your installer and installed it, click on the documentation link that's just above the Windows installer.
+And the second link inside the body of that page should be a link to the Python tutorial.
+And that link to the Python tutorial actually takes you through a sequence of exercises. And if you do all those exercises, you won't be a completely versed Python user.
+But you will know enough about Python to be able to ask sensible questions on forums like the Python list or the comp.lang.python news group as it is.
+So that's all I really have to say for you beginners to Python this issue except to encourage you to give it a try. Python is easy, it's great to start.
+It's a fairly friendly community, despite having some jokes in it as any community does. And I would encourage you to get started as soon as you can.
+As soon as you start, as soon as you'll find out how great Python is.
+This has been a little bit of Python episode 13. Please send your comments and suggestions to the email address all at bitofpython.com.
+Our theme is track 11 from the Headroom Project's album, Haifa, available on the Magnetune label.
+Thank you for listening to Haifa Public Radio. HPR is sponsored by Carol.net, so head on over to C-A-R-O dot E-T for all of her team.
+Thanks for watching.
+Thanks for watching.

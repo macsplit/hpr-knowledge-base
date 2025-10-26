@@ -1,0 +1,348 @@
+Episode: 1253
+Title: HPR1253: LiTS 030: vmstat
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1253/hpr1253.mp3
+Transcribed: 2025-10-17 22:31:02
+
+---
+
+Welcome to Linux in the Shell Episode 30 VM State.
+My name is Dan Waschko and I will be your host today, as always I'd like to thank
+Hacker Public Radio for hosting the website and the audio files.
+Head on over to Hacker Public Radio.org, check out all the fantastic episodes over there
+and consider contributing to Hacker Public Radio by doing your own episode on any little
+geeky topic your heart desires.
+Today we're going to talk about VM State and before we do that we need to talk a little
+bit about virtual memory and virtual memory management.
+Now that all works.
+Virtual memory is a mechanism by which it allows for the allocation of more RAM than you
+physically have.
+It's a management system whereby instead of a application directly going straight to
+RAM and the operating system managing straight directly into RAM between the RAM and the
+process, what actually happens is there's something called, it goes into a virtual
+page or a virtual memory page space so that when this memory is divided up into what
+are called pages, so a page of memory is given to a process and what the operating system
+does is it maps the actual process that the page through what's called a virtual memory
+page table to a location of the physical location of the memory.
+Now that physical location could go directly into RAM or it could go to a virtual memory
+space which is like on your hard disk in your swap partition or file that's generally
+considered slower.
+The way that this theoretically works is you have a lot of processes running, all require
+an allocation of memory and some of those processes may be suspended or idle or not running
+at the time so the operating system to free up some space or memory instead of having to
+close those processes down can page out so to speak, the memory instead of being in
+RAM can page it out to being on the hard drive.
+Now of course that kind of memory on the hard drive is significantly slower than it is
+accessing memory from RAM so the idea is that processes that are idle or inactive or
+not currently being processed the operating system can or might be even waiting for like
+IO to have and can page that out to the disk, the virtual memory and allow another process
+to have the allocation of the physical RAM that that was taken up.
+Now again we use some words there like paging and swapping and what a page is and what a
+swap is are two different things, swapping is when you take the entire process all that
+allocated to the process the physical memory and you put that in the virtual memory.
+What paging is on the other hand is only when you take portions of that process and
+put page it out to virtual memory and the act of doing either one of those is called page
+out or page in, a page out is when you write a page to virtual memory and a page in is
+when you read a page from virtual memory back into the system into regular memory.
+Now that's all normal behavior paging, operating system does that to optimize resource allocation
+but if you're seeing excessive paging that could be an indication that whatever you're
+doing you do not have enough resources to when your system devoted to your system to be
+able to handle the tasks or the processes that you want to run.
+So if you're seeing a, especially excessive paging out that is when a page goes is being
+read from machine, from memory and pushing it out to virtual memory.
+If you're seeing a lot of that that's probably a good indication and keeps increasing that
+whatever you're doing on your system has way too much load than it can handle.
+And VMStat is an application that allows you to monitor the whole virtual memory process
+and hopefully fair it out some trouble areas and be an identifier of what's going on.
+Now VMStat gathers its information from a few files under the PROC directory.
+Now the PROC directory is a pseudo file system that is created and maintained by the kernel
+at boot time and while it's running.
+So it holds information in there about the running system, your process ID, you can go
+in there and see all sorts of different information, your hardware, a lot of nifty bits of information
+can be gathered from there.
+Now with VMStat looks at a couple of things in there.
+One is PROC MemInfo and that MemInfo holds information about the memory usage on the
+system. MemInfo is also used by the free program and a few other utilities out there.
+But MemInfo is information about memory usage on the system.
+And there's PROC Stat and that's a file list, the kernel and system statistics.
+Now the contents of this file depend on what version the kernel you are using and if you
+want to see what entries may be in there, check out a Man5 PROC and show you what the
+entries are in there and what they mean.
+And then if you go under slash PROC, some process ID, PID and slash Stat, now that shows
+the status information for that specific running process.
+And again, like Stat, Man5 PROC will list what those processes may be in that file.
+Then there's the final one, Slab Info, PROC Slab Info.
+Now this file contains information about the kernel caches.
+Unlike most of the other files in the PROC file system, this is only readable by a privileged
+user or root.
+So you can see Man5 Slab Info for more information, but that contains the kernel cache information.
+So VMStat, there is a lot of information packed into this application, the output of this
+application.
+And we're going to touch a little bit upon that information and talk about some of the
+switches.
+By default, you run VMStat, it produces two lines of output, well actually three.
+It's data in a table like format.
+And what you get is the information presented to you in a summary from the last boot, in
+the last reboot, or boot.
+So you have the first two columns, they break it down into memory, swap, IO, system, and
+CPU.
+Those are different categories.
+And under each one of those, I'm sorry, I missed one, PROC, this is the first one.
+So each one of those categories has some columns underneath it, which I'm going to talk
+about.
+Now, processes, this is a process information, these are about processes running on your
+system.
+And anywhere near, the level of information you get from top, but all of this basically
+tells you is two values.
+There's an R column and a B. The one, the R column is the number of runable processes
+that are running or waiting for runtime.
+Now what a runable process is, is a process that is waiting for the CPU to run.
+The schedule determines what runable process is to send to the CPU.
+So it's a process that's ready to be run and it's waiting for the CPU.
+The next one B is the number of processes in an uninterruptible sleep.
+Now, the process that is in an uninterruptible sleep is waiting on a hardware condition to
+be able to complete.
+While it's in this state, it cannot be interrupted.
+All right.
+So it will list any of those processes in that state.
+A lot of times you might see a zero or you might see a few low numbers in these values
+here.
+But that's for the current.
+It's not an aggregate of all processes from the boot, but it's in the current state of
+where your system's at.
+Next section is memory.
+There's memory information about physical and virtual, it's about virtual memory.
+What this shows you, the first column is swapped.
+That's the amount of virtual memory being used that is block or disk storage, it's using
+block or disk storage for memory.
+It's not using your physical RAM.
+And you have free.
+This is the amount of idle memory in the system.
+The idle memory is memory that is no longer used by a process, but still has information
+in it.
+So it's information in this memory management that hasn't been reclaimed yet.
+Then you have buffers, and that's the amount of memory being used by buffers.
+Buffers are raw disk blocks that store information from a process that it's not related to the
+file data or information, it's information like permissions, file location, and stuff
+like that.
+That's what buffers are used for.
+This tells you how much memory is being used for buffers, and then there's cache, and
+that's the amount of memory being used for the cache, which stores the actual file data
+and information for a process.
+So it breaks it down into those there, swap free buffer and cache.
+Then you have a section called swap information.
+That's about swap file and partition or partition usage.
+What then shows you there are two values, SINSO.
+SIN actually means pages swapped in from disk at that time, and SO is the amount of pages
+swapped out from the disk, so that's the page in and page out information that you have
+right there.
+That's probably one of the critical areas to look at.
+If you're seeing excessively high numbers right there, that's a good indication that there
+is a, your system is not performing adequately.
+Either you do not have enough resources, or you have processes that are causing problems.
+IO information, this is a little bit of information, input, output information pertaining to data
+transfer between block devices.
+So BI has blocked, received from a block device, let's block SIN, and BO's blocks were
+written out to a block device that it's written out.
+So it's BI, blocks in, received, so it's input from a block device, and output.
+So that's IO right there.
+Next is system information, this is basic overall system information.
+There's only two values you're seeing in here.
+One is, by default, one is IN, which is a number of interrupts per second, that includes
+the clock interrupt.
+What an interrupt is, is a signal by a hardware device or a process that demands the CPU
+stop wherever it is currently processing and switch attention to that device or process
+that is raising the interrupt.
+So the current, the kernel is running, the CPU is running, an application says, well,
+I need something done immediately, raises it interrupt, and it interrupts whatever process.
+That's what an interrupt is.
+And then this context switch is what CS is the next one.
+This shows you a number of context switches per second.
+What a context switch is, is when a CPU has to stop and store the state of the current
+process it is working on, and store it so that it can be restored later at a later
+time to fill an interrupt or a process that needs to take place immediately, or when it
+is finished processing whatever that interrupted process interrupted was needed, returning
+that restored process to an active state, that's a context switch.
+Then you have CPU information, it talks about some information of process or utilization
+of the CPU.
+The first value is US, that is user time that represents CPU time spent running non-curnal
+code, like your processes, your applications that are running, non-system calls, it's
+non-system call-related processing.
+Then you have system time, which represents time the CPU spends running system calls related
+to the kernel and how the kernel is utilized in the CPU.
+Then you have idle, which represents idle time, that's when the CPU is not currently processing
+a request.
+It doesn't mean that there are no processes running, it's just that no processes are
+requiring the CPU.
+This does not include a I-O weight, then you have weight, which represents weight time
+where a CPU is waiting for an input output operation to complete.
+I covered a lot of those latter values in the top, when I talked about top, so maybe
+somewhat of a refresher there of how some of this works.
+Now VMStat reports, like I said, by default from the last time you booted your system summary
+to where you currently are.
+It has another mode, which may be more valuable for monitoring your system during a, if you're
+trying to fair it out, a problem you think you have an application that's causing issues.
+You can monitor your system instead of doing a summary from last time.
+You can pass two values to VMStat.
+The first value is a delay value in seconds.
+If you pass a number, it has to be a positive integer.
+If you pass a positive integer to VMStat, like two, what that'll do is it'll run VMStat
+with a delay of two seconds and it'll run it infinitely.
+You'll have, it'll just keep reporting the values every two seconds.
+We'll keep going.
+If you put five, it'll report it every five seconds, so it's a delay.
+The second value you can pass to it is a count.
+So total number of cycles that VMStat will run for.
+So if you pass the VMStat 5, 10, what that would do is a delay of five in a count of 10.
+So it would run VMStat, wait five seconds, run it again, give you the values again, and
+continuously do that every five seconds for 10 iterations.
+So you can have VMStat report.
+VMStat by default shows values in kilobytes, that's 1,024 bytes.
+You can change that with the capital S switch, dash capital S or dash, dash unit, and
+one of the four following values.
+K, lowercase K is for 1,000 bytes.
+Uppercase K is the default, which is 1,024 bytes.
+Lowercase M is for mega, but it's actually 1,000,000 bytes.
+And uppercase M, or mega bytes, is for 1,000,000, 48,576 bytes.
+It's the 1,024 kilobytes.
+What you're going there, roughly.
+Now, when you change the value of the unit, it doesn't affect
+certain columns.
+It doesn't affect the IO and the swap columns.
+It doesn't affect swap in, swap out, or block in, or block out.
+Be aware of that.
+Now, VMStat, when it's running, if you're watching it, if you just let it go indefinitely,
+when it reaches the top, it'll scroll up the screen that the header information right
+there shows you the columns.
+When that header information scrolls off the top, it will reprint that header information
+again so you can be aware of what columns you are.
+You can suppress that with the dash N or the dash dash 1 dash header switch, so it won't
+show that.
+There are a few more switches to increase the amount of information being reported.
+One is the dash A or dash dash active switch, which will show you the active or inactive
+memory information.
+This introduces two new fields that replace the memory buffer and cache statistics.
+So inactive memory reports inactive page memory, and inactive page is a page that is no longer
+in use.
+Now, inactive pages can be in one of three states.
+First state is dirty.
+Now, this is when a page is no longer in use, but has data that has been changed, and
+it needs to actually be written to disk, so it's no longer being used, has new data, needs
+to be written to the disk.
+This is the interim state for a dirty page, where it is having the contents move from
+memory onto disk, it's an interim state, then clean.
+This is the state where either an inactive page does not have any change data, or a dirty
+page has completed the laundered process, and it's ready to be deallocated, so there
+are clean inactive pages that can be deallocated.
+And then you have active memory, and this is the amount of pages in memory that are currently
+in use in the virtual memory.
+If you run VMStat with the dash s, lowercase s, or dash dash stat switch, instead of getting
+that default table format, where you have the processes, or what's being listed at the
+top, and then the values underneath it, you can print out a statistical information where
+it's another table, but in this time, there are only essentially two columns.
+The first column is the values, and the second column is what those values represent.
+Okay, they're essentially the same information that you've seen before, but just displayed
+in a different format, more human readable, because instead of abbreviations, you're getting
+like, it's showing you total memory, and it shows you like kilobytes of total memory,
+how much used memory, active memory, inactive memory, so essentially the same information,
+in kind of a more readable mode, but you cannot, it will not allow you to do cycles, so you
+can't indefinitely run this, you can't provide the delay or a count, you won't delay or
+it won't count, it just runs once.
+Once that will allow you to display IO information or disk information with the dash D or dash
+dash disk, and that totally changes the output of VMStat to show replacing default memory
+system CPU and processing information with the following columns, reads, total.
+This is the total, the first value is the total number of successful reads completed from
+the disk, then you have merged.
+This is the total number of group reads that resulted in one complete IO, so all the reads
+that were resulted in one complete IO.
+Sector's is the total number of sectors that were read successfully off the disk, and
+then MS is the total number of milliseconds that were spent reading from the disk, then
+you have rights, it's kind of same information, total equals a total number of rights completed
+successfully, merged is the total number of group rights that completed successfully
+resulting in one IO input output.
+Sector's are the total number of sectors that were successfully written to, and MS is a
+total number of milliseconds spent writing to the disk.
+Then the final group of information is IO, and current reports any current IO in process,
+and in progress, and S reports the second spent for the current or for the any IO, that's
+currently in process.
+Now disk information is reported on a per block device basis, but you can just specifically
+list partition information by using the dash P or the dash dash partition switch, and
+specifying the partition.
+So again, if you had a device mounted, if you had like SDA1, SDA2, SDA3, when you run
+it with the dash D, VM status is going to show you the aggregate information of that block
+device.
+Whereas if you want to see the individual partition information, you would do VM stat, dash
+P slash, dev slash SDA1, or the list of partitions that you want to see, and it shows you the default
+output is replaced with the report on the petition listed.
+So you get reads, which is a total number of reads completed successfully from the partition.
+Read sectors was the total number of successfully completed from the partition to the number
+of sectors read, writes is a total number of successful writes to partition, and requested
+writes is a total number of requests made to the partition.
+So there's some bit more information on there.
+Now like the standard VM output for statistical information, the dash D, capital D, or dash
+D, dash Sum, which will give you a aggregate information, like the dash S, or dash, dash
+stat will for the memory information, virtual memory information, where you'll see the same
+disk information presented in a different format that's more human readable.
+And again, like the dash, dash, stat, dash, capital D, will not accept count or delay.
+Whereas a dash F, or dash, dash, fork switch, that will display the total number of forks
+since the last reboot.
+Values are forks, or forks call that duplicates a current process.
+The child process gets a new process ID, and has its parent process ID set to the process
+ID of the process in forks rub.
+So it's just essentially a duplicate of a current process that is a child of the process
+it forks from.
+A virtual fork is similar to a fork, but when a process creates a virtual fork though,
+the process the V fork was created from is temporarily suspended until the child process exits.
+So while as a fork allows a parent process to continue on, a virtual fork suspends the
+parent process, then there's a clone.
+A clone is similar to a fork, but a clone allows the new process to share a part of the
+execution contents with the calling process.
+Normally a fork or virtual fork has its own resources or contacts, whereas a clone can
+share a context with the parent or the process it was cloned from.
+Like some of the other summary information, this doesn't allow you to use a counter or
+a cycle.
+VMStat has the ability to report on slab information using the dash M or dash dash slab switch.
+You must use this as a run this as a privilege to count, it will not allow you to do it as
+a normal user.
+So that means either root or pseudo, you need to access it, and it doesn't do a allow
+for count or delay on this.
+It presents all the slab information in a table format, it's a little more human readable
+because it's not using abbreviations, but you have a couple of columns that it shows.
+It shows cache, is the name of the cache being reported, that's the first column, the
+next column is numb, is the number of currently active objects in the cache, the third column
+is total, which is total number of available objects in this cache, size is the size of
+each object in the cache, and pages is the total number of pages with at least one active
+object associated with that cache.
+So that's how you can get some slab information on there.
+VMStat is a very, very condensed, highly informational application to understand the output of VMStat
+and to understand how to use the tool, you have to understand what virtual memory is
+in the processing of virtual memories.
+Hopefully, this has given you a cursory understanding of how virtual memory operates.
+It's about allocating your system's resources, particularly memory, physical RAM as best
+as possible by providing a virtual interface to memory whereby it allows, instead of accessing
+RAM directly, it accesses a page, virtual pages of RAM that are mapped by a page table,
+virtual page table, to the actual resources in either physical RAM or into virtual memory
+like on a disk or swap file or swap partition.
+When you start seeing excessive use of virtual memory as opposed to physical memory, VMStat
+might be a good indicator that your system's slowing down that that's what's actually happening
+by looking at the values we discussed.
+Head on over to the website, Linux in the shell.org.
+I have the full right up there, but a lot of really good resources linked to in the bibliography
+that goes into a lot of detail on virtual memory, understanding virtual memory and virtual
+memory management, what interrupts are, what processes, what it processes, how that's
+all defined, and check it out.
+Thanks a lot.
+This has been Linux in the shell, from episode 30, from using VMStat, my name is Dan
+Moshko, thank you and thank Hacker Public Radio for providing this space, have a great day.
+You have been listening to Hacker Public Radio at Hacker Public Radio.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by a HPR listener by yourself.
+If you ever consider recording a podcast, then visit our website to find out how easy
+it really is.
+Hacker Public Radio was founded by the digital dog pound and the infonomicum computer
+cloud.
+HPR is funded by the binary revolution at binref.com, all binref projects are crowd-sponsored
+by linear pages.
+From shared hosting to custom private clouds, go to lunarpages.com for all your hosting
+needs.
+On list otherwise stasis, today's show is released under a creative comments, attribution,
+share a line, free those own license.

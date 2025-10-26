@@ -1,0 +1,152 @@
+Episode: 329
+Title: HPR0329: SSH Part 2
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0329/hpr0329.mp3
+Transcribed: 2025-10-07 16:29:32
+
+---
+
+So
+I'm going to be talking about SSH keys and the public and private keys, that sort of thing
+for SSH.
+As I've said often before, whenever I do a networking-related episode, I'm not a network
+admin.
+I'm not a professional.
+I don't know that much about networking, so do not take my episodes as maybe best practices
+or as being the most secure way of doing things.
+This is just stuff that I've been playing around with on my own internal network and that
+have made my life easier and I think maintaining at least sort of every day security.
+So I don't go doing this on some server, you know, that's pointed out into the world.
+I don't know anything about that kind of thing.
+But internal network stuff, this is just kind of fun to play with and it makes your life
+a little bit easier possibly.
+Now I did a previous episode on SSH, kind of getting started episode here on HPR and
+I got a lot of good feedback about it, but when people start using one's episode as a tutorial,
+one starts to see a couple of things that one may have left out of that original tutorial.
+So this episode is also going to serve as kind of a, oh, by the way, episode for that first
+SSH episode.
+So I guess let's just start from the beginning then.
+The first thing you want to do anytime you're going to start messing around with SSH,
+especially if you're new to it, is make sure that you have SSH installed.
+And I know that sounds kind of obvious, but it's not necessarily obvious because you'll
+be playing around with one Linux distra one day and SSH comes automatically installed.
+And so you just start playing around with it and suddenly it works.
+And then suddenly you install a different distribution sometime and you look around and
+so now it's not working well because it's not installed probably or maybe it's not started.
+So I'm going to go through both of those things right now.
+The installation is as you expect pretty easy.
+It's, if you're on Debian, I think it's just apt-get install SSH, that's easy.
+Now that installs what they call the SSH server and the SSH client.
+If you are running Ubuntu or Debian unstable, you have to do it separately.
+So that would be apt-get install OpenSSH-server or if you're in Ubuntu, it would be pseudo apt-get install OpenSSH-server.
+And apt-get install OpenSSH-client.
+I believe on Fedora, both of those come installed already.
+But again, just kind of do a young and search SSH and you'll see all the different possibilities
+for what you need to install.
+Now on my little internal network right now, I've got two machines, Fedora,
+and my Fedora MacBook and the Debian Triple E PC.
+So those are the two that I'll be using.
+So on my Triple E, I've installed the, I've done the apt-get install SSH and on Fedora, at least for me, Fedora 10, it was already installed.
+I don't remember if I've done that myself before or if it just comes installed automatically.
+Just keep in mind that, you know, if you're invoking SSH and you're not getting an error,
+you still might want to just verify that you have the server and the client installed.
+You need both installed for this all-to-work properly.
+Now to start your SSH, because it's not necessarily something that just starts up with your session,
+in fact, it's quite possibly not.
+You want to type in slash Etsy slash init.d slash SSH space start, that's on Debian.
+So that is slash Etsy slash init.d slash SSH space start.
+Okay, on Fedora, you're going to want to type in slash Etsy slash init.d slash SSHD space start.
+And that'll start your SSH damon.
+Now you want to do that as root, because you're probably not going to have access to all the different things that you need access to.
+Without becoming root.
+So on Fedora, I would just do SU, type in my root password, and then again slash Etsy slash init.d slash SSHD space start.
+And now it's started.
+Now I can text it.
+Okay, so now I'm a normal user again.
+SSH has started.
+One last thing to verify.
+If you have a firewall software installed, or if you just know IP tables really well, start that up and have a look at what you're blocking and what you're allowing.
+And quite often on a Linux distribution, you will find that SSH is not allowed.
+You'll have to go in and open that port.
+That is of course port 22, and there's a way to change that port.
+And I'm not going to go through that right now, because I've only done it like once.
+And that's probably a topic for another episode or something.
+But you've got to open that up in your firewall on both machines.
+Because otherwise obviously if you're requesting SSH information from a computer and it's blocking port 22 or whatever port you've got your SSH running on, then that's not going to work.
+It's not going to respond to you.
+And you'll get an error connection refused.
+Some kind of error like that.
+So keep that in mind.
+Okay, so let's say that I've got that's kind of the stuff that I think I had forgotten to mention in the first episode that I did on SSH.
+So make sure it's installed and make sure it's started on both machines.
+Those are both obviously important.
+The last thing is make sure that you've got an IP address on both machines.
+Make sure you're on the same network.
+If you've got a lot of wireless networks around, hopefully you're being network savvy enough to make sure you're actually on your own network and things that you're not accidentally signing on to a neighbor's network.
+But obviously just make sure that you're on your own network.
+Both machines have unique IP addresses.
+They're both, I guess within the same, you know, if you've got a couple of different routers or different subnets going on, you know, make sure that they can reach each other, ping each other, things like that.
+Just kind of basic networking trouble network troubleshooting to make sure that the computers can actually find each other at all before you start trying to SSH into each other.
+Now we can start, well now you can go back and listen to that first SSH episode again if you haven't gotten it working and figure out SSH.
+Once you've done that, now we can start playing around with the keys, the public keys.
+And these are really cool. The keys are, I guess, I guess they're in a way more secure because you don't have to keep typing in your password every single time in order to sign in to another computer.
+But it also gives you the option to start an SSH agent.
+If you want to copy something over to another machine, you can just type in scpfubar.txt over to clatuat192.168.1.52.
+And you don't have to type in the password, the past phrase.
+You can, it'll just copy the file over. It's really pretty cool.
+And if you want to shorten even that, if you're someone who is transferring files from one computer the next all the time, you could even assign a computer, you know, just a persistent variable name for your terminal, for your bash profile.
+I guess it would be dollar sign clatu, you know, whatever. So that's pretty cool stuff.
+It's, it's quite powerful. If you can set it up, and that's what we're going to do right now is set this thing up.
+So the first thing that you have to do, and I've been reading up on this, and this is, these are some of the recommendations that I've found.
+There are a couple of different kinds of SSH keys. There's RSA and there's DSA and probably other kinds as well.
+It seems, for whatever reason, that DSA is not a bad idea to use. I guess RSA, some compatibility issues exist, or, or something to that effect.
+I guess it was proprietary code until 2000 or something like that, and some systems don't talk to RSA. Weird stuff like that.
+So I don't really know the difference, but I've been using DSA myself just because that's what I was reading, and it seemed to work for me.
+So I just kind of kept on using that. So the first thing you have to do is generate your keys.
+So this is a little bit like open, open P and what is open GPG, you know, where you've got pretty good privacy stuff.
+You kind of have to generate keys, and then you're going to swap keys and things like that.
+So what you do is SSH-key gen, that is K-E-Y-G-E-N, space-T, space-DSA.
+That is Delta-SA, I don't really know the letters, but DSA, and it's going to generate the public and private DSA key pair.
+It will ask you where to save this key, and by default it will be in slash home slash, clatu slash, dot SSH slash ID underscore DSA.
+That's fine by me, so that's what I do. And then you hit return, and it asks you for a passphrase.
+This passphrase is not your user passphrase or your root passphrase or anything like that. This is your SSH passphrase.
+So if you want to keep your passwords unique, you'll want to create a unique passphrase here.
+So I'll do that, and now I've got a passphrase for my SSH.
+And then you press return, enter your passphrase again, it spits out a fingerprint for you, and now you've got this file in your dot SSH folder in your home directory called ID underscore DSA.
+Okay, what do we do with these keys? Well, you'll notice also, like if you do an LS on your dot SSH folder, that you've also got an ID underscore DSA dot PUB.
+That's your public key. That's the one that you're going to need to copy to your other computer.
+So if this computer I'm on right now is class two, let's say my other computer is gourd. So if I need to copy, I'm going to need to copy my ID underscore DSA dot PUB over the gourd.
+And the way that I can do that is just a normal SCP command. So it'll be SCP space slash home slash clatoon slash dot SSH slash ID underscore DSA dot PUB space gourd at 192.168.1.64 colon slash home slash gourd slash dot SSH slash authorized underscore key.
+underscore keys to the number two. That's what I do. So that is again, you're copying the ID underscore DSA dot PUB over at gourd SSH folder, but you're renaming the file while you're copying it to authorized underscore keys.
+And then the number two. That's again, that's just how I do it. So if you do that, there's also a way if you want to just you can put that SSH key at the end of a file in gourd's machine.
+But I think this is simpler. So let's just do it this way. And then if you start feeling that you need a different way of putting in your public keys, you can look that up on the on the intro webs.
+There'll be lots of sites that will teach you how to do that. It's easy. But I think when you're trying to just get the concept down, it's easier to do it this way.
+So we've just securely copied the ID underscore DSA dot PUB from class two over to gourd as authorized underscore keys to and obviously it's going to ask you for gourd's password to enter that in because we're still under the old SSH method.
+And then it'll copy that file. It'll be really quick. And now you're basically ready to start accepting SSH agents. And the way to do that is you will say SSH dash agent bash.
+So that is actually I'm already in one. So let me exit that get a brand new shell up here. Okay. So if I type in SSH agent and so it's SSH dash agent space bash.
+Now I've got a shell. I've got it. I've got a new prompt. It looks the same. It doesn't feel like anything is different. But it is now I'm going to want to type in SSH dash add. And it says, okay, well into your pass phrase.
+This is your SSH pass phrase. So you're going to want to put that in. We just now created this. Remember, so this isn't your user password. This isn't your root password. This is your SSH pass phrase that we just now created.
+It returned. So it says, yes, the identity has been added. The cool thing is if I go SSH space, let's say Gort at 192.168.1.64 suddenly I'm in. It doesn't ask me for a pass phrase. It doesn't ask me for a path that the user password for Gort, nothing.
+It just dumps me into Gort at, you know, host name. So it's really cool. Now now I can start applications. I can list. I can, you know, do whatever I need to do over on Gort.
+Now the other cool thing is like, let's say if I've got, if I have a file that I need to copy over to Gort, I can just do an SCP. Let's see what kind of copy. Actually, I don't have anything to copy. Let me find something harmless.
+Okay, so SCP Fubar dot text over to Gort. Well, really, since I've got a variable, I'm just going to do dollar sign Gort. And that is going to go ahead and copy that file.
+And again, it just copies it automatically. It says if though it's on the same computer. So there you go. It's copied. No pass words, no pass phrases. Now there are ways to make all of this very, very automatic.
+Now, since we're running Linux here, there are ways to have your entire graphic environment start up from more or less from within an SS agent as it were. And then anything else you do from within X just inherits the knowledge of that SSH key from the other computer.
+You know what I mean? So that you could copy secure copy files from within your file manager, for instance, graphically, things like that. So that's pretty cool.
+In my experience, it's done differently on a couple of different distributions. So you might want to look into that online as well.
+The rough idea of it. And this might be a topic for another episode would be that you go into like on Slack where it's in your home folder, you can you have a dot X in it or C file file.
+And you can add a line in that so that it knows that when you issue the start X command, if you don't have X, you know, starting up automatically that it, that when you start X,
+it does SSH agents and then SSH add and then starts X.
+In Fedora, you have to go to the slash Etsy slash X 11 slash X init. And there is an X init RC file in there. And if you read through that, you'll see that it's actually looking for a dot X clients file in your home folder.
+So you could add an X client a dot X clients file in your home folder and it would look to that before it started X.
+There's also I think an X clients file in the slash Etsy slash X 11 slash X init folder, but I've never done it that way.
+I've always done it just per per user, just I don't know why that was just what I was accustomed to.
+And I don't think I've done it on Debbie and recently enough to remember how to do it. If I've even done it at all, I don't believe I have.
+So that's pretty complex stuff and maybe I can do an episode on that sometime.
+But for now, I think I think you've got you've gotten started with the SSH agents and SSH keys.
+So enjoy your single passphrase SSH activity. Quick book recommendation. There is, of course, an O'Reilly book dedicated to the Secure Shell to SSH.
+It is by Daniel J. Barrett and Richard E. Silverman. And it is called SSH, the Secure Shell. And that has a picture of a snail on it.
+It is a big book. It is quite heavy and it's very complete. Don't let the size of the book scare you away.
+It's not something that you necessarily have to read from Cover to Cover. And they kind of give you a couple of different suggested ways of reading it in the forward.
+But if you want to read Cover to Cover, you can. I'm attempting to right now, but I'm attempting to do a lot of other stuff too.
+So this going is a little bit slow, but it's definitely a great book. So thanks for listening and I hope this helps. Until next time.
+Thank you.

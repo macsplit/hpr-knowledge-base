@@ -1,0 +1,65 @@
+Episode: 3168
+Title: HPR3168: FreeBSD Jails and iocage
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3168/hpr3168.mp3
+Transcribed: 2025-10-24 18:08:15
+
+---
+
+This is Hacker Public Radio Episode 3168 for Wednesday 23 September 2020. Today's show is entitled
+FreeBSD Jails and Iacage. It is hosted by Norrist and is about nine minutes long
+and carries a clean flag. The summary is
+Use Iacage to Manage FreeBSD Jails. This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+I am going to talk about freeBSD Jails.
+I will also talk about how to manage Jails with Iacage and how to set up freeBSD to host services inside a jail.
+FreeBSD Jails are a type of OS level virtualization. The most well-known OS level virtualization platform is probably Docker.
+Other examples are LXE containers and Solaris zones. FreeBSD Jails allow users to run multiple isolated instances of freeBSD on a single server.
+I like to use freeBSD Jails for separating applications. I like to experiment and sometimes I break stuff.
+I usually run one application per jail using Jails for services allows me to experiment and learn without risking breaking another process.
+Some examples of how I use freeBSD Jails on a home server is I run things like web applications databases or syslog servers in their own Jails.
+FreeBSD comes with tools to manage Jails but I like to use Iacage to simplify the process.
+In this example, I will outline setting up a network for the Jails that is only accessible from the host and forwarding incoming connections to a jail based on the port.
+There are other ways to set up jail networks including being able to have the jail IP address on the same network as the host.
+I will only cover one type of network setup but see the documentation for the network setup that works best for you.
+The Jails in this example will be configured to bond to an IP address on the hosts internal network.
+The hostOS will pass traffic from the external network to the jail using port forwarding.
+Iacage uses ZFS data properties to store the configuration data for each jail so a ZFS file system is a requirement to use Iacage.
+Many new freeBSD installations will probably already be using ZFS but if not, I'll cover a minimal ZFS setup.
+For network setup, I'll cover setting up the internal jail-only network enabling the PF packet filter and configuring PF to pass traffic to and from the jail.
+FreeBSD includes more than one firewall. I am most familiar with PF so that's what I use.
+Another option for the firewall is IPFW.
+Either firewall can do more than just pass traffic to an internal network so refer to the documentation for additional firewall configuration options.
+We need to add some startup options to the freeBSD host.
+The preferred way to manage freeBSD startup is using the CISRC command.
+The show notes will have these CISRC commands.
+To create the loopback interface run CISRC cloned underscore interfaces plus equals L01.
+To set the network range for the loopback interface run CISRC if config underscore L01 equals INET 1 on 2 dot 0 dot 2 dot 1 slash 24.
+You can use whatever IP address range or settings that you want.
+Then enable the PF firewall by running CISRC PF underscore enable equals yes.
+The configuration file for PF is PF.conf.
+I will have a sample of PF.conf in the show notes or follow the PF documentation.
+I won't read the entire PF.conf but it does contain a few parts.
+First set up the variables containing the interface names and then there's a rule to allow NAT traffic from the external interface to the jails.
+And then finally there's a rule forwarding ports to a jail.
+At this point the easiest way to activate all these changes is to just reboot the host.
+So now we'll look at setting up ZFS to use with a hell cage.
+The best way to use ZFS especially if you're using a VPS is to attach a block storage device as a new disk or if you're using a physical machine attach a new disk.
+If a block storage device is not available you can optionally use a file as the ZFS device.
+If you are not already using ZFS you can activate and start ZFS by running CISRC ZFS underscore enable equals yes and then service ZFS start.
+In FreeBSD the command to list disks is gion disk list use that to find the name of the new disk.
+In the example we're going to create a ZFS zpool called chelstore to create the zpool on a new disk run zpool create chelstore then the path to the disk slash dev slash whatever.
+If you are not already using ZFS and don't have a second disk available but still want to try iokage you can use a file as the ZFS device.
+Create the file using dd if equals slash dev slash zero if equals slash ZFS file bs equals one mag and count equals for zero non six or whatever you feel is appropriate.
+Then create the Zpool on the file by running Zpool create chelstore slash ZFS file.
+The easiest way to install iokage is from the free bsd package manager run pkg install pie 36 dash iokage to continue iokage to use the Zpool we created.
+Run the command iokage activate chelstore and the last preparation step is to download the files iokage will use to build the gels by running the command iokage fetch.
+For the example we'll create a gel named www and then install a patchy to create the gel run the command iokage create dash in www op for underscore address equals L01 piped 192.0.2.10 slash 24 dash r then the latest free bsd.
+Free bsd release the one that you would have downloaded when you ran iokage fetch to start the gel run iokage start www and then to get a shell inside the gel run iokage console www.
+Once you have a shell inside the gel you can install and start a patchy by running pkg install Apache 24 sisrc Apache 24 underscore enable equals yes and service Apache 24 start.
+Since pf is already configured for 80 on the host IP address will be forwarded to the gel we just created.
+Additional gels can be installed using the example commands install the new gel with the iokage create command but be sure to use a different IP address then expose the gel to the network by adding an additional rule to pf.com please leave any questions you have in the comments and see you next time.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show like all our shows was contributed by an hbr listener like yourself if you ever thought of recording a podcast then click on our contributing to find out how easy it really is.
+Heka Public Radio was founded by the digital dog pound and the infonomicon computer club and is part of the binary revolution at binwreff.com.
+If you have comments on today's show please email the host directly leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated today's show is released on the creative comments attribution share a like 3.0 license.

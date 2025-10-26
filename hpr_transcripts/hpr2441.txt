@@ -1,0 +1,168 @@
+Episode: 2441
+Title: HPR2441: Server Basics 103
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2441/hpr2441.mp3
+Transcribed: 2025-10-19 03:08:28
+
+---
+
+This is HPR episode 2,441 entitled Server Basics 103.
+It is hosted by Klaatu and is about 30 minutes long and Karimaklin flag.
+The summer is firewalls and failed to ban.
+This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+Support universal access to all knowledge by heading over to archive.org.
+Support universal access to all knowledge by heading over to archive.org.
+Support universal access to all knowledge by heading over to archive.org.
+Hey everyone, this is Klaatu.
+You're listening to Hacker Public Radio.
+This is an entry into my Server Basics mini-series.
+Last time we talked about SSH and how to secure that and get that sort of out of the firing range.
+And in so doing, we touched a little bit on firewalls.
+And I imagine we'll continue to touch on firewalls as we talk about other services
+because that's kind of part of that pattern that I mentioned last time.
+There's a certain rhythm to this sort of thing.
+And the more you do it, the more you pick up on that rhythm.
+And thereby you make fewer mistakes.
+And that's really important.
+I know a lot of people will say practice is perfect.
+And in Server Admining, that almost seems like, well, it's not really so much practice as it is just learning this stuff and then doing it enough so that you don't forget it.
+It is practice.
+But even if you take it out of the specifics and just kind of look at, okay, well, how do I practice this stuff?
+Like, what do I need to internalize?
+One of the things that you really need to internalize is the rhythm of steps that you are going to take almost all the time, no matter what you're doing.
+And one of those steps is install a service, configure a service, restart the service, or restart the service.
+And with a possible little tacked on thing there at the end of enable the service to be permanent, you know, make the service permanent.
+And then as a security method, the fourth step in that process is to configure the firewall to allow for that service.
+And I guess I would only want to say firewall. I guess I should say security.
+Because the security is going to, it might entail SE Linux, it might entail the firewall, it might entail fail to ban.
+You know, it could be a number of different things that add a little bit of protection to whatever you're trying to offer to the wide world.
+And today I want to talk about fail to ban, which is kind of one of those other things that you probably want to leverage in your server configuration.
+Fail to ban is just this beautiful log parser that looks through your, mostly your security, your secure log, but it can monitor a lot of other things too.
+But it monitors that and it sees, it tries to pick up on IP addresses that are repeatedly being denied access.
+And the assumption there is that if someone at some IP address is repeatedly trying to get into the server and is repeatedly trying to fail, they're probably trying to break in.
+And that's not a bad assumption. It's actually a pretty good one.
+Now you can increase the number of chances that they have or decrease the number of chances that they have such that one failure results in being banned or 10 failures, three failures, whatever.
+And maybe that will depend on the kind of service that you were talking about. Maybe you want to give your developers, for instance, two or three tries for a successful SSH login.
+Although I don't really know why. Why would they be logging in? Maybe if they forgot to use their special server key that you gave them, you know, they just did a standard SSH without the dashi.
+Although at that point, tell them to add into their SSH config a rule telling, you know, when you SSH into this, use this identity file.
+Anyway, I'm getting off track here. What I'm trying to say is fail to ban will ban IP addresses that continually fail to authenticate.
+So it's not a hard thing to set up, but you do need to be on your server. So assuming you've still got your virtual server that we set up earlier, and I'm assuming also that you remember that we set up the ability to SSH into it.
+Now remember, your SSH command needs to be directed to a specific port. You can't go to, you can't just say SSH class 2 at IP address. You have to tell it which port to look at. So that's dash p22123, in this case, if you've followed along with me.
+Of course, you might have used your own port number, so you would want to know that. And if you've forgotten any of this stuff or if you've accidentally, you know, misconfigured something, it's a virtual server. You can just fire it, you know, you can look at the screen and reverse whatever you need to reverse.
+Or for install a new one for that matter, it's not a big deal. And in real life, the equivalent to that would be going into the server room and plugging in the monitor and plugging in the keyboard and sitting there like an idiot, you know, doing stuff manually.
+You never want to look at you and think that they screwed something up because generally you don't have to do that. Generally, you should be able to remote into the server because that's just how things are done. And there's usually too many servers to make that a common thing.
+I mean, it does happen. I mean, you know, sometimes you have to go and do some kind of manual manual maintenance on something, but generally speaking, especially in the, you know, the larger the server farm, the less frequent it is to see people dragging in a monitor and a keyboard to go do some work.
+So, um, yep, yes, this agent to your virtual machine. There you go. So what we want to do is install fail to ban, as I said. So we'll become root or we'll use sudo and we'll do a young install fail. And in the number two ban.
+And there are no matches found on my particular install of sentos. Well, that's silly, but it's not the worst thing in the world. So failed to ban is not part of the official repository for red hat or sentos. And that's not actually that surprising. And this is something that's going to come up a lot, which is why I'm mentioning it on air here. This is why I didn't do this off air, for instance.
+So whether you're using red hat or sentos or sus or Ubuntu or anything, that doesn't really matter. The thing is that you as a desktop user are going to, you know, you as a desktop user are used to having certain, well, anything really at your back and call. And on the server distributions, you, that's not necessarily all the time the case for a couple of reasons. One is because maybe there's a sponsoring company behind it all that doesn't feel like it can take on every single software ever.
+Or written and placed into a repository as something that they can officially support, meaning that if they answer the phone and you start yelling at them because failed to ban isn't banning correctly.
+They maybe don't want to deal with that because of reasons they have other stuff to deal with. They have lots of other software that they're supporting. So that's one reason. And then the other one I think this is me surmising.
+On a server, one of the ideas is that the less you can install the fewer attack vectors there are. So it may have something to do with just kind of like, well, if we, if we offer this set of, you know, 200 packages and I'm just making up numbers here, then that's only 200 things that we have to worry about.
+Or that the user can construe themselves over with. And if they want more, then they can go seek out more on their own, which I'm going to do right now.
+Yum install EPEL release. Now that's for Sintoss and for Red Hat. And not, yeah, just for Sintoss and Red Hat, not for Fedora. And that's, that's a good one to install.
+For other distributions, there may be other as I say, unofficial official repositories to install.
+And obviously you kind of want to do it with a grain of salt because maybe, maybe it's not in the official repo for a reason. But failed to ban, I feel quite, quite secure with.
+And so I've just added EPEL dash release, which is in the Red Hat repository, or the, yeah, I think the Red Hat and Sintoss repository.
+So it's kind of funny that their, their unofficial release package set has an installer for itself in their official package set.
+So do a yum search fail to ban. And I get on this one, I get about 11 different options.
+I can install fail to ban all I can install fail to ban fire wall D for firewall D support. That sounds good. I know that we're using that fail to ban server and then just fail to ban itself.
+So I'm going to, I'm going to take a wild guess and say that I need to install fail to ban and fail to ban dash firewall D.
+Now for all I know one includes the other, I don't, I'm not sure, but I'm going to install them both anyway. And no, it looks like both might be separate entities.
+It looks like firewall D itself pulls in something called fire, not firewall D fail to ban pulls in something called fail to ban send mail fail to ban server.
+And that's good. Okay, so now that we've got that installed, we can take a look at all this configuration.
+Now if you didn't know anything about fail to ban and for all I know you don't, the first step that you would probably want to take is looking at its man page.
+And if you did that, you would see that its man page is very short and basically useless.
+It tells you that it's a failed ban, it's a package, it's a server and a client program and it limits brute force authentication attempts.
+It doesn't tell you anything about how to set it up or how to configure this at all. So that's not useful.
+And it doesn't even, I don't even think it references see also failed to ban server failed to ban client. Oh, and jail.conf, that's what it is.
+So it does reference that and that's a good thing. So now if we do a mail man jail.conf, we see a little bit more on how this thing is supposed to be configured and that's kind of nice.
+So it says conf files are distributed by failed ban. It is recommended that conf files should remain unchanged to ease upgrades.
+If needed, customization should be provided in a local file. For example, if you would like to enable the SSH-IP tables-IP set jail, specified in jail.conf, create jail.local containing and then it gives you the little code.
+So it sounds like what we need to do is look at this thing that this whole jail.conf system and it kind of tells you kind of like what files are involved.
+I mean, it says, okay, there's a jail.conf, there's a failed to ban.conf, failed to ban.d slash asterisk.conf, doesn't tell you where those things are located in the larger greater file system.
+Now, if you know anything about UNIX, then you probably know that the most likely case or the most likely location for this would be slash Etsy.
+So if we do a slash Etsy slash fail, yep, there it goes. So there it is. It's failed to ban. In the slash Etsy directory and sure enough, in there, there's this thing called jail.conf and there's paths dash fedora.conf, jail.d.
+So there's a bunch of stuff in there, not too sure what it all has to do with each other, not sure really what I'm supposed to be looking at there.
+But let's back up for a minute. Let's say that you didn't even, you didn't know enough about UNIX or you haven't done this enough to sort of think all of a sudden, oh, well, the configuration files are probably in slash Etsy.
+I should just look there. Maybe you didn't know that. Maybe you thought, oh, no, they're in slash USR slash share or something. I don't know.
+So the thing, I mean, you could obviously just go out to the internet and look and find out all this stuff, but I'm just trying to impress upon you kind of how, again, the rhythm of this stuff.
+So you've just installed fail a van. You have no idea what to do next. And maybe you think, well, I should just start the service.
+And admittedly, that wouldn't be the worst thing in the world. You could try to start it. But then what if it does start, maybe if you start it, it'll fail and tell you what to do next.
+But then again, maybe it will start, but with completely just bogus settings that will not do anything for you.
+And maybe you think, well, plateau said install configure start. Okay. So where's the configure step? We don't know.
+So if you would know, if you know your system well enough, then you can figure some stuff out. So I, I'm sure that there's an equivalent young command.
+I don't know what it is. So I just use RPM. And that is RPM-ql. So query and list fail to ban.
+Now, unfortunately, fail to ban isn't a real package. Remember, I said that when we, when I installed fail to ban, it pulled in a bunch of other stuff.
+It pulled in fail to ban dash server fail to ban dash sin mail. And then I myself installed fail to ban dash firewall D.
+So knowing that the fact that it contains no files doesn't surprise me. But I'm going to guess, because this is how things work, fail to ban dash server is the one is the package that drives fail to ban.
+So I'll do an RPM-ql-query-dashlist in the long form for fail to ban dash server. And sure enough, in fact, I'm going to even pipe that to less, because that just spit out many, many screenfalls.
+And that tells you, it lists every file in that package. And so sure enough, the configuration files are in slash Etsy. And then the actual files that kind of make up the program are all in slash usr slash lib slash python blah, blah, blah.
+So that's how you would kind of reverse engineer what you just installed. Now, obviously the RPM command here wouldn't apply necessarily to, well, it certainly wouldn't apply to Ubuntu.
+Never tried it on on on open sues. I don't think it should work, but there's probably a nice zipper is a great packaging tool. So it's there's probably a super easy obvious zipper command to get a list of all the installed packages.
+So anyway, we've found the place to go. So we're going to go there slash Etsy slash failed ban. We do a list. Well, we saw it in the man page that jail.conf was kind of the place to be, but that we shouldn't edit it.
+So let's do a cat jail.conf over to jail.local because that's what it told us to do. And then we'll open up jail.local. And this is a pretty, a pretty nice file. It's a pretty well commented file.
+The tricky thing is, and this literally the first time I did this really confused me, you know, you've just made this copy of the file. And then you open up the copy. And one of the first things you see is you should not modify this file. And that's kind of scary. And when I first saw it, the first time I ever installed failed a ban.
+Well, maybe it wasn't the first time, but you know, at some point when I installed failed ban, because I think they switched to this file later on in its life. But anyway, it really confused me because I thought, oh my gosh, I'm not supposed to edit this file.
+But it told me to make a dot local file. Well, yes, that's part of the old message. So I just, I just get rid of that part.
+And then it says provide customizations in a jail.local file. That's, that's this one. Or in jail.d customization.local.
+For example, to change the default ban time for all jails and to enable the SSH-IP tables jail, the following uncommented would appear in the local file.
+C-man five jail.com for details. So the example that they give is that they give the default rule. This is an I and I style rule.
+Default ban time equals 3600 seconds, presumably, and then SSH-D enabled true.
+Okay, so that gives us a little bit of a taste of what we're in for. And then if you kind of scroll through the file and kind of read the comments, you get the idea that most of this is actually set to something that is sensible.
+So if we had started this, we might have had some success, maybe. So there are, there's a space for ignoring IPs, which would be really, really handy for myself.
+Because I know that I'm going to be SSHing into this thing a lot. And I would hate to ever be banned from this server. So I'm going to just go ahead and add my IP address of my of this local computer to this file.
+So that I've got basically white listing myself. So that's that's that's done. And it tells me to use a space and or comma separator. Okay, that's always important to know what the limiters to use.
+And then I keep scrolling down on reading stuff and I read about a back end and the available options being these various things. Oh, there's system D.
+I know that CentOS uses system D. So let's switch it from back end auto to system D. That seems like a sensible thing to do for this.
+And you just, you know, kind of keep keep reading pretty much. And if you see something that's really, really obvious, then then change it.
+And if there's something that you don't understand, yeah, maybe don't, maybe don't, don't mess around with that one.
+There's a bunch of stuff like the different actions to take in order to ban things. And yeah, so stuff that you don't understand, like I say, kind of keep away from that.
+But then you finally get down to the jails section. And that's, that's where the real meat of this configuration is. And it defines each, each, it names each jail after the service that it is monitoring.
+So there's an SSHD one right up here at the top. And it has a couple of different options on, on the kinds of filters that you can use and what log path you should be monitoring and what port to use and so on.
+What's missing though is the important tag of enabled. And if you remember at the top of the, of the, of the file in the, in the example comment, it specifically said to set it to enabled equals true.
+And that is not set here. So recurrently failed to ban if we'd started it, it probably would have started. I don't, I don't really remember.
+I think it would have, I should have tried it, I guess, but anyway, but, but it would have been monitoring nothing because nothing, no, no jail is enabled. That would have been possibly deceptive if we'd done that without configuring first because we might have just said,
+hey, cool, no configuration required. We can just, we can start the thing and it's working.
+Well, no, it would have been starting and it would have been started and not, it wouldn't have done anything. So that's the SSH one. And then there's one called specifically for SSHD DOS.
+This jail corresponds to the standard configuration, the male who is action sends a notification email. And I think I'll skip that one for now because I don't know what that is.
+SE Linux dash SSH.
+That's not really any, I don't see how that's any different from SSH. The back end, yeah, it doesn't really look that different.
+But I think I'm going to go ahead and enable the one labeled SSS, yeah, SE Linux SSH there.
+And then we've got other, it's got basically pages and pages or screenfills and screenfills or other of services that it can monitor for you.
+And it's got a bunch of presets in there. So as you add services to your server, you'll want to come back into this jail.conf and enable the services that apply.
+And if you don't do that, then you're not taking full advantage of your log files and you're kind of leaving yourself open possibly to some interesting brute force attacks.
+So I'm going to save that. And then so now we're assuming it's configured. I mean, and you could look at other things like the fail to ban.conf, probably not a bad thing to look at.
+But it pretty much states here that everything is pre-configured. I mean, there is some customization that you can do. But if you have no reason to, then I would not do that.
+So we'll do a system CTL start fail to ban. And it doesn't give me anything back. So I guess that means yes.
+Hopefully you remember how to check for fail to ban. And yeah, I do a system CTL status fail to ban. And it is active and is running six seconds ago.
+And it gives me the list of things that happened in the log file. So it confirms that everything started.
+What it doesn't confirm really is that that anything is necessarily active. So what we're going to do is we're going to do.
+I mean, fail to ban dash client. And this command, the fail to ban client. And you could look at the man page obviously to find out more about it.
+But it's got a little bit of a configuration tool, I guess. So you can look at what your configuration is.
+But your current configuration is with fail to ban dash client dash D, a space dash D. And the space dash D dumps the entire configuration to your screen.
+It's just probably a screen full of different rules that will be applied as needed. That's kind of the quick and dirty way. The easier, not the easier, but the more concise way and the more focused way is to do a fail to ban dash client status.
+In this case, s e linux stash ssh. And it tells you status for the jail is s e linux stash ssh filter currently failed to zero total failed to zero actions currently banned zero total banned zero.
+So if I, I guess I shouldn't have added my IP address. So I'll undo that really quick and then restart the service. And then I'll try to brute force this thing possibly. Although I might not even be able to do that.
+But we'll see. So I'm logging out of that. Now I'm going to try to log in. Oops. I'm going to log in with a fake key. So I'll say ssh port 22123 identity file.
+So that's one. I would actually worked. Yeah. Well, right now because we've got the key thing going. It's not going to let me not going to let me fake fake log in. And that's fine for now. If I had more time and if you wanted to hear me do it, I would go back and turn passwordless log in on.
+Keep brute forcing it until I got banned. And then you could watch on your virtual machine as as the IP address that you were trying to log in to got added to the block rules. And now there's a time out. After I think what do we see in the in the thing is at 3600 seconds or something. Eventually it will unblock the IP address because I guess there's the presumption that since IP addresses tend to change their dynamically assigned.
+So maybe a person from 91.23.24.25 will now be a totally legit user. And so after 3600 seconds or maybe it's 82,000 seconds. I don't really remember.
+We'll be unbanned and then they can come back onto our server because maybe they they belong there. And obviously you have the ability to unblock people as well through fail to ban client or through the configuration file or I think.
+Yeah, I don't know through firewall D. I think is where you'd have to change that. But you can also do it. I'm pretty sure from the from the from failed to ban client.
+Point being failed to ban is a really great little tool that detects brute force attempts. Are there ways around it? Yeah, of course you could you could if you've got a sizable pool of IP addresses, you can brute force from different IP addresses and possibly prolong the ban time or delay when you are banned.
+But eventually failed to ban is going to pick it up and it is going to ban IP addresses that fail more than some set number of times. And you can set that number yourself in the jail.conf as well and then restart that service. When I first start servers, when I'm first setting them up, I reduce the failure count to one for the first day or two of that server's life.
+Just to get a good healthy list of stuff to stop brute forcing my server and just just dropping those packets because it gets very tiresome when you're looking through logs, you have to like parse through all these failed that hopefully failed to log in attempts.
+So yeah, failed to ban is one of the side from obviously the SSH configuration and the firewall configuration failed to ban is the next thing that I set up on a server. And it's a little bit scary to do it because you think, well, if I've got all these protections up while I'm trying to configure this thing, how do I know I'm not blocking myself while I'm trying to configure some service that's for some reason not working.
+And there is that possibility, you know, maybe you're setting up a web server and for some reason no one can, you can't seem to get to that to the website that you've just set up. Why not? And then you start questioning yourself, well gee, am I blocking myself through some kind of firewall rule or something?
+But if you're familiar with this stuff and you know where to look and you know how to configure it, then it's not an issue. It's something that it's a known factor. You know that you have the firewall up, you know how to check your firewall rules, you know that you have your fail to ban setup, you know how to set your fail to ban rules.
+So you can look at that stuff and rule that out. SC Linux, we haven't talked a whole lot about it, but you know that that exists possibly depending on what server software, what OS you're running, what distribution you're running.
+So yeah, there are chances that you're blocking yourself or blocking a service unintentionally. But if you know the tools that sit between you and the rest of the world, then you can check that stuff and make sure that no that's not happening.
+So I wouldn't worry too much about that. I would go ahead and set up the security services, get comfortable with them and put them to good use.
+Okay, I think that's probably long enough for this episode. I guess your obvious homework would be to install and set up fail to ban and and and give it a go. You know, if you're doing this in a virtual machine, especially set up fail to ban.
+And then create, you know, turn turn on password less logging in SSH or use some other service if you want and then try to brute force your little virtual machine and and watch from your virtual machine as as your IP addresses are our band.
+And again, you can do that with the fail to ban dash client space status space and in the name of the rules. So whatever it is, S e Linux dash SSH or just SSH, whatever you ended up using SSH dot DOS. I don't know, try a couple of them. See what happens. It'll be pretty darn satisfying.
+Okay, until next time. Good luck.
+You've been listening to hecka public radio at hecka public radio dot org. We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself. If you ever thought of recording a podcast and click on our contributing to find out how easy it really is.
+Hecka public radio was founded by the digital dog pound and the infonomicon computer club and it's part of the binary revolution at binwreff.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself. Unless otherwise status, today's show is released on the creative comments, attribution, share a light, 3.0 license.

@@ -1,0 +1,172 @@
+Episode: 116
+Title: HPR0116: Linux Boot Process Part 6 - Init
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0116/hpr0116.mp3
+Transcribed: 2025-10-07 11:39:34
+
+---
+
+Music
+Welcome to another hot episode of Hacker Public Radio.
+My name is Dan Moshko and I will be your guide today on another trip down the Linux boot process.
+Now I believe we are at episode number five in this series if I'm not mistaken.
+Although I haven't numbered them as such, let me double check here.
+Yeah, no, no, my mistake. Technically we're on episode number five.
+There's been five episodes already, but I kind of split the Linux boot process boot loaders in the two different episodes.
+So we're at kind of, all right, we'll just say part six for lack of better words.
+Part six, today we're going to be talking about the in it process.
+And to recap what we have talked about so far was a difference between system five and BSD style scripts.
+And this is where we're going to start seeing the big differences in those systems as I iterated in the first overview of the Linux boot process on the first show and talked about differences between system five and BSD style scripts.
+Anyway, where we're at here is we have booted the system. It's gone through post.
+It's initialized the boot loader be a lot lower grub. Now it is either booted the kernel or it's booted the kernel and the initializing RAM disk or RAM file system initialization.
+And we talked about those two. I think the last episode was whether or not you need a RAM disk or initializing RAM file system to enable you to get access to the root partition and begin the mother of all processes, the init script or the init process.
+And it is the first process and it's the one process to rule them all essentially at this point. So what the job of it is is to create processes and manage them and then initialize the shutdown process to kill those processes when it's time to close the system down.
+So the init process is a very major and very important process on the Linux system. Now by default, most distributions run an init process and configure init by the file Etsy init tab.
+That's I N I T T A B by default. So when the kernel has been loaded and the root file system has been accessed, the init process is kicked off. Now if you recall when I talked about kernel boot options instead of it actually running the init process, which is the default.
+You can specify a different application or a different service to be run in place of init. For example, you can pass the parameter init equals slash bin slash bash and that will run a bash cell show instead of init, which means you're essentially going to get a single user bash session with nothing initialized.
+Except for, you know, the defaults that bash initializes, you won't have your file systems mounted as you would expect them to be. You won't have a variable set up properly.
+Most of your devices probably might not be working. Your system damons will not be working as you would expect. It's a very basic mode.
+It's useful for situations where you screwed up your configuration or you need to repair your system because essentially it is like Linux user single user.
+But given that, you can set init to any application that you can run from the basic mounted root partition.
+Your results may vary in the instance of repair. The bash application is great to run, but you're not going to want to run Firefox or something if you can access it out of, you know, set that as your init because it's not going to run.
+You're not going to be an X. I mean, you could really cobble together something to do that, but it would be ridiculous to set it to something like Firefox.
+In addition to that, you, I will make mention here of the fact that Ubuntu has begun replacing init with a system they called upstart, which is, I'll cover that in a little bit.
+But anyway, just so you know that init is typically the first process that's going to run.
+Now, init can be run from an init RD or an init RAM file system image.
+Basically, what that does is, again, like I talked about before, you have a very modular kernel chances are you might not have all the hardware modules built into your kernel to recognize your hardware and or file systems, which is where an init,
+initializing RAM disk or initializing RAM file system come in handy, that it contains a little mini root partition, so to speak, and enough to get the kernel up and running so you can mount that initializing RAM device and process the rest of your hardware and modules to mount your real root device and get access to your init file to continue to boot process.
+So there is a, and typically an init script on there that is run, it just does enough to load in the necessary hardware and to kick off the process and pass the control back over to the init script on your root partition.
+So that's one way that can be done, or if it's a completely monolithic kernel, you can just, you know, has everything you need to, you don't need to use initializing RAM disk, it'll start up and go right for the init defined init application if you define something else or just init on your root partition and begin the process there.
+Now, let's take a look at init for a second. I had mentioned upstart, one of the differences between init and upstart is that upstart aims to be an event-based aim that handles the functions init manages during the boot process and the shutdown process and during the operation of the system.
+One of the big differences is what they're working on to support for DBUS so that what the group behind upstart has claimed is that the theory is that the process of managing devices has far exceeded the original capacity of init in that devices are not just initialized at boot time anymore, but can be plugged in to the bus at any time.
+So even more of the number of devices, file systems, et cetera, that need to be supported has grown vastly over the years and shows no signs of slowing.
+So upstart wants to resolve these issues and limitations or difficulties with the original use of init by providing an event-based daemon that hooks into DBUS as one of their goals so that you have more flexibility with it.
+I'll cover a little more of the peculiarities of upstart now. It differs from init, but let's actually delve into init and see how this runs, how it works, how it coalesces and comes together.
+Now, most distributions today, your debian, your red hats, your mandrivas, your susas, are what we call the system five style init system, but some like slackware and arch Linux are more of a BSD style in its scripts.
+Now, slackware in reality is a hybrid between system five and BSD, so I should probably be a little clear on what I mean between system five and BSD again.
+On a BSD system, what you have are a number of scripts that are run out of the Etsy RC directory, but prior to that, what is initialized is a file called Etsy RC, which is a system script that is run at the start and defines different variables and parameters and initializations.
+And initializations for the system and kicks off a bunch of processes. Now, that's so what we have here is you have one script initialization script that runs and then a number of scripts in the RC directory, which are processed after the initialization script runs.
+This kind of differs from a system five initialization system five system in that in a system five system, you have defined run levels, six run levels are defined by default, and you also have like the RC RC file, you have a system initialization file that is called prior to executing the files in your run level.
+So let me let me clarify a little bit about run levels and what they are.
+Okay, and an in conjunction with the unit tab because I know I've kind of glossed over a little bit of how that actually is initialized and works in the in it system, but I'll definitely cover it in just a few seconds and it'll be all clear in a minute.
+So to get a better feel for how this actually comes together, let's take a look at the Etsy slash in it tab file and that is the configuration file for in it and defines what in it is going to process and how it's going to be processed and defines some variables.
+And the first thing that you'll notice is in a tab generally defines a default run level, you will see a line in there, this is ID colon to some number, maybe two, three colon in a default.
+Now what that is is the definition of the default run level for your system.
+Now notice when I define that I said ID colon some number colon in a default is what I said there, there is a rhyme or reason to how in it tab configuration file is how entries are listed in there, you have four different sections on each entry, each separated by a colon.
+First off is an identifier of a unique identifier of one to four characters that identifies an entry in the unit tab. Now these follow some kind of logic, of course, if you read through the unit tab, I mean you will note that there's a unique identifier for everything, one to four characters, you can add your own identification in here.
+There's nothing really set in stone for that, but just be aware that you don't want to replicate anything else in there. So in the example that we have here, the, in our first example for defining default run level, we use the identifier ID, followed by a colon, so that is the identifier.
+Next is the run level for which the specified action should be taken or run levels, so it could be any number from 0 to 6, and you can have multiple numbers in there specified just right next to each other 0, 1, 2, 3, or 2, 3, 4.
+It defines it runs on levels to run levels 2, 3, 4, followed by another colon, so after you specified the run levels that it will operate on, then it's the action, it says what action should be taken.
+For example, here it's a predefined in an action, which is in a default, it's setting the default run level.
+Okay, so it sets the default run level, and then following that, it specifies what process to run, if it's going to be a certain process or what script to actually run.
+So what you have again to reiterate is an ID, the run level it's supposed to work and operate at, and then the action to be taken, and then the process to be executed if there is one.
+Now, it's not only guaranteed to have a process, if you omit the run level, that means it's going to be run at every level, so to speak, by default it will be run.
+For instance, we'll cover that in a second, the system initialization script is the first script to run, so it will be run at every defined run level.
+So the system initialization doesn't necessarily need a definition for the run level.
+Okay, so again, we are processing the action in a default, which is the entry that specifies the run level should be entered after system boot.
+So if none exists, you will be prompted for a run level at the council.
+Okay, so technically speaking, if you don't define a run level, you will be prompted, and there is no process to be run for this.
+Typically, it's one of the few lines that kind of break the tradition of how each line in a tab should be.
+So instead of specifying what run level it should be run at, it specifies what the default run level is going to be set at system boot.
+Okay, so following down from that, we have the initialization script for the system.
+Now on the tabian-based system that I'm looking at right here, SI is the ID, followed by a colon with no run level specified.
+It means it's going to be used to boot, followed by a colon, cis in it, which is the system initialization script.
+That's a special, that's the action that is going to be performed the system initialization.
+And then it says the process that's going to be run is slash Etsy slash in it dot D slash RCS.
+Now that's going to run the script RCS in Etsy in it dot D.
+Similar line in Slackware.
+That's going to be processed.
+But instead of it being in the Etsy in it dot D directory, in Slackware, it's in the Etsy RC dot D slash RC dot S.
+So what you have in the Etsy in it dot D, and if I look at the RC dot S file, is a script that says execute RC.
+If I look at the RC, it is just a system initialization script that does things like mount root partitions, sets up the system with some variables, gets it basically ready for processing the run level that you want to operate at, which is then what happens in the next series of lines.
+You have a handful of identifiers in my Dibby and Bay system.
+It's L0 through L6, which are defining run level 0 through 6 on Slackware.
+Similar thing.
+It defines the run level that I'm going to be operating at.
+Instead, but it does a run level for a multi-user.
+It specifies run levels 2, 3, 4, 5 to run a specific script, but it also has identifiers.
+So anyway, looking back on the Dibby and Bay system 5 system, what it says is, for example, the default run level is 2.
+We are going to process at run level 2. We are going to wait until we are finished with run level 2 before continuing on.
+So it's L2, colon, run level 2. This is the run level 2, colon weight, which means wait until we're done with this run level before we continue with the rest of the script.
+colon, etsy slash in it.d slash RC2.
+So what that does then is essentially it's going to say we're going to process the RC run level 2 scripts.
+Now this kicks off and it says after processing the RC at level run level 2, we're going to run through all the scripts in the etsy slash RC dot 2.
+RC2.d directory. What that is, what that is, are a bunch of files in there that are simlinked back to the etsy slash in it.d file.
+Simlinked and proceeded with a k or an s and a number. I talked about this I think in the first episode.
+s is for start, k is for kill. They go in numerical order. And what they do is they process each one of those. So if it's a start and s is going to start a service, if it's a k, it's going to kill a service.
+It's going to be processed in numerical and alphabetical order.
+Okay, so it's going to go through each one of those scripts and launch it. Now what in it is going to do is it's not going to continue the rest of the script until the run levels are processed.
+That is defined by the action wait. What the action wait says is the process will be started once the specified run level is entered and in it will wait for its termination.
+Okay, so we are entering into run level 2, we are not going to continue with the rest of the process until that script, that process of initializing run level 2 is completed.
+Same thing under slackware. By definition, we're going through the it's going to do the system initialization. We are going to go down to depending on what run level we have defined.
+And for example, we are we are in by default run level 3 in slackware. So it's going to go down once it puts up processes the system initialization the next file is going to run is RC colon 2345 that lists all the run possible run levels.
+So we're at three. It's going to process this. It's going to wait and process the at CRC dot D slash RC dot M, which is the multi user script.
+And from there it's going to process the rest of the initialization scripts in that RC directory. Once it's completed, it's going to pass control back to in it to complete finish the rest of the script.
+Now, I know it was a little bit to take in. It's clearly defined in the in a tab man page. It's pretty easy. Look over your in a tab file and you and maybe listen to this part again.
+It's pretty straightforward. Essentially what we're doing is once we pass the initialization system initialization. When we define we take our run level that we're defined and we are going to process to run level scripts.
+Let's take a step back a second look at the different run levels that are available to us. As I said, there are six run levels in a system five system.
+Slackware uses a hybrid of system five and BSD. So it has six run levels to find two.
+Actually, sorry, my mistake. It's seven run levels, not six, seven, my dingus. Anyway, the way that they go is run level zero through six.
+Zero is halt on all systems. It will stop the system. That's zero. Now one is considered single user mode. It's kind of a I mentioned single user mode when I said you can pass in it equals bash instead of
+to run that into single user mode. You're going to get pretty much whatever is defined in run level one for your system. But most likely what a single user mode is going to be is a bash shell.
+Very minimal stuff loaded. No processes running. No network. You're going to be in as the root user. I think it might some distributions nowadays ask you to log in as root. It's going to allow you. You shouldn't have your file system really mounted.
+It's going to allow you to do some repairs, fix some stuff that you might have screwed up. Something might have happened. It'll allow you to run file system checks. That single user mode. Now the rest of this up until run level six, the rest are kind of left up to the distribution to find how they want to run two, three, four, five.
+We're all left up to distribution. So they will vary now to through five on Debbie and bass systems are all considered multi user.
+Okay, if you have X installed, you're going to get the graphical environment X DM X display manager be a KD M KD display manager GD M G this G display manager X display manager.
+You're going to get the graphical log and if you don't have X installed, you're just going to be a multi user mode. So on Debbie and bass systems, you are going to be in multi user mode with a graphical log in if you have X enabled.
+Slackware differs. Slackware is not going to give you X DM GD M or KD M on run level three. It's just I'm sorry on run level two. What run level two is on Slackware is is unused. Okay, so it's configured to same as run level three.
+Run level three, what Slackware is said at is the default multi user mode without X. Okay, there is no X in Slackware's run level three.
+You log into a bash prompt or your shell prompt. You have full networking. It's multi user. You're good to go on red happy systems. It might be similar.
+You might have multi user mode in in red hat on three. You might have and then X is defined on run level five.
+Susa Linux kind of does a multi user mode of three and it depends. You'll have to use. I don't use red happy systems RPM based systems. So I'm not 100% sure as to where X has started, but you can you'll be able to figure out by using what I'm talking about here.
+Anyway, so we are at run level three, which is multi user mode. Same thing in Debian on Slackware run level four is is multi user with X 11.
+So you're going to log in through GD M KD M or X DM session managers on Debian. It's the same as level run level two run level three run level four all the same run level five on Slackware is unused, but configured the same as run level three.
+On Debian again is configured the same as run level two. So if you have X installed, you are going to have your your display manager running with a graphical log in.
+And then finally run level six is reboot.
+So you can specify at the boot prompt what run level you want to run it. It's not a good idea to set it to run level zero or six because you're either going to boot into a stop or boot into a reboot.
+And that's kind of ridiculous while you'd want to do that. I don't know, but people do crazy things sometimes.
+Okay, so we covered what the run levels are following following the definition of the run level. And once that's processed your system on a listen,
+ization script is processed your run levels process. Now we get into some other things that can be defined by the Etsy slash in it tab file.
+And for instance, what to do with three finger salute control all delete. So on Slackware, we got a little identification CA colon nothing specified for run level.
+So that means at any run level colon CTR L L T D L, which is the action control all delete colon and it defines what it's going to do.
+It's going to say run slash S spin slash shutdown slash T for five, you know, T for five and dash R for now actually kind of mangled that a little didn't I?
+The dash T stands for five seconds and R stands for reboot and it's going to do it now. So when you hit control off the lead in Slackware, it's going to process the.
+It's going to immediately go into a shutdown mode and it's going to reboot or initialize the reboot in five seconds. That's what it does on the Debian system same thing, but they have a T set set for one and a.
+A dash a and the dash a stands for use Etsy shutdown allowed to verify whether or not you're allowed to, you know, if you have pre configured shutdown restrictions that not anybody can do that.
+All right, other things that you can define in your Etsy directory or in a tab Etsy directory in your in a tab are what to do when there's a power failure.
+For instance, on Slackware, it says due to Jen power fail start if power comes back on now these are if you have a UPS system connected to your computer.
+Otherwise, it really wouldn't do you any good to try and define a general power failure option, what to do in the power fails, because it's just going to shut your system off. No power, no system as the way it goes.
+Also, what is to find in the in a tab directory in the file is your council logins when you're a multi user mode. So in Slackware, we have a definition of C1 is the ID colon run levels 123 and five colon respawn colon aspin a getty, which is the getty council.
+And it's set for serial device. Well, it passes them necessary parameters at 38, but 34 38,400 bought TTY one that's terminal one and it's called linux.
+So it defines one, two, three, four, five, six terminal sessions, council sessions when I logged in.
+You can do other things like define serial lines. You could define dial up lines if you want to.
+Anyway, similar thing under gender or I'm sorry under zandros or Debbie and bass system defines six council sessions. So that's going to be on, you know, those are the sessions that when you hit control all F1 through six, change your sessions to different council.
+So if you actually screwed up your system, you can go into one through six and see what's going on or get into a council access generally on seven, sometimes it's on eights or above, but those council sessions are defined in the in a tab.
+Give the in it tab file a read a man file a read through also give in it a read through for for further explanation of things that you can do.
+Or you can actually put in little pauses if you want to in the process.
+To say, hey, pause here. See, let me see what's going on in different parts in your in it tab. I did that as an example when I did a presentation on the blue process to show people where we were in the process.
+So if you look at man in a tab, that's I N I T T A B. It defines all the cool actions that you can, you can do in here again.
+For instance, you'll notice that if you look at the terminals, the councils that we were talking about the getty sessions that they all had as an action respawn, which means that the process will respawn if it's terminated.
+So when you log into a council and you exit, you are exiting out of that council session, you're ending that council session, you're ending the terminal.
+It will respawn that getty process again so that you can re log back in. If it didn't respawn, you kind of be screwed. You wouldn't have a way to log back in once you used up all your council sessions.
+There's weight, which we talked about, which will be started once the specified run levels entered and it will and it will continue processing after that process is terminated once, which means that the process will be executed once when the specified run level is entered.
+Boot means that the process will be entered, executed during system boot. The run levels field is ignored and boot weight, the process will be executed during system boot while in it waits for its termination, kind of like weight is, but it will be processed only at boot.
+So there's a handful of different files in there, different control, specific controls, like I said, power, power fail now. This process will be executed and in it is told that the battery of the external UPS is almost empty.
+So again, the power fail now is something that's related to UPS and most systems that don't have a UPS won't neglect that.
+Anyway, you can get all this by reading the init tab file. Now, I had mentioned to you before that on a Ubuntu system that they have replaced in it with upstart.
+And it's an upstart is an event driven Damon and you might be saying yourself, well, what's the, you know, how is this look different than configuration for init itself doesn't use an init tab directory.
+Okay, so if you go into the Etsy directory on Ubuntu and you look at your look for an init tab, you will not find it in there. You will not find it at all.
+That's because it doesn't exist. We're not using init people. And you might say, well, damn, I don't understand.
+Because if I do a PS-EF pipe at the head, I'll notice that my first process running is init. I thought Ubuntu wasn't using init. Well, it still runs init, but it uses upstart, which is replacement for the traditional init.
+And it's not configured through an init tab file. You'd actually look into Etsy slash event dot d. And in there are a bunch of different defense like events like run levels.
+And you notice when we were talking about configuring control all delete.
+Okay, so if you actually look on control all delete and upstart, if you look in there and you've cat the file control delete, it says, well, start on control all dash all dash delete.
+And it says execute has been shut down dash are now control all delete pressed. So it'll actually do exactly the same thing that init dot d in a tab file had defined.
+And in this it's taking each process breaking it out and defining it in its own little script. And it's processed by the upstart game and when an event occurs.
+So as I said, look in the event dot d file, you will see a lot of what will used to be an init tab broken down an individual files in there and individual scripts that get processed when an event occurs.
+Again, like I said, control all delete will process the control of the leaf file when it runs. You can define your own scripts in here. It runs similar syntax to init tab.
+What I recommend doing if you're interested in upstart, if you go to the upstart homepage, which is upstart dot Ubuntu.com, you can read up all about it. Maybe I'll do a separate HPR on that upstart myself at a not later date.
+But anyway, that's pretty much the init script right there. And it once init is executed and finishes, you will be presented with log in prompt, be it at the council or through the extra display manager of your choice.
+What we will probably go into next time is looking at some other technologies like hot plug and you dev and debus and how those work when they're initialized different damans, how damans are initialized in the system to the process of the run levels.
+We'll cover some of that, but today was init. I hope you enjoyed it. Please contribute if you can to acropublic radio. I thank you very much.
+Listen to TLLTS on Wednesday nights live or download our podcast later because I got to plug it sometimes. And thank you very much and have a great and happy day. Happy hacking.
+Thank you for listening to acropublic radio. HPR is sponsored by carro.net. So head on over to caro.net for all your hosting needs.

@@ -1,0 +1,201 @@
+Episode: 2947
+Title: HPR2947: The Mimblewimble Protocol
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2947/hpr2947.mp3
+Transcribed: 2025-10-24 13:43:35
+
+---
+
+This is HPR 2947 for Tuesday, the 19th of November 2019. Today's show is entitled
+The Mimble Wimble Protocol and is hosted by Might be Mike. It's about 21 minutes long
+and carries a clean flag. The summary is Mimble Wimble is a new blockchain protocol for
+skillability, privacy and fungability. This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+Welcome back to Hacker Public Radio. This is Might be Mike. Here with another block
+chain episode about Mimble Wimble. It sounds like a tongue twister and it is. Mimble Wimble is
+actually from Harry Potter. I believe this is the spell to tie people's tongues to prevent them
+from divulging secrets. Feel free to correct me if I'm wrong about this stuff. I'm not very knowledgeable
+about Harry Potter and Mimble Wimble is full of Harry Potter references. Really Mimble Wimble Protocol
+is all about scalability, privacy and fungability. This is a protocol for blockchains that scale
+elegantly and provide privacy by default using strong cryptographic primitives.
+Now Mimble Wimble started in August 2016 when some unknown person named Tom Elvis Jettosaur,
+which is actually the French name for Voldemort, the bad guy in the Harry Potter series.
+Anonymous Lee shows up and drops a link to a white paper that describes this protocol.
+There's a mathematician at Blockstream named Andrew Polstra, who was one of the first people to
+review it. He goes in and corrects errors, formalizes it and publishes it as a white paper a couple
+months later, and then yet another anonymous character Ignotus Paravelle, which I don't know
+who that is. He's something to do with Harry Potter though, somebody's brother perhaps. He appears
+on that same IRC channel, Bitcoin Wizards, in late October and announced he has a project going,
+an open source blockchain based on this, which would turn into one of the two blockchains that I think
+is really interesting in this space, the one called Grin. Now the interesting thing about
+Mimble Wimble is there's a realization on the part of this anonymous character or characters
+that the transaction history does not need to be stored. This is a way to get better scalability.
+You probably know if you join the Bitcoin network as a node, you need to verify the entire
+blockchain and it's totally there to be done because the entire transaction history is saved
+from the Genesis block all the way to the current. In this case, this character realized we don't
+need to save that actually. If we know the coins that were created and we know the current state
+of the blockchain and we have proofs that no funny business took place in between, that's all you
+need. I think that characterizes the whole spirit of this cryptography over complexity.
+So Mimble Wimble provides privacy and fungibility by, first of all, not having any addresses.
+There are no amounts visible in the transactions or recorded anywhere on the blockchain.
+The transactions themselves can be aggregated together, they are, and a lot of the inputs and outputs
+are eliminated along the way. So it's very difficult to build a transaction graph. If you're
+taking a look at the blockchain from a forensics perspective, there's just nothing to go on,
+and we'll get into the detail of that shortly. Well, so let's look at the actual structure of the
+blockchain. You might know already that blockchains represent the state of the system through one
+of two means primarily. Bitcoin does it with a UTXO set. This is basically telling you where all
+the coins are right now. So UTXO set is that set of all unspent transaction outputs. That is all
+these unspent outputs from previous transactions. Where are they right now? Well, the answer to that
+question would be a set of addresses in Bitcoin. Here we have no addresses, so it's a little bit
+trickier. And for completeness sake, let me mention that the other popular technique is that
+used by Ethereum, which is to keep a hash basically of all the addresses and balances.
+So in Memblewimble, blocks have only the necessary inputs and outputs taken together in one big
+transaction. This is a lot like the coin join that Bitcoin people might be familiar with. Bitcoin
+mixing services commonly use a coin join technique. This is often implemented as a service where
+a group of people, let's say 10, will also emit a transaction using the same amount for an input
+like one Bitcoin. So if I have 10 inputs of one Bitcoin and 10 sets of outputs, they're combined
+into one transaction and that makes it more difficult to match up inputs to outputs.
+So it's not really hiding anything. It's just obfuscating. So you look at a big transaction like
+that and you know that the address from which one of the inputs came matches with the address of one
+of the outputs with a certain probability. In this case, 10%. So anyway, in this system, redundant
+inputs and outputs are eliminated, but these remainders called kernels are still there.
+These kernels are essentially proofs. At their simplest, I believe they can go down to almost
+60 bytes or so. When I'm looking around on the blockchain here, I see they're typically about
+100 bytes, which is pretty small. Privacy coins tend to have very large transactions as they
+add a lot of bulk in their efforts to obfuscate. For example, Monero, probably the best example of a
+privacy coin out there today. Their transactions are an order of magnitude larger. A transaction
+might be 1,400 bytes, 1,500 bytes, something like that, and Zcash even larger. It's not a criticism
+of those systems. Zcash was a real innovator when they started because they got these zero-knowledge
+proofs called Zcashnarks to work. Before that, these were about 100K in size, if I'm not mistaken,
+and they got them down to about 4K. Still, that's per transaction. Here, we're talking about storing
+just little blobs, inputs, outputs, and kernels that are on the order of about 100 bytes each.
+So very small, and a lot of the inputs and outputs are eliminated, as I said. So the way that happens
+is, imagine a minor assembling a block. A minor in a member-wimble block chain will take pending
+transactions from a mempool, just like a normal block chain, the difference being that they
+combine them all into a single transaction. When you do that, you notice that some of the outputs
+are subsequently used as inputs to what used to be subsequent transactions. Now, it's later on
+in the same transaction, and these are redundant and can be thrown away. If you think about this
+conceptually, imagine Alice sends coins to Bob. Bob sends those coins to Charlie. So what needs to
+get recorded on the blockchain? The current UTXO set shows Alice has coins, and the next UTXO set
+is going to reflect the fact that Charlie has the coins. There's no need to record activities
+that Bob was involved in. So that other important function of eliminating inputs and outputs
+is called cut-through. So what you have in these transactions is inputs, outputs, and some excess
+values. Mainly, that's the kernel that I referred to before. And we're going to touch on this
+in more detail in a little while. The inputs, of course, have no addresses associated with them.
+Most of you have probably seen a Bitcoin transaction before. It has UTXOs used as inputs. These
+have addresses with them. It has amounts that are just numbers you can read. And outputs,
+addresses to which these UTXOs are going. This is where the UTXOs are going to reside in the
+next state of the system. The new state, occurring when another block gets added onto the blockchain
+each time. So in member-wimble transactions, the inputs still reference UTXOs. There's just no
+addresses. The outputs include hidden values. In other words, there's no amount visible.
+And this is because of the use of a blinding factor. Now, observers to the blockchain can see
+obscured inputs and outputs and kernels. None of these disclose any information. They're just
+blobs that reveal nothing. So an important point here is that miners can validate these transactions
+without knowing the actual amount being transferred. This is done by a range proof. The range proof
+operates in the same manner that it does on other blockchains. In Bitcoin, the miner is looking
+to do two things to validate a transaction. First of all, they want to know that the sender had
+the right to spend that Bitcoin. And secondly, they want to sum up the inputs and the outputs
+and make sure the difference is zero. In other words, this transaction does not create any free
+money out of thin air, and it didn't destroy any coins. So that's pretty straightforward in Bitcoin.
+You just add up the sums and take the difference. It's just simple arithmetic. Here the amounts are
+not visible, though, so it's a little trickier. In fact, that first step was a little trickier, too,
+making sure the sender had the right to spend that UTXO. In Bitcoin, the miner receives the
+transaction that's signed by a private key, and that signature can be checked with a public key.
+And the public key, of course, is where the address comes from. In Bitcoin and other blockchains,
+like Ethereum, addresses are directly derived from those public keys by hashing them.
+So the miner can validate that the address that corresponds to that public key, which signed
+the transaction, is the same one that's listed in the UTXO set. So the way that the miners
+determine that no free money has been created out of thin air is through some fancy math. There are
+these things called Peterson commitments, which are the building blocks of confidential transactions.
+This comes out of the confidential transactions work from the Bitcoin OG Greg Maxwell.
+Anyway, these Peterson commitments, all the inputs and the outputs look like this,
+and it's hard to describe an audio without a whiteboard or a picture, but basically they take the
+form of RG plus VH, where G and H are actually generator points. This is elliptic curve cryptography,
+so G and H are points on a curve, and the V, remember the second term is VH,
+that V is actually the UTXO value. This is the amount of the transaction,
+and you can't tell what it is because of this blinding factor, the first term.
+Now that RG in this formula, the R is actually a secret key. It's a private key generated by the
+wallet of the sender in the input and by the receiver in the output. So if you picked up on the
+nuance in that statement, what might occur to you is that transactions happen very differently
+here than they do in Bitcoin. In Bitcoin, the sender assembles the transaction and signs it with
+their private key and throws it over the wall basically. That's it. It's done. The receiver
+just looks at some point and it shows up. There's nothing to be done. This is more interactive
+because both parties need to participate. The sender and the receiver and the transaction
+need to communicate out of band somehow and transfer information back and forth. For one thing,
+the sender of the transaction needs to send the value and the blinding factor to the recipient,
+and the recipient actually needs to send the new blinding factor back. Remember that blinding
+factor has an R term in it, which represents the private key, which basically gives them the right
+to spend it. So the output of the transaction is going to be the next UTXO, and the recipient
+wants to be the one that has generated that R, that secret key, because they want to have
+the right to spend that next UTXO. So both parties have to cooperate here. It is asynchronous. They
+don't have to be engaged at the same time, but at the end of the process, one of them needs to go
+online and broadcast the transaction. So this formula that is so hard to deal with over an audio
+format like a podcast, RG plus VH. This is the form, the Peterson commitment that the inputs
+and outputs take, and the minor simply adds up all of these inputs, R1G plus V1H, R2G plus V2H,
+and so on, and adds up all of the outputs, and simply takes the difference. Now, if you're
+following along at home closely, you probably notice that the second half of those terms that have
+the V, the value, the UTXO value, are going to cancel out, and you're going to be left with the
+sum of the blinding factors. If that's the case, then no new money was created, and the transaction
+is valid. Well, not quite. Actually, there's one more complicating factor, and that is, if you can't
+see the amounts, you do need to be concerned that somebody didn't find a way to pull some funny
+business, for example, negative numbers. Let's say, just for the sake of example, that I constructed
+a transaction where I'm sending coins to myself with inputs of four and four, and outputs of
+minus two and ten. I'd send that minus two somewhere else and take the ten, including my two
+free coins, if I could get away with it. But there is another mechanism here. There's actually a
+bullet proof, which is a different kind of zero-knowledge proof. We don't need to get into the specifics
+of distinguishing the various zero-knowledge proof types. It's a fascinating field, which is
+changing rapidly at this point, but bullet proof is just a small, very efficient proof,
+not a big drain on resources, and it's included in the block header, showing that the minor
+didn't, does indeed have this proof that none of the values were negative. So no funny business
+going on, even though they were not able to see the values. So once again, I know that was tough
+stuff. G and H in these Peterson commitments are points on the elliptic curve. V is the value
+being spent, R is a secret key, and the construction of a transaction between the center and the receiver
+is an interactive process that requires both get involved. And this has consequences, which we'll
+see in a few minutes. Of course, as you realize by now, if you look at the blockchain, wow, you're
+not going to see any amounts, you're not going to see any addresses. So look at this from an
+adversary's point of view. Look at this from a forensics point of view. If you're trying to build a
+transaction graph, well, looking at the blockchain, you're not going to get a lot of clues. Amounts
+would be a big clue, because if I know that Bob receives 3.6502 coins from somebody, I can, I
+might be able to find a transaction that was generated by somebody for that same amount, that 3.6502,
+how many people are sending that amount in the transaction? The sender of that transaction is
+probably who I'm looking for, and eventually I might be able to piece together a transaction graph.
+So without that capability, probably the good strategy for an adversary is to run a note on the
+network and watch for transactions before they get to that point. In other words, the miner is
+assembling a block, taking these transactions, combining them, pruning, throwing away inputs and
+outputs, and at that point, by the time the block gets appended to the blockchain, there's no clues
+left to be had. You need to look earlier on than that. So what an adversary really wants to do here
+is watch the mempool when the transactions are pending and have not been included in the block yet.
+None of that pruning has taken place, so all the inputs and outputs are in place. They haven't all
+been aggregated into one giant transaction, so there's less confusion there and a little bit more
+to go on. To combat this, the two main blockchains using this protocol are using what is called
+the dandelion protocol. The dandelion protocol is used to prevent an observer from seeing
+who actually generated a transaction, and here's how it works. Normally in Bitcoin, if I generate
+a transaction, I sign it, and I broadcast it to all my peers. This is the basis of the Gossip
+Protocol. All those peers broadcast it to all their peers, and it's available as a pending transaction,
+hopefully for every minor around that is constructing a block. Here, the goal is to obscure the
+source of the transaction. So instead of broadcasting a transaction to all the peers, what a node does
+actually is pick one peer at random and send it to them, and that one peer basically flips a coin,
+you might say, to determine whether or not they pass it along to a single randomly chosen peer
+or broadcast it. It might get passed along one by one on several hops, but eventually somebody
+is going to broadcast it. This is where the name comes from. The first hops along that process
+are like the stem of a dandelion, and then at some point one node is going to broadcast it to
+every peer they have, much like blowing on the spores of a dandelion that just go everywhere.
+So to make things a little tougher still for an adversary that's active and watching on the
+network, at each of those points along the stem of the dandelion as it were, what a node does is
+before they pass it along to the next node, they combine this transaction with any other transactions
+they see. So this transaction consolidation process happens even before the point of the
+minor assembling the block. Every step along that way in the dandelion protocol,
+these nodes are aggregating transactions to make it more difficult to correlate inputs and outputs.
+So that's pretty much it for the introduction to Mimble Wimble. Tune into the next episode
+where I continue and discuss a couple of topics I left out of this in the context of grin and
+beam. The two major implementations of this protocol, these are both working blockchains and take
+very different approaches to things. So be sure not to miss that. Until then, this is might be
+for Hacker Public Radio. Have a great day.
+You've been listening to Hacker Public Radio at HackerPublicRadio.org.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HBR listener like yourself.
+If you ever thought of recording a podcast and click on our contributing to find out how easy it
+really is. Hacker Public Radio was founded by the digital dog pound and the infonomican computer club
+and is part of the binary revolution at binrev.com. If you have comments on today's show,
+please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released on the creative comments,
+attribution, share a like, 3.0 license.

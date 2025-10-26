@@ -1,0 +1,219 @@
+Episode: 3018
+Title: HPR3018: Encrypted edit
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3018/hpr3018.mp3
+Transcribed: 2025-10-24 15:13:15
+
+---
+
+This is Hacker Public Radio, episode 3,018 for Wednesday, 26 February 2020.
+Today's show is entitled Encrypted Edit. It is hosted by Klar 2
+and is about 21 minutes long
+and carries a clean flag. The summer is.
+Klar 2 talks about editing and viewing encrypted files in a TMPFS in RAM.
+This episode of HPR is brought to you by Ananasthost.com.
+Get 15% discount on all shared hosting with the offer code
+HPR15. That's HPR15.
+Better web hosting that's Anastom Fair at Ananasthost.com.
+Everyone here is listening to Hacker Public Radio. My name is Klar 2
+and I want to talk about a little shell script that I wrote called Credit.
+And when I say that I wrote it, I really mean I hacked it together
+from an existing, much better shell script.
+Now I've talked about the existing better shell script on my show, the New World Order.
+Episode 1330. In case you're interested, it's called Pass.
+Well, the command is called Pass. The system itself is called Password Store.
+Password Store is a really nice local password management system.
+I'm not going to go too far into detail about it
+because if you really want to know a lot more about it, you can go listen to the New World Order episode
+that I referenced previously, 1330.
+But the long and short of it is that your passwords are stored
+in GNU PG encrypted files in a directory.
+And then you use the Pass command to grip or rather search through that folder
+for a matching URL string.
+And if one is found, then you are able to provide your password.
+The file is decrypted temporarily
+so that you can get the login information contained within it.
+And you can integrate that with your Firefox browser,
+such that when you go to a website, pass does all of that stuff for you
+through a Firefox plugin.
+And you have sort of pretty good integration between what's stored in encrypted files
+on your local machine and what is decrypted into the fields
+that are required to log into various sites in Firefox.
+It's a pretty elegant system.
+I've really been enjoying it.
+And frankly, setting it up and learning it has been a lot better than fighting
+with modern browsers to keep my information local.
+For instance, I had a really hard time exporting passwords
+and then importing them again from Firefox back into Firefox.
+It was frustrating enough to drive me to find the password store solution.
+And once I did, I really, really enjoyed it.
+I mean, I had full control over my password history and stash.
+And I discovered this really sort of nice and elegant interface
+to individually encrypted files.
+So I started using or abusing the password store system,
+the pass command, as kind of a personal notebook,
+like files that I would just random little text files
+that I would keep scattered around.
+I'd interface with those through the pass command
+because it was a really handy way to generate and edit encrypted text files
+very smoothly.
+As smoothly as typing emacs path to my note,
+I just would instead type pass edit and then the directory
+that contains the note that I want to edit.
+There were some constraints on that because, oh, the pass command, actually,
+there's a separate, I didn't mean to suggest that that was the exact command.
+There's a separate argument that you have to provide to pass
+in order to redirect it to a non-standard location for the password store.
+So that's one of the constraints, I guess.
+So in order to get password store, or the pass command,
+not to look at dot password store or whatever the directory is.
+I don't remember the default name, yeah, dot password dash store.
+In order to get it to not use that as its default location,
+you have to pass an option to it.
+So there was a little bit of working around that.
+There was the fact that pass automatically assumes
+that your encrypted note ends in dot GPG.
+And if it does, then it doesn't accept that part of the argument.
+There's this weird sort of system by which it makes certain assumptions
+about how the file that you're pointing it at ends.
+So there were little things like that that were a little bit, I guess, bothersome.
+And it also just the fact that it assumes that your notes are in a single location.
+And sometimes I would have a file that's encrypted that didn't happen to be in this sort of designated note book location.
+So in the end, I decided what I really needed to do was emulate pass
+his ability to decrypt a text file into a temporary RAM location,
+a temporary RAM disk, allow me to edit it in that temporary RAM disk.
+And then when I'm finished editing it, save it to the RAM disk,
+encrypt the file back to its original location, and close.
+That was pretty much the scope of what I needed.
+And the reason I felt like I wanted this was because there is a little bit of concern
+when dealing with encrypted data that in order to look at that data,
+you very frequently, well maybe not very frequently,
+but under certain conditions, if you're using them in a certain way,
+you have to decrypt the file to a hard drive.
+And as anyone who's ever scraped a hard drive for a deleted file knows,
+once something's touched a hard drive, it's kind of hard to scrub it off of there.
+I mean, you can do things like shred and I don't know, you know,
+try to bleach the bits with some fancy zeroing out algorithm or something,
+but ultimately there's not a whole lot of certainty that that encrypted file
+is in its unencrypted form completely inaccessible.
+Granted, it takes someone, you know, sort of really trying a lot to find that file,
+but I mean, it's just sort of, it goes against the spirit of keeping the data encrypted,
+if when you're decrypting it, or after you've decrypted it and re-encrypted it,
+you have to then sort of go back and try to frantically clean up all trace
+of the existence of the file.
+I did a little research on this concept,
+and it turns out that the internet is not immune to this concern.
+There are other people on the internet with the same thought about,
+well, it makes little sense to keep something on your drive encrypted
+if you're only going to, in order to look or interact with that file at all,
+you're going to just decrypt it back to that hard drive,
+because then you've got a nice, a tidy, nice little path of all the unencrypted versions
+of that file, sort of lingering in the background of your hard drive.
+So, I quite like the idea of decrypting a file straight to a RAM disk,
+and that seems to be a widely used solution.
+Now, there are caveats to that as well, if you're really, really paranoid,
+then decrypting something to the RAM disk may in itself be unacceptable to you,
+because the RAM disk itself, I mean, there have been hacks done where images,
+sort of, are not images, but like data in RAM have been recovered under certain conditions.
+And then there's also the swappiness of your hard drive,
+or rather of your system, if your RAM is being constantly or periodically written
+to some reserved space on your hard drive in order to manage what is stored in memory,
+then you may be committing your temporary RAM disk to the hard drive,
+and that could be problematic.
+Now, it's probably worth mentioning that if you have whole drive encryption enabled,
+then all of this may be a more or less moot point.
+I mean, the whole disk encryption in theory is encrypting all of your data,
+even if you've decrypted an encrypted file, the container itself is still encrypted.
+So, that ought to be a pretty good assurance that that data is not being committed
+to that hard drive in a way that would be recoverable.
+But you're not always on a system that you confidently can confirm has whole drive encryption,
+or sometimes you just want that double dose of assurance that the decrypted data
+is not leaving a recognizable footprint.
+For this purpose, I now deliver credit.
+It is a really simple application.
+Like I said, it is shamelessly ripped off from password store,
+which you can go check out yourself at passwordstore.org.
+I just ripped out everything, but the functions that were relevant to the active decrypting a file
+to a TMPFS area on a RAM, and then re-encrypting it when finished.
+So, it's a pretty simple little shell script.
+It's very purpose-driven. It does exactly one thing, and I guess it does it well.
+I don't want to be too confident about that.
+It works for me. Let's put it that way.
+There's not a whole lot to say other than the reason for creating it,
+but I'm going to go ahead and kind of not walk through the script,
+but make some notes about the script nevertheless.
+So, one of the things about password stores that it assumes,
+is that it assumes that your default key, the default private key in your keychain,
+is the, in your GNU-PG keychain, is the dominant key.
+It doesn't have a great method that I know of selecting random keys to encrypt or decrypt something.
+So, if you think about, for instance, SSH, how you can have a bunch of different keys in your .ssh file,
+and then when performing any action with SSH, you can use that dash i,
+or I think what is it, dash dash identity, or dash dash identity, dash file.
+I'm not sure which one of those, but anyway, it's SSH dash i,
+and then point it specifically to a key that you want to use for some thing.
+That's not, there's not really an analogy to that in GNU-PG, as far as I know.
+I looked around, I was unable to find one, and I've certainly never heard of one.
+You can arbitrarily tell GNU-PG where, or at which key to use,
+which public key to use as the, you know, to encrypt it for,
+but you can't tell it really what key, in your key chain, what private key,
+to use to decrypt something.
+Now, by default, GNU-PG attents your default key first,
+and then if you, if you pass a specific flag, which is dash dash try dash all dash secrets,
+then it tries all your secret keys until it finds the correct decryption method.
+It's not super efficient, I don't know why they implement it that way.
+I mean, to be fair, there are already like 98 different options for the GNU-PG interface,
+so maybe they just finally decided to stop adding options.
+I can definitely see some logic to that decision.
+So, when using this system, the credit system,
+credit, by the way, is a smash up of cryptid edits.
+That's how I came up with the name credit.
+It was just easy to type, and I didn't, I couldn't find another command called credit,
+so I decided that that was a pretty good one to keep around.
+So, credit uses your default GPG key,
+because that's what GPG really wants you to do anyway.
+That's kind of the system that they've built.
+So, you can set the default key to, in your key chain,
+the dash dash default dash key, and then you provide the name of the key.
+That becomes your default once you use that.
+So, I guess you could do like a two command setup where you reset your default key,
+and then you do your GPG thing, and then you set your default key back to what you really wanted to be,
+or something, I'm not sure.
+But either way, it says, if this option is not used, the default key is the first key found in the secret key ring.
+So, it does say that dash U or the dash dash local dash user overrides that option, the default key option.
+I was not able to get the dash dash local dash user option to selectively define a default key personally.
+Maybe I'm doing something wrong, not sure.
+I just wasn't able to make that as smooth of a process as the SSH dash I experience.
+But at any time that you want to see your default key or really your setup at all,
+you can do a GPG Conf.
+That's all one string GPG Conf, space dash dash list dash options GPG.
+And that shows you a lot of information about your setup, about your key chain, including your default key.
+And you can grab for default key to kind of zero in on what key is being used as your default key.
+For some reason, it precedes that with a double quote.
+I don't know why, but that's something that I hadn't known until I started experimenting around with this shell script.
+So that's kind of cool.
+So the way that the shell script works is that you provide it the path to an encrypted file.
+So you just do credit and then the name of the encrypted file.
+It takes that the file name and location and passes it on to a function called Timpder,
+which creates a temporary directory in a RAM disk.
+That's slash dev slash SHM.
+There is a fallback in the pass command, which I kept in my shell script.
+It does warn you, but there's a fallback that in case there's no slash dev slash SHM
+on the system that you're using, it'll just use slash temp or anything you define as a temporary directory with the environment variable tempder.
+I figured that was probably a good fallback option to have, even though it kind of does destroy the security model of the entire application.
+So that's something to be aware of if you actually use this or if you're going to implement it yourself.
+Falling back on the lack of a RAM disk, yeah, obviously it destroys the security implications, but at the same time it retains the convenience factor,
+which honestly is as important to me in the case of this application as security, because I do have a bunch of encrypted files littered all around.
+And it makes a difference for me that I can decrypt them quickly, edit them or view them, and then have them get encrypted again and not have to remember to destroy the unencrypted copy myself and so on.
+Okay, so the tempder gets created and then the command edit function occurs, which launches the EMAX editor by default or anything that you have defined with the editor environment variable.
+GPG steps in to decrypt the file to the the temp location that's been created by the tempder function and then it waits for you to edit the file or rather to close the editor.
+When you're finished editing the file is reencrypted back to the original path that you provided and then control is resumed by the tempder function, which destroys the secure temporary directory in the RAM disk or if you don't have a RAM disk then in that overrided overridden temp directory that you defined yourself and or that it defined for you slash temp.
+And in theory you've just viewed or edited an encrypted file without it ever touching your actual hard drive.
+It's a pretty nice and convenient little system. I really enjoy it. I've been using it a lot and I'm happy to share the code with you.
+It is really nice code. It is, like I say, mostly not my code, so it's actually quite nice. It is mostly just password store with a bunch of the specifics yanked out of the process so that you aren't bound to a specific directory that you and that there's no expectation of a pre-existing configuration file.
+For instance, password store uses a .gpgcon for something like that. It's something to designate the key to use for encryption and I'm not exactly sure why password store does that.
+I think possibly because the author didn't know about gpgconf maybe I should probably submit a patch for that because it's a little bit of a smoother experience I think not to require that configuration file since you can define or you can you can discover the default key just with gpgconf the command rather than writing a configuration file
+to some designated location. This script, unlike password store, doesn't really require installation as such. I mean you do need your gpg infrastructure to exist so that's something that does need to exist in a certain place on the hard drive.
+I guess I've never tried to think if I've ever used gpg as a portable system. I don't believe I have but there may be environment variables that you could define to sort of to have your gpg key chain just sort of existing on a USB drive or something I guess.
+I've never used it that way but the the credit command itself does not require anything extra on your on your drive outside of an existing gpg configuration.
+But that's everything. That's it. That's crypted edit for your encrypted editing and viewing of files. It's been really handy. I'm happy to have shared it here on hacker public radio. You can check it out at getlab.com slash not clattus slash credit. Thanks for listening. Talk to you next time.
+You've been listening to hacker public radio at hacker public radio dot org. We are a community podcast network that releases shows every weekday Monday through Friday. Today's show, like all our shows, was contributed by an hbr listener like yourself. If you ever thought of recording a podcast then click on our contributing to find out how easy it really is.
+hacker public radio was founded by the digital dog pound and the infonomicon computer club and it's part of the binary revolution at binwreff.com. If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself. Unless otherwise status, today's show is released on the creative comments, attribution, share a light, 3.0 license.

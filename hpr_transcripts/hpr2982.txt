@@ -1,0 +1,432 @@
+Episode: 2982
+Title: HPR2982: World of Commodore 2019 Episode 4: Bare metal c64 Emulation on Raspberry Pi
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2982/hpr2982.mp3
+Transcribed: 2025-10-24 14:18:33
+
+---
+
+This is Hacker Public Radio Episode 2982 for Tuesday 7 January 2020.
+Today's show is entitled World of Commodore 2019 Episode 4, Bear Metal C64 Emulation on Raspberry Pi
+and is part of the series, Hobby Electronics. It is hosted by Paul Quirk
+and is about 40 minutes long
+and carries a clean flag. The summer is.
+Randy Rossi's presentation of his Get Her Project on Bear Metal Emulation of the C64 on a Pi 3.
+This episode of HPR is brought to you by An Honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's Honest and Fair at An Honesthost.com.
+Hello good listeners of Hacker Public Radio and Happy New Year. I hope last year was a good year for you and this year will be even better.
+Let's kick off the New Year right with my fourth episode of my World of Commodore mini-series.
+This episode features a presentation by Randy Rossi, a software developer who has developed a method to have Bear Metal Emulation of the Commodore 64 on a Raspberry Pi 3.
+In this presentation, he describes his reasons why he pursued this open source project which he has generously shared with us on his Get Her page.
+See the show notes for the link.
+This presentation includes visuals that are not available in this audio podcast.
+If you would like to see and hear this in other world of Commodore presentations, I recommend you go to the Toronto Pet Users Group YouTube page.
+That's Toronto Pet Users Group, spelt as one word without spaces in the word users as plural.
+A link to this YouTube channel will be available in the show notes. And so, without further ado, I present to you Randy Rossi.
+Good afternoon. My name is Randy Rossi. Probably like many people here. I had Commodore computer as my first computer as a child.
+Actually, they're special to me. I grew up with them. My parents bought me a big 20. I eventually moved on to Commodore 128 and then later the Amigas.
+Something about these machines inspired me to pursue computer science, so I've been a software developer for over 22 years now.
+Worked in Silicon Valley and the Greater Toronto area. So this is a story about how my bread been bought at Soulback.
+So in late 2018, a friend gave me this Commodore 64. It's in bad shape. It was damaged in the basement flood.
+And the risers inside were broken. It was missing a side plate. The motherboard was dead. I ended up fixing the motherboard.
+I replaced almost all the ram chips in a bunch of other ICs. I bought a new case from individual computers, transplanted it in there, and saved it.
+I was left with this shell. This is the same shell you see outside on the demo floor. I decided to make a replica out of this.
+You'll see a lot of people do this on YouTube. You see lots of videos. You got non-destructive mounting kits. You can 3 print or buy. Why use a pie or cheap? They're quite capable devices.
+You can get one for $35. You may have one sitting in your drawer and you just kind of threw in there and never found a purpose for.
+There are FPGA solutions if you want to get a replica. But those can get quite pricey. I have a Commodore 64, which is great. You can't really be hardware.
+But if you're trying to do it on the cheap, then Raspberry Pi is kind of the way to go. But emulators kind of get a bad wrap and why is that?
+So let's take a look at what happens inside an emulator rather than the real thing.
+What's happening is the host computer is emulating all the CPU audio graphics as fast as it can for the next 20 milliseconds worth of that of audio video.
+It prepares a frame and it waits. So if you can imagine on a really fast computer, this work can get quite tiny. It might happen in 5 milliseconds.
+And the rest of that time is just waiting to present that frame to the user. So it's more like you're watching a movie where the frame was generated in the recent past.
+Emulation has its limitations and this will come in handy later when we talk about those limitations.
+So I look for Raspberry Pi emulators and it came across this list.
+Columbian, Pylizard, Retro Pi, Chameleon Pi, and then these other ones that are also based on the same Linux distributions.
+So these are all Linux distributions and they're all running vice the versatile Commodore emulator, which is a great emulator.
+A lot of work went into making the 64 emulator accurate.
+And some of these emulators are written so that they're dedicated to be a Commodore 64.
+That's the only thing that they do like Columbian and Pylizard. The other ones are more emulator options available.
+We have Nintendo and Amiga and they have this fancy carousel interface.
+I was interested in making a replica from my shell to just dedicate that Raspberry Pi to being just a Commodore 64.
+So I tried these, I tried most of these and I wasn't getting the experience that I wanted out of my replica.
+It really fell short of the real thing once you've used the real thing.
+I don't think I ever used a vice on your desktop, it just doesn't feel the same.
+So what I'm going to do is talk about the things that annoyed me about my replica after I had put it together with these distributions.
+The first thing was boot time. When you turn on your Commodore 64, it's just instant, right?
+Columbian boots and directly into the 64 emulator in about 12 seconds on a Raspberry Pi 3, which is not bad.
+But it's still booting Linux and it's just a bunch of services and unnecessary startup scripts are kind of stripped away.
+There's no splash screen, no console at boot times. You just get a block screen for 12 seconds and then you get the blue screen.
+Other distributions like Pi Lizard, sorry, Retro Pi, Meal and Pi, they take much longer.
+They can take up to 30 seconds a minute. It's kind of an annoying thing and that can take away from that instant on experience.
+So the second thing that you'll notice when you run a vice emulator on your desktop or even on a Raspberry Pi on under Linux is, you know, people say there's something that doesn't feel right.
+And what they're referring to is the video quality isn't what you're getting on a real Commodore machine.
+So one of my test cases here for my project was Koma Land, 100% demo.
+And the introduction has a bunch of vertical bars that scroll across the screen.
+So I'm just going to play, oops, play the, this is a slow motion capture of what I took off.
+The quality is awful, but what you're going to see here is this is running on Commune.
+And you'll see those broken bars that appear. And what that is is horizontal tearing.
+And there's really no excuse for that today.
+The other distributions didn't show horizontal tearing this bad. They didn't show horizontal tearing, but they did show what I call jitters.
+And what happens? Why does tearing happen? It's because you are changing the region and memory that represents that frame partway through the video displays refresh of the display.
+Or you're telling it to look elsewhere if you're using a double buffer on Linux.
+The modern solution that you use a wailin server and then your application will wait for the vertical banking interval of the display.
+So that's the period after it's scanned the last line before it changes that memory so that you get a full frame with every refresh.
+But even with that on the Raspberry Pi on the other versions, like Camille Empire Retro Pi, I was still seeing what I called jitters.
+And that comes from a mismatch between the timing that the emulated machine wants to be and your video displays timing.
+So your video display is usually out of 50 or 60 hertz. If you don't change say Retro Pi's video mode, the default is 60 hertz.
+So you're trying to watch a machine trying to be 50.125 hertz on a 60 hertz display and it just doesn't look right.
+So if you run like the Ghostbusters game, that scroll at the bottom on a real 64, your eyes will just drift across effortlessly.
+On Linux, on a Dell, my desktop emulation, it just doesn't look right.
+So I wrote this new scrolling demo. I was hoping to show it here on Retro Pi, but the HDMI switch doesn't work.
+So I'm just going to stick with the EMC64 a little later.
+I wrote this scrolling demo and you can see that when you run it on Retro Pi, it kind of looks jittery.
+Even if you change your video mode to 50 hertz, you'll get a period of maybe two or three seconds where it's nice and smooth.
+And then it looks like it's dropping a frame, jitter jitter jitter and then you have another period where it's smooth.
+And that kind of takes away again from the experience. It reminds you that you're not using the real thing.
+Another thing that annoyed me was audio latency.
+So the 8-bit guy, when he did his review of the 64-mini, he wrote a small program that did nothing but pulled the keyboard.
+And when he pressed the key, he changes the background color and plays a tone.
+And he measured the 64-mini's audio latency to be a whopping 360 milliseconds.
+Now I don't know if they've improved that recently. I hear and I look for evidence. I couldn't find if they improved that.
+I did the same thing, measuring Combian on the Raspberry Pi except I hooked up my oscilloscope.
+And measured from the time that the USB signal goes low or the line goes for circuits closed, how long does it take for the Pi to emit the tone?
+And it measured by default with no changes being made to the system or no optimizations, I mean setting changes.
+You get 250 milliseconds delay. Now I was able to drive that down to about 135 by fiddling with some of the settings because you can change the audio buffer size in vice.
+But I started to get these machines who slow warnings, especially on a Raspberry Pi 2.
+So audio latency is kind of important because when your character jumps, you want to hear him jump when he actually jumps not a third of a second later.
+Similar to audio latency, you have video latency. Now I did the same thing, hooked up the oscilloscope to the composite out of the Pi.
+And what you're seeing here is these are the frames, composite frames. And did the same thing measured from the time the, in this case it's a joystick press on the USB controller.
+How long does it take for the emulated machine to see that latch or that virtual latch has been pressed?
+And I found the worst case was three frames for USB. The key raw ends up pushing that out, can push that out by one more frame.
+And I have an explanation for that. That's not too bad for a software emulator. I mean the minimum you're going to do is one frame.
+Again, the eighth guy did his 64 mini review and found that he had like 67 frames or found that the 64 mini was 67 frames of latency, which is quite high.
+So the Pi doesn't actually do too bad in that respect. The next thing that annoyed me was, well, you're running Linux, right?
+And you're not just supposed to kill the power when you're running Linux. If you do that, you run the risk of SD card corruption.
+Because files may be open. The thing might be writing to files. You don't know what it's doing because there's so many services that could be running.
+It could be a logging service running. On the real 64, there's no exit. You just kill the power.
+And I think most people will just yank the power. Even if they're running Raspberry Pi with Linux and they just kind of deal with it, they probably get away with it.
+That's why people recommend these power block devices. What these things do is they send a signal to your Raspberry Pi to tell it to shut down.
+And then once it's shut down, you can kill the power safely.
+The next thing was the key rock. So this is a key rock.
+It's a great product. What it does is it turns a real 64 keyboard and real joysticks into a USB device for the Pi.
+So these end up looking like USB keystrokes to the system.
+I was disappointed, though, in finding out that this switch actually isn't a power switch. It goes in the slot where in your shell or in your case where the power switch goes.
+But you switch. It's actually a mode switch. It changes the mapping of the keyboard.
+And this USB connector isn't for power. It's the connection that you make to the computer that you want to control with your keyboard.
+So that kind of disappointed me, too. So just to recap, these are the things that I was disappointed with.
+And I wanted a better replica. So I started my project. But before I get to that, the common thread here is you have Linux, right?
+This is what you're typically getting with Linux distributions. You're getting kernel space, user space.
+You might get a whole bunch of services running in the background, a bunch of drivers in kernel space, IPC mechanisms, buffer copies, layers and layers of abstraction that can not only increase boot time, but add latency.
+And this, you know, typically you'll get a gigabyte distribution with something like, you know, a Linux distribution. So it's a lot of bloat.
+So talk with a friend of mine and work who's also into retro computers. His advice was, let's just get rid of Linux. That's easier said than done.
+His advice was the gold bare metal. So what does bare metal mean? Well, you write your own kernel. You basically strain together all your code that you want to run.
+The Raspberry Pi bootloader lays that own into memory in location 8,000 hex.
+It sets the program counter there and the R&POR and you just go, everything you have to do yourself.
+Manage memory allocation, talk to hardware, handle IRQs. Now, fortunately, there's a library, an open source library called Circle, that he also pointed to my friend pointed me to.
+And it's an open source bare metal library for the Raspberry Pi that gives you a bunch of routines to talk to things like talk to the video core, has a limited USB stack, simple block memory allocator, kind of like the building blocks you would use to do what you want to do on the Pi.
+Without really rising to the level of operating system, there are no processes, there's no IPC, there's no, there's a simple cooperative scheduler, but there's no preemptive scheduler.
+But, you know, what happens? You have these dependencies, right? If you try and compile a vice, which has only ever been compiled on some operating system.
+What happens? Well, if you try to compile a vice with the Raspberry Pi toolchain, your compiler freaks out. It has many missing headers.
+Vice is relatively dependency free. However, the one thing you can't get away without is standard library, things like including standard IO, standard live, string functions, string conversion functions, memory allocation, memory allocation would be nice.
+So it just, it just throws up, and it tries, of course, it tries to build an executable, there's no executable format for a kernel, it's just code.
+Fortunately, another open source library project called Circle Standard Live takes a fork of new live, which is replacement standard, standard live for embedded systems, and glues back into circle to provide things like file system access and memory allocation.
+So armed with those two projects, those two open source projects, my plan was to fork vice, and generally speaking, if you do these five things, YouTube can have your own commoner 64 emulator.
+It's really, it's really quite, and our detector advice is quite nice. You get a bunch of callbacks. One of the callbacks is, here's a frame, deliver a clear display device, and you just keep repeating that.
+So the same thing, here's an audio frame, shove that into your audio device, how would you do it? So you implement these platform hooks.
+And so what I set out to do is implement these five things. Now, UI is actually optional. You don't really need the UI, but you just wouldn't be able to actually type anything on, but you'll, you'll at least get that blue screen in the processor will be running.
+There's another item here where the emulator will ask you to sleep, like that first slide I showed you with, with how emulated work, it asks your platform for your architecture implementation to sleep for X number of milliseconds.
+So if you implement those things, you get your, your commoner 64 emulator, many, many hours later, I'm not going to get into all the little nitty-gritty details about how this all worked out, but I added my own Raspberry Pi architecture device, wrote my own video driver, and it's not really a driver, it's not really plugging into any sort of framework, it's just my code that talks directly to the video hardware.
+Same thing for audio, I used circles USB stack for input for both game paths and keep strokes, and for timing I did something different, which I'll explain a little later.
+And I did something crazy, I wrote my own menuing system, because I didn't really have anything that I could leverage. There's probably something I could have pulled in, but I was getting impatient, and I just wanted something simple to invoke certain actions like load disks.
+And it eventually evolved into a full-blown menuing system.
+Okay, so now the fun part, so the results.
+So this is a video of me turning on my commoner or my emulator.
+So this times, from the time you hit the power, from the time you get the blue screen, and the 4.1 seconds, which is really nice.
+I was really happy with that. It kind of contributes to the feeling that you're using the real thing.
+This is on composite, on HDMI, most HDMI displays take a little bit of extra time to sync to that, they don't even see the video signal there, even though it's there.
+So that made me happy. This is what things looked like before any optimization.
+I ended up mapping out what the boot process looked like, and everything is running on one core here.
+Circle initializes, then I run a launch to the device initialization.
+I realized that, you know, I have four cores on the Raspberry Pi. There are four ARM cores.
+So I started to look for opportunities to do things in parallel.
+And I identified a couple of routines that were taking a long time, and it turns out that it was the reset engines, which is the sit emulation.
+Initializing these huge arrays for the 6581 and 8510 sit chips.
+And I realized that they could be pulled out, because they don't really require anything that's happening here.
+And I figured out what in circles initialization I needed to launch bikes as early as possible.
+So things went from this to this.
+So core zero starts up a circle.
+As soon as the SD card reader is ready, I launch bikes, and in parallel, run those initialization routines.
+And that cut the boot time in half.
+I also did some tricks in the file system to short-circuit some of the things that VICE was trying to figure out about the files it was loading.
+For example, it was loading a kernel, and I wanted to know how big the kernel was.
+Well, the kernel is always 8192 bytes, so I just kind of short-circuit that and cheat the system.
+So it doesn't have to actually talk to the SD card.
+And that saved a lot of time and food.
+So for video, I mentioned that it's something different.
+Instead of listening to what the emulator wanted me to do in terms of sleeping,
+instead I just wait for the vertical blanking interval of the display, and then deliver the frame.
+Now this is not something new.
+Pretty sure 64 mini does this.
+There's another emulator for Windows, another Commodore 64 emulator for Windows called,
+I'm not sure how to pronounce it, hox or hox 64.
+And it has a 50 hertz performance mode, and I'm pretty sure they're doing the same thing,
+where they wait for the vertical blanking interval of the display before setting the frame.
+But the consequences of doing that are that your timing of the machine, of the emulated machine,
+is slightly faster or slower, depending on whether you're NTC or PAL.
+And it's as though the CPU cycles are stretched a little bit or squished a little bit.
+But you get completely smooth video.
+As long as the pie is able to emulate 20 milliseconds in the case of PAL,
+if it's able to emulate 20 milliseconds worth of CPU and audio video in under 20 milliseconds,
+it's always going to meet that deadline, that real-time deadline.
+So when you run BMC64, it is in PAL mode, it is running slightly slower.
+Although I do have a 50.125 hertz non-standard HDMI mode option.
+So I'm just going to switch over here, since my HDMI switch isn't working,
+I'll just switch over to the pie, hopefully it will display.
+Okay, so this is BMC64.
+Like I said, I wrote my own menu, this is all me.
+So it tells you what mode you're in.
+And since the mode or the timing of the machine is tied to the display mode itself,
+it's important that you match those.
+You don't want a 60 hertz video display with a PAL machine.
+You would end up getting a PAL machine that's really fast.
+And that's not what you want.
+So part of...
+Let me just take a look here.
+I'm going to load snapshot.
+Sorry.
+Sorry.
+Okay, so this is the smooth scrolling demo.
+I hope it looks good here.
+Okay, that's what it's supposed to look like.
+Your eye is just kind of drift across effortlessly.
+That's what it would look like on a real machine.
+When I run this on RetroPy or any of the Linux desktop versions of Vice,
+it never looks like this.
+There's always a mismatch.
+So that's one of the things that I wanted to address is the video quality.
+The other thing I wanted to make sure that people had the ability to customize the video.
+So you can switch the display.
+This is more, most importantly, for a composite out.
+So you can set the aspect ratio.
+It's kind of swish things or trim away the border regions so that you can get that box on your CRT
+in exactly the right spot.
+So it's more important for CRTs not so much for HDMI.
+I think the defaults are fine.
+You probably want to see the full border anyway.
+And depending on how much time I have, I might show you some other neat things about the video.
+So let's switch back to my presentation.
+Okay, so video quality was pretty good.
+So being Vice, you also have Commodore 128 emulator, the 20 emulator,
+and plus 4 emulator.
+And I will eventually do the path range.
+This is an example. This is me playing with layers.
+The Commodore 128 was an interesting machine.
+It had two displays.
+So I wanted to make sure people could see both displays at the same time.
+So you can actually have picture and picture modes or side by side modes
+and see both displays at the same time.
+Okay, next thing was audio latency and synchronization.
+I made sure that I tried to get the audio buffer as small as possible.
+I basically shove that data right into the HDMI stream as quickly as I can through Circles API.
+And I was pleased to find out that the audio latency was down under 100 milliseconds,
+which is I'm happy with.
+Once you get above 100 milliseconds, it starts to become perceivable.
+And you can really feel the difference.
+If you run that same program that the APEC guy wrote,
+and you press the key or the joystick button,
+you can feel the difference, especially between this and say something like the 64 many.
+My test case for this was Ghostbusters.
+I know that game so well.
+I know when the bouncing ball should be at its apex and when it's not.
+And I was happy to see that where it should be.
+So input.
+I measured USB and Heroin and it was pretty much the same as any other Raspberry Pi vice emulator.
+But I thought wouldn't it be cool to let people use their real joysticks
+by just hooking up to the GPIO header with nothing but a DB9 connector and some jumpers?
+So I did that. I added the code to scan the GPIO headers.
+You can hook up two joysticks.
+And because the joysticks are pulled right before the emulator enters the next emulation loop,
+it's pretty much the earliest opportunity to get it in there.
+Whereas USB, there's an 8 millisecond polling interval.
+So you can imagine that if things don't line up again, it's kind of a mismatch in timing.
+If you just enter your emulation loop, you've missed your opportunity and then say the signal went low.
+Up to 8 milliseconds before that time.
+And your polling interval happened just after you enter the emulation loop.
+If you missed your chance, it's going to get pushed out to another frame.
+But with polling the GPIO lines, you can get that in there right away.
+And you get a consistent two frame delay.
+So there's a slight slight advantage in using the MC64 with the real joysticks.
+So similarly, video latency.
+I hooked up my oscilloscope again and just verified here what you're seeing again as the composite out of the pie.
+This little flip here, that's actually just a text at the top.
+So you can imagine this is kind of rotated and it's scanning that.
+And you can see that there's a mid frame transition where it goes from dark to light.
+That's the color and color change.
+And you might be wondering, well, if the signal was recognized here, and I got it into the emulator here,
+it's going to have that part of its emulation, its information when it emulates.
+Why are you getting a mid screen transition?
+Wouldn't that transition just happen at the beginning of the first frame?
+The reason it doesn't is because the vice injects that event, that down event, with the latch change.
+At some random point in the future.
+And I'm pretty sure they do that.
+Otherwise, it would be as though you're super accurate with your joystick presses
+and you're always going to get the signal recognized at the very first cycle of every frame, which would be not right.
+So on average, you'll get, you know, the down will have the low event, will happen in the middle of this frame.
+And the recognition of that signal will happen somewhere in the second frame.
+So I'm pretty happy with that.
+Okay, so shut down.
+With BMC64, you can just kill the power.
+Now, why can you do that?
+I ended up rewriting circle standard libraries, file system glue layer entirely.
+And because the default implementation hooked back into circles, default file system implementation,
+where they didn't support directories, they didn't support long file names, they didn't have rewrite mode.
+I ended up switching to using a library called FatFS.
+And I did something on top of FatFS when the emulator opens a file.
+It actually opens it in memory.
+If you open a file, or if the device opens a file, even for read write mode, it's actually opening it in memory.
+And all the seeks and writes you're doing, you're doing it in memory.
+And only when the file is closed does it flush it to the disk.
+So even when your emulated, emulated machine thinks it's writing or reading to the emulated disk, it's not really talking to the SD card.
+I kind of defer that flush until later.
+The downside of that is that if you have a game and you just got your high score and you want to save it,
+your program might save it, but it won't actually get saved for your virtual disk image until you unmount the drive.
+But the cool thing is that you can just kill the power.
+And again, when you're done, you're game, or your mom starts screaming at you to get off your computer.
+You just want to kill the power, right?
+And I just have a mention here that there's no dirty sector write cache, because the files are never really opened for very long on the device.
+Well, also there are no background tasks running, right?
+This is the only thing that's running in this scenario.
+If you run RetroPy or Commune, you'll notice that green LED that represents the SD card access.
+It'll glow every once in a while.
+It's probably running a logging service.
+But with BMC64, that'll never get access unless you're doing something, unless you're mounting a drive or un-mounting a drive.
+Okay, so the last thing.
+So this is a key rock, and I had this in my replica.
+But again, like I said, I was disappointed. This wasn't a power switch.
+And if you want to hook it up inside a Commune 64 shell, you kind of have to put it on this little USB connector to connect to the pie, and this is not actually used for power.
+So I ended up making my own PCB and writing the code in BMC64 to scan the GPIO lines to scan a real keyboard and joysticks to get that advantage of the two-frame latency, but also to cut the power, because it was really important for me to just be able to click that switch and walk away.
+And again, it contributes to the feeling that you're using the real thing.
+So this design is uploaded on to up-furter.
+There are free Gerber files. You can download them and send them off to PCBWay and make them yourself, if you want.
+I actually don't put these together or sell them.
+There was someone in, I think Italy, who did make his own version of this and was selling them on eBay.
+So reception was pretty good. This is how the inspiration for the title of my presentation.
+Well, I guess you could argue that I ripped its sold out and then replaced it with a synthetic sold.
+But that synthetic sold is pretty close to the real thing. I was pretty happy with the end result and a lot of other people were too.
+I posted this way too early. I released this just to lemon64.com way too early.
+The early versions had a lot of bugs, but it kind of evolved over time.
+It's the better part of a year. It took me to get to this point.
+One of the mistakes I made was in an earlier version.
+When I did my boot optimization and my three cores were supposed to just go to sleep, well I called circles a sleep function.
+There is no sleep in bare metal programming. That implementation just did a tight loop.
+Check the clock is a time to wake up, it's a time to wake up.
+So three cores were just spinning and the core temperature reached something like 80 degrees.
+It was still within tolerance, thank goodness, but I was afraid that I was going to fry people's pies.
+So I caught that in a couple of versions and I apologize to everybody.
+So yeah, the carls of bare metal programming.
+So it's a free open source project here are the links.
+I can switch back to the MC64, but thank you for listening.
+Thank you.
+And I'll clear any questions.
+Yes.
+Since you're running bare metal, there is no network support or ability to connect it to your home network or another computer to move files.
+There's no network support yet.
+And that's something that I would like to add.
+Circle does support a TCP IP stack and I would like to put that in.
+I actually want to emulate the RS-232 interface like you can connect to BBSs through a TCP IP connection.
+I'd like to support that someday.
+How about the CDM boss?
+CDM.
+Sorry, what's that?
+The DCJ boss.
+Oh, like a hooking up to a real 1541.
+So that is possible.
+So there's a library called OpenCBM and vice does support that API.
+So the hooks can be activated.
+I would have to write the code that bitbang that protocol, which is all laid out inside the OpenCBM implementation.
+But there's one for parallel port and there's one for some custom other implement I can't remember what it is.
+But it's possible to do.
+Somebody brought that up on the forum.
+I thought, you know, it's kind of going a little further than I would like with hardware.
+I kind of stopped at the keyboard and joysticks.
+I don't really see the point other than the nostalgia of, you know, inserting a real floppy disk into the drive.
+But I kind of like the convenience of, you know, using an SD card and a USB connector or a USB stick.
+So you've got the HDMI and composite support, right?
+Yes.
+The CSI or the DPI LCD support to provide the work?
+So somebody asked me recently if I could get that working.
+I don't understand it fully yet enough to know.
+From what I understand is you add some config.txt parameters to enable DPI.
+If it's something that the SOC does itself, then it could be made to work.
+But if it's something that requires Linux, something like a driver, it's not going to be so easy.
+I would have to port whatever that driver is.
+So I'm looking into that now.
+I would have to get a DPI display to try it out.
+But if it turns out to be something that the SOC does itself, then it should be possible.
+Yep.
+You touched on this in your presentation.
+But I assume if you're running the HDMI, you can either do power and TSC.
+Right.
+And if you go to composite output, you probably live in a better monitor, right?
+That's right.
+If you're using composite, then if it's a power machine, you actually need a monitor capable of doing power.
+So multi-sync monitor or a power monitor.
+Yep.
+That's right.
+Yep.
+You involved in any other source projects?
+It's a little off.
+Of course.
+Of course.
+Nothing retro-related.
+But I was contributing to other open source projects.
+There was a open source dash player that I was contributing to.
+I have some on my GitHub link.
+Yep.
+You said the earlier versions ran mostly on a single core.
+Is there any way you could get this to run on a Pi0?
+I do have a version for the Pi0.
+I call it BMC64 light.
+So in the distribution that you can get from the links that I had shown.
+So on my website, you can download a single image now.
+I used to have one image for every type of machine.
+I forgot to mention that you do get more than just the 64.
+You get a plus four emulator, 520 emulator, Commodore 128 emulator.
+I'll do the pet eventually.
+And I do put together builds for the Pi0 and they will also run on the Pi1.
+But only if you overclock the Pi1.
+The Pi1 is just 200 powered to handle most of what the emulation demands.
+The Pi0 will also fall over.
+If you throw some really high intensity demos at it, it will stutter.
+But for games, I haven't actually seen any games that don't work on the Pi0.
+So if that's all you're interested in, you can try it out.
+The reason I call it BMC64 light is that it sets the expectations that it's not BMC64.
+I did it as kind of a courtesy to the users online in 64 who were asking for it.
+Because somebody wanted to make their own little Pi0, like Game Boy type of device.
+So it does work.
+Do I have a little black and white TV with a Pi0 stuck in the battery compartment?
+Okay.
+And I'd like to just at least if I can just get to running screen while I'm actually not on the R and R.
+We can try it.
+I have the SD card if you want to just hook it up.
+Sure.
+Okay.
+Great.
+Thank you.
+I really enjoyed Randy's presentation.
+I think this may be a game changer in the world of platform emulation on the Raspberry Pi.
+And I hope it inspires others to pursue their own bare metal emulation of their favorite systems.
+Pictures of this presentation are available at my personal non-commercial blog at peakwork.com.
+And if you enjoyed this podcast, please stop by my blog and leave a comment.
+Be sure to tune in next week for episode five featuring new games from double-sided games.
+Until then, please drive safely and make sure to have fun.
+You've been listening to HEPA Public Radio at HEPA Public Radio.org.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HBR listener like yourself.
+If you ever thought of recording a podcast and click on our contributing to find out how easy it really is.
+HEPA Public Radio was founded by the digital dog pound and the Infonomicon Computer Club.
+And it's part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly.
+Leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released on the earth.
+Create a comments, attribution, share a like, 3.0 license.

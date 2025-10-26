@@ -1,0 +1,315 @@
+Episode: 1232
+Title: HPR1232: LiTS 028: extended attributes
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1232/hpr1232.mp3
+Transcribed: 2025-10-17 22:01:20
+
+---
+
+Welcome to Linux and the Shell Episodes 28, Extended Attributes and the LSATTR and
+CHATTR commands.
+My name is Dan Washko, I'll be your host today, and as always I'd like to thank Hacker
+Public Radio for hosting the website and the audio files, Hacker Public Radio, fantastic
+resource for the community, consider contributing to Hacker Public Radio by doing your own
+episode on anything that matters to your geeky little heart, or head on over there to listen
+some really great content put out every day by geeks across the world.
+Let's talk about Extended Attributes and the way we can manage Extended Attributes.
+Back in episode 7 we talked about file permissions, their attributes, basic attributes are read
+right and execute, and they could be applied by either the owner to the owner to the
+owning group or everybody else, it gives you three attributes at three different levels.
+While there are some Extended Attributes that do some other stuff, not necessarily permissions
+related, but some other information about the file and how to handle stuff with regards
+to the file.
+So what I'm going to do is I'm going to talk about those attributes and then talk about
+how you can see them and manipulate them.
+Now not all of them are able to be manipulated by these commands, and I'll cover that along
+the way.
+This is going to have some pretty detailed information.
+So I suggest that if you have not already gone over to the website, you do so after listening
+to this to get a fuller understanding and see the links to some more information because
+some of these attributes are pretty complicated.
+Alright, let's start off.
+I believe I have them in alphabetical order, maybe I'll mess up.
+First attribute, lower case A, stands for append only.
+What that does is sets the file so that it cannot be overwritten or deleted.
+You can only append information to it.
+Now this can only be set by a super user account, and what is going to end up happening with
+this is it's probably going to break the standard way that you might manipulate or interact
+with this file.
+For instance, you can redirect text to the file so long as you are appending and not overwriting,
+but you're not going to be able to open it up in text editor or something like that.
+You're going to get a permissions denied.
+So that attribute append only does exactly what it says.
+It only allows you to append to the file, not write or overwrite it.
+Now why doesn't it open in some applications like a text editor?
+Because when a text editor goes to write it, it doesn't append to the file, it actually
+just overwrites it and it won't let you do that because it is this attribute being set.
+Next attribute, capital A, that stands for do not update the access time or A time.
+So what that is is if you use a command like stat or LS-U, you should be able to see the
+access time on the file, that means the last time the file was accessed.
+Now you got to be careful with that because if you access the file like doing LS on the
+file, it hits the file and the file system becomes back, you're going to see that the access
+time gets updated.
+But if you do that again, you're not going to see the access time gets updated more than
+likely because chances are that file is cached in memory and it's just going to the memory
+and set it to the file system to get that information.
+So be aware of that.
+Now again, what this does is exactly what it says.
+It will not update the access time.
+They also have to realize that another reason why you might not see the access time updated
+is depending upon how the file system that it's on is mounted.
+Now you can have it mounted with the option no way time or real A time or it's relational
+A time, not real.
+And the other one, I can't remember what is off the bat, but anyway, what ends up happening
+like with relay time, relational A time.
+The way that that behaves is if you access the file, it doesn't update the time stamp.
+If the time's access time stamp is greater than the last modification time stamp, it doesn't
+update it, but if it's older than the access time, then it will update the access time.
+But until you manipulate it and then read it again, the access time might not be updated.
+So there's another reason why you might not see access time updated.
+So it gets a little confusing, but this attribute sets no access time.
+It does not update the access time on this file.
+The C or compressed attribute sets this file to be compressed when written to on the disk.
+So if you write to the file, it compresses the data and writes it to the file.
+If you read to it from the file, it uncompresses the file as it's reading to the data and displays
+it.
+It just does compression.
+Now there's overhead associated with that.
+Just be aware of that.
+It can cause some overhead.
+Chances are a lot of these attributes you're probably never going to need.
+So just understand what those mean.
+So you can compress on read and it'll compress and write.
+The capital C means no copy on write.
+What this means is the copy on write.
+What that does is a way that a lot of modern unic systems work, that if a file is accessed,
+instead of creating multiple open copies of the file, instead of creating multiple copies
+of the information for each task, a pointer to the shared resources used.
+So instead of, when multiple times that file is open, it's all pointing to the same
+thing as a bunch of pointers.
+So should the task, should that file be written to, it kind of breaks the pointer and it
+actually writes it to a private copy.
+So it breaks it off, writes it to a private copy.
+And then, so you're not manipulating the shared resource.
+Now you might see that, something similar to that happen if you're in VI and you're editing
+a file and you do something that a file changes the file and it'll come back and say the
+file has changed, you want to reload, just be aware of that.
+So you have shared pointers to it.
+It'll break off a private copy if you need to manipulate it and then put it back when
+you actually write it to the disk.
+Now what this does is it prevents that from happening, it's no copy on right.
+So it writes directly instead of creating a shared copy or a private copy so that private
+copy is never created, it just goes right to the resource.
+There is a lowercase D, which stands for no dump.
+That means the file is not to be a candidate for backups when the dump command is used.
+Okay, pretty basic.
+Capital D, synchronous directory updates.
+Okay, so when a change is made to file in a directory, those changes are written synchronously
+to the disk.
+What that means is that any change to files are immediately written to the disk and available.
+That's not necessarily how the behavior is in a network file system where it'll write
+the changes but you might not see them on the network file system immediately.
+When a file is created in a share, the directory is immediately updated in this case so that
+it's visible to the systems accessing the share.
+It's primarily for a network based file system like NFS or if you're mounted with NFS
+and NFS and you make a change to it with the capital D set on the directory, it immediately
+updates those files in there so that the update is pushed out to the other systems that
+might have that file system mounted.
+Lowercasee, extents.
+This attribute indicates the file is using extents from mapping the blocks on the disk.
+Now you're going to see this in ec2 or 3.
+This is more of ec4, more modern file systems.
+It replaces the traditional block mapping schemes and what it does is defines a continuous
+range of physical blocks for storing data and what that means is it defines those blocks.
+It means that file, when it has an e or an extents attribute to it, it means that it's
+using extents.
+Now you cannot set this attribute but you can only view it.
+This is set by the file system itself that's using it.
+There's a capital e attribute, now this is experimental and it's set by a compression
+program to indicate that a compressed file has a compression error.
+Again this is not something that you can set.
+This is set by the program that does the compression and it means that that file has
+a compression error so that you can only view that, not actually set it.
+Lowercasee, another attribute that you cannot set, its presence indicates that the file
+is storing of blocks and units of the file system block size as opposed to units of sectors.
+This is primarily used when the file is larger than two terabytes or it was one time larger
+than two terabytes so chances are unless you're working with huge data systems, you're not
+going to see this attribute set and you can't set it anyway, it's set by the file system.
+The lowercasee or immutable, this renders a file impervious to change, no matter what
+the permissions are on it, you cannot change the file, it cannot be written to, it cannot
+be appended to or it cannot be deleted, it cannot be renamed or it cannot have a link
+created to it.
+Now this attribute can only be set by a super user account and if you want to delete
+the file or change it or whatever you have to remove the attribute, again it can only
+be set by the super user account.
+Capital i means directory is being indexed.
+Again this is not something you can set but it is set when the directory is being indexed
+by hash trees except by another application, you can see it but you can't set it.
+J, data journaling, this is the lowercase J.
+Now if the file system is mounted with the data equals ordered or data equals right back
+options, what this will do is force the data to be written to like an EST3 journal before
+it being written to the file.
+This is what data journaling does, instead of the file going to the journal first and
+then being a later written to the file, it goes directly, no wait I got that backed
+up, instead of writing to the file directly it writes to the journal first and then now
+to the file, if the data is ordered, if it is ordered or right back what this attribute
+does is force it to be, instead of written to the journal it writes it to the data first
+and then to the journal.
+My correct on that, let me double check.
+Yes, I've got that, in a situation where data is ordered or right back, it's written
+to the file then to the journal, it can be written to the file then to the journal, this
+forces it to be written to the journal first and then out to the file.
+The shares amounted with data equals journal, then this attribute does no effect at all
+on this file because that's the way data equals journal behaves.
+Secure deletion, lowercase S, when a file is deleted the blocks of the file are zeroed
+out, so if you set secure deletion it zeros out the file instead of just removing the
+pointers to the data, it zeros out the data that used to be there.
+Capital S is synchronous updates, with synchronous update attributes set, any change to a file
+are immediately written to the disk, otherwise it changes to the file or cash and then updated
+it later time.
+So in a situation where it writes out to the cash, changes to the file system and then
+later updates the file on the disk, that's why you don't want to just power off the system
+because there could be stuff waiting to be written to the disk.
+But this attribute does, if there's ever a change it immediately writes it to the
+disk, it doesn't push it out there to the cash.
+T, lowercase T means no tail merging.
+Tail merging, what is also known as block sub allocation, is when a single block is used
+to hold the tail end of a number of files of data.
+Now in traditional file system, block allocation, when you have like most, I think modern Linux
+systems are still using four kilobyts blocks.
+When data gets written out, when a file gets written out to the file system, it writes it
+out in four kilobyts blocks.
+Now the last bit of data may or may not take up that entire four kilobytes.
+And if it doesn't, you have wasted space at the end.
+It could be one byte or it could be 300 or 350 bytes and you still have extra spaces
+not being used.
+Tail merging does, is on file systems that support tail merging, it will take some of
+those files that have x that don't fill up the last block and it will crunch them together
+so that you have three or four files sharing whose tails share one single block.
+Now I think it's EXT 2 and I don't think EXT 3, I'm not sure maybe net won't support
+it.
+I think EXT 4 does, but what no tail merging does is it prevents that file from having
+that happen to it or that directory, if you put it on directory, prevents those files
+in there from doing the block sub allocation or tail merging.
+Capital T. Top of directory hierarchy, okay.
+This works on what's called Warlov's block allocator algorithm.
+And the idea is that when you store files in related directories, store them closer
+together so that there will be faster disk access.
+For instance, in your home directory, the way that you ideally want stuff to be stored
+in your home directory on the file is if a person A's files would be closer to person
+A's home directory on the disk.
+And then in another disk location person, B's files would be closer together to their
+home directory on the disk.
+And without using this algorithm, you would end up having like at the top level, you'd
+have everybody's home directory and then all the files would get written and they would
+be not allocated closer together on the disk.
+What the dash capital T does is it would take something at a directory and kind of force
+the or loss of the top directory hierarchy so that it would start grouping the files in
+the sub directories closer to that directory and into those sub directories on the disk
+to theoretically reduce disk access time instead of just having them placed as they are
+on there at Willie Nilly.
+It says, it says, take this directory and understand that anything underneath it needs
+to follow Warlove's block allocator algorithm as closely as possible.
+So it will force sub directories to be unrelated and should be spread apart.
+So then you would have the directories under there, they'll be unrelated but the contents
+of those directories would be related so that they would be spread apart and you would
+have faster access.
+Hope that makes sense.
+Here's underscore, lowercase u, undeliedable.
+This sets the attributes of a file to be recoverable, unrecoverable should it be deleted.
+The contents of a file are actually saved.
+Well, if you delete it, it would be recoverable.
+Now this option was back in EXT1 so the first extended file system, you're not going to
+really see it on EXT2 and EXT3, it's a holdover from an older version but basically what
+just says if you delete it and you have the undeliedable attribute set, you'd be able
+to recover it.
+But that's no longer available, it's deprecated, you're not really going to find it.
+There are a few other experimental attributes right now, you're not going to be able to
+really use them to the extent you can see them in the man page.
+But those are the basic attributes, extended attributes right there and what they do.
+Now you can see attributes by using the LSATTR command or LSATribute command.
+It's like an LS command in general listing but it shows the files in a current directory.
+If you just type LSATTR, it'll show you all the files and directories in then prior,
+right before it where you'd see normal permissions, you're going to see the attributes instead.
+So that's the way LSATTR works, it's just doing your home directory right now, you're
+going to see a list of all your files and more than likely the only attribute that you
+are going to see in there might be lowercasee, extents, that's what I see because I'm using
+an EXT4 file system.
+If I wasn't using AXT4, probably I wouldn't see any attributes whatsoever.
+So just be aware of that.
+Now there are a couple of flags that you could pass to LSATTR, one is capital dash or
+dash capital R or uppercase R and that's for recursively listing attributes and directories
+and sub-directories.
+So if you do LS dash capital R, you're going to see all the attributes of the file in the
+current directory and as it hits each directory is going to recurse into the sub-directories,
+show the files and keep recursing until it's done everything.
+Dash A, lowercase A is going to list all the files and directory including hidden files.
+So if you add the two together, dash capital R and dash capital R and lowercase A, you're
+going to see a recursive listing of all the attributes and of all the files including
+the dot hidden files, the hidden files.
+Dash D suppresses, and this is lowercase, these suppresses directory, contents of directory
+and just list directories like other files.
+Each capital V displays the version of LSATTR and dash lowercase V displays the file version
+or generation number.
+Now the file version or generation number, that's something that's handled by the file system.
+This is a number that's handy, particularly in a network file system like the NFS, where
+the version of the number, version number can be checked to see if a file has been changed
+or deleted by another user when multiple users are accessing the file or the file system.
+So that is usually typically set by the file system.
+The other command that you can use with extended attributes is the change attribute or CHATTR.
+Now this allows you to manipulate some of the attributes, not all of them because we talked
+about some of them like extents are not able to be set by a change attribute.
+Some of those like append-only or immutable require you to be super user privileges to
+be able to change attributes and just like regular file permissions with the CHON or CHMOD,
+not CHON, CHMOD, you set the permissions with a plus or a minus or you set the equal.
+Now if you do plus, it sets the attribute.
+If you do minus, it removes the attribute, both in those cases if they're apt, if the
+attribute is already set, it doesn't change anything.
+If the attribute wasn't available, it doesn't change anything.
+The equals, on the other hand, sets it to exactly what you say.
+So if there are any other attributes that are applied to that file that you can change
+and use use equal and those files, you don't specify those attributes, they will be removed
+and the attributes you specify to be applied.
+Very simple.
+So then you just do a plus minus equals and whatever label is that you want to set.
+Like if you want to set a append-only compression, it would be chatter plus AC test.txt.
+Now you have to be rude to do that or a super user, you have to pseudo chatter plus AC test.txt.
+So that's basically how to manipulate the attributes, the extended attributes of the
+file.
+There are a few flags that chatter takes.
+One is the capital V, which tells chatter to be verbose on what it's doing and it also
+prints a program version.
+There's the dash F switch, which will suppress any error messages.
+And then there's the dash V switch, which will allow you to set the version number of a
+file.
+I do not recommend doing that or messing with that unless you absolutely know what you're
+doing because I wouldn't understand that.
+If you look at the version number, I wouldn't be confident in myself trying to set a version
+number because the version numbers are fairly long numbers.
+And I don't know what happens if you set it the one.
+I don't know what that does.
+So you should probably leave that alone.
+So that is extended attributes in a nutshell right there.
+There's a lot of complicated stuff and understanding some heavy duty file system and stuff like
+that that I just pretty much glossed over through it out there.
+It's complicated, but I have a lot of links to where you can get more information on some
+of this stuff over there on the website at linuxandtheschel.org.
+Check it out.
+Also go to read up the right up and the video of showing some examples.
+Probably not going to be that great of a video because what are you going to really show?
+How to use LSATTR and chatter.
+My name is Dan Washco.
+This is Linux and the Shell, extended attributes.
+Thank you for listening, and I'll see you in a couple of weeks.
+You have been listening to Hacker Public Radio or Hacker Public Radio does our.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by a HPR listener by yourself.
+If you ever consider recording a podcast, then visit our website to find out how easy
+it really is.
+Hacker Public Radio was founded by the digital dog pound and the infonomicum computer
+cloud.
+HPR is funded by the binary revolution at binref.com, all binref projects are crowd-sponsored
+by linear pages.
+For shared hosting to custom private clouds, go to lunarpages.com for all your hosting
+needs.
+Unless otherwise stasis, today's show is released under a creative commons, attribution, share
+a line, 3.0 license.

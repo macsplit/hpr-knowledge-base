@@ -1,0 +1,132 @@
+Episode: 1563
+Title: HPR1563: Starting Programs at boot on the Raspberry Pi
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1563/hpr1563.mp3
+Transcribed: 2025-10-18 05:08:08
+
+---
+
+This episode of HBR is brought to you by AnanasThost.com.
+Get 15% discount on all shared hosting with the offer code HBR15.
+That's HBR15.
+Better web hosting that's honest and fair at AnanasThost.com.
+Hello and welcome Hacker Public Radio audience.
+My name is Mr X and this is my 8th HBR podcast.
+I've at the start by thanking the people at HBR for making this all possible.
+It's really quite easy to send a show in, so why not give it a go?
+If I can do it, I'm sure you can too.
+I originally planned just to do one HBR episode a year.
+It gives you all you to pull stuff together.
+But I found I enjoyed it so much that I've done more than one this year.
+Why don't you give it a go? I'm sure you'd enjoy it. It's really quite easy.
+This podcast is kind of a bit off the cuff again.
+Plan to describe how I start things at boot time on my Raspberry Pi.
+It's the second to follow on from my previous podcast, which was running today
+with you on the Raspberry Pi.
+You can obviously modify this and use this to start anything on the Raspberry Pi.
+There's probably a number of ways of doing this and that's what there's no errors in what
+I'm about to tell you.
+I chose to use the file xe rc.local to start stuff in.
+If you look, if you go into, if you take an editor, your favourite editor,
+whatever that is, and open up xe slash xe slash rc.local, it says,
+if I read it out, it says rc.local.scrift is executed at the end of each
+multi-session run level. Make sure that script will exit 0 on success or any other value on error.
+In other words, enable or disable the script just change the execution bits.
+Of course, that's the first thing when you first look at it, you'll find that
+it's not executed by script, so whatever you do, it's going to do nothing.
+We're going to do nothing for you.
+So the first thing you've got to do is change the permission bits, so
+issue the command, pseudo, space CH mod, space 755, space slash xe slash rc.local,
+and that'll change the permissions on the file so that it's executable.
+So, I run the standard Raspbian dissolution, it's running for a number of years now,
+it's the first problem you have is that, did he wiki application as a dayman and runs,
+and you wanted to run continuously all the time? So, if you were just to put,
+I'll slash user slash spin slash did he wiki and put that into your script, it would never
+complete, and therefore your pie wouldn't boot, so that's your first problem.
+So, obviously, you could run it in the background, so you could put a nampr stand on the end,
+and that puts it into the background, that's fine, you could do that.
+But the problem with that is that when you do that, once that command is
+fucked into the background, the next command is immediately run straight after that,
+and if you've got two or three things set up on your in this file, then
+it could put an awful lot of stress on your pie, because there's also some problems,
+so you want things to run sequentially. So, you really want to introduce a delay between
+each one starting, so it's a more controlled start up. So, in order to do that,
+you put brackets around the command and separate them with a semi-colon, that way
+you can start it with a line with the sleep command, then a semi-colon, and then the command you
+want to run. So, being in mind that the sleep command will need to get bigger each time,
+we'll need to take into account how long the previous command takes a settle down before you run
+the next one. So, for example, to turn an example a bit, then trying to describe it in words,
+I've actually got three things set up in this file, and so the first command I have
+is sets the output of audio, it sets it to hard output to the jack plug on the pie,
+because that's using the C-set command, MX or C-set command, because without that,
+it can jump to the HDMI socket, and I found unplugging and plugging things,
+whereas the pie was running, I think, locked it and caused problems. So, I wanted it to be
+hard fixed to the audio socket, so that plugging and unplugging things didn't cause
+a thing to freeze and lock up. So, how I did that as I used the command, open bracket, sleep space
+one, semicolon, space, slash user, slash bin, slash A-mixer, space, C-set, space, num ID equals
+three, space one, close bracket, space, ampersand. So, as I said, that, that waits one second and then
+runs that command. So, the next command I ran was loading Diddy wiki, and this is the command that
+I was really wanting to set up. So, the Diddy wiki command was, if you remember, it was Diddy wiki
+space dash L, space one into dot 168 dot 1 dot 13, for example, space dash P, which is for port,
+space 8000. So, that would mean it would be on listening on port 8000. That's fine,
+but the thing is that this slash rc.local is run as a super user, is root. So, you definitely
+don't want Diddy wiki running as a root, you just want it to be the run as a normal user.
+And by default, the normal user on the Raspberry Pi is just Pi. So, you want to switch user to Pi
+before you run Diddy wiki. So, the command for that should be, a complete command should be
+open bracket, sleep space 3, semicolon, space su, space pi, space dash c, space inverted commas,
+slash user, slash bin, slash Diddy wiki, space dash L, space one into dot 168 dot 1 dot 13, for example.
+So, iPHS is going to be listening on, space dash P, that's for port, space 8000, inverted commas,
+closed brackets, space ampersand, send it to the background. So, then that'll run after three
+seconds. And then, i've got a third command, which actually runs a detached screen session,
+that's very handy for attaching to. And to do that, I start with open brackets, sleep space
+6, semicolon, space su, space pi, space dash c. So, again, that's switch user to Pi and on the
+command, the command is space inverted commas, cd, space slash home slash pi, semicolon, space slash
+user, slash bin slash screen, slash screen, I should say, space dash d dash m dash capital S.
+I think that, I think from memory, that's the detached commas with M stands for or the S.
+But it gives an example. Then, space pi dash debian. What was that for again? Cat member,
+space dash c, space slash home slash pi slash dot screen rc dot multi run, and that's the
+configuration file that sets up the multiple screens that you want to run it to when the screen
+session starts, inverted commas, closed brackets, space, ampersand. So, there's the three commands
+that run it, but I've got one that sets the, again, recapping it sets the audio output of the Pi
+to the external 3.5 inch jack at boot time, that starts after one second, then in three seconds,
+then immediately from three seconds, the diddywiki daemon runs, and then, again, starting from
+that same start point, six seconds on the detached screen session starts. So, this is a
+to recap. It's known that to one starts after one second, then after that one second,
+it waits three seconds, then after that three seconds, it waits six seconds. What actually happens
+is they all start running all at the same time, but because you've got a longer delay in each
+they actually end up running in sequence. And of course, the last line of the script is exit space
+zero, which means that the script exits with an exit code of zero, so there's no errors reported.
+Okay, hope that wasn't all too painful to listen to, and you could follow along with it.
+Obviously it's quite difficult to follow along in an audio with that, but what I'll do is,
+I'll include my RC.local in the show notes so that you can follow along with it when you're
+listening at your leisure. Alright, just one final thing before I go. I got some feedback from my
+previous podcast on running ddywiki on the Raspberry Pi, and so I want to thank Tim, TTY for
+that comment. I'm sorry, I didn't get charged to reply to that. Terrible, terrible. I kind of
+forgot to check my comments, I must admit. So I'll read that that has commented out. It was
+actually very interesting. It's just a quick note to say I enjoyed the episode, and I use and
+but I use CI wiki, a fork of ddywiki. The main benefit of CI wiki is that you can choose to make
+pages private and require a user to log in to view or edit the content. And it's given a link
+HTTP source for us.net slash projects slash CI wiki. We did something simple at work to keep
+sales quotes, but we are quite a small company, so a full CRM would be overkill. So I thought that
+a wiki might be a good idea. I looked at loads, but decided that ddywiki, well CI wiki, was
+simple enough that everyone could use it with around 10 minutes training, that was it, sorry,
+with 10 minutes training. We have been running it for around three and a half years now, and a quick
+alas.ddywiki shows that there are 1,137 pages in a ddywiki folder. I found that the build
+in browser search control carrot space f works better when searching through page titles.
+Also, backing it up is a piece of cake. I just have a script that runs at 4pm every day,
+which gzips a whole ddywiki folder and emails it to me. The gziped archive is less than
+2 megabytes in size, another one for being plain text. Anyway, thanks for the show. So that's great
+Tim. Thanks for the great tip. I'll maybe have a look into that. I just want to turn on my
+home server, so I'm not too worried about the security aspects, but that's very interesting.
+I didn't know that. I'm sure somebody out there will find that useful as well. That's great.
+So okay, I hope you all find this interesting and didn't worry all the hell.
+I've got other ideas in the pipeline, so I'm not sure where I'll get a chance to get those out,
+but if you want to contact me, I could be contacted at MrX at hpr.googlemail.com.
+So that's MRX, AT, HPR, the at symbol, googlemail.com. So until next time, thank you and goodbye.
+You've been listening to heckaPublicRadio at heckaPublicRadio.org. We are a community podcast
+network that releases shows every weekday Monday through Friday. Today's show, like all our shows,
+was contributed by an hpr listener like yourself. If you ever thought of recording a podcast,
+then click on our contributing to find out how easy it really is. heckaPublicRadio was found
+by the digital dog pound and the infonomicon computer club, and it's part of the binary revolution
+at binwreff.com. If you have comments on today's show, please email the host directly, leave a comment
+on the website or record a follow-up episode yourself. Unless otherwise status, today's show is
+released on the creative comments, attribution, share a like, 3.0 license.

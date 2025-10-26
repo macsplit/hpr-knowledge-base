@@ -1,0 +1,158 @@
+Episode: 2507
+Title: HPR2507: Racket, Nix, Fractalide and the sounds of a Hong Kong New Town
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2507/hpr2507.mp3
+Transcribed: 2025-10-19 04:23:00
+
+---
+
+This is HBR episode 2500 and 7 entitled Racket, Nix, Flacket Island and the sound of a Hong Kong new town.
+It is hosted by Clacket and is about 19 minutes long and carry a clean flag.
+The summary is, it's a triple whammy, it's functional programming, functional package management and soundcape.
+This episode of HBR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HBR15, that's HBR15.
+Better web hosting that's honest and fair at an honesthost.com.
+Hi, I'm Flacket.
+I thought I'd like to share with you what I've been doing these last few weeks.
+If you've been listening to my previous HBR episodes, you might know that I was pretty enthusiastic about geeks and Nix
+and how they could improve the way we work with our operating systems or computers and also how we do development.
+Well, I've been very lucky and I'm now working professionally with making Nix and Racket a little bit better.
+There's a grand revision further down the road, but what I'm currently working on is a thing called Racket to Nix,
+which takes packages made for the Racket ecosystem and creates Nix expressions so that you can depend on them from other Nix packages
+or you can take the Racket packages that have native dependencies and express that dependency.
+So, how does this work? There are other already existing importers like this.
+In Geeks, there's even a sort of framework for it. All the importers are called through a front end through the normal Geeks plan,
+which is called Geeks Import, so you implement your thing under that umbrella.
+Nix is a little bit more ad hoc, so each importer is just its own piece of software that happens to speed out Nix expressions.
+And I haven't looked at all of them. I just looked at NodeNix and I'm assuming they are all quite similar.
+I'm in Racket to Nix and I'm producing something that is quite similar to how NodeNix works,
+but it's a bit easier, it's a bit simpler than what NodeNix does.
+So, in Nix, you have this idea of decoupling a sort of generic expression of your Nix package or derivation,
+as it's called in Nix language, to separate the generic expression of that to specialize that generic expression into something that is a concrete thing that you can install.
+So, that sounds a bit fuzzy, so let me improve on that description a bit.
+So, what you do is you leave a couple of free variables, parameters to your generic expression that you can feed in.
+So, you are going to depend on some compiler, some libc and so on, and you are going to depend on a couple of other packages.
+So, what you do is you just say these things come in here somehow, as parameters to this function that is this expression.
+So, in my case, that means I got the standard environment, compiler and everything, the basic stuff that you need to build anything.
+And then I have rack it, and then I have unzip coming in.
+And then, when you run a normal Nix build in the directory that has this Nix expression in a defaults.nix file, Nix build takes the defaults in your system,
+but you can always choose to override them and send in some other parameters.
+So, in my case, I am trying to figure out how to take the racket packet definitions in the racket system.
+And the best place to look is, of course, the bundled packages that are included with racket.
+What I am doing is, I am taking racket as a dependency, but I am sending in racket minimal, which is racket with almost no packages.
+And then, I try to rebuild the standard ones that are usually bundled.
+So, that seems like a decent first test case.
+And then, I already run into a couple of complications with that.
+So, some things were easy and some things needed a bit of tweaking.
+So, in the end, I think it was a good test set.
+Whatever I run into is that, for example, there are already in the standard bundles, there's some circular dependencies.
+So, I had to break those apart because, of course, in Nix, when each package is represented as a hash of the package and all its dependencies.
+If you have a circular dependency, then you get a function that never terminates.
+So, what's the hash of the thing I am depending on?
+Well, it's the hash of all these things and the thing it depends on.
+Oh, that's me, and then you cannot figure out the hash.
+So, that's a big issue.
+You can run into this even when you don't think you are.
+I got some recursion errors from Nix at some point and I thought, no, I'm not recursing.
+And then, oh, yeah, right, turns out that this thing here is depending on this thing.
+So, I had to break that apart, and so far it looks like that's working, but...
+So, there's some superfluous dependencies between racquet dock mainly and other dock packages that are depending on each other circularly.
+So, what I do is, when I counter one of those things, is just the first packet that I've already interpreted wins.
+And that depends on the other package and the other package just has to lose that dependency.
+So, at first I did this only on the Nix side, and then I thought I was working well, but that was just because I wasn't actually installing the packages properly.
+Once I got the proper package installation working, then it turned out, oh, now they're all complaining that they are depending on this package, which is not present because in the Nix expression they were not present.
+So, they weren't installed at the time that the depending package was going to be installed.
+So, then I had to move on and go in and edit the racquet packet definitions also before installing.
+But, I think when I set out on this project, I never thought I would get this far in three weeks.
+And I have to say that the racquet IRC channel and the racquet mailing list are very pleasant places to be.
+And I've been greeted with more than one person, is a handful of people.
+They've been saying, oh yeah, I was hoping someone would do this at some point, but I haven't had the time.
+And I'm so glad you're doing this. I'm using Nix and I'm using racquet and I really want this to get going.
+So, yeah, as you know, people will say that, oh, I'll definitely take a look at this at some point, but I know how it is.
+I also want to take a look at a lot of things, but I think I'm probably going to be the only one doing this for a while.
+And it's also fun because at the same time it seems that Chris Lammer Weber, whom I interviewed earlier about Geeks,
+is now trying to do the same thing on the Geeks side.
+So, my idea was that when I finish this, get it in some usable shape where we can actually install Dr. Racket itself, the Racket IDE,
+then I should go on and look at how I could use the experience from Racket to Nix and do Geeks import Racket as well.
+So, yeah, initially I thought, oh, that's great. Then Chris and I can compare notes and we can both make progress on each side,
+but it seems that he's really busy and he was just really happy that I'm doing this and hoping that I would do the Geeks side as well.
+Yeah, I hope I get to that.
+But the Nix side is what I'm getting paid for doing, so that's what I will focus on for the moment, until I really know what I'm doing.
+So, yeah, Racket to Nix, what we can do at the moment is, at some point I want to be able to express a package that isn't in the Racket ecosystem.
+So that you just have your repo with your code in and you put an info.racket there and you can just create a Nix expression around that without having to upload your package into Racket, so you can use only Nix for your Racket stuff.
+But the stage I'm at now is, I'm downloading or getting information from the Racket package system, so the thing I just send in names to the script now.
+Not the info Racket package definition, but just a name and then it looks in the existing Racket catalogs and finds all the things under dependencies.
+So that's like next month or something, hopefully we'll be able to have our own little development repo.
+Well, the first use case, of course, is to express Racket to Nix itself, to package that in Nix.
+When we have that, then I think that's almost a 1.0 release.
+If we can self-host, then we're in a really good place and then we can move on from there.
+So theoretically, that could only in Nix, but probably be a good citizen and upload that into the Racket package system as well.
+But, you know, not every program, not every project that need to do that.
+If you're working tinkering on some small thing, you don't want to bother the whole world with eating up namespace and who is my thing in the package system.
+Or you could be working on your internal thing in your company and then just having your own local definitions to be able to express that in Nix.
+That's good enough. You're not looking for the global Racket we use in that case.
+If it's just your internal thing.
+So a little bit about where this is going in long term.
+So Racket to Nix will be able to take, as I said, a Racket expression, a Racket package and its package definition and create a Nix package.
+Or we have something specific that we want to use this Nix package for.
+And that's Fractalide.
+So, Fractalide is not something I'm going to be able to explain well in five minutes.
+But I'm going to try to explain it briefly in two minutes.
+So basically what you have is when you combine code, code reuse is very hard and especially across language boundaries.
+But if you look at the most successful software combination system, we take little pieces that don't know about each other initially or they never know about each other.
+The people who write the software, but you can still combine them. That's the Unix Pipes and Filters system.
+So you have a thing, it spits out text, send it through the pipes, send it into the other thing.
+And all that thing needs to know is, yeah, here's some text.
+It doesn't have to know where it came from because you're the one putting those pieces together.
+And we want to do that in a more complex setup.
+So you can have several pins out, several pins in, they can be typed.
+And this is what people call flow-based program.
+So, there's an initial system that is written in Rust and now we're working on Wacket.
+And then there's probably other languages coming down the line.
+So within Wacket, if you write a fractal as we call it, and if Wacket is one sort of package within Wacket.
+So a fractal has nodes and those nodes are the things that have these inputs and outputs.
+And you have a node that is written in Wacket.
+You make that a Wacket package.
+So you put the info.wacket in there.
+And that says, yeah, I'm going to need these perfectly normal Wacket packages that don't know anything about fractal I got.
+I'm going to need them to build my Wacket component.
+Wacket node.
+So then your Wacket node has access to everything that Wacket can do.
+And then it also has access to the fractal ID interfaces.
+So it will be able to send data to somewhere it doesn't know and receive things from somewhere it doesn't know.
+And you'll be able to compose that node with some other nodes in your graph.
+The Wacket nodes could be rust nodes.
+I think the way it's going to look is if you have several Wacket nodes, they're all going to run in the same Wacket interpreter.
+I'm going to just talk like internal Wacket data structures to each other.
+But if you are connecting other language implementations of your nodes,
+they're going to have to do some interprocess communication with each other.
+And Stuart is the lead on this thing.
+He has been using cat and proto, but that's not carbon stone.
+We're going to see where we end up finally.
+But we're going to have this thing.
+You're going to be able to write these nodes and they're going to be able to connect to each other.
+You write nix expressions to connect them.
+And then you basically run the sort of app container just like you would in a Java interpreter system or some other like in Ruby on Rails.
+You have some service running that provides general services.
+And then you run your thing in that and it can talk in Ruby on Rails, it can talk web.
+And in our case, it can talk this flow-based programming thing.
+So we're going to start with just getting that working on the low level.
+And then we're going to build an IDE that allows you to move these things around in real time, in runtime.
+Connect the boxes to each other, draw the lines and see them interact.
+But I have no idea how far down the road that's going to be.
+That's going to be a lot of work to get that working in a way that is actually productive.
+But I think it's really great that someone is working on a new way of doing things that can help improve reusability, probably told quality.
+And a new way of doing things and maybe even make it easier for non-programmers to do this stuff.
+And I'm really happy to be part of it, so I hope I can be doing this for a long time now.
+I'm doing free software, I'm getting paid, I'm doing really exciting the future of programming stuff and I couldn't be in a better place.
+I'll probably be talking more about this in future episodes.
+But yeah, it's pretty exciting so far. See you next time.
+I've been listening to HackerPublic Radio at HackerPublicRadio.org.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast and clicking our contribute link to find out how easy it really is,
+HackerPublic Radio was founded by the Digital Dark Pound and the Infonomicon Computer Club,
+and is part of the binary revolution at binwrap.com.
+If you have comments on today's show, please email the host directly.
+Leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released under a creative comments,
+attributions share like 3.0 life.

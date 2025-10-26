@@ -1,0 +1,94 @@
+Episode: 4299
+Title: HPR4299: Building your own Debian images for your Raspberry Pi
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4299/hpr4299.mp3
+Transcribed: 2025-10-25 22:38:00
+
+---
+
+This is Hacker Public Radio Episode 4299 for Thursday 23 January 2025.
+Today's show is entitled, building your own Debian images for your Raspberry Pi.
+It is hosted by D. N. T. N. T. N. is about 10 minutes long.
+It carries a clean flag. The summary is, you can build your own image for
+your Raspberry Pi, so that it's more customized from the first boot.
+You are listening to a show from the Reserve Q.
+We are airing it now because we had free slots that were not filled.
+This is a community project that needs listeners to contribute shows in order to survive.
+Please consider recording a show for Hacker Public Radio.
+Hello and welcome to another exciting episode of Hacker Public Radio. This is your host D. N. T.
+Today I'm talking about making your own Raspberry Pi Debian images.
+Back in December, I had to reinstall Debian on my Raspberry Pi on one of my Raspberry Pi's.
+I don't remember why, but I went to this website, raspy.debian.net,
+where somebody hosts a bunch of tested Raspberry Pi images.
+Debian images for the Raspberry Pi.
+Back then, the image that I needed wasn't working.
+The download was just not there. You would download something like an empty zip file or whatever it was.
+I contacted the guy that hosts it and he said, oh, yeah, just didn't work out or something.
+Just give it a few days and it will be refreshed again and it should work next time.
+I decided to go and build the image myself and it turns out that it's really easy.
+I guess it's like a shell script, I think. Don't remember, but it runs something called VMDB
+to build the image on your computer. You need a bunch of things installed and stuff,
+but it works very easily.
+Then a few months later, now in February, 2024, I needed an image for a Raspberry Pi 4 that I just bought.
+They didn't have the 5, so I bought a 4.
+The Raspberry Pi 4 doesn't have a full size HDMI and it's not even a mini HDMI.
+I guess it's a micro HDMI, and I don't have a micro HDMI cable or whatever that is.
+So I was asking myself, I wonder if there is a way to edit that script to make the image
+already have a user for me with my SSH key configured and all that so that then I don't ever have to plug it into a screen.
+I can just boot into it and access it via SSH.
+You open the file, it's a YAML file and it's very easy to understand, so I just went in there and did all that.
+Let me tell you what I did.
+First, there's a make file, and the make file can be used to just build the image as it comes by default,
+but you can also run make, and then I think it was Raspberry Pi 4,
+Raspberry underscore 4 on the score bookworm, for example, to tell it you want an image for the Raspberry Pi 4,
+running the bookworm Debian release.
+So you run make Raspberry Pi 4 bookworm dot YML instead of IMG.
+IMG would tell the make file you want to build the image.
+YML is telling the make file you just want the YAML file, presumably because you're going to make some modifications to it,
+and then you're going to run the command against the YAML file.
+You run that, make Raspberry Pi 4 bookworm dot YML and you get a YAML file, then you can open it,
+and you can see what's going on in there.
+So I scroll down all the way to the bottom, and then I just create, let me open the file here so I can refer to it.
+So the file extension is actually YAML, not just YAML, whatever.
+So let's go all the way to the bottom, and you just create a new item.
+So starting with a hyphen, and you have to observe the indentation because it's YAML.
+So start with a hyphen, and then Chiroute, colon, tag root.
+So what you're doing there is you're chiruding into the image that you're building.
+So you're going to run commands in the Chiroute.
+If you don't do the Chiroute thing, you just do a shell, then you will be running commands on your own computer, on the computer you're running this on.
+So be careful about that.
+So then Chiroute, tag root, that's going to take me into the image, then in the next line, and this will be in the show notes, of course.
+In the next line, we have shell, then colon, then the pipe character.
+Not sure why that has to be there, but it is how all the other similar sections of this file were.
+So then you just do your standard Unix commands here, your shell commands to do whatever you want to do.
+The user add hyphen, capital U, Mb.
+So I don't remember what U does.
+M I know is to create the home directory, and then B is to tell it where you want the home directory to go, and then so you follow that with slash home.
+You're telling it to create a user that has his, their directory and the home directory, then hyphen capital G, pseudo, to add this user to the pseudo group so that it can run pseudo, then space hyphen S, then slash bin slash bash.
+It does is set this user's login shell to bash by default.
+It'll be it will be just SH, right?
+Then space hyphen P, then open quotes, close quotes.
+What that does is set the password to empty, which will allow you to log in without a password.
+If you don't do this, the user will be created with a locked password, and that means when you log in via SSH, you won't be able to do pseudo because the password for this user is locked.
+Then finally space in the user name.
+After that, you must create the dot SSH directory in the new user's home directory, and then finally you echo your SSH public key into the authorized underscore keys file in the SSH directory.
+So you're dropping your SSH key into that file that, as you may know, is where SSH looks to see who is allowed to log in as this user via SSH.
+Now you'll notice here I added the user to the pseudo group, and that means we will need pseudo as well, which is not present by default here in this image.
+So if you scroll back up to this section that's called APT colon install, then underneath that, there is a list called packages, and then there's a bunch of package names.
+You will recognize them here SSH, WPA, supplicant, all that stuff.
+Just add to the bottom of that list, pseudo, that way pseudo will be installed.
+I think it was not installed by default, but I could be wrong, but typically I think on Debian it is not installed by default.
+So that's why I added it in there just to be safe.
+So yeah, then you close this file, save it, you know, close it, get out of it, and then you run the command that's on the website where these are hosted, where the script is hosted.
+I'll send you the link, it'll be in the show notes.
+You run this full command with the VMDB command, and then it will build you with the image, and then, you know, the rest is just flashing the image onto your card and putting it in your Raspberry Pi, which is beyond the scope of this show.
+Yeah, I thought that was pretty cool.
+Not sure what technologies are in play here. I think maybe Ansible had something to do with this.
+I don't know what kind of YAML file this is, to be honest, I just looked at it, and it was very easy to understand, and I made some changes, and it did what I wanted it to do.
+So with this, I was able to flash Debian onto my Raspberry Pi, the way I wanted it to be without having to connect it to a screen, put a connect a keyboard to it, or any of that.
+So yeah, I hope this is useful to someone. Maybe you'll try it out when you have an opportunity to do this.
+So thanks for tuning in. Pick up a microphone and record whatever it is you came across or saw or thought about, and we'll listen to what you have to say.
+And come back tomorrow for another exciting episode of Hacker Public Radio. Goodbye.
+You have been listening to Hacker Public Radio at HackerPublicRadio.org. Today's show was contributed by a HBR listener like yourself.
+If you ever thought of recording podcasts, you click on our contribute link to find out how easy it leads.
+Hosting for HBR has been kindly provided by an honesthost.com, the internet archive, and our syncs.net.
+On the Sadois status, today's show is released under Creative Commons, Attribution 4.0 International License.

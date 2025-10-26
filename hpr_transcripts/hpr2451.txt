@@ -1,0 +1,237 @@
+Episode: 2451
+Title: HPR2451: Server Basics 105 OpenVPN Client
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2451/hpr2451.mp3
+Transcribed: 2025-10-19 03:18:01
+
+---
+
+This is HPR Episode 2451 entitled Server Basics 105 OpenVPN Client.
+It is hosted by Klaatu and is about 32 minutes long and currently in a clean flag.
+The summer is Klaatu walks you through installing and configuring an OpenVPN Client.
+This episode of HPR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15.
+That's HPR15.
+Better web hosting that's honest and fair at An Honesthost.com.
+Hey, when this is Klaatu, this is Server Basics 104, 105, whatever we're up to now.
+This is the Client side of OpenVPN.
+In the last exciting episode, we set up an OpenVPN server, we generated a bunch of keys,
+some of which we didn't even bother using, we set up the configuration file, and this
+time we're going to do all of that over again except for the client.
+So here we go.
+Let's get started.
+Now, the client certificates are depended upon the server certificates.
+It's kind of like when you make an SSH key.
+Your public key is married to your private key.
+Without the private key, you couldn't generate the public key, and certainly without the private
+key, you cannot authenticate to the public key.
+So, this is kind of the same deal.
+If you just go off to a client computer and generate a certificate, that's not going
+to work very well because that client will never be able to then handshake with the server.
+So it all has to sort of happen with a certain infrastructure existing.
+And that's why in the previous episode, I created a little bit of a workspace where I do
+all of my key management stuff.
+So I think in the previous episode, I called that easy RSA-server.
+And if not, then I lied to you because that's what it's called on my computer.
+So apparently that is what I called it in real life.
+And in easy RSA-server, I have all the easy RSA stuff.
+I've got my PKI directory, you remember that?
+That's where all the work kind of happens, all the keys get issued and everything.
+So we'll be using all of this sort of structure all over again.
+And the way that we'll do it is very similar to how we did it with the clients.
+And in this case, if you recall.
+So we don't need to do an init PKI because we've already done init PKI if you recall.
+So we'll do an easy RSA-space-gen-req to generate the request.
+And we'll just call this client0.
+So this is yet another request to generate a key.
+So and it's going to ask us for the PEM passphrase.
+So enter that twice.
+And then it asks for a common name.
+Now this should be unique to the client.
+So we wouldn't want it to be server or dark star or anything like that.
+This needs to be something unique.
+We'll just call it client0, which is what it defaulted to since that's who I'm requesting
+the key for.
+And then it tells you, okay, the key pair and certificate request has completed.
+Your files are in and it tells you it's in the easy RSA.
+Server, so that's PWD, PKI, REX, and in the PKI directory private client0 key.
+Cool.
+So we've got a little request and we've got a private key.
+Now all of this, that step right there could have been done on the client.
+And then they can send you the request file.
+And with the request file, you can sign or rather with the server infrastructure.
+You can sign their request file.
+Now again, I have never actually done it that way because I've never had users capable
+of doing that much in a terminal.
+So we have the rec file already.
+Now again, if you had clients who are savvy enough to do that themselves, then they would
+send you the rec file and then you would import it into your sort of PKI structure.
+So you would do a dot slash easy RSA import dash rec and then the location of the rec file
+that they had sent you, which probably is in your downloads folder or something because
+it would be maybe in your email or you got it from your email.
+And then you do a space client1 to give it the common name of the thing that you, of the
+request that you're signing.
+We don't have to do that right now because again, we already have the rec file.
+So it's not something that we have to do.
+So what we can do though is we'll just, we'll sign it.
+So we'll do a dot slash easy RSA, space sign dash rec, space client because we're signing
+it as a client certificate.
+And then the name of the client whose request we are signing and we called that client0.
+And it kind of confirms this process just like this is familiar to you from the server
+stuff.
+That the subject is common name equals client0, confirm the request details and it says
+to type in the word yes, if it's correct and it is.
+So I'm typing in the word yes, enter a passphrase for this key.
+So I'm just going to do a really stupid, simple password again, which of course in real life
+I would never do you would never do.
+And then certificate has been created at PKI slash issued client0 dot CRT.
+So now we've got a cert certificate file for our client, a client certificate.
+And this certificate we would send back to our client, to our actual to the user who wants
+to sign into our log into our VPN.
+So you just you'd grab that and you'd email it right back to the person.
+Now since we're doing all of this ourselves, I'm going to grab all of those things that
+we've just generated and put them into a folder that I shall call client0-vpn.
+So I'm going to make a directory called client0-vpn and then I'm going to move or I could copy.
+I'm going to copy because I like to well, first of all because the first file that I'm
+going to copy needs to stay with me, but also just because I like to have this key infrastructure
+is kind of my big backup.
+So first I'm going to copy my CA dot cert.
+So that's the certificate authority certificate from PKI from the easy RSA-server folder from
+the PKI directory CA cert.
+So I'm going to dump that into my client0-vpn and then I'm going to grab my client0 dot
+cert, which was dumped into the PKI slash issued directory, if you'll recall.
+And then I'm going to copy the client0 dot key, which I mean in real life, like I said,
+your client would actually have that.
+So that's in the PKI slash private directory.
+And just for kicks, if we get around to it, I'm going to grab the TA dot key from just
+out here in easy RSA and copy it into here as well.
+And I'm not sure, like I said, these episodes about this stuff has been going on for quite
+a while.
+So I don't know if we'll get around to addressing all the TLS auth stuff.
+But I feel like that's not exactly the most important thing about setting this up.
+And it's something that you can kind of turn on later.
+So I'm not going to worry about it too much.
+And there are some weirdnesses that can make, yeah.
+I would say if this is your first time setting this up, avoid the TLS auth stuff for the
+first time, get the open vpn work working, and then address TLS auth protections.
+OK.
+So anyway, I've copied those four files, PA key, CA cert, client 0 cert, client 0 key, into
+this client 0 dash vpn directory.
+And then I'm going to start up.
+So tar cvf client 0 dash vpn dot tar client 0 dot v dash vpn.
+And then I'm going to copy it.
+I'm going to secure copy it to my secret port over on my sample server.
+Which is in the Netherlands.
+Because I want to get outside my own network in order to get back into it.
+OK.
+So I've just copied my client files over to my client.
+And once again, just to reiterate, it's probably fine, but just to reiterate, all the clients
+things can be generated on the client's computer, but they need to send you a request so
+that you can then sign it and send them back the certificate that you have generated from
+their request.
+Got it?
+OK.
+Cool.
+So once all those files are with the client, they need to move them into the correct location.
+Now, whether you want to script this process for them or not is up to you.
+It just kind of depends on the ability of your clients, of your users.
+So the places that everything goes are pretty similar to the server.
+I mean, really, they can go anywhere.
+And you'll point to them in your configuration file.
+But I'm just saying there's flexibility.
+But what I try to do is just kind of mirror it on both systems so that there's less to kind of keep track of.
+So I copy or I create a directory called certs in slash open and slash Etsy slash open VPN.
+And in certs, of course, I put the CA cert and the client zero dot cert makes sense.
+And then I make a directory called keys in Etsy open VPN keys.
+So in keys, client zero dot key, NTA dot key.
+This just seems like an obvious way to do it.
+Now we're going to need a client dot configuration file on our client.
+The location of this file is going to vary for you depending on what kind of what kind of client you're running.
+So like I say, in many of these distributions, you get all the example files in some location within user share.
+So if you kind of look around in your user share and on this client, it happens to be slash doc slash open VPN slash.
+And then they didn't put it in samples. They put it in examples.
+And then in examples, there are sample dash config file dash files.
+And in sample dash config dash files, there's one called client dot conf.
+So if you cat slash us slash share slash doc slash open VPN slash examples slash sample dot dash config dash files slash client dot conf into slash Etsy slash open VPN slash client dot conf.
+Then you'll get the kind of plain vanilla client configuration.
+And that's a pretty good place to start to be honest.
+These tend to be fairly sane, I have found.
+And once again, unfortunately a lot of this stuff is going to differ for you depending on how you think that this needs to get set up to your workflow and for your network structures and stuff like that.
+But here's something that will work or anyway, it should work. It kind of depends on your network structure and where how you're testing all of this stuff for which I apologize.
+I wish I could have come up with a way to sort of standardize this and maybe I could have if I if we virtualized everything and sort of did it in a lab environment, but I'm kind of just doing it with what I've got available right now.
+So the first the first option in the configuration files, what kind of what kind of which which part of the open VPN landscape this is and this this is of course a client, which should be the default in the sample client dot conf.
+Next option is what kind of device you want to create when you start open VPN.
+And again, this is a tunnel device that to you in device, ton.
+You can skip over a couple of lines here, a couple of options and then there's proto. Of course, that's UDP by default again.
+And then this one's important. It's remote remote of being like what you want to connect to when you start open open VPN.
+So remote space and then either a host name or an IP address that's got to be there. Now if you're that there are different ways to configure open VPN can sort of I guess they're technically configuration files and and and those you can kind of define different remotes and connect to them over through network manager, that sort of thing.
+And that's very fancy and very cool and very handy believe me, but we're just I just want to get a proof of concept up right now. So I'm just going to hardwire my remote to my IP address to my static IP address of my of my home connection.
+So that's my IP address and then the port is going to be space 1194 we remember that from our server configuration file will continue along the various options.
+I think mostly a lot of these are going to just be uncommented by default. So you can uncomment if it's not already uncommented resolve dash retry infinite.
+That kind of that doesn't end your open VPN session even if you know the internet goes down for a for a few moments or whatever. And then you can do no bind. Most clients don't need to bind to a specific local port user.
+Nobody group no group try to preserve some state across restarts persist dash key persist dash ton again if if there are problems sometimes you want to comment those out just for testing.
+But I'm just going to leave them uncommented because they're uncommented by default on this particular distribution. So here's the parameters for where to find everything.
+So again, this is very very much like on the server CA the certificate authority is slash Etsy slash open VPN slash cert slash CA dot CRT you remember that we just we just we just put those there.
+And then cert space slash Etsy slash open VPN slash cert slash client zero dot CRT. And again, we we just did that. So you should remember key space slash Etsy slash open VPN slash keys client zero dot key.
+So we're just pointing it to wherever we dumped the files and that's that's that now there is the TA key, which we're not using yet. And that is usually entered under TLS dash off, but I want to get open VPN up and working before we mess around with that.
+And now we need to generate or we need to tell it what kind of what kind of server we're we're talking to. So I think by default, it'll be NS dash cert dash type space server.
+And what we're going to do here is we're going to do remote dash cert dash TLS space server. Now it also at least on mine, it's got cipher commented out, but the comments say very clearly select a cryptographic cipher.
+If the cipher option is used on the server, then you must also specify it here. Now you may not remember this, but we did do that on the server. So if we grab for AES, for instance, in slash open VPN slash server dot conf on our server, we have cipher space AES dash 256 dash CBC.
+So I'm just going to copy that and middle click right here. So cipher AES dash 256 dash CBC. So that's important. It's something that I missed, even as I was doing this, this little demo completely forgot to paste that in there.
+And then we want to also and this will just generate a warning, but it's better to get fewer warnings, right? So we want to uncomment comp dash LZO so that we're using the same kind of compression on both ends of our of our VPN.
+Like I said, I don't think that actually did anything, but I saw warning about it when I started a test. So let's let's avoid that set the log file of verbosity.
+We'll set it very high again. So verb 8 right now. We'll mute 20 again so that repeating log error messages, just don't get repeated. We only need to see it a couple thousand times.
+Okay, so the client configuration is done. So save that and close. And the keys and the certs are in the correct location on the client.
+So we'll go back to our server. If it is not running yet today, then you need to start that and remember I gave you the big long command that you would use to start your server with the dash dash config dash dash ask pass and all that other stuff.
+So start that. You should see a bunch of messages in your on your screen or maybe not because you're demonizing it, aren't you? Yeah. Oh, I'm tailing. I'm tailing dash capital F slash var slash log slash open VPN dash log.
+And that kind of shows you some interesting output if you want to see that as you know on the server side. Okay, so actually in this, this makes me think of something.
+I think we've already done this once together in some far as we can. You may you probably need to open a port in your firewall.
+Now you may or may not be running a firewall for this test, but chances are you are running a firewall in your router.
+So whatever you need to do to get into your router, do that and then find your port forwarding section or sometimes they call it virtual servers or sometimes they call it, you know, totally weird things like well DMZ, I guess.
+No, that wouldn't be though. I don't think they would put it there. But you know, they sometimes call it like gaming. I mean, it's just it just depends.
+But it's something that you need to because routers home routers usually you have a little firewall and they're not going to let people just come into your home router.
+Just any way they want. So you need to open up the 1194 port and point of that any traffic at 1194 coming to 1194 to your VPN server.
+So whether that's your Raspberry Pi on your, you know, by your bed or whether it's your workstation, whatever's running open VPN as the server, it needs to get the traffic destined for 1194 coming in on your home router or whatever port you're using for your open VPN.
+So I have done open VPN. I've done external port start external port end protocol UDP internal port internal port. So those are all the same. I'm just I'm not changing. I'm just putting him at 1194 for simplicity and in the server IP address.
+So that's the workstation that I'm running my VPN server on 10112 and it's enabled. So that's that's my router configuration. So you probably need to do that on your end as well.
+And if you've got a firewall running on your open VPN server, then you need to poke a hole in that as well. And again, you know what kind you know the protocol, you know the port. So you know how to do that. Now, if you don't go back to the episode on firewalls and listen to that explanation again.
+Okay, so assuming that you have done that and you have to do that first because this test is going to fail horribly if you do not, then you can go over to your you can back over to your client, which we've got configured. We've got our server started and we've got our firewall opened up to 1194 UDP traffic.
+Now we need to mess around with this client. So the first couple of attempts are going to fail and that's okay because it's a good learning experience. So the way that this particular distro wants me to start open VPN is to do open VPN space slash at see slash open VPN slash client.
+And it gives me some output because I've got my verbosity pretty high and it's asking me for my private key password, which I've given silly little four letter password.
+And now it's giving me a lot of output. That's probably too much output to be honest, but that's okay. And now if I do an IP adder show, I should reveal that my tunnel exists.
+But if I try to do anything like pinging, now remember our default VPN subnet is 10.8.0.0, right? We did that in the server configuration that that was just the default VPN subnet. So we we used it.
+Now unfortunately if I try to ping that from my client, it just kind of it just kind of hangs there. And a useful one for that is ping dash see like three 10.8.0.1.
+And that that that says ping this place three counts and then and then bail out. And that way you don't just sit there for an infinite amount of time waiting for this thing to die.
+Yeah, there goes 100% packet loss 204 milliseconds. All right. Well, so that that didn't work out so well. So what's the problem? Well, I'm going to it's a fun one to diagnose. I assure you the first clue is that if you look at the IP adder show ton zero.
+It's it's really, really empty. And if you're not used to IP adder output, you can do an if config ton zero. And and again, you should you should kind of see that it's pretty barren. It the hardware address the MAC addresses all bunch of zeros.
+There's no IP address. There's no mask. There's just nothing nothing set on ton zero. So that's our first problem. So in order to fix that, I don't know. I mean, I started with Slackware and back in those days when I started, I had to bring up my well, I didn't have to. I just didn't know how to do it any other way.
+I'd bring up my network card manually. And the way that you do that is if config ton zero up or something like that. Nowadays, of course, we were we're fancy and we use the IP thing. So it's IP space link space set space up space dev space ton zero.
+So that is IP link. It's because it's a link and then sets. So we're setting it and then up. We're bringing it up the device. Oh, dev which devices it ton zero IP link set up dev ton zero. And those are all individual strings.
+So I hit return there. And now if I do an IP add or show ton zero, I see not a whole lot else. I don't really see a whole lot that's been added.
+Now if I do an IP adder add 10.8.0.6 slash 24 space dev space ton zero. Now I'm assigning an IP address to my ton zero device. So I can do an IP adder show ton zero.
+And I've just brought it up to the 10.8.0.6 IP address or I've just assigned it to that IP address rather. And so now technically I should be able to ping 10.8.0.1.
+So I do a count three and 10.8.0.1 actually pings. I didn't expect it to be able to ping. There's there there may be one other thing that you have to do. And that thing is you may have to route your open VPN traffic to the subnet that you want to reach.
+So in order to do that, you want to look at your routing table. So if you type in just the word route, you see maybe the default routes of your network.
+And again, it kind of depends on your network layout, whether you even need to do this step, but and your distro and how much sort of how well they take care of your of all your different open VPN presets.
+But for me, I'm going to do I'm going to do this route addition just so that you know how to do it if you need to.
+And that is route space add space dash net. So we're adding a network or a subnet really 10.8.0.0 slash 24 space dev space ton zero. So we're telling the route, the routing table here to route all traffic from our ton zero device to the subnet 10.8.0.0.
+with a mask of 255 255 255 0, which is the default. So well, I mean, it's the default for what we told it. So that's that's adding a routing entry into our table. And now if we do a ping count three 10.8.0.1, we get we actually get through.
+We've we've we've we've got 0% packet loss 301 milliseconds is the speed to my VPN. And we're talking to each other. And we can test that the other way around if we go over to our server window and do a ping dash see three 10.8.0. I think I said six.
+And yeah, we're reaching that as well 0% packet loss about three hundred and 10 milliseconds as well. So it's they're talking to each other. They are actually on the same network now, which is exciting. So in theory, I should be able to do other things like SSH into 10.8.0.1.
+As myself, not as this fake user here. Class two at 10.8.0.1. And if I do that, yeah, it picks up my SSH private key and I'm in. So there you go. So yeah, that's setting up open VPN. It took two episodes to get us here, but we're here.
+The server side. It's not technically technically too difficult to set up as you could see. I mean, once you do all the things that you're supposed to do, the certs and the keys and you get them all in the right place and you the configuration files.
+Kind of simple. I mean, you get it up and running the difficult part, at least I think is the part where you're getting back to the server from outside. It's difficult to test. It's difficult to debug.
+It's just it's that kind of is a beast. This is again different, very different from, for instance, SSH where you set up SSH and it's done. You know, there's really only one configuration of SSH. People get onto your server. That's that's the extent of it. How you how you let them in and what how you authenticate that's up to you.
+But once it's set up, that's it. VPN is a little bit different. It's it's highly dependent obviously on the network that it is then opening up to people. So you you might want your clients.
+For instance, to pipe everything through VPN, you might want your clients to only pipe certain traffic through your VPN. Maybe you want them to be able to access more than, you know, not tunnel everything through through your VPN.
+Maybe you want to add extra authentication or another layer, another type of authentication. Maybe you want to hook into some something else. So it's it can be very, you can really take it in a lot of different directions. So where do you go from here?
+Well, you research what your organization with the theoretical organization, you research what they what they need what and what they would require what you would need to do for open VPN in order to correctly and safely open your network up to whoever has authenticated into it.
+So look that stuff up and then look up what configuration options you need to to flip in the configuration file.
+My advice as as ever, I guess, would be to make sure that you are making changes in small chunks. If possible, manage all of your configuration files back them up.
+The worst thing in the world is to get a configuration file to the point where yes, the server is running. Yes, the clients can connect quick. I'll just flip this one little bit so that we can turn on whatever and suddenly nobody can connect and everything goes away.
+That's the worst feeling. And now what did you change in your configuration file? You have no idea you've forgotten. So back that stuff up, don't make any stupid changes in the last minute and expect it to just ripple through.
+There's going to be surprises. So take it slow. Do your research. Figure out what you absolutely need and tweak your configuration files to suit. And that's that's it. That's open VPN. That's all I've got for you. I hope you enjoyed this.
+I think it has been super informative. I wish I'd had these two episodes when I was first getting started with open VPN. So take all of this knowledge. Mess around with it. Have a good time. Good luck.
+You've been listening to Hacker Public Radio at HackerPublicRadio.org. We are a community podcast network that releases shows every weekday Monday through Friday. Today's show, like all our shows, was contributed by an HBO listener like yourself.
+If you ever thought of recording a podcast and click on our contributing to find out how easy it really is. Hacker Public Radio was founded by the digital dog pound and the Infonomicon Computer Club.
+And it's part of the binary revolution at binrev.com. If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released on the creative comments, attribution, share a life, 3.0 license.

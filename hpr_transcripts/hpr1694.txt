@@ -1,0 +1,164 @@
+Episode: 1694
+Title: HPR1694: My APOD downloader
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1694/hpr1694.mp3
+Transcribed: 2025-10-18 07:48:34
+
+---
+
+This is HPR Episode 1694 entitled My Apot Downloader.
+It is hosted by Dave Morris' and is about 22 minutes long.
+The summary is, my simple portal script to download the astronomy picture of the day each day.
+This episode of HPR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15.
+That's HPR15.
+Better web hosting that's honest and fair at An Honesthost.com.
+Hello everyone, this is Dave Morris.
+My HPR episode today is called My Apod Downloader, which is pretty cryptic.
+APODA pod stands for Astronomy Picture of the Day.
+You've probably heard of the astronomy picture of the day.
+It's a website. It's existed since 1995 and it's provided by NASA
+in combination with Michigan Technological University and it's created and managed by Robert
+Nemeroff and Jerry Bonnell. The FAQ on the site says,
+the APODA archive contains the largest collection of annotated astronomical images on the internet.
+And I think it's pretty cool and I really like some of the images being a bit of an enthusiast
+for things astronomical. So let me tell you about the downloader.
+I'm a KDE user and as a consequence I quite like a moderate amount of bling.
+I'm also old fashioned so I suppose that fits as well.
+I quite like to have a picture on my desktop and I like to use KDE's ability to rotate
+the wallpaper pictures every so often. So I want a collection of images.
+So to this end I download the Astronomy Picture of the Day on my server every day and make
+the images available through an NFS mounted volume so I can see them on various machines I have.
+So in 2012 I wrote a pulse script to do this downloading.
+This is one of the most early forays that I made into scraping of websites and excuse the noises
+off the cat instrument she wants to join in with me and I've closed the door on her.
+So she's definitely getting.
+So I used a fairly primitive HTML parsing technique.
+I'm not a great fan of web things. Again shows I'm fairly old fashioned I suppose.
+Seems a clunky way to get older of information programmatically.
+Anyway this was a challenge I wanted to take up and so I've been improving this script over
+the intervening years and now I use a pearl module called HTML TreeBuilder which I think is a lot
+better at parsing HTML. The version of the script that I actually use myself includes a pearl module
+image magic which interventions to the awesome image magic image manipulation. I can't say that
+word image manipulation software suite. If you've never looked at this this is amazingly cool.
+It's got lots of tools in it. It's a library and it's also got loads of commands. Let you do
+some pretty amazing things with images. Build gifts split gifts apart all sorts of animated
+gift size and transform images in all manner of wonderful ways. So in the version I use I annotate
+the downloaded image with the title of the image which it's which have parsed from the HTML
+and I do that so I can when I see them come up on my screen and know what they are.
+But the script I'm offering here is called CollectApodSimple and it doesn't use image magic.
+I've thought it best to emit this and give you a simpler version because installing image magic
+can be a little bit difficult and more I guess the installation of the pearl module. I might be
+wrong I don't know but certainly I've had problems with it and I thought it was probably best
+not to give you if you wanted to to follow this to give you the task of fiddling around with this
+stuff. There's also the fact that I've maybe not perfected this annotation stuff as well as I
+could have done and there are issues with it. If the image is a sort of reasonable size
+not a very great resolution then the title looks great but if it's a very very high resolution
+image then the title is absolutely minute you can't read it and I haven't yet worked out how
+to fix that. So this more advanced script called CollectApod and the one I'm talking about today the
+simple one are both available on the Gatorius repository and there's a link in the show notes
+to where you can get them. They're actually in a repository with various other odds and ends
+that I've written for HPR over the years so you'd probably be best to download the whole
+lot, clone the whole git repository is not very big and then either pick out the bits you want
+and throw the rest away or just live with the with this small amount of space being used up.
+So let's talk about the code then. If you if you're a pearl user you have any
+understanding of a pearl if you sort of talk you'll probably look at this script and think
+it's pretty simple it is it is pretty simple. Basically all it does is work out the date for which
+you want the image normally this would default to today's date but you can also ask for dates in
+the past or in the future but you won't get them. It downloads the HTML after having built
+URL from the date and the the other details and it having pulled in that HTML that's the thing
+that contains the title which is not relevant in this case but because you have one use the other
+one and it contains the image or at least a link to the image and the script then finds this image
+in the various links in the page and downloads the image but it's where the where you have defined
+the drop place to be. So what I've done is I've included a listing of the script with annotations.
+It's pretty heavily commented anyway but the annotations are there to try and explain what
+the different sections do. You can't really use the the script as it stands. I suppose you could
+cut it cut and paste it if you wanted to but you could just go and get the get repository the
+getorious repository if you want to try running it. So I'm just going to read through the various
+additions I've made the annotations I've made to this so that you can get some idea of what it's
+what it's doing. Build scripts that I write always start with a standard preamble and you can skip
+over that it's just a big comment and there are three modules that are required by the script.
+There's one called LWP user agent and this is a vintage pearl module for performing web downloads
+and all manner of web related activities. This one actually identifies itself as an agent when
+it's doing the download. Date time is the next module that's just a thing for generating dates in
+various formats. That's another bendrable module and the one I mentioned before HTML tree builder
+is the the parser for the HTML. So that's that's just the preamble. There's a bit of
+other stuff that follows on from this. There's various variables that are used to
+give you the the what the critical one should you ever want to use this is a a variable called image
+base and it defines where you want the image to be placed. It's a directory it should be a
+directory. In my particular case it's using the environment variable home concatenating it with
+the directory backgrounds slash a pod. So all of my images get dropped in there and that's
+actually the mount point. That's the mountable volume the mountable directory I should say
+that I use on my server. So the script collects potentially connects a date looks for a date
+on the command line. If it's not defined then it will just build one. The date must be in
+YYDMMDD format in other words two digit year two digit month two digit day. So if you type it
+in yourself it's got to be in that fixed format. If if the script generates it generates that
+form from the current day. If it doesn't get the script doesn't get a date in this format then it
+will abort. So this date is then used to build the URL which simply contains that the last
+sort of element of it consists of the letters ap followed by this date dot hdml. In case you're
+interested when you actually click on the a pod site itself the URL you see is astropix dot hdml
+ends with that. The format of that is slightly different from the one that the script is going for.
+So I don't actually download that one with the script. There's another version of this
+which is in the sort of archival format because all of these pictures are archived back to the
+the original original one back in 95 to let's say it was. They're all archived on the side so
+they all conform to this ap date stamp dot hdml format. So I'll be an example of what it might
+look like in the in the show notes there and the annotation to the script. So having constructed
+the URL the the script there's a there's a lot of declarations and generally fiddling about.
+There's a there's a lot of debug stuff in here which is switched on in the the released version
+so you get to see what it's going to download and where it's going to put it and everything.
+You can easily search that off by editing the thing to change the variable debug capital
+d e b u g on line 44 you can change that to zero and it'll shut up. So having gone through all this
+stuff then we then come on to the bit which does the download. That's lines 111 to 114 and it's
+using this LWP user agent that I mentioned. It pulls the page down if it was successful if the
+download was successful then the hdml is actually in a data structure in memory and it's simply
+passed to hdml tree builder which builds this rather exciting multi-layered structure of
+pearl data which can then be examined. So assuming that all of that has worked the download was
+successful and the parse has begun. The script then loops through looking for the for links
+a tags in hdml. There are going to be lots of them because there's lots and lots of links out of
+the document usually and one of them which is actually part of an image tag usually contains
+a pointer to the image. The image that you see on the website is not the one that I'm actually
+interested in. It's a smaller version of it so it's actually embedded in the page. There's usually
+a much much bigger version of this image that you get if you click on the image on the web page.
+So it's that one I'm after. So I simply find all of the links and look at each one to see if it
+contains .jpg or .png on the end of it. And if it does then the loop stops because we reckon we
+found it. Obviously this is fairly primitive. If there are other images of any sort on the page
+it will only get the first one which might not be the one you want. But it's been pretty reliable.
+I've been running this for years and it's done its job pretty well.
+So you're welcome to go and hack this around if you wish and let me know what you do if you do
+do that. I'd be interested. So this loop is from lines 141 to 148 and we hope at the end of that
+we've either not found an image at all which is possible because the page might contain a
+a gif animated gif, gif, you know how you say that, or a video. We're not interested in either of those.
+So there's a check down in lines 153, 155 that says if the loop stopped but didn't stop because it
+hit her an image then we can't go on there's nothing else to do exit abort. So if on the other hand
+we have a one looks like an image then we will pick out the URL and get ready to download it.
+So there's some stuff, some statements which are preparing the URL. One of the things I do just
+because I'm fussy in that way is that in some cases for some reason or other the images end
+in JPG and capitals and I always convert them to in lowercase partly because the viewers that I
+use seem to ignore capital JPGs but at least they have done at some point in the past. So do that
+and then the having done that then all we need to do is to make a request an HTTP request.
+This is using the LWP library I mentioned before the module. Make a request to download this
+this particular file. This image I should say and this is simply downloaded straight to the file
+that it's destined for and fairly didn't actually explain that too well. The image file the file that
+is going to get the image stored in it is made up from the path that I mentioned earlier on
+with the name of the file stuck on the end of it and the name of the file is extracted from the
+last element of the URL so it's not pretty nothing very sophisticated there. So this will either
+succeed or fail if it succeeds a message is printed saying in debug mode that is explaining
+the files downloaded if it failed then the script will abort with an error message so really that's
+all there is to it so I normally run this from a cron a cron job on my server which runs 24-7
+and it runs some weird time the day I can't remember when I run it I think I think I discovered that
+the image doesn't actually get put up until sometime the early morning UTC and I think I run this
+at about seven in the morning or something so this plenty of time for it seven UTC that is
+so there's plenty of time for it to have been put up and settled down and everything
+and I download it then so really that's that's all there is to it so I hope you find that
+interesting and possibly useful and get to play around with it there's a bunch of links
+in the show notes to the various things I've mentioned and a link to the Gatorius
+repository where all of this stuff lives so I hope you find it interesting if you do let me know
+okay thanks bye now
+you've been listening to Hacker Public Radio at HackerPublicRadio.org
+we are a community podcast network that releases shows every weekday Monday through Friday
+today's show like all our shows was contributed by an HBR listener like yourself
+if you ever thought of recording a podcast then click on our contributing to find out
+how easy it really is Hacker Public Radio was founded by the digital dog pound and the
+infonomicum computer club and it's part of the binary revolution at binrev.com if you have
+comments on today's show please email the host directly leave a comment on the website or record
+a follow-up episode yourself unless otherwise stated today's show is released under creative
+comments, attribution, share a light 3.0 license

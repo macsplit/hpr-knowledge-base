@@ -1,0 +1,381 @@
+Episode: 2238
+Title: HPR2238: Gnu Awk - Part 6
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2238/hpr2238.mp3
+Transcribed: 2025-10-18 23:32:09
+
+---
+
+This is HPR episode 2,238 entitled Gnurk Part 6 and is part of the series Learning Ork.
+It is hosted by Dave Morris and in about 40 minutes long and Karim and exquisite flag.
+The summary is looking more deeply into ork's regular expressions.
+This episode of HPR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's honest and fair at an honesthost.com.
+Hello everybody, welcome to Hacker Public Radio. My name is Dave Morris.
+Today I'm talking about Gnurk and this is part 6 of the series that we're calling Learning Ork,
+as the series name, and Be Easy and I are doing this.
+My episode 6 is somewhat later than episode 5 because of Christmas New Year, etc, etc.
+So as I've done in the past I'm going to start with a short recap of the last episode, episode 5.
+And in that episode the subject of regular expressions was begun.
+We looked at how you'd use the regular expression in the pattern part of these pattern,
+curly bracket action sequences that we've seen.
+Remember these sequences are called rules.
+I think it's useful to hammer on about the titles, the names of these things,
+because it makes it less ambiguous when we talk about them.
+So we saw some examples like, and here's where people are going to say,
+how come you're reading a regular expression out loud, but yeah, well we'll see how we go.
+There are long long show notes to go with this where I've detailed everything that I'm talking about,
+so that in reality you don't need to absorb what I'm saying much if you're just listening on the go,
+but if you're interested you can go and look at the notes and follow through those.
+Anyway, if you have something in an Ork script, this is just a fragment of Ork which says
+dollar one, then a tilde sign, and then slash, lowercase p square bracket,
+ELU, closed square bracket slash, then open curly bracket, print space, dollar zero,
+close curly bracket. What this means is if field one, that was the dollar one, contains the letter p
+followed by one of E or L or U, then print the whole line.
+The regular expression in that case applies to the entirety of that field.
+It's not saying anything about where it is or anything like that.
+There's another example that be easy did, which was dollar two, tilde slash, lowercase E,
+curly bracket two, close curly bracket slash, and then print dollar zero again.
+And what this means is if field two, contains two instances of the letter E in sequence,
+so that was what the curly bracket two meant, the thing in front of it to be doubled,
+then print that whole line. Now it's usual to enclose the regular expression in slashes,
+and this make it what's called a regular expression or rejects constant.
+And the GNU manual goes into some detail about these, and I've linked to it in particular
+the section about regular expressions you might find useful. In the last episode we had a look at
+many of the operators used in regular expressions. Unfortunately some small errors crept into the
+list of operators, which were mentioned in that episode. And I've listed the ones that were
+incorrect, and these are backslash A, backslash lowercase Z, that was a capital A I should say,
+backslash lowercase B and backslash D. The first one means at the beginning of a string,
+second one means the end of a string, the backslash lowercase B means a word boundary,
+and backslash lowercase D means a digit. But not in augum afraid, those aren't the sequences for
+aug. This sort of highlights one of the things about regular expressions. I love regular expressions.
+They are most wonderful things, but there's quite a lot of inconsistencies between the different
+implementations of them. And if you use several languages it's so easy to get confused between them.
+And I guess this is what happened here, but I'm going to try and make sure that these are
+corrected here. And I hope I don't make any mistakes along the way because I could so easily do so.
+The backslash B thing is what's available in said. I'm going to mention said, if you listen to the
+said series, or might be interested in said, it's worth looking at that. That's another case where
+the regular expressions are just a little bit different. The concepts are the same, but they're
+different. And I've included what the GNU manual says that they chose not to use backslash B for
+the word boundary thing. And they explain why I won't read it out to you because I'm sure you
+can read it if you're interested. They use backslash Y instead in Ork. So this isn't a prime
+example of things being problematic between different subsets of regular expressions, which is
+a shame because I think that puts people off. The other thing that Be Easy did for the last episode
+was to look at the ways you could replace things using regular expressions. So he talked about
+the built-in functions that use regular expressions to match things and then replace them.
+And these functions are called sub G sub and Gen sub. Regular expressions are used in other
+functions and in other places in Ork, but we'll reserve them for a later time. So I thought it would
+be useful in this episode to talk a bit more about the regular expression operations and so
+for operators I guess is the right word saying it. And also to look at sub G sub and Gen sub in
+more detail. Think Be Easy even said something to that effect in his episode expecting me to maybe
+go into a bit more detail. I'm the guy who drills down and goes into sometimes possibly tedious detail
+and things. Let's look at the regular expression operators. Now one of the things you're probably
+aware of is that some of the characters, the normal characters in English, etc., like a full stop
+or period, had special meaning in regular expression. So if you want to switch off that special
+meaning and actually indicate a real full stop, then you need to proceed it with the backslash.
+So the backslash is a way of saying this is this this what is normally a special character is to
+become the ordinary version of it. And since a backslash itself is special, then two backslashes in
+sequence would means that you actually mean to include a real backslash in your expression.
+There'll be some examples of its use a bit later on. It's worth noting though, even though I've
+said that, that there are some Gnu said and Gnu Ork regular expression operators that use the
+backslash as part of the operator. So we'll come on to those for all Gnu's in a moment.
+So I've made a table of all of the regular expression operators. Really it's a reiteration
+of pretty much everything that Be Easy did for the last episode, but I thought putting more to
+together in this way might be might be useful. I don't know. Now one thing is that the expression
+that consists of an open square bracket, a list of characters and a closed square bracket,
+that has the name of a bracket expression in Gnu Ork. And they remember that whole thing
+represents just one character. So it's saying anything chosen from this list or if you start it
+with a tilde, it means anything not in this list, any single character. Now I don't think it's been
+said explicitly that if you want to include the character's backslash, closed square bracket,
+hyphen or tilde, sorry not tilde, circumflex, carrot in your list, then you need to proceed
+them with the backslash. So although did I say tilde before? I didn't mean that. I mean the
+circumflex or carrot character. Sorry about that. We also saw character classes last time,
+which were these things in square brackets. So it was open square bracket, colon, then some name,
+colon, closed square bracket. An example is alnum, which meant alphabetic characters and numbers.
+These can only be used in these bracketed expressions. So it starts off with two open square
+brackets and ends with two closed square brackets. These often map onto or are the same as the things
+like lowercase a hyphen, lowercase z. But they've been provided because the world now uses much
+broader character sets in when dealing with texting on computers. They're things like unicode
+and so forth. And these are catered for by these character classes, which come out of the
+POSIX movement, which has developed all of these things. Whatever, they only represent a single
+character. So then I want to get on to some of these special sequences, which are
+preceded by a backslash. And again, some of these were covered already, but not all. So I thought
+it was worth just doing the whole list again and just making sure that we have a sort of definitive
+list. So backslash lowercase s means any white space character. So that's a space or a tab or a
+new line in the backslash uppercase s matches anything that is not a new line and you're not
+not a white space. Sorry. And both of these have their equivalents if you use character classes.
+And I mentioned to be able, I won't read them out. Backslash lowercase w matches any word character
+where word characters are letter, a digit or the underscore character. That comes from the days
+of computer variable names. So word in this context means because words don't, words in English
+don't usually incorporate numbers as to elite speak or something. The backslash uppercase w matches
+the reverse, which is any non-word character. Then we've got backslash less than sign, and that
+matches the word boundary or the empty string it says in the manual at the beginning of a word.
+And backslash greater than matches the empty string at the end of a word. So here if you want to
+to generate a regular expression where you say things like a word beginning with x, then you can
+do that using these things or ending with x, whichever what you want to do. The backslash y, which
+you mentioned before, is the same as the backslash less than and backslash greater than.
+But it operates at both ends of the of the word, both boundaries it represents. More correctly,
+either boundary. Backslash capital B matches everywhere but on a word boundary. And you think,
+well, why in earth would you want to do that? Well, I've included an example that shows its use
+a bit later on. It's effectively the inverse of backslash lowercase y. Then we come to the last
+which are. And these are hard to read. So as I've done with a few others, I've spelled them out,
+make it clear what they are. Backslash back quote. And that matches the empty string at the
+beginning of a string. So it's also the beginning of a buffer or the beginning of the current line
+or the start of a field. It's essentially the same as the circumflexal carrot operator which
+you could use in a regular expression. Not in the square brackets, but just on the regular
+expression itself. It's not completely clear to me why the two options for doing the same thing
+exist. But there you are. Then there's backslash single quote. And that matches the empty string at
+the end of a buffer or a string. And it's essentially the same as the dollar sign operator.
+Now it's worth saying, but I won't go into detail about the fact that Gnu awk is a superset
+of the traditional awk. It includes the posix features and the Gnu features which we've
+added on. But you can switch either or both of those off. And the regular expression operators
+have just mentioned behave differently or don't exist depending on how you set these flags.
+I've included a link to the regular expression section in the Gnu awk manual in order
+to explain this hopefully. So let's go on to functions. The functions we've already seen
+last episode. I'm going to look at those in a bit more detail. Start with sub. Sub function has
+the format sub open bracket. Then the first argument is a regular expression comma. Second argument
+is the is a replacement string. And then there's an optional third argument so that it'd be comma
+and then the target. As I said, the first argument is the regular expression and it's usually
+enclosed in slashes. Now there are other ways of dealing with this thing which I've made a footnote
+about. There are other other things than regular expression constants or rejects constants.
+But I think probably we don't want to go into that just at the moment. But you can delve into
+the manual if you want to. The replacement argument is a string and that contains the thing that you
+want to replace when there's a match with the regular expression, the first argument. If this
+contains an ampersand character, it refers to the whole text that was matched. So you can use the
+text that was matched in the replacement. The third argument being optional is the target and
+that's the string or field that will be changed. Now it has to be a string variable or a field name
+since it's actually changed in place. So sub is just called and when it's run providing it matches,
+it will have changed whatever you point at. If you don't use this argument at all,
+then field dollar zero, which is the whole input buffer, input line, input record is modified.
+And one thing to bear in mind is it searches for the longest leftmost match using the regular
+expression argument. So it's one of these regular expressions which are greedy. It will find the
+the longest match that fulfills its specification. So that's important to bear in mind.
+I did hammer on about this on the said series. I haven't gone into that much detail here,
+but maybe in later episodes we'll use some examples that show this in a bit more detail.
+Now since this is a function, it returns a result, which you throw away if you want to,
+but it returns the number of changes made. Well since it can only make zero or one, then the result
+will either be zero or one change that's returned. So I've done some examples and
+I'm not sure whether it's wise to try and read these out. I'll try the first one and then I'll
+glass over the second and third. So what I've got here is an example of a command line command
+where echo the string banana through a pipe to orc. And then in the orc quoted script on the same
+command line, I've got open curly bracket, sub, open parenthesis slash an slash comma,
+and then in double quotes, of course, don't quotes the string, the imagery and orc,
+I've got two capital X's close bracket, close parenthesis that I should say, semi-colon,
+space, print, close curly bracket, close quote. So what that's doing is it's been told to find
+the first occurrence of the string a n, lowercase, in the dollar zero field, the whole record,
+replace it with two X's. So the answer you get back is b x x a n a. And the second example
+shows pretty much the same thing except that the replacement is two ampersand. So if an a n is
+matched, it's replaced with a n a n. So you get as a result banana banana. I have a very strange
+sense of humor. I'm sorry. The third one does a little bit more. It does does the same,
+same as the previous one, except that it captures the result of the sub function call into a variable
+called n. And then it prints out changes made equals the value of n and the result, which is
+the contents of dollar zero after the change is been made. So you get the message changes made
+equals one and the result is this banana with an extra a n in it. Okay, so nothing very complex
+there. Can get complex in the regular expression, but we'll get onto more advanced examples in a while.
+Let's look at g sub. G sub is similar to sub has the same same format g sub regular expression comma
+replacement and then an optional target. The arguments have exactly the same purpose, but the
+function differs in that it searches the the target string for all matches and replaces them.
+It says in the manual that the matches must not overlap. I would never have expected that to be a
+criterion, but I thought it was probably worth reiterating it anyway. It again returns the number
+of changes made, but it can be any number from zero to whatever. So we've got the echo banana
+business again. This time g sub replacing a n with two capital X's, but in this case it replaces
+because there's two instances of a n in banana that you get back b x x x a. Okay, I kept it simple
+hopefully just to make a point of what it's doing. Then the second example shows if you if your target
+is a n a and you place that with x x it only matches once and that's because banana could be said to
+contain the sequence a n a overlapping. So it's a n a and then if you step back one a n a again,
+I don't know I've never I don't know why maybe I've been working this stuff too long, but I can't
+imagine any system that would would see that as two patterns to match, but there you go. That was a
+demonstration that it doesn't replace the overlaps. Then the last example for g sub is a little bit
+more substantial. In this case, I've got a single line example where I'm processing the file
+called file1.txt that was introduced earlier on in the series and I'm using g sub and replacing
+the the regular expression consists of n square brackets a list and list is all of the vows
+AEI or you. The replacement in the g sub is a question mark and I want to apply it and so
+hit the target is dollar one so it's field one so it's only going to apply to field one of this
+this file and the result from g sub is saved in a variable called n for every instance every line
+that walk detects it will do that g sub and then it will use print f to print out the result and
+it's using format string where the format string consists of a percent hyphen 12s so it's saying
+print out something or other some string in a field of 12 characters wide and that's followed by a
+space and then in brackets percent d so that's saying print out a number in parentheses and there's
+a backslash end at the end because print f will not generate new lines by itself. The arguments to
+print f are dollar one which is the field we've just manipulated and n which is the number of
+changes that were made so the result is you get a list of the the fields where every vowl has been
+replaced by a question mark and then at the end of the line you're seeing in brackets in parentheses
+that the number of changes so it got 2232 etc etc. four at the end. Pine apples got a lot of vows
+and nothing very exciting but I hope it makes the point so sub and g sub pretty straightforward
+but gen sub the third one is somewhat more complex it's been added to a new awk quite a bit later
+than sub and g sub and I just said as a little aside here that I was using new awk quite a
+long time ago and I've got a manual still from from work and then I printed out on the laser
+printer there and bound and it's the good it's called the gawk manual it tends to call it gawk in
+those days dated 1992 version 0.14 and there was no gen sub in that one so I don't know when it came
+about I'm sure you could find out if you really wanted to know but it's um it wasn't there back
+in the day so gen sub has got a bunch of arguments we're which are essentially the same as the
+the others sub and g sub except that there's an extra one so I'm going to go through them all one by
+one and I've documented them individually in the note so rejects the first one that's a regular
+expression which is usually a constant enclosed in slashes and you can use any of the regular
+expression operators that you've seen in this episode in the previous one but one of the particular
+things that is of interest is that you can use regular expression groups which are enclosed
+in parentheses and I keep making references back to the learning said series I did harp on quite a
+lot about this in that series so if you were listening to that then um maybe this will will not
+be new to you second argument is referred to as the replacement as before and it's a string
+which specified what's going to be replaced but it can also contain back references to the things
+that were captured by the parenthesized expressions that were in the regular expression earlier a
+back reference consists of a backslash followed by a number if the number is zero then it refers to
+the entire regular expression and it's the same as the ampersand character that we've already seen
+anyway otherwise it can be one to nine you can't have more than nine back references which I find
+strange but there you go and it refers to one of the parenthesized groups and they are just numbered
+in sequence across the regular expression now here's an oddity of orc the way that orc processes
+strings and that's a bunch of characters enclosed in double quotes remember you have to double the
+backslash so in order to refer to parenthesized component number one the string must be
+backslash backslash one so I always found this to be a bit of a pain um but it's a it's an
+orc ism you find the other regular expression environments don't do this and said doesn't for
+example third argument isn't called how and it's a string which must contain a capital G
+a lowercase G or a number if it's one of the G's it means global and it means all reply all
+that all the matches should be replaced as specified in the replacement argument if it's a number
+then it indicates which particular numbered match and replacement should be performed now this is
+not referring to the the groups parenthesized groups it's just referring to the matches within
+the regular expression and you can't select more than one so which person I find a bit of a pain
+but there you go you can't do multiple action other do the whole string replace everything or
+you choose just one but you can specify which one it is the fourth argument is the target again
+and it's optional and if you don't provide it then dollar zero the whole record is used now it can
+be a variable containing a string or a field or it can be a string constant thing in double quotes
+and that's because the target is not changed in situ like the other ones sub and g sub instead
+the function doesn't return a number as the previous one so it returns the change string
+so this needs examples I'm sure so this is this is quite a powerful feature to my mind not
+quite powerful enough it's certainly a lot more powerful than just sub and g sub on the run
+so my example is the famous banana example again and I'm using gen sub this time and I'm saying
+replace the letter a with a capital A and I'm using the how command is a g how argument I should
+say the third argument now the gen sub function call is preceded by a print because gen sub is
+called an our answer is returned and then print operates on that so it prints out the result one
+of the as I was coming up with an example here I accidentally made it do the same as I've been
+doing with the sub and g sub examples and put the print on the end and was wondering why doesn't
+this work well I added another print here which will just a bear print will print dollar zero
+which is the target that's been operated on you'll see that the first thing that gets printed out
+is banana or all the cap with all the as it turned into capital A's the second thing printed out
+is banana with everything in my case because nothing has been changed in dollar zero so that just
+drives home that point then I've got the same example a similar example again again banana
+and I've used gen sub replacing like I say with the uppercase A but the how argument is the number one
+in in quotes so what that's asking is only the first match to be replaced so the the gen sub is
+matching the letter A in the lower case A in the word banana and it's been told when you've done
+the first one and stop don't replace anybody so see what I meant about it's got nothing to do with
+the groups in parentheses because there aren't any here then the next example is a rather weird and
+clunky one but just to sort of make the point what I've got here is again the famous banana is
+being changed but in the gen sub the regular expression is backslash uppercase B then the letter A
+in lower case A then another backslash capital B then the closing slash I want to replace the
+the matched A with an uppercase A and I want to do it globally across the whole thing but what this
+is doing is it's saying any A which is preceded and followed by a not word boundary other ones which
+any A which is not a word boundary so it only changes the first and the second letters letter A
+because the last one is on the word boundary at the end of the word now it is a way of doing
+replacements but it's it's clunky isn't I couldn't think of any other way in which you could
+do just a subset of the available replacements so the next example shows the use of bracketed
+parenthesized sub expressions or regular expressions in parentheses however you like to say it
+and it's really a reference back to something I did on the said series echo the string
+hack public radio with capitals on each word into orc and use gen sub and inside the gen sub regular
+expression is a backslash located W so that's a single word character in parentheses that's followed
+by backslash located W followed by a plus sign in parentheses so that means one or more characters
+word characters then the last parenthesized expression is backslash uppercase W so that means
+any non-word character and that's followed by an asterisk so that means zero to however many
+instances so the intention with that was it would match the word hacker say the first group would
+catch the capital H the second group would catch the ACKER and the third group would catch the space
+which is a non-word character the replacement is to include back reference to so it's
+backslash backslash 2 then back reference 1 which is backslash backslash 1 the letters ay then
+backslash backslash 3 so effectively it's taken the first letter off the word hacker put it on the
+end added ay to it and then replace the space after it and the how argument is a g and so it will
+keep applying this rule throughout the entire string it's running on dollar zero buffer the whole
+record so what it does is it flips around the letters in the way that I did in the said series
+to turn hacker public radio into aka oblique pay edu array which is very primitive pig Latin
+just amuse me that example I don't think amuse anybody else but amuse me then the final example in
+for gen sub shows pretty much the same thing but a different variant of it I in this case I have
+not echoed hacker public radio into an orc script but I've been closed the entire gen sub print
+gen sub call into a begin rule so it's capital all in capital is begin open curly bracket then the
+stuff that I wanted to operate on the gen sub does exactly the same operation and the replacement
+is exactly the same but the how argument is a number three in quote double quote so it only
+applies to the third instant and the string that I want to operate on hacker public radio is the
+target string and it's actually there as a string literal in the in the call just to show that
+you can do that why an earth you do want to do it of course is another question but it is
+possible to do and the result is hacker public and then the third instance the third matching
+instance is radio which is turned into ad array so hopefully that helps to demonstrate some of
+the features now I thought I would end off with a slightly more meaty example and so I've
+written a simple orc script the orc script is called contacts dot orc and it's operating on a
+data file called contacts dot txt the idea was that you might have a file of contacts where you
+you had things like name and email address and so on and you might want to do manipulation
+on it with orc and I'm done anything very exciting this time but we'll maybe do some other stuff
+later now there are there are links to these files they included with the show so you can grab them
+and mess around with me if you want to as an aside I used a site called mokaru which I'm sure
+should be said with an Australian accent which I won't try I was going to it but I shouldn't
+and it's a site for generating free test data at least if you want to generate just a little bit
+like this it's free if you want to do something much more advanced than you have to pay but I just
+used it to generate 10 chunks of data it generated CSV data form then I used VIM to turn that CSV
+into a final format and I used a plugin called CSV dot VIM which does some quite cool things with
+CSV format data and I used the convert data function to turn it into a different format
+and I've given an example of the first eight lines of the file you can look at yourself but we
+enjoyed doing the notes in case you don't want to so it's what it's done is it's generated lines
+that consist of the word name colon space then the person's name then I've actually included the
+first and the last name split that into field so it's first colon and then last colon and the
+surname and email colon space blah blah blah gender there were other fields you could you could
+generate but I stopped at that so that block of lines is followed by a blank line and then
+so on and so forth and the reason I chose this format is there's quite a few contact management
+things simple ones for command line use that will work with that sort of format so I've included
+listing of the script in the notes case you you don't want to grab it yourself and I've included
+an example of how to invoke it and you would type orc space minus lowercase f space and the name
+of the script contacts dot orc space then the name of the file contacts dot txt now the the script
+and I won't go into massive detail with this just skim through it quite quickly it's not that
+complex I'm sure you and it's also commented so hopefully it's self documenting and there's
+some jibba jabba in the notes as well so much point in me in too much detail what it does is we've
+got a file which contains blocks of lines so we've got line line line line then a blank line so
+what I wanted to be able to do is to make orc treat that block as one entity in in fact there's one
+record okay so this is sort of slightly off off the track as regards regular expressions but
+there with me I think you might find it useful so in the script there's a begin rule and in the
+begin rule various separators are defined so first of all the field separator is not the usual
+space but a new line the record separator is not a new line but two new line and then the output
+record separator oh our s is a new line bunch of hyphons and a new line for hyphons so what this
+means is that as orc reads this data it will keep reading a record until it hits a double new line
+so that blank line is effectively a double new line because it's one at the end of the record
+and then a black then an empty one when it prints it out it'll print it out if I didn't change the
+output record separately it would just come up back out again as it was written as it was read I
+should say but I put a line of hyphons in there just to make it clearer the field separator because
+each line in the normal sense the bit between new lines these regarding we're regarding them as
+fields and so therefore the delimiter is a new line okay this is pretty useful when you're doing
+weird stuff with the with a file formatted like this I used to do this a lot when I was working
+because I was managing an LDAP directory and it tends to write stuff in this this old general
+format anyway the main the program itself is just a bunch of statements in a in curly brackets
+and it's that that means it's going to operate on every record using record explicitly a rather
+line so what I wanted to do in here was simply to show you the difference between four of these
+regular expressions so I'm using sub to place markers at the the points where four of these regular
+expression operators tell it to so the first one is that backslash a back quote which means the
+beginning of the buffer I put an open square bracket there then I put at the end of the buffer a
+close square bracket and that is the backslash single then I did the same with the circumflex which
+is beginning of line or beginning of buffer it's a little bit vague it's what the difference is
+between these things in terms of the terminology as best to use and I'm using curly brackets here
+to to place into the output just to show where these things are then the final statement is print
+and I print an open parenthesis followed by the record number for the record I'm printing
+a slash followed by the number of fields in that record followed by a close parenthesis and then
+followed by that record dollar zero the sort of things that generate you can see in the notes
+I just given you the first eight lines so it's open parenthesis one slash five close parenthesis space
+then an open curly bracket an open square bracket name colon robin Richardson etc etc and at the end
+of that block is a close bracket square bracket and a close curly bracket then a line of hyphons
+and so on to the next one so it's showing you that the start of buffer means what you would
+expect it to mean but you might not fully understand what that means if you're just thinking in
+terms of line separated by new lines so what can deal with it can gobble data in different ways
+than than the sort of conventional way we've been looking at so far I thought it was about time
+to mention this now so okay I put a warning in here just saying watch out if you've been learning
+said if you're following the learning said series that concept here are pretty similar in fact
+they're almost identical but the way in which regular expressions are are written is different so
+do be careful between the two otherwise you're going to get into trouble I just thought it was
+worth playing with I have now said it several times so apologies so we have um we've done I think
+and uh hopefully you found that useful and now understand a lot more about how you will do regular
+expression stuff in orc I've included an e-pub version of these notes which personally I'm not
+sure is a good thing here the e-pub sorry not e-pub the e-pub one is good the pdf version is not
+so good I'm not keen on the pdf I didn't get any feedback last time when I asked for it from
+anybody saying keep that one throw that one or throw them both or go away or anything like that
+but feel free to let me know what you think for these things because I'd quite like to consolidate
+all of the notes for this series into one format probably e-pub at some stage when the series is
+finished I'll probably do the same for the said series at at some point as well okay that's it
+then thanks a lot bye now
+you've been listening to hecka public radio at hecka public radio dot org we are a community podcast
+network that releases shows every weekday Monday through Friday today's show like all our shows
+was contributed by an hbr listener like yourself if you ever thought of recording a podcast
+then click on our contribute link to find out how easy it really is hecka public radio was found
+by the digital dot pound and the infonomicon computer club and it's part of the binary revolution
+at binrev.com if you have comments on today's show please email the host directly leave a comment
+on the website or record a follow up episode yourself unless otherwise status today's show is
+released on the creative comments attribution share a light 3.0 license

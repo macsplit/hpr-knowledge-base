@@ -1,0 +1,172 @@
+Episode: 3564
+Title: HPR3564: Removing EXIF data from an image
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3564/hpr3564.mp3
+Transcribed: 2025-10-25 01:27:24
+
+---
+
+This is Hacker Public Radio Episode 3564 for Thursday the 31st of March 2022.
+Today's show is entitled, Removing the XIF Data from an Image.
+It is hosted by Dave Morris and is about 12 minutes long.
+It carries an explicit flag.
+The summary is, an image might reveal data you want to keep private.
+Hello everybody, this is Dave Morris.
+Welcome to Hacker Public Radio.
+Now today I'm just recounting some experiences I had in the past couple of weeks,
+where I'm in the process of writing a script.
+It's a bash script and I want to be able to deal with pictures sent in with HBR shows.
+And one of the things that I'm doing in this script is to strip the XIF and other metadata from images.
+And that's because this metadata can contain details that can identify the creative image.
+So it usually shows the camera type and all sorts of settings on the camera.
+But if you've got GPS set, it's certainly there are physical cameras that will do this.
+Got GPS and they will put GPS details into images.
+Not sure about phones whether that's an option.
+But anyway, it seems like it's an courtesy to people sending in pictures to anonymize them as much as possible.
+So as I was doing this, I discovered that just ripping out the XIF data is not the best way to go.
+I haven't been doing that from some of my own pictures in the past, but there's one setting in the XIF standard.
+And I've got a reference in my notes to all of the details of XIF if you want to dig deeper.
+There's one setting called orientation.
+If you remove that, then you can end up with a picture that's wrongly,
+wrongly positioned, wrongly oriented.
+So what happens is sometimes images are created with a particular orientation by the camera.
+Sometimes because the camera, if you rotate it to do a portrait style image,
+or you change it to a landscape setting, it takes the picture with a basic setting
+like it's always in portrait or it's always in landscape.
+And it saves data that says this is the camera doing it.
+It saves data that says, when you display this, rotate it in some way.
+Okay, so if you remove that, then your image comes out wrong.
+Doesn't happen very often, but it definitely does happen.
+So I'm just doing a quick, whole quick anyway, it's difficult to do quick episodes.
+I can't seem to do it with Ram long too much.
+But I wanted to do a quick episode about what I found, what tools I used, and how I solved this.
+Just because I thought it might be interesting, and also in need of shows.
+So the actual problem I was trying to solve was in early March, 2022,
+somebody sent in three images with orientation values in the XIF metadata.
+They'd been taken in one orientation, but were being rotated for viewing, like I was just explaining.
+And I later discovered that the orientation setting can be easily viewed
+with the XIF tool command, which I happen to have installed.
+Not sure whether it's a default or many systems, but I had been using it on and off to strip stuff, actually.
+I've given an example of XIF tool, hyphen orientation, and then the name of the file.
+And you get back this particular case orientation, and then it says rotate 90 CW.
+I'm not sure what CW means, but
+it's to rotate the image when it's displayed.
+I think that most image viewing stuff will just do the rotation that's been asked for.
+And definitely if you display it on the web with that metadata in, it will rotate.
+So what's happened here is the image is rotated anti-clockwise.
+So the top of the image is on the left of the display picture
+when you display it with that orientation.
+And this needs to be reversed.
+So the orientation setting says rotate 90 degrees to...
+Oh, CW be clockwise, sorry, bit dense.
+Anyway, rotate 90 degrees clockwise, and it's displayed with the top at the top.
+It's actually stored as a number, and this is number 6.
+And in the XIF tool documentation is a list of all the different orientations 1 to 8,
+which do various things.
+It's actually a bit more than orientation is also flipping by doing a mirror image horizontally or vertically or whatever.
+So you can see that removing all the XIF data just causes an image to revert to its raw state as I have already mentioned.
+And then there's a demonstration coming up in a minute.
+So it told me a little while to understand this problem,
+because I couldn't find anywhere anything that said this is what images contain,
+and this is what the XIF data tells you.
+I guess it makes sense when you think about it, maybe I wasn't thinking about it enough.
+But along the way, if I try to find it more, I found a repository on GitHub,
+which I mentioned in the notes, where you could just feed it a picture,
+and it would generate all of the 8 possible XIF orientations from it.
+And I took an old picture I did in a show way back, making coffee using a lock-apop.
+And I used this tool to generate all the different picture types.
+And in the notes, there's the original picture, which is actually a thumbnail,
+because it's quite a big picture, but whatever.
+It shows it with the orientation of 6, that is the raw tape 90 degrees clockwise.
+And then I stripped the XIF data from it.
+And you can see that that same picture has got the top to the left of the image.
+So how would you fix this? How would you do this in a reliable way? It was my question.
+I found various things in a number of searches, but you know what Google's like?
+It takes you to a bazillion things, unless you ask precisely the right question.
+I came up with three tools that I actually installed, called JPEG XIF Orient,
+which reels or writes the exit orientation tag, XIF Auto-Tran, which transforms XIF files
+so that your orientation becomes one, that is horizontal.
+And JPEG-Tran, which does lossless transformation of JPEG files.
+But these are only for JPEG files.
+Yeah, okay, the ones I was dealing with were JPEGs.
+But what if somebody sends in a PNG or the format?
+So the XIF Auto-Tran tool is actually a shell script, the other two are binaries.
+And it uses the JPEG-XIF Orient to find the orientation
+and JPEG-Tran to undo whatever rotation or other transformation has been defined.
+So it actually twiddles with the pixels of the picture.
+So I had a good look at the script, the shell script, XIF Auto-Tran.
+And it got a better idea of what was going on here.
+So in the script I'd written to manage images coming in with shows.
+I needed to do more though, so this was not really good.
+It only dealt with JPEG and it couldn't let me do some of the other things I needed to do.
+A couple of the things that I do is to interrogate the image, to find its size.
+And that's a thing that's not visible unless you run some sort of an analysis.
+It's tool against it.
+And if it was bigger than a certain size, I want to generate a thumbnail.
+Because when I do this for people's images, and the image is too big,
+I place a thumbnail in the notes and then that links to the full size image
+which you can get if you click on the thumbnail.
+So I've been using graphics magic, the package, which has got tons and tons and tons of features
+for manipulating images.
+It's a fork of image magic, image magic, I think it's still alive, but it's very buggy.
+So they've done a lot of work to make graphics magic a lot more efficient and less, less buggy.
+So this package can deal with the orientation transformation that I needed
+and it can handle many other image types, not just JPEG.
+So I discovered that the technique I needed to use was to use the GM is the command.
+But you follow that with an action.
+So GM space convert will take an image and convert it into another image.
+There are options, hyphen strip, which removes all profiles and text attributes from the image.
+So it takes X if out and any other things that you might find in there.
+And the other option is auto hyphen orient, which rotates the image by actually transforming the pixels.
+So it's upright and it adjusts the image orientation setting so that it's suitable.
+Well actually it takes out the orientation setting, but before it strips everything out,
+it does the physical transformation of the image so that it ends up being the right way around.
+So I've got an example here, GM space convert hyphen strip hyphen auto hyphen orient.
+And these are just dummy files.
+Sideways underscore pick.jpg is converted to normal underscore pick.jpg.
+So running this on the images that I was trying to resolve the state of did what I needed.
+It removed the X if orientation after having rotated the pixels to the horizontal of the normal state.
+So conclusion then, I've modified my picture management script to use this technique.
+So far it seems to do the job perfectly.
+Though I have to admit that images with X if orientation metadata are rare.
+I've just been doing it against running it against test data so far.
+The graphics magic documentation does indicate that transforming pictures from one orientation to another
+can cause problems with some images.
+I think it means if you've got something like a panorama type thing which is much, much wider than it is high,
+then rotating it will do some very strange things to it potentially.
+But I don't fully understand what the details are there.
+If you know more then that would be interesting to hear it.
+But as far as my script absurd, I think it's the problem is pretty much solved.
+The other thing to say is I gained several things from the journey of discovery that this took me maybe a week-tender
+in between other things to get my head around this completely.
+So I ended up understanding images and how they work a bit better.
+I ended up using X if tool more than I'd ever used before.
+There is a way that you can call it to just do the full stripping of stuff from images.
+I also discovered that if I opened the example image with GIMP,
+it noticed that it had an X if orientation of 6 and it showed both the rotated version
+and the original version of the image and asked if I wanted to perform the transformation
+and take out the rotation setting.
+Which I thought was amazing.
+I wish I had seen that to start with and I would have understood it a bit better.
+I also discovered a KDE image tool called Show Photo.
+It's about with an F and it also reported that the image existed in two forms.
+And in this case it allowed me to do editing of X if stuff through a GUI.
+So that's quite nice. X if tool can do all of this.
+But it's a Perl script actually and it's got a bazillion options to it.
+So I find it a little bit difficult to fully understand.
+Or even to partially understand.
+Your mileage may vary.
+So it was useful exercise.
+Hopefully it's giving you a little bit of insight and maybe it's a thing
+that might help you to solve a problem in the future.
+I hope so.
+Anyway, that's it.
+Bye now.
+You have been listening to Hecker Public Radio
+at Hecker Public Radio.
+Today's show was contributed by a HBR listener like yourself.
+If you ever thought of recording a podcast,
+then click on our contribute link to find out how easy it really is.
+Hosting for HBR has been kindly provided by an onsthost.com,
+the Internet Archive and our Sync.net.
+On this otherwise stated, today's show is released under Creative Commons
+Attribution 4.0 International License.

@@ -1,0 +1,178 @@
+Episode: 2793
+Title: HPR2793: bash coproc: the future (2009) is here
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2793/hpr2793.mp3
+Transcribed: 2025-10-19 16:54:41
+
+---
+
+This is HBR episode 2007-193 entitled Bash Cobrag, the future 2009 is here and in part
+on the series Bash Cripting.
+It is hosted by Clacket and in about 21 minutes long and carry a clean flag.
+The summer is Clacket Discover Bash's Cobrag keyword and explain some toy examples.
+This episode of HBR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HBR15.
+That's HBR15.
+Better web hosting that's honest and fair at an honesthost.com.
+Hi, I'm Clacket.
+It's not every day that you discover and get excited for a brand new feature in Bash,
+but last week I did.
+If you've been following Dave's Excellence series of extended universe ultimate super bash tips,
+you already know about command stop substitution and process substitution.
+Or maybe you like reading manpages.
+Either way, in case you forgot or never knew about these things, here's a quick recap.
+If you don't want a recap on process substitution and command substitution,
+you can now skip forward seven minutes and 20 seconds.
+Command substitution is that dollar parenthesis syntax or the older back quote syntax.
+It's when you call a command or function in a sub shell, you wait for it to finish,
+and then you insert its output on the command line.
+Here's an absolutely ridiculous toy example number one.
+You can follow along in the show notes.
+Example one.
+Go to your bash prompt and then you type echo space, dollar parenthesis,
+echo space, hacker space, public space, radio, and parenthesis.
+So what happens here is the stuff between the parenthesis,
+echo, hacker, public radio, runs, and the output, hacker, public radio,
+goes to the outer echo.
+So the result of that translation is now we have the command line echo, hacker, public radio.
+So the output is hacker, public radio.
+This insertion of the output is also subject to the usual word splitting that bash does.
+And you can even insert the command to run.
+So if you just type dollar parenthesis, echo space, echo, hacker, space, public space, radio, and parenthesis,
+this substitution runs and it outputs echo hacker, public radio as four separate words.
+And the first word is echo, so then it looks as this new command line in a runs echo with the arguments, hacker, public radio.
+So they output is hacker, public radio.
+If you don't want to do word splitting, you surround the substitution with quotes.
+So if you have double quote dollar, let's break it.
+And the same as before, echo, hacker, public radio, and parenthesis, double quote, you get an error.
+Because now this whole output, echo, hacker, public radio, is considered the first word on the command line.
+And there's no such command as echo, hacker, public radio.
+Command not found, says.
+In older shell scripts, you don't have access to dollar parenthesis.
+I think it's a bashism.
+I'm not sure it existed in Bornshell or not, but it definitely doesn't exist in the slash bin slash shell on systems where that is not bash.
+So you can do back quote, echo, echo, hacker, public radio, back quote.
+And this is also subject to word splitting.
+So this creates a perfectly valid command line that says, hacker, public radio.
+So the output is hacker, public radio.
+You can learn more about this in Dave's excellent HPR 1903, some further bash tips.
+So now it was command substitution.
+Then there's process substitution.
+That's when you have greater than or less than sign followed by parenthesis.
+So instead of the dollar, you have a greater than or less than sign.
+This calls a command or function in the sub shell too.
+But instead of returning the output, it returns a file descriptor to the sub shells standard in.
+If you used greater than or the sub shell standard out, if you used less than.
+So the process runs in the background.
+We don't wait for it.
+File descriptor here means the file path to a pipe.
+So you will look something like slash dev slash fd slash 63.
+Where the number depends on the particular circumstances, what others are processed, you're running and so on.
+So here's ridiculous toy example number two.
+You can type echo space less than parenthesis, echo space hacker space public space radio and parenthesis.
+So this will run echo hacker public radio in a sub shell and return a file descriptor name that points to the standard out.
+So we run this and we get slash dev slash fd slash 63 in the case when I ran this.
+Where 63 was the highest open file handle number file descriptor number under 64 in that particular running bash.
+If you want to do something useful with this, you do give it to some command that expects a file so you can run cat space.
+Less than parenthesis echo space hacker space public space radio and parenthesis.
+So now cat will get this slash dev pass name, it will read it and it will print it out and we get the output hacker public radio.
+You can also combine these two you can combine process substitution with redirection.
+That's our ridiculous toy example number three.
+Echo space hacker space public space radio.
+Greater than sorry radio space greater than space greater than.
+This is important because if you have two greater than after each other in bash the bash grammar thinks you're doing a pending redirect.
+So you need that space between where was I radio space greater than space greater than parenthesis said space dash e space single quote is slash dollar slash.
+Exclamation mark slash single quote and parenthesis.
+So this will run the said command in a some process.
+You replace any line with the same line but with the exclamation mark appended.
+What it actually exactly says it replace the empty space at the end of the line with an exclamation mark.
+So you run this and you get hacker public radio exclamation mark.
+Great.
+If you want to learn more about process substitution check out Dave's HPR 2045 some other bash tips.
+Okay great that's the background to this episode so we can send data to processes and we can receive data from processes.
+But if we send data to a process with process substitution we can't receive its output.
+It goes straight to our standard out and there's no super convenient and portable way to change that.
+There are ways and I've written a fediverse post on this. I'm going to link it in the show notes and I owe you a show about this.
+For now it's just a fediverse post.
+There is no way to access the output when you also access the input unless you live in the future and you have access to bash for.
+So a co-process in bash is a subshell to which you have access to two file descriptors.
+Standard in and it's standard out.
+These two file descriptors will be put in a bash array to learn more about the race, check out Dave's series within the bash series.
+This is a whopping five part quadrology including HPR 2709, 2719, 2729, 2739 and the supplemental HPR 2756.
+So where were we co-processes? You create a co-process using the new co-proc keyword.
+This is so new having only been introduced in 2009 that the ecosystem is still catching up.
+ASKIDOX bash syntax highlighting doesn't yet support it and that's where I write my show notes so co-proc will not be highlighted.
+I'm filing issues for pigments and new source highlight which is what ASKIDOX uses for doing its source code highlights.
+So the co-proc keyword, there are two ways to call it.
+First way is to give co-proc a simple command.
+That means just a normal single command.
+The command name and the parameters.
+This will put the file descriptor numbers in an array called co-proc, capital letters.
+At the literal example number four that does nothing and then exits.
+You're on the prompt and you write co-proc, colon, semi-colon.
+So that creates the co-process that does nothing.
+And then declare dash p, declare space, dash p space, co-proc with capital letters and press enter.
+Then it will output some job number and some process number to indicate that it now started a sub-process running nothing.
+And then declare dash p prints out the value of this array co-proc.
+So it says declare dash a, co-proc equals element zero is 63 and element one is 60.
+So 63 here is our co-process output and one element 60 is the input.
+And then it says done, co-proc, co-proc, colon.
+Because it didn't do anything so it returned immediately.
+We were given just enough time to find this variable.
+When the sub-process exits it also clears out the associated variable to create it.
+And so it's possible that this line will not actually work in some imaginable future bash.
+That is a bit quicker at tearing this down.
+So what this tells us is we have a file descriptor 63 we can write to and we have a file descriptor 60 that we can read from if this would have been a sub-process that actually does something.
+And as we see in the done output it says co-proc, co-proc two times colon.
+That shows us that it gave this co-process the implicit co-process name co-proc.
+Because we just gave it a simple command.
+Now the other way is to give co-proc a command grouping.
+We can surround a series of statements with curly brackets or parentheses.
+It doesn't really matter which one you choose because co-proc creates a sub-shell anyway.
+Choose whichever style you prefer.
+I like the parentheses because then you don't have to remember the semicolon at the end that you need to do when you have curly brackets.
+So example number five, we give this thing a name, co-proc space, HPR in capital letters, space, parentheses colon and parentheses.
+So semicolon, declare space, dash P, space, and HPR in capital letters.
+So we gave this co-process the name, HPR, and we are looking at the HPR array variable.
+The output is job number and process ID.
+And then it shows the array printout, declare dash A, HPR equals 0 equals 63 and 1 equals 60.
+So we got the same ports as before because the previous process had cleared its ports, sorry, file descriptors before we ran this command.
+And then it says done.
+And now instead of co-proc colon, it now says co-proc HPR, parentheses colon, parentheses.
+Okay.
+Now we want a slightly less contrived example that at least does something.
+So let's use grep.
+I got stuck on this for a while because I didn't realize that grep won't do a thing until it has received a full buffer or an end of file.
+So we just waited and didn't output anything. I tried to read from grep's output.
+Nothing is coming. It must be something weird with bash, but it was grep that was trying to be efficient.
+So the solution is to add the parameter dash dash line dash buffered, which makes grep less performance, but more practical to deal with in this example.
+So example 7.
+Co-proc space, then grep in capital letters.
+You can use small letters also, I just prefer to distinguish the command and the process by using different case for them.
+I feel comfortable with environment variables having capital letters, especially when they come from some system command.
+So co-proc space, grep in capital letters, space, parentheses, grep space, dash dash line dash buffered, space, pub, and parentheses.
+So I call on. And then we consume this. No, we feed this with something.
+So printf space, single quote, parentheses s, backs, slash n, single quote, hacker, public radio with spaces between them, space, greater than ampersand, dollar, curly bracket, grep with capital letters.
+Square bracket, one n square bracket, and curly bracket, semi-colon, we're not done yet, space.
+So now we've fed it something, now we need to read something out.
+Cat space, less than ampersand, dollar, curly bracket, grep with capital letters, square bracket, zero n square bracket, and curly bracket.
+So we ran grep, grep pub as a co-process, we used printf to feed it three lines, hacker, public, and radio, and then we read the output of grep with cat.
+And we get first job number process ID when co-proc creates the process, and then we get public, and then we're stuck.
+Nothing happens. Why is that? Well, the grep process keeps waiting for input, so it's still running.
+We could feed it more lines to process, it doesn't know that we're done. And cat is waiting for more output from grep, so it's also waiting.
+So to get on with this, we'll have to control C to kill cat, and then we kill presents sign one, if that's the job number that showed us, to kill the grep process.
+Okay, we know that grep will only give us the line that says public, so we can just read that one line.
+And then when we are done feeding it lines, we can close our side of it standard in, and it will notice this an exit grade for gracefully.
+So here's example seven, co-proc space, grep with capital letters, space, parentheses, grep space dash dash line dash buffered, space pub, and parentheses.
+semicolon space, print f single quote percent s, backslash n, single quote space, hacker space, public space radio, space,
+greater than ampersand dollar sign, curly bracket, grep with capital letters, square bracket one, n square bracket, and curl bracket semicolon, and then head space dash n one space.
+Less than ampersand dollar curly bracket, grep with capital letters, square bracket zero, n square bracket, and curl bracket semicolon.
+And now we have consumed one line of this output, so we can, and we are done in sending lines to grep, so we close this thing with exit space curly bracket grep capital letters.
+square bracket one, n square bracket, and curl bracket greater than ampersand dash.
+So we started the grep co-process, we sent it three lines, we read the first line, and then we closed the standard in on the process.
+best says job number, process ID, and then it says public, and then it says job number done, co-park grep blah blah blah.
+There we go, it's not the most brilliant example, but shows all the relevant moving parts and we covered a couple of caveats.
+So now go out and play with this and come back with an example on how this is actually useful in the real world, and then you submit the show to hacker public radio.
+nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana nana.
+If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released under a created comments, attributions, share-like, free-point, whole-life events.
+nana nana nana nana nana nana nana nana nana nana nana.

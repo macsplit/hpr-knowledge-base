@@ -1,0 +1,283 @@
+Episode: 1016
+Title: HPR1016: Nix: The Functional Package Manager
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1016/hpr1016.mp3
+Transcribed: 2025-10-17 17:27:24
+
+---
+
+Hi, my name is Kylinder Oste, I use the nickname Govny with various parts of the Internet.
+And I'd like to talk about the NYX project.
+This is on NYXOS.org and it's actually a collection of open source projects including
+NYX itself, the purely functional package manager.
+I'll just read what it says on the page because it describes it better than I can.
+So this means that it can ensure that an upgrade to one package cannot break others, that
+you can always roll back to previous versions.
+That multiple versions of a package can coexist on the same system and much more.
+NYX packages is a collection of packages, NYX expressions which can be installed and NYXOS
+is a NYX distribution which supports atomic upgrades, rollbacks, multi-user package management
+and it has a declarative approach to system configuration management that makes it easy
+to reproduce a configuration on another machine.
+And also part of this suite is Hydra which is a continuous build system, it's a build
+farm if you like, it creates the binary packages from these expressions.
+And also there's Disneyx which is a deployment system so if you're familiar with things
+like poppets or a CF engine or stuff like that, this can be used for that type of thing.
+The NYX package manager can be used independently of NYXOS.
+You can actually use it to install packages on top of Debian or Red Hat or even to a lesser
+degree on Mac OS X and even to a lesser degree on Windows.
+So I've been using the NYX package manager myself for a couple of years now.
+I started using it on Debian stable as I mean it's to update Firefox and my window manager
+and things like that without interfering with the base system so I could get all the security
+patches from Debian and be sure that my base system was solid and then pick and choose
+whatever updated packages can live or whatever that I cared about I could update that independently
+using NYX package manager.
+And after a year of doing that I decided to switch to NYXOS proper and I still do use Debian
+in virtual machines for development.
+So according to the NYXOS website itself it describes it as an experimental GNU Linux
+distribution that aims to improve the state-of-the-art and system configuration management.
+In existing distributions actions such as upgrades are dangerous.
+Upgrading a package can cause other packages to break.
+Upgrading an entire system is much less reliable than reinstalling from scratch.
+You can't safely test what the results of a configuration change will be and you cannot
+easily onto changes to the system.
+So I've been running Linux myself for about ten years and I've tried loads of different
+distros.
+I started off on Mandrake and that really got me into things that worked really well and
+I decided then that I was going to give up my job as a ASP web developer and really
+getting to open source proper and I wanted to learn more so I thought I'd run Gen2
+for a while and I did the LPI exam and things like that when I tried to Ubuntu and Mint
+so I tried to arch for a short while and so you have this choice with Linux distros.
+You can choose a stable release cycle distro like Debian, Red Hat, Ubuntu or you can choose
+a rolling release.
+You can have Gen2 or Arch but what I really wanted to do was to have an operating system
+I could depend on.
+I need this for work.
+I need to use this every day.
+I need to know that I can turn on my computer and I can do my work.
+But I also need to have the latest browser for work as well and I also like to be able
+to install software.
+I don't want to think that if I install a video editor that maybe this will break strange
+things and I'll have to spend hours trying to debug what it is before I can use my operating
+system for doing anything else which can happen.
+I mean on the CadenLive website it says that if you want to install CadenLive the video
+editor on Debian the first step is to upgrade to DebianUnstable.
+Now it's probably an oversimplification.
+I mean it may well be possible to pin the Qt libraries and ffmb or whatever other dependencies
+you need and create some configuration in Debian stable which allows you to actually compile
+the CadenLive for your system without compromising.
+But it's not simple and this is where the nix package manager fits in beautifully I think.
+I'd like to quote Aben Moglem slightly out of context actually but he said in 2009 he
+was actually talking about the freedom box but he said that the architecture of technology
+in the past 20 years has largely been about the making of platforms rather than communities.
+You know what platforms are, platforms are sticky things, it's difficult to fall off.
+So for a commercial operating system it makes a lot of sense to have this stable platform
+idea.
+You can release a set of libraries and a complete operating system and the promise to third
+party developers and users is that this will be the basis for the next few years.
+You can build upon that and everybody who wants to support your platform just has to
+care about that one configuration.
+And as everybody knows this isn't the case in Linux there are loads of different distros.
+So if you're a software developer and you want to make your software available to the
+Linux community there's kind of this burden for ensuring that your software works with
+every conceivable version of every library which is out in the wild.
+The thing is it just doesn't make sense for everybody who writes free software to agree
+on everything that okay everybody's going to use this library and we're not going to
+change for the next five years because it's better for everyone.
+This is the thing you'll see often debated about like one of the problems of Linux and
+free software is that it's not a platform and that third party developers or say whoever
+proprietary software developers don't have a target platform.
+They can't just like release one thing and distribute it.
+They have to like take into account that there's all these variations out there.
+But actually to my mind the major stable releases are an approximation of a platform.
+It seems like the idea of having long term releases or in fact any kind of release cycle
+at all is to provide people with something some approximation of a platform and sometimes
+also here it suggests that if everybody just ran Red Hat or Ubuntu or something then
+Linux would be excellent.
+It would be so much easier for developers and also for people who wanted to use Linux
+because there's less of this overhead.
+I know there's loads of alternative approaches to tackling this issue including Ubuntu
+PPAs and Fedora also has their own package system.
+What I really want to do is present the next package management system and just explain
+roughly how it does what it does and I think it has some really interesting ideas.
+I just see this whole thing as an important issue for Linux and I would love if we have
+these features I wouldn't care if they were implemented in Debian or Fedora or whatever
+I think it's really valuable to have these features for the sake of the flexibility you
+get and the confidence you can have in your operating system if you can upgrade any package
+that you want without fear of your whole system breaking and if things break you can roll
+back to an older version just instantly.
+I kind of actually feel that there's this culture and free software that things are supposed
+to break and that because you benefit from all the hard work that these developers and
+maintainers put into the distros that it's your responsibility to fill out bug reports
+and to fix your own computer when things break that's like as a member of the free software
+community this is what you should do.
+Thing is it's not always the most convenient time to just put everything aside if your
+computer is broken you can't do anything else you have to fix your computer right now
+whereas having this ability to roll back to a working version quickly means you can get
+download whatever you want to do you already have the broken system waiting for you to look
+at it whenever you have time but it doesn't disrupt you from continuing to work on whatever
+you want to and in general this means you can be more productive you can use your computer
+when you want and then you can decide okay when it suits you you can be an active member
+of the community and actually because of the way that the next system works which I will explain
+a little bit you can actually debug quite accurately which perhaps conflicting libraries are involved
+or what the underlying issue is and you can hand someone you can actually point someone to a
+closure of the package which they will be able to see exactly what build inputs were involved
+and what compile time options were involved and they can reproduce exactly the issue very quickly
+okay so what is this next thing it's a functional package manager
+okay so let me read from Wikipedia about functional programming in computer science functional
+programming is a programming paradigm that treats computation as the evaluation of mathematical
+functions and avoid state and mutable data so what is this got to do with software on your system
+okay so if you open your terminal and type RS let's just think for a minute what happens
+so it looks on your environment variable called path for the lists of directories where
+it can find this command that you just called ls will probably find it in slash bin as a
+mirror and then it runs us okay now the point is that in slash bin you have this binary ls
+which lists the files in their directory but let's say that you upgrade your system and ls
+changes and some bug has been introduced and it instead of listing files it removes all your
+files or whatever so but when you call ls from the can line it's going to look up and it's going
+to find that command and run it and what's happened is it's very much like a global variable
+in a programming language you've got this one instance called ls which exists in slash bin
+and if you replace it it's gone there's no way to like look up what was the last version of ls
+that I had so I think this is what we mean by side effects in non-functional programming languages
+this state has been changed of your environment the file system hierarchy standard for Linux is a
+convention which describes where things should exist in the file system so for example slash bin
+or slash e2c for configuration files and this is the point where nix is a bit controversial it does
+try to stick to the file system hierarchy standard but it uses this trick
+nix puts all the packages and configuration and stuff into slash nix slash store and in there
+there's a directory for each package and the name of that directory is calculated so that
+is unique to that derivation so if you change anything about the let's say the compile options
+or the version of a library which is used to build a particular application or whatever
+a new directory will be created and that application that binary or related configuration files and
+everything will be put in there and then so the software is prepared it's usually available as a
+binary which is being built by the hydra and build system the build farm and download it onto your
+system and this path is created and then and this is when the notion of atomic upgrades comes in
+because the place in your path environment variable that points to a sinlink which points to
+somewhere in the nix store which describes your current environment your profile and that gets
+updated to include a link to that version of the package now this is all a bit too complicated to
+kind of cover in depth but the basic idea is that you don't have this single binary which gets
+overwritten every time the software changes you have every version which you care about is available
+in the next store and all you need to do like you can run any of them directly if you want they
+have a complete set of dependencies so if for some reason you've upgraded any piece of software
+and you realize something is wrong all you have to do is roll back to the last version
+okay so you're probably thinking oh my god this is going to take up loads of hard drive space okay
+whenever you decide that basically everything is working maybe upgraded last weekend you
+haven't had any problems so then you can go ahead and do the garbage collection and remove those
+old versions from your store typically they'll stay in hydra so if you ever want to download them
+again you can just go on to the hydra website and click and install that exact version with all
+dependencies and configuration options and everything as they were this also means that you can
+have multiple versions installed at the same time without any conflict this is really cool if you
+want to test some experimental software you can run anything you can have the most crazy experimental
+cutting edge libraries which aren't even beta yet and you can install a package and run it
+and you can keep your default version of the same package without any interference and you can
+remove it and it's not going to your computer isn't going to blow up and you can just uninstall
+that or keep it under a different name and use it for testing purposes and just report bugs or
+whatever just in case there's any confusion the dependencies of an application where they're
+shared between different applications they're also shared in Nix there's like a separate store
+path for each library and it uses we'll say for some things it might use an environment variable
+we'll say for Python it'll be Python paths so that a predictor application can find exactly the
+version the Python modules it needs for a compiled stuff it might use our path so that they're linked
+to to an application is linked dynamically to particular and library so actually it doesn't use
+all that much more space it just uses more space for things which are different so obviously if
+you have two separate libraries and you want to have two versions of an application compiled with
+these two separate libraries that's going to take up more space but just to give you an example
+I have like a full desktop system KDE those of audio applications and a few generations in
+there which I could roll back to and that's like 10 gigs another nice feature is that she can
+go in and override any of the Nix expressions Nix actually uses a domain specific language which
+is specifically designed for managing packages installing packages and configuration options
+so you can use this language to configure your system and this is also how you will add new
+packages if you want or tweak some of the options for existing packages on your system so if you
+want and quite typically people describe their system configuration in a configuration.nix file
+and that can include what packages you want to have installed your default window manager if
+you want to run SSH on a particular port anything essentially this is also what you can use
+for the deployment options with Disneyx that's not something I've had to look at myself
+but it sounds quite cool I mean if you want to have a configuration for a whole cluster of machines
+you can do that and you can even do incredible stuff like you can you can have a configuration
+for a cluster and then you can instantiate it on your test machine and get it to run various
+VMs with those exact configurations you could for example set up a SQL server on one VM and then
+you could have a website and another VM and you could have them configured so that the website
+is accessing the SQL server from the other VM and you could test that that whole system works
+on your own local machine and then you could decide okay this works you can actually
+write tests which will look for things using the nix language as well but once you're happy
+you can like you can do your automated testing and then you can also deploy that exact system
+on bare metal okay so I've already mentioned that there's this hydra build firm which builds
+the packages if you change a configuration option we'll say a compile option or you want to
+test something out locally you will have to build that package locally there's essentially this
+hash that I described earlier that will have changed and nix will find that it would look for that
+on hydra and realize it doesn't exist yet and then it will decide to build it locally so that's
+that's how it falls back to building packages from source and they're not available it also has a
+feature where if you have a binary version of a particular application and there's been an
+upgrade then hydra prepares binary deltas so you only actually have to download the piece of the
+binary file which is changed you don't have to download the whole thing if it's like Libra
+Office or something and something small has changed you only have to download that tiny bit
+another feature provided by hydra is I think I mentioned it already the single click installs so
+you can look at any package there and so there will be a link if you have the nix package manager
+installed on any distro you can click on that link and that will download all these paths and put
+into your system into your store and then activate them so that you can use that exact version
+which is pretty handy and the other thing is that you can set it up so that any
+unprivileged user on your system can also install packages and they can have their own versions so
+if you have a multi-user system you could have two quite different systems essentially using the
+same or using whatever versions of packages they want and they can manage their software independently
+so I guess at this stage you're probably wondering if I love Nix OOS so much why don't I just go and
+marry it it's not all roses there's no comparison between the sheer amount of packages you'll
+find in Slackware or Debian or any other distro there's like a relatively small Nix community
+who package things that they care about and it just so happens that for example there's no
+GNOME there's no GNOME 2 or GNOME 3 there's quite a decent KDE there's XFCE there's like X Monat
+and there's like loads of tiling window managers it's just whatever people are interested in and
+happen to package so you may or may not find the software that you're interested in the good side
+is it's not difficult to add packages for most packages if they've got a pretty typical build
+system there's already quite an easy way basically you just have to you add the expression and it
+just has to include a link to where you can download it from it also has to include a hash
+so that it checks that it's like a checksum so that it checks that it has the correct
+file and then if there's any yeah you have to list the
+uh... build inputs which are the dependencies so that could include say qt or gtk or
+whatever libraries the lib sound or whatever you want
+whatever the package needs and you can add configuration options if you want people to be
+able to tweak particular things and turn on and turn off things and yeah sometimes you will need
+to adjust some of the make files or whatever our apply patches but typically you just add the
+build inputs the dependencies for that software and that's usually will basically run the
+um... configure make make install or if it's you know see make or whatever it's it's pretty sensible
+in how it handles various things and if you do a pretty good job of most things you can just
+drop them in i'm often surprised at how easy it is to to package things sometimes it's not
+and you have to do manual changes so that's the thing i should really mention that nix isn't
+such a recent project and elco visor actually released he presented a paper on it back in 2004
+and it's been under development since then it's been a subject of quite a few research projects
+in university of utrate in the Netherlands and that's one of the nice things about it as well as
+that there's loads of research papers it's really been really in-depth not just documentation but
+discussions of the computer science of how to manage deployment and upgrades and stuff so
+it's really interesting i mean it's well worth reading the papers if that's if you're interested
+in computer science in general even the nix domain specific language itself and how that works
+and where it comes from and some of that stuff is really interesting i know there's a really good
+interview with elco visor on software engineering radio as well where he discusses
+grammars and things like that i should also point out that i am just an x user myself
+i'm not a core contributor or anything like that i have a basic understanding of how it works
+and i may have said many things which are not entirely correct or even completely wrong so
+i hope i don't misrepresent it too much so anyway that's it that's nixos and the nix package manager
+i hope it's of some interest i mean check it out if if there's something you want to install
+the same i like to give kaden live as a good example because it can be quite tricky to compile
+and we do have a binary version in nixos and nix packages so you could just install the
+nix package manager which is may shortly be available in fedora actually and i think there's
+i've seen it on the a war for arch and stuff so it might be very simple to install or otherwise
+you can just compile it it's not very difficult to compile either and and then you just install
+it nix n minus i and the name of the package and it should get it or you can click on the link
+on hidra and dano did particular version and then you can update it as well via the nix package
+manager so hopefully it's of some interest and yeah i'd be very curious to hear if people do give
+this shot or if they have any feedback about it you know i i i do meet people who've like run debian
+for whatever 20 years and they've never had a problem and they've never felt the need to update
+anything and they're perfectly happy to wait for a few years or whatever or i don't mean that
+and i'm condescending there i mean it's and you get this stable system and there's this massive
+community and it works really well and that's nice so and i also met people who run arch and they
+updated every day and they've never had any problems and everything works perfectly like that's
+brilliant i i have not had this experience myself and as i say i've run a few different distros
+and yeah nix os really gives me a lot of hope that you know this culture is possible where
+everybody can continuously upgrade software and work on software and cherry pick whatever
+dependencies they want for a particular piece of software and just get on with doing what they
+enjoy and making cool stuff so that's it and thanks for listening and i hang out on our cast
+planet if anyone wants to discuss this or if you want to do week i would love to do maybe a round
+table we could discuss the merits and disadvantages are very approaches or whatever that would be
+fun too so cool so take care and thanks for this
+you have been listening to Hacker Public Radio or Tacker Public Radio does our
+we are a community podcast network that releases shows every weekday on day through friday
+today's show like all our shows was contributed by a hbr listener by yourself
+if you ever consider recording a podcast then visit our website to find out how easy it really is
+Hacker Public Radio was founded by the digital dark pound and the economical and computer cloud
+hbr is funded by the binary revolution at binref.com all binref projects are crowd-responsive
+by luna pages from shared hosting to custom private clouds go to luna pages.com for all your hosting
+needs unless otherwise stasis today's show is released on the creative comments attribution
+share a like he does our license

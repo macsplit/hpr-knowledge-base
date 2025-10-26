@@ -1,0 +1,100 @@
+Episode: 3070
+Title: HPR3070: making vim xdg compatible
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3070/hpr3070.mp3
+Transcribed: 2025-10-24 16:10:15
+
+---
+
+This is Hacker Public Radio episode 3,070 for Friday 8 May 2020. Today's show is entitled Making Vimexty G Compatible
+and is part of the series Vim Hints, it is hosted by CRVS, and is about 51 minutes long
+and carries an explicit flag. The summary is,
+move your Vim configuration out of the home directory.
+This episode of HPR is brought to you by Ananasthos.com. Get 15% discount on all shared hosting
+with the offer code HPR15, that's HPR15. Better web hosting that's honest and fair at Ananasthos.com.
+Thank you very much.
+Welcome to another episode of Hacker Public Radio. This is CRVS and I'm going to talk about Vim
+and I'm going to talk about basically what I spent a while doing yesterday, which is moving the Vim configuration
+from the main home folder to .config. This wasn't a particularly trivial task
+and so I'm going to walk you through it, so to speak. So here we go.
+So as anyone that uses Vim might know, the way you configure Vim is by editing this file called Vim RC
+which lies in your home folder called .Vim RC.
+Because we don't like having a file starting with a bunch of files starting with a . in your home folder,
+configuring any and every application you might have, this is a bit of a nuisance.
+So then we would like to move that file away.
+And this is actually one of the reasons people quote to switching to NeoVim, which is a more recent implementation of a classic Vim
+or semi-classic, I mean classic would be I guess Vi, but yeah, you got the idea.
+Anyway, so since we have our Vim RC in our home folder, we want to take it away from the home folder
+and put it in the home .config.
+And to do that, the first thing we need to do is to, so there's like two options here,
+which is one having the file Vim RC stuck in our home folder and that's fine.
+And the other one is stuck in our .config folder.
+And then every time we call Vim, we call it with the option minus C, I guess.
+Let me see.
+Minus? No, it's minus F.
+Minus capital C.
+Minus capital C.
+No, that's compatible. Yeah. Minus capital F.
+Hmm.
+Hmm.
+Or minus U, actually.
+So this is the reason why we don't want this, because we don't actually, that this is not a very helpful flag at all.
+I guess Clatu would probably complain about it being a single letter flag.
+There is no other, there is no long flag if I'm not mistaken.
+Anyway, so either call it with minus U and the new location of your Vim RC always.
+And that's just you insert an alias into your Bash RC, for example.
+Or you do something a little different, which is use this variable called Vim in it.
+And that's V-I-M-E-I-N-I-T.
+And that will allow you to specify a command that Vim should run as soon as it starts.
+And so that's what I chose to do is to have Vim RC when it starts.
+Instead of having a Vim RC, it does source.config slash Vim slash Vim RC.
+And so what that does is that now that the now Vim knows to go and to go into.config slash Vim slash Vim RC as our main configuration file.
+And then in that file, we have to handle all the problems of now our plugins are not in the dot Vim folder where they expect where they are expected to be.
+And this is where short Vim script that was that I found and posted on GitHub and I adapted it.
+And I will put a link to my GitLab where I have this file.
+And I'll also post the file in the show notes.
+And let's take a look at it actually.
+So Vim.config Vim and that's xdg.vim.
+So xdg is sort of the configuration system.
+So if you do xdg open, you open a file with the default opener for that type of file.
+So if you open a video, it will be our default video player.
+If you open a text file, it will be our default text editor and those kinds of things.
+So before we actually go into that, I need to go into Vim RC because that's the one that calls this file.
+So that's slash Vim, slash Vim RC.
+And so this is very simple.
+What we do now is very simple.
+It's first we set no compatible to sort of stop Vim from trying to be extremely compatible with VI.
+And then we turn file type off because at this point file type needs to be turned off for some reason.
+Otherwise the plug-in loader will have problems and then needs to be turned back on.
+It doesn't matter though.
+That's a problem for another instance where for someone who knows more about plug-in management systems in Vim than we to talk about.
+So then I source this xdg.vim which I got from a gist on GitHub.
+It's in the references of this xdg.vim file.
+And once you source it, this one now establishes the directories within the xdg sort of configuration management system.
+There we go.
+So that first of all it creates variables for the for xdg cache home, xdg config home and xdg data home.
+And these are within till the dot till the slash dot cache till the slash dot config and till the slash dot local dot share.
+And these sort of these will make them these will sort of be used so that you don't so that you put different parts of the Vim configuration in different places.
+For example, you don't want to you want your main Vim configuration file to be in your dot config folder.
+But you don't really care that the plug-in, the actual plug-ins that are fetched from GitHub be in your dot config folder because you don't want your config folder to get out of hand.
+So you generally will try to keep those in the data in the xdg and underscore data underscore home or I'm now getting myself confused for a second here.
+xdg data home, yes. And that is done by setting this run time path, which the important thing is that xdg underscore data underscore home slash Vim slash bundle slash bundle dot Vim the I use bundle as my as my plug-in manager.
+And so as long as your plug-in manager is in the run time path, it will be able to run it in your Vim config and where is yes.
+Yes. And once that is and once a bundle is loaded from that point in the run time path, it's not a problem anymore because all the other plug-ins will be installed to where a bundle is.
+Yeah, that's what I was missing in my head.
+It's another nice thing is that it puts the undo directory, the backup directory in the directory where all the swaps and other types of files that Vim uses to keep track of what you have been doing so that when you restart Vim, you can just press controller and go to the last file you edited.
+And it keeps them in the dot cache folder because this is sort of volatile volatile data that you should be able to just get rid of and not really have a problem with Vim still working.
+I mean, ideally you could have some demon going through the cache folder every now and again and seeing when a file is older than let's say 20 days just get rid of it because well, you don't want to keep your web cache for that long.
+If it hasn't been accessed in 20 days, it's probably something you looked at and you haven't used since maybe I should write a script to do that.
+Anyway, yeah, other than that, there's like really nothing to it.
+Now, once you put Vim in it to first load your VMRC and VRC to load XDG that I will put in the show notes, then you can just do what you would normally do, which is call the bundle to load your plugins and stop and then when you're done loading the plugins,
+do all your other configurations. And there you have Vim running from your dot config folder instead of from your home folder and you didn't have to start using new Vim.
+I don't actually know why I wouldn't just switch to new Vim. Well, I do because Vim is old and old programs that work tend to be better than new programs that seem to work or at least that's my opinion for now at least.
+Well, thank you for listening and have a nice one. This is CRBS for Hacker Public Radio and join tomorrow again for another exciting episode of Hacker Public Radio.
+I should really speak slower.
+You've been listening to Hacker Public Radio at Hacker Public Radio dot org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast and click on our contributing to find out how easy it really is.
+Hacker Public Radio was founded by the digital dog pound and the Infonomicon Computer Club and is part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+On this otherwise stated, today's show is released on the creative comments, attribution, share a life, 3.0 license.

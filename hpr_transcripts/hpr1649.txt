@@ -1,0 +1,126 @@
+Episode: 1649
+Title: HPR1649: Raspberry Pi Accessibility Breakthrough
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1649/hpr1649.mp3
+Transcribed: 2025-10-18 06:19:03
+
+---
+
+It's Thursday 27 November 2014, this is HPR Episode 1649 entitled Raspberry Pi Accessibility
+Breakthrough.
+It is hosted by Mike Ray and is about 17 minutes long.
+Feedback can be sent to Mike at raspberryv.org or by leaving a comment on this episode.
+The summary is, how I fixed the stuttering text to speech on the Raspberry Pi.
+This episode of HPR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's honest and fair at an honesthost.com.
+Hello, welcome to Hacker Public Radio, my name is Mike Ray.
+Many listeners that have heard any of my podcasts on here before may remember that I'm blind
+and that I may raspberry pi user an enthusiast.
+Today I want to talk about a short podcast to talk about a breakthrough that I've made recently
+in improving accessibility on the pi.
+And I'm going to demonstrate this by playing embedding a couple of short audio files into this podcast.
+But before I do that, I need to explain what I'm talking about.
+Now I first got a Raspberry Pi at about the end of 2012, so a couple of years ago.
+And immediately began to work on accessibility and trying to get things working.
+One of the things I did was to create an email list called Raspberry Vi for visually impaired.
+And then later on a website, www.rasburyvi.org that goes with it.
+Now I know that that name is dangerously close to raspberry pi.org, which is the raspberry pi foundation website.
+But I did check with them before I created the website just to make sure that they were not unhappy
+about the closeness of the name and they were okay with that.
+So early in 2013, one of the group members, one of the members of my group got EMAX Speak working on the pi.
+EMAX Speak describes itself as a complete audio desktop and quite rightly so because although it's a text-based application
+and EMAX is ostensibly an editor, it's far more than an editor.
+And the EMAX Speak talking version is very, very good for accessibility.
+And then disaster struck in April 2013 when a modification was made to the Broadcom sound driver,
+which drives audio on the pi.
+And the problem was that it introduced extremely bad stuttering in ESPECT TTS.
+Not only was the stuttering very bad, but it was regularly crashing the kernel.
+Because of a kernel, a null pointer being passed into the kernel by the mechanism that cures audio into the GPU.
+So beginning of April 2013, we were faced with a situation that the pi would not any longer be easily accessible in the console.
+And I tried all kinds of things. The console screen reader of choice, usually a speak-up, but I tried speak-up, yes sir.
+A number of other things I tried changing the audio library that was being used.
+I tried changing the priority of the process, all kinds of things. It nothing really worked.
+So this was true of the screen reader and also EMAX Speak.
+We were stuck now with the console not being accessible.
+At this point, I'll probably embed the first piece of audio.
+Audio you're going to hear, first of all, is the sound of a Raspberry Pi booting with the bad stuttering.
+And what you were hearing is initially you were hearing the word fail fail.
+And that's because I've got ESPECT UP, which is the speak-up to ESPECT connector, configured very poorly.
+The start time is too short, so although it starts, the system thinks it's failed.
+But if it had failed, it wouldn't hear the speech.
+Anyway, it starts off OK, but after a few seconds, it begins to stutter.
+And it slows down very, very badly.
+So here we go with fragment 1.
+Fail fail. Info setting console screen mode. Info skipping font.
+And key map setup.
+And all my console setup set it up.
+Console font and key map.
+So you can hear how bad that is as it starts to read the boot messages.
+From the point at which the ESPECT UP connector is loaded.
+Start to hear the boot messages, but it very quickly turns into extremely badly stuttering text.
+And although you can log into a console with that, and you can do things it regularly crashes the kernel.
+With the kernel oops, and is basically unusable.
+So since then, I've been trying to get over that problem.
+ESPECT is really the only option in the Raspberry Pi.
+It's written as kernel modules, and originally it used to work with hardware synthesizers.
+But hardware synthesizers and ESPECT UP don't work over USB.
+So using a hardware synthesizer is out of the question.
+ESPECT is an open source synthesizer.
+There are one or two others, but Mary TTS for example, but Mary TTS is very big and very much bigger footprint.
+I've not really tried to get that going. I don't know much about Java anyway.
+There are others, but ESPECT is really the only option at the moment because it's small footprint very fast.
+And it has massive language support, something like 80 different languages.
+And in our efforts to get things to work, we want to get that to work with as many languages for as many people as possible.
+So the next audio you're going to hear is the solved solution.
+I discovered earlier this year something called OpenMax.
+And in particular the OpenMax integration layer code, which is a standard library for hardware interfacing of audio.
+And what this gives you is a method of queuing audio directly into the GPU,
+thus bypassing the Broadcom sound driver, bypassing ALSA, bypassing pulse audio or any of the other mechanisms.
+The audio can be directly sent into the GPU for rendering.
+ESPECT again is the only solution here because ESPECT has one mode of operation,
+which is absolutely brilliant, which I've not found in any other screen speech synthesizer.
+And that is it can be configured to return the rendered speech as PCM pulse code modulation to the calling program.
+So you can pass it text, it will generate phonemes, the speech from the text, and it will pass the text back as PCM.
+And it passes it back as 22,050 hertz, 16 bit mono sound, which you can then use, however you want to use it.
+What I've done is to write a written code library, which employs OpenMax integration layer code to then send that audio into the GPU
+for rendering. Thus the PCM 2835 sound driver is completely out of the picture.
+Now in the last audio clip you heard some sounds that sounded a bit like me snuffling around the Raspberry Pi while it was booting,
+but it wasn't, it's just background noise because I, what I did was I recorded that with a Olympus digital voice recorder sat next to the Raspberry Pi
+with a little portable speaker plugged in.
+The next clip, the sound might be of different quality, different loudness, but that's not deliberate.
+But it does sound very much more punchy and it does not stutter.
+And what it is, is the Pi in the same session shutting down.
+What I've done is I've closed, I switched off the eSpeakUp service that connects SpeakUp to eSpeak.
+And I started a service which is a clone of eSpeakUp, which I've called PiSpeakUp.
+And what I've done is I've taken the code of eSpeakUp, made PiSpeakUp, but what PiSpeakUp does that eSpeakUp didn't do is to retrieve the PCM audio from eSpeak
+and then queue it into the GPU with the OpenMax integration layer code.
+So here comes the second clip.
+Broadcast message from Ruta Raspberry Pi DS Sash Nero turned on 2015-49-34-2014.
+The system is going down for reboot now in it, switching to run level 6 in it, sending processes the term signal.
+Info using make file style concurrent, boot in run level 6, stopping fake H.
+So there is, you can hear that that audio is completely solid. It doesn't stutter.
+There's no nasty pop at the beginning.
+That pop is a product of the BCM2835 sound driver.
+Actually that's an improvement because that pop used to occur every time you put any sound into the GPU.
+Every few seconds in the early days of the Raspberry Pi, but not any more.
+I should point out that the BCM2835 is the G, is the name of the GPU, which stands for Graphics Processing Unit, and it's the GPU, which is responsible for rendering sound and video on the Raspberry Pi.
+On the OpenMax integration layer code interfaces to the GPU, and OMX being short for OpenMax can be used to render video and sound, which is exactly what I'm doing when doing sound.
+Hence solving the stuttering issue, the Git Hub repo is in the show notes.
+I'm going to try and get this packaged into a Raspberry Pi package, but I don't know where to put it.
+I don't know how to do that at the moment, so I'm going to have to look into that.
+I know how to create an arch Linux package, which I'm also going to try and do.
+Although arch is a bit more complex because I have to install the, what's called the user land code into the arch distro, which is already there with Raspberry, and that's something to do with the OpenMax stuff.
+I've been talking to somebody from the Pi Foundation as well about this stuff, so I've got an ear there, and I might be able to get some help with getting this stuff packaged to a Raspberry.
+In the show notes is the Git Hub repo, so you can grab it, build it, install it quite easily on a fresher as being installed, and have an accessible console.
+Talking of accessible consoles, I should point out that, in my opinion, a Linux machine without an accessible console is not an accessible Linux machine.
+It might have speech in the graphical desktop with Orca or anything like that, but unless you can work in the console either with Braille or speech, you're not using an accessible machine, but that's just my opinion.
+So there we go. I don't think there's anything else to say, or apart from listening back, I noticed that some of my siblings are a bit sharp, so apologies for that.
+I don't know quite how to tone that down. I may be start making recordings for HPR with the, with the Olympus DVR, rather than using total recorder on the PC, which is what I'm doing at the moment with a headset, but I need to maybe try and turn the microphone down a bit, so I don't have quite so much.
+You're splitting siblings, I'll say that again, siblings.
+You've been listening to Hacker Public Radio at HackerPublicRadio.org.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out how easy it really is.
+Hacker Public Radio was founded by the Digital Dove Pound and the Infonomicon Computer Club, and it's part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website, or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released under Creative Commons, Attribution, Share a Light, 3.0 license.

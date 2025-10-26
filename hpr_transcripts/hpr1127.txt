@@ -1,0 +1,296 @@
+Episode: 1127
+Title: HPR1127: AFP file share on a Linux server
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1127/hpr1127.mp3
+Transcribed: 2025-10-17 19:28:03
+
+---
+
+You're listening to Hacker Public Radio, my name's Klaatu.
+Hello.
+This is another entry into my mini-series called Networking Basics.
+In the past, we've covered network protocols, how packets get identified on the network,
+what routers and switches do, and then we did some exercises on setting up networking
+devices, things like DHCP servers, caching DNS servers, and most recently, a Samba share.
+In this episode, we're going to talk about setting up an AFP share.
+AFP is a file sharing protocol designed by Apple historically.
+It was the Apple Talk file protocol.
+Now it is simply the Apple file protocol.
+It is an ugly, ugly thing that I hope you never have to deal with.
+However, I'm doing an episode on it because, well, I use it in the place that I work,
+so I happen to know a little something about it, so I might as well.
+It is, after all, a networking protocol, so it does qualify for the mini-series on
+networking basics.
+And there are lots and lots of catches to it.
+There are things that just don't work the way that they're supposed to work, at least
+from the Linux side of things.
+So it's really something that I guarantee you you don't want to go down this path if
+you don't have to, however, it does have a couple of advantages, such as if all of your
+clients, all the client computers on your network are Mac OS 10 computers, then AFP is the
+default and certainly very, very native sharing, file sharing protocol.
+So there's a graphical, very easy kind of like if people need to do an internet search
+on how do I connect to my server, then it'll, you know, all the screenshots will tell
+them exactly the right thing to do.
+So it is very sort of integrated into that operating system, so that's one advantage.
+Assemble comes as a close second, however, because it's just three letters away, but they
+do have to explicitly type those three letters.
+So it's not quite as user friendly as AFP, in the Mac OS 10 world there's also a couple
+of conventions that are probably pretty foreign to Linux and Windows users, a lot of Mac users
+will literally identify very, very important information by color coding, file names, or
+by giving folders different icons to denote that, yes, this is a vitally important folder.
+If you do not, you know, don't misplace it, it's, they'll bring attention to it just
+by icons.
+Assemble share will not respect those icons, whereas the AFP protocol certainly will.
+It can get those fancy little icons just fine.
+So there are some things that AFP does for Mac users that kind of makes it a logical
+choice, and I say logical begrudgingly, but it does work on a Mac only network.
+Fairly well, but I'm warning you right now that if you go down the AFP path, you will
+regret it at some point, maybe not all the time, but there will be times where you regret
+it.
+Some of those times will be when there is a Linux or a Windows computer on your network
+that wants to access those files.
+There are no, there is no way to do that natively on any other OS other than Mac OS 10.
+There have been some third party applications that have attempted to make that something
+that you could do, but as far as I know none of those are actually maintained anymore,
+and certainly none of them are going to feel it all native on those other platforms.
+So it's not that even on Linux where Neta Talk exists, there's no, as far as I know,
+no GUI front end to the AFP file share.
+You would still have to go in on the command line.
+So it's not going to feel at all integrated on either Linux or Windows.
+The way that Samba can kind of feel mostly integrated on all three platforms.
+AFP also in proper Apple fashion is ever changing.
+They change the protocol all the time.
+They forget to tell people that they changed it.
+So if there is anything happening, if there are frequent updates on your client machines,
+you might find that your AFP setup has ceased to work strangely.
+So the AFP Reimplementation on Linux is called Neta Talk in ETA-TALK, and it is technically
+speaking fairly simple to setup, but again there are a lot of little catches that we're
+going to discover along the way.
+So I don't know if I'm getting it across to you clearly, but you probably want to avoid
+using this if at all possible.
+Sometimes it's not possible, so we'll talk about it.
+Again, installing it is pretty simple.
+Yum install Neta Talk or aptitude install Neta Talk.
+On my previous episode on Samba, I was doing everything on Red Hat or a Fedora server.
+On this one I'm actually doing it on Debian.
+It just kind of worked out this way that a lot of my AFP file servers are PowerPC boxes,
+so Debian is kind of the only game in town.
+But that means that for this episode if you're on something else, then you will need to
+adjust your paths accordingly for the config files.
+On Debian however, you've got Etsy slash Neta Talk for most of the files, and there's
+an Etsy default Neta Talk as well, so be aware of that extra little file there.
+So if you go into the default folder or wherever the Neta Talk configuration file itself is
+located, then you will find a really simple little configuration file that simply defines
+what runs when you say to start Neta Talk.
+So open that up in a text editor or something and look at it, and you'll see that there's
+you can limit how many clients are connected.
+I do that just because I find that the servers that I'm running the file share on isn't
+really, aren't they're not the fastest boxes around, they don't have all that much RAM,
+so I do try to get a max client number of 20, and that works for me, but you can certainly
+increase it or not define that, that's fine as well, just depends on what you need.
+The next important thing I guess would be whether you want to allow guests, AFPD, underscore
+guest, what you want to call them when they log in, I think the default is nobody.
+And then you need to define what you want to run when you start the Neta Talk service.
+There are a couple of different aspects to Neta Talk.
+One is the legacy support for Apple Talk, or as they call it A Talk, or A Talk D in Neta
+Talk terms.
+I don't use Apple Talk, you probably won't be using Apple Talk either, so the answer or
+the value for A Talk D underscore run will probably be no for you.
+But you can't, because it's dependent on Apple Talk, so all of that stuff, the A2 boot
+underscore run, you can just set all that stuff to know, the ones that you want to leave
+on are C in ID underscore Meta D underscore run, you want to set that to equals yes, and
+AFPD underscore run would be yes as well.
+In other words, that's AFP over TCP, and I guarantee you that's going to be your usage,
+unless you are using this in a legacy environment where you're running nothing but MacOS9.2.2.
+So yes, AFPD underscore run and C in ID underscore Meta D underscore run would equal yes.
+In all seriousness, I could see you actually utilizing the Apple Talk support if you've
+got like a bank of old Apple printers that only spoke over Apple Talk, which does exist,
+and I could see someone using this solely for that purpose, and that actually might be
+something that I do end up trying it out for, because we might be getting an old laser
+printer donated, but I'm not even sure if they're going to be able to utilize it because
+of the ink issues.
+And anyway, Neta Talk, usually you'll be turning off the Apple Talk stuff and just leaving
+on the AFPD and the C in ID Meta stuff, so that's what Neta Talk configuration gets.
+After that, you really get to go down into the deeper levels of the configuration files
+of which there are really two that you need to be concerned over somewhat.
+One is the AFPD.conf, which again, this is at least on Debian, and I'm pretty sure if
+memory serves it's on Red Hat as well, Etsy, Sush Neta Talk is the folder, so it's pretty
+easy to find.
+So there's the AFPD.conf file, and that would be, there's literally probably one line that
+you want to look at in that file, it's all the way down at the bottom, it's the default
+line, you don't even need to uncomment it actually, because it's just the default,
+it tells it to run over TCP and use the UAM list, or UAM list, I don't really even know
+what that is, I did at one point, I've forgotten since, it's really just, it's completely
+sensible, normal defaults, I do not even bother uncommenting it, it's fine, but be aware
+that that file exists anyway, because it does, and at some point you may have to go in
+there and add something, or disable something, whatever, that, I did actually have to do that
+once way back, way back last year, because Apple Talk had changed, or not Apple Talk, AFP
+had changed, and there was some new library that you had to use, or something like that,
+and you had to add it to that line, so that was something historically that I've done,
+but not recently.
+So the next file to change, and again this is all, it's surprisingly simple to be honest,
+it's not, it's not really that hard, which is nice, the next, next config file that you
+need to open up though, and you will probably need to change stuff in, is applevolumes.default,
+and that's capital A and capital V, applevolumes all on string, dot default, again at the,
+it's a very verbose file, you can read and read and read and read, all the different possible
+attributes that you could change, that you could add to these files, but down at the bottom
+you have about three, well six I guess lines that you might want to take a look at. So the line,
+the first line sets the defaults sort of globally, and that is colon default, colon options,
+colon you-priv, comma use dots. The use dots option is telling the server how to translate,
+or rather not translate files that start with a dot in their file name, and the you-priv
+option is telling the server to use unix privileges by default. Now don't let that fool you,
+it's not quite as nice and tidy as all that, but it's a good starting point you-priv.
+So that's the default line for sort of the global configuration. The next line you'll see
+will be the fact that by default all users have access to their own home directories.
+On the AFP servers that I run, I actually don't use that option, so last episode I was talking
+about how on Samba I did use that option and how great it was, well that's because I use that
+for one thing an AFP for something else, so I don't give users access to their own home directories
+via AFP, so I have that comment that out. But if you want to give them their, you know, access to
+to Samba that way, or to their home directory via AFP, then uncomment that line, and it will,
+it will look at the Unix user name of the person logging into the server, and it will provide them
+a home directory so that they can stash stuff in their own little storage space, might be nice.
+And then finally, this is actually the final thing that you have to set for this. I mean,
+like I said, it's not really that hard. You tell the config file, the Unix path of where this
+shared folder exists, the human readable from the client side name of the user of this path
+of this shared directory, and then who is allowed to log in, and then a couple of other things that
+will go over in a minute. For instance, on this particular box that I'm looking at right now,
+the first thing that I would give is the Unix path. So that's slash home slash instructor.
+So this is an instructor's folder that people want to have access to. So slash home slash instructor.
+Again, you could put it in slash var, you could put it somewhere else. I have been doing this
+this way because it's just, like I say, it's kind of the way that I started out. But slash home
+slash instructor is the Unix path of the directory on the server that people will be logging into.
+And then we do a space. And then in this case, I put classroom share, no spaces. So classroom
+share is the name of the volume that when people start logging into this, that's what it's
+going to show up on their desktop, where if they drag it into their dock for storage for quick
+access later, when they roll over it, that's what it will show up. It's not going to show slash
+home slash instructor. It'll show classroom share. So that's the client name of your volume,
+of the shared volume. And then we do space allow a LLOW colon. And then the name of the people
+that are allowed to log into this. Now, again, this is all very flexible. You could be using a
+different authentication method. But if you're just doing it straight, sort of pure Unix kind of
+stuff, then what you would do is have a user on this server called clatu. And then you would add
+clatu to this list of allowed users. So I have allow colon clatu, comma, students, maybe,
+comma instructor, maybe, and so on. Unlike Samba, you do not have to set a specific password for
+these users. Their Unix password on your server will be the same as for their AFP password.
+So there's no special Samba password or AFP password command. It's just, they exist on this server,
+clatu. Whatever his password is on the server, that's what he will use when he's logging in via AFP
+from the Mac that he shouldn't be using. Space options, colon, you-priv, comma, use dots.
+That's actually just redundant. I was having problems with some of the privileges being retained.
+So I reiterated here. I doubt it's doing any good. But I'm not going to change it now because it's
+working. Space f-perm colon 0775, space d-perm colon 0775, comma, space, you mask colon 0, 0, 0.
+This is all very strange and it's all related to a hack that just today it needed to be this way,
+whether it's going to need to be that way, the next release of the next OS-10,
+or it could even just be an update. It could be a random OS update. It could break everything at any
+moment. So this is something that has changed a lot over the course of a mere two years. It's been
+different a couple of times. But here's what's happening. So the default permission value
+for a directory that someone creates on this shared volume in this share, in this file share.
+So I'm just setting it to a permission value. The f-perm is the file permissions. And the
+UMask, of course, is a mask unlike what I was saying about Samba in the previous episode. UMask
+is colon 0, 0, 0, 0, meaning that it inherits 777. So that really shouldn't be something that I'm
+using. I think, but like I say, it's kind of a hack that was necessary for things to function
+the way that I need them to function. Either way, that's actually all you need to do to configure
+NetaTalk. So it's literally at the most four lines of work, which you have to admit is kind of nice.
+It's kind of that it could be a lot worse, right? So you just kind of look at afpd.conf
+in slash etc slash default slash afpd.conf on devian. And it might just be in slash etc slash NetaTalk
+on other systems. Look at that. Make sure that there's no default that you need to change.
+And there probably isn't. It's been pretty good about just being the way that it needs to be
+for me. And then have a look at slash etc slash NetaTalk slash applvolumes.default.
+Make sure that your defaults there are saying you want options, you priv to inherit all your
+units or you utilize all your units privileges and use dots because it works. And then whether or
+or not you want their home directories to be visible. And then you define your share your shared
+entities, meaning what they will see when they log in from their client machine. They don't obviously
+see the Unix Path, but you define the Unix Path for the server and then you tell the server what
+they're going to see in their little menu option when they're logging in. And you set
+who's allowed to log in. You set any kind of other options that you want for that particular share.
+And you set any kind of permissions and creation masks that you want for that to work.
+Okay, so what that does then is it shares slash home slash instructor in this case because that's
+what I have it set to. And it does that quite well. And when people, if they're in the allowed user
+list, when they log in, they can create files, they can create directories. And it pretty much does
+exactly what it's supposed to. And like I say, that's the, if there is beauty here, that would be
+the beauty of AFP. And that is that once you've got it set up, it works quite well on Mac OS 10.
+And that's all it works on. So again, be aware of that. But it works exactly like people would
+expect it to work. They can color code things. If they have permission to do so, they can change
+icons. And those icons will be retained. They won't go away or anything. Well, in as much as they
+don't go away, anyway, on OS 10. But, you know, it will act exactly like an OS 10 user expects
+their, their, their finder and their file manager to, to function. So that's a good thing.
+One of the weird things about, at least the, the latest implementation of AFP
+from Apple is, and the, a difference between that and NetaTalk is that the permissions just,
+they're not, they're not only looking at the, the Unix user permissions. So I can set Unix
+permissions in the server config file all I want. And they may or may not be respected over on the
+Mac side. So, for instance, in slash home instructor, I've got a couple of folders that are shared.
+There's a pickup folder where students pick up their work, which has the permissions
+of 755 and the owner of instructor and the group of staff, let's say. And then I've got a drop-off
+folder, which has the students being able to drop files into the folder, but not get them back out.
+So this is obviously for homework assignments, for tests and quizzes, where you want the,
+the classroom, the student to be able to give you a file, but not go in and look at other people's
+work and cheat and stuff like that. So, you would, you would normally, you would think you would
+set that to something like, I don't know, seven, so that the instructor can do whatever they want.
+And then the, the, the group and the others would only have right and maybe execute permissions.
+So it would be like the very uncommon, what would that be? Something like seven, three, three,
+something weird like that. And that would, in theory, be it a drop-off folder, right? The,
+the, the students could write into a folder, but they couldn't actually read what was in the folder.
+Kind of weird, but that, that is what you would do. Now there used to be a drop box
+feature in NetaTalk, but it, it was always marked a clue, and it has always warned you that it
+might not work the way you think it's going to work and all these other caveats apply.
+So there's just some stuff that you literally can't configure in the server.
+So what I did was I set the permissions and everything to, um, to 755, and then you go over to a
+Mac and log in as one of these allowed users, preferably someone with all the administrative
+capabilities possible. So in this case, it would be the instructor user. So you log in,
+again, you go to the go menu, you connect a server or you just hit command K, if you're a
+keyboard kind of person, and you log in as the instructor. And now you've got your drop-off and
+your pickup folder, your pickup folder being 755, where you as the instructor can write into the
+directory and students can take files out of the directory, and then the drop-off folder where
+students can drop their work, which really you only want them to be able to drop off the work,
+but since you can't actually set ACL flags the way that Mac wants to see them from the Linux
+server, you need to do that on the Mac box. So you log in, you click on the drop-off folder,
+in this case, you would hit command I for get info, and then in the GUI, I mean you could do this
+with ACL settings in the terminal as well, but no one does it that way, including myself. So you
+just go into get info, and you, again, this is really kind of a weird clue, but you need to set,
+if you're doing it this way, a drop box function, you would set the everyone value to write only,
+so that it is a drop box, the staff value, which is kind of the main user group on Mac OS 10,
+to write only, so that's the drop box, and then there will probably be an unknown value there
+for reading right, because Mac OS 10 for some reason can't quite identify who exactly it is who
+has reading right, but it knows someone does, turns out it's instructor, which is just kind of a
+weird thing about the way that you're interacting with with this. It's not really that big of a deal,
+but that's how it's done. So whether or not you're doing a drop box or not, you may never have
+that problem, but be aware that there are some weird file permission issues between your setup
+and the way that Mac OS 10 actually sees them, and by the time you hear this, for all I know,
+it will all have changed, so just kind of be aware that unfortunately any tutorial online that you
+read about AFP is probably out of date, and this episode is probably included in that.
+But now you know the theory, and you know sort of the idea behind it all, you can go in and set up
+the config files, and then just test it and see what works and what doesn't work. I will say that
+it seems to be, and this is almost time less until it isn't, it seems like once you get the thing
+up and running, then do all the actual, like once you've defined, okay, this is the directory
+that people will be logging into, don't create sub-directories and stuff like that from within Linux,
+it just doesn't pay. Go over to the Mac computer that is going to be managing that volume,
+log in, and do all of your kind of infrastructure work, and you're setting the file permissions
+and stuff like that from a Mac, it will work. I have found that it has a lot more success
+doing it from the Mac, from the Mac GUI, or if you know the ACL line commands, do it there on the Mac
+because it sets flags differently than what you think you're doing by setting things in the Linux
+command line. So it's almost not a problem, you just have to not do what you think you should be
+doing, you know, you think you're doing it right, you're creating a folder, and you're setting the
+file permissions, and it seems like it should work, but just don't think that way because that's not the case,
+it's got a lot to do with the access control lists that Mac OS 10 imposes on top of the Unix file
+permissions, so just be aware of that. Everything should be configured now, so then you would again,
+however your distribution does the whole service on thing, whether it's service, neta talk,
+start, or slash Etsy slash in it, the neta talk, start, whatever, do that, make it go on,
+and then you can go into the Mac sign on and configure the file permissions, and that's really it.
+Troubleshooting, there's not a whole lot of troubleshooting aside from like incompatibilities
+between neta talk and the latest implementation of AFP that is included in some kind of update on
+on the Mac that you didn't expect, but other than that, I have found that it pretty much works,
+except again, make sure that your IP tables are allowing your neta talk or your AFP traffic,
+make sure that SE Linux is aware that AFP exists and that it's approved, issue whatever kind
+of rule you have to from SE Troubleshooter, or SE Linux Troubleshooter, whatever it's called,
+and other than that, I think you should find that it works pretty well. The things that I have found
+that sometimes cause me trouble will be I will try to add a user for getting that they need to be
+a Unix user on that server, or I'll forget to set a Unix password for that user, and then when
+they're trying to sign in via AFP, then their password doesn't exist, so it won't let them in,
+little things like that, but mostly it's pretty straightforward, so that's how you can create an AFP
+file share that will be accessible from Mac OS 10 boxes on your network. Enjoy!
+You have been listening to Hacker Public Radio, as Hacker Public Radio does our.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by a HPR listener like yourself.
+If you ever consider recording a podcast, then visit our website to find out how easy it really is.
+Hacker Public Radio was founded by the digital dot pound and new phenomenal computer cloud.
+HPR is funded by the binary revolution at binref.com, or binref projects across the sponsored
+by Luna pages. From shared hosting to custom private clouds, go to Luna pages.com for all your hosting
+needs. Unless otherwise stasis, today's show is released on your creative commons,
+attribution, share a lot, lead us our lives.

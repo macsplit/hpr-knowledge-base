@@ -1,0 +1,343 @@
+Episode: 2941
+Title: HPR2941: Server Basics 107: Minishift and container management
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2941/hpr2941.mp3
+Transcribed: 2025-10-24 13:39:20
+
+---
+
+It's Monday 11th of November 2019, and this is HPR episode 2941 entitled, Server Basics
+107, MiniShift and Container Management.
+It is the 230th anniversary show of Klatu, and it's about 39 minutes long.
+It carries a clean flag and the summary is, Klatu introduces MiniShift, a local test environment
+for a single node cloud.
+This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash
+donate.
+You're listening to Hacker Public Radio, my name is Klatu in this episode.
+I want to continue my server basics series.
+This is 107 in the series covering container management with Kubernetes, or thereabouts.
+A stu-t listeners might notice that this isn't directly really a topic about server basics.
+This is something really specifically about server less basics.
+There are less being sort of a buzzword right now, implying that there are no servers that
+there is, but the cloud, of course, that's also not true because the cloud runs on something,
+and whether you call them servers or not, that's what they are.
+Their server running a cloud is just that there are lots of servers involved.
+This episode is covering, and the previous episode, I decided to cover these technologies
+because realistically, if you go out and get a job as a SysAdmin somewhere, then one of
+the tasks that you are going to encounter on the job, you're going to be expected to
+be able to do, is to probably deal with infrastructure of some kind of cloud, whether it's a hybrid
+cloud that's mostly hosted on-site across several different servers, or whether it's a globally
+network system of servers, or something that you rent somewhere, whatever it might be,
+there's going to be an expectation that you can manage that kind of infrastructure.
+The problem, up until very recently, with that expectation is that there's really, there
+was no realistic way for a new user to ever learn the skill, which, of course, traditionally,
+at least for me, has been a huge strength of Linux and open-source software in general,
+because that you're able to learn the things that you could ultimately get paid for at home.
+You could just learn it on your own time for free, for zero dollars, and then you could
+go into A Workforce and get paid for that knowledge.
+It's a huge, huge advantage.
+I'm speaking from experience, it has been an advantage for me, so I think that it's important
+to maintain that level of zero barrier to entry, and that's been a problem with the,
+quote-unquote, cloud technologies up until fairly recently.
+You could rent some space on a proprietary cloud platform, and they would charge you
+by bandwidth or something like that, and it was all very confusing, and it wasn't zero
+dollars.
+And there are a couple of clouds out there that will offer you space and time on their,
+on their system for, in exchange for money.
+There is one from Oracle right now, not that I'm recommending Oracle, but Oracle, supposedly,
+has an entry-level cloud platform that you can sign up for, and they've got a bunch
+of restrictions on it, but it does have kind of a gooey front end that you can play around
+with stuff through your browser.
+With all of that said, none of these options are ideal, and if you are just some random
+person seeking to either get into technology or seeking to upskill in technology so that
+you can get better work, what do you do if you don't have access to a big,
+fancy cloud?
+Well, I can get you about 60% of the way there, with either a thing called MiniCube or
+MiniShift.
+Now, these are two separate projects, and the one I'm going to cover in this episode is
+MiniShift, because it's the one that I have more experience with, and I think it's a
+pretty easy way, pretty easy way to get started with this stuff.
+In the previous episode, in 106, I was talking about containers, and how containers are
+defined by namespaces, and how these namespaces protect processes, or a group of processes
+from sort of being aware of the environment upon which they're actually running.
+I talked about how that concept is part of this whole container idea, this concept that
+is for this system, by which we can run a sort of an embedded OS, like an operating system,
+on a computer with an operating system, and it's a hugely powerful thing, whether or not
+you approve of the design concept is more or less irrelevant at this point, because
+they've kind of taken off, at least for right now, they do seem to be the method by which
+people have chosen to deploy applications that need to scale quickly and dynamically.
+The answer is literally to just spin up another container somewhere, or another set of container
+somewhere, to handle additional traffic or additional activity.
+If you did something fail within that container, then the container crashes or stops and
+relaunches, picking up more or less where it left off.
+It does this by ensuring that there's no data being stored inside that container.
+This is a very confusing concept to most people who are used to maintaining a server, or
+even a virtual machine, where that thing, the computer, whether it's real or virtual,
+contains the user data and the data and the configurations and the history and everything
+that has ever happened in that space.
+But in a container, the idea is that nothing is contained in the container except the
+stuff that needs to run, just sort of the logic of the program itself.
+Everything that it needs to run in a certain configuration or data that it needs to process
+is stored external of the container.
+The result is that you have the set of servers with a distributed file system across each
+server, and they are running little instances of just enough operating systems in a little
+container that run applications and then process data.
+When there needs to be more of that, then another server in that cloud maybe pops into
+existence or rather comes to life and generates or launches another instance of the container
+that you need in order to process all the data that's coming into your cloud.
+When that's all processed and done, those containers die off and that server sort of sits dormant
+until something like that happens again.
+And maybe it's a completely different container that that happens on, but it's a very it's
+a dynamic environment where applications being run on a miniature, tiny operating system
+instance gets spawned and killed off as needed.
+When you have something like that, there is a need, people have found, to be able to
+monitor what's going on, for instance, how many containers of a specific, how many instances
+of a specific container are running right now, how is the latency between the synchronization
+of files on the file system, how's the RAM doing and so on.
+So there needs to be some way to manage all of these resources to look into them, maybe
+even to give developers access to some portion of that so that when they are developing, they
+can fire up a new container when they need rather than when the cloud thinks they need
+it or maybe they need to simulate traffic in order to test the cloud, whatever.
+We need some kind of interface into that.
+The interface into that is called Kubernetes, which is a Greek word derived from or rather
+Kubernetes is derived from a Greek word for the concept of pilot PILOT, PILOT of a ship.
+So Kubernetes is an open source technology designed to orchestrate, as they say, containers.
+It is naturally just a command line application.
+It's a command that you run from a terminal to spawn and kill and monitor containers.
+You can get started with Kubernetes, just with pure Kubernetes.
+You can do that.
+However, it's a little bit cumbersome to do serious tasks exclusively with the Kubernetes
+command.
+For that reason, there are several front-ends for Kubernetes, both terminal-based and as
+GUI applications.
+Now the one that I've used because of my day job is OpenShift.
+OpenShift is essentially a GUI front-end for Kubernetes, which is an orchestrator of containers.
+The advantage to OpenShift is that it is an open platform based on a project called OKD.
+Imagine stands for Open Kubernetes, something maybe, I don't know.
+Anyway, it's based on this thing called OKD, which is an open source operating system
+if you will for the cloud.
+Now that's not strictly true, but if we consider the cloud as the platform, which in a way
+is true, right?
+The cloud has to run on something.
+To build an open source cloud, you would have a bunch of computers, and on each computer
+you would install an open source operating system, maybe Fedora or Debian, whatever you
+like.
+On that operating system, you would install a distributed file system like Seth, that's
+CEPH, or theoretically Gluster, but I've heard Seth is kind of the way to go.
+On that file system, you would install components of OpenStack, including the GUI interface
+called OpenShift.
+OpenShift would be the web admin panel that people would log into to monitor the status
+of the cloud, and to look at how many containers they have running, and so on.
+Now that's a completely open source cloud, and it would be very cool to have one, and
+it would be fun to try out, and you could do this.
+You could buy a bunch of pies, and have a little pie cloud or something, and they would
+be spinning up things as needed, and doing all kinds of different activities.
+You could try that, but realistically speaking, it's going to be difficult to come up with
+an appropriately sized, personal cloud, by which I mean the file system, for instance,
+follow, for failover protection, for failure, to make sure that it's always available, and so on.
+It needs a certain number of nodes, so that it can synchronize between servers, and in theory,
+you can have a two node setup, but it's not recommended, and it's a little bit unrealistic.
+You could do it for testing, I guess, really, it ought to be at least three, and then preferably a
+lot more nodes for proper synchronization and robustness. The likelihood of someone learning
+Kubernetes just by first setting up a personal cloud is rather low. That's a demanding gateway
+to get through. What a couple of people have developed is a thing called mini-shift or mini-cube,
+but again, I'm going to focus on mini-shift because it's the one that I know. They've developed mini-shift,
+which is a quasi-virtualized, private, single node cloud, so it's completely useless in
+production. You would never use mini-shift in real life. The advantage to it is that it mimics
+down to the last little icon, I mean, it just mimics completely an actual open-shift environment,
+and open-shift, again, is one of the interfaces to a cloud that you will encounter in the real world.
+I have several friends working at lots of different types of organizations, financial and
+artistic, and they're using open-shift there to manage their resources. So you'll definitely
+encounter it. It's not the only one out there. There are others, and I guess you could probably
+go to that Oracle cloud one thing where they're offering free entry levels, and you could sign
+up for that, and you would get dumped into their web admin, and there would be a different web
+UI, although honestly, I kind of glanced at it, and it looks really, really similar to the
+open-shift OKD mini-shift thing. I don't know what they're running, but it looked pretty familiar
+to me. You could go to AWS, and you'd find a different interface. You could go to Azure,
+and you'd find a different one. So there are different ones out there, but the idea is that,
+or the ideas that they contain are going to be pretty similar. I mean, the tasks that are
+involved often are not dissimilar. So in other words, I'm saying, if you learned mini-shift,
+you'd be set up then to go straight into work on open-shift, and potentially you'd have a
+leg up if you were to go working on some other non-open cloud platform as well,
+because you'd just be that much more familiar with common tasks involved in making these things work.
+So how do you get mini-shift? Well, the first thing you need to do is make sure that you've got
+the ability to run mini-shift on your computer. You probably do in this day and age,
+but you want to do the whole eGrep-dash-only-matching-dash-word-readjx,
+and then single-quote-vmx-pipe-svm-close-single-quote. So that's a red-redgex for looking for either
+VMX or SVM in-slash-proc-slash-cpu-info. Intel CPUs use the VMX virtualization AMD-CPUs return SVM.
+So as long as you see something returned with that query, then you're good to go.
+Your computer's capable of running, of doing this task. Like I say, in the modern day and age,
+I think it would be rare to find a computer that doesn't have those technologies.
+I mean, at least it would be rare to find a computer that you reasonably believed would be
+capable of doing like modern virtualization stuff. Okay, so once you've got all that,
+you need the KVM stack installed. KVM is of course the Linux kernel-based virtual machine.
+It is in mainline kernel now, so it's pretty common. You may already have it installed.
+You do want, you probably have it installed, but you do want the Qemoo or KMU, or however you say
+that word, Qemoo-KVM packages. Whatever your distribution calls, the Qemoo-KVM portion,
+you want to make sure that that's installed. It might be bundled together with Qemoo and it might
+just be a big monolithic package. It may not be just checked to make sure that it's either available
+or installed and you'll be good. Okay, so once you've got that, you want to enable the virtualization
+demon, so that would be probably pseudo-system-CTL-enable-dash-now-lib-vert-d. It might be something
+might be called something different on your system on my Slackware system. The command is not
+a system-CTL command. It's a slash at c slash rc.d slash rc.lib-vert-space-start, but just look
+into how to startlib-vert and start that, enable that to run on your system.
+You also want to add yourself to thelib-vert group. To do that, you can do a pseudo-user-mod-lowercase-a-capital-glib-vert,
+and then your user name. Clat 2. Use the new group command to log into the new group by running
+new group that's in EWGRP, space-space-lib-vert, and then if you run the group's command, you should
+see that your user, your login, has been updated with you included in thelib-vert group.
+You need to do that in order to interact with the MiniShift or actually the OKD tool chain
+that's supporting MiniShift. Finally, you're going to need to install some Docker tools. Now,
+we're not actually directly using Docker in this process, but there are still some tools to
+parse configuration files or to look at definitions. I think even to run some binaries that you do
+need to install, this is probably subject to change realistically. Docker has gone through a lot of
+changes certainly since episode 1522 when I first talked about it, but even just within the past
+year or so, it's undergone a lot of changes. I'm not 100% clear on the future of Docker. It seems
+like the whole container thing is taking a wild swing towards the truly open source, whereas Docker
+has taken a wild swing to not being as open source. It's quite confusing if you go to their page
+to their website, but for now Docker is sort of the de facto default for a lot of the container
+images and commands. You will need to install that. Installing just Docker machine is something you
+can do from from GitHub. It's curl dash dash location and then HTTPS colon slash get hub.com slash
+Docker slash machine slash releases slash download. Obviously this is current as of this recording. It's
+probably outdated by the time you hear this slash lowercase v for version 0.16.1 slash Docker
+dash machine dash linux with a capital L dash back tick you name dash I close back tick redirect
+to till the slash download slash Docker dash machine. Then you want to mark that executable. So
+Chmod plus X till the slash download slash Docker machine. And then you want to probably move that
+well, you certainly want to move that some location in your path. So if you do an echo,
+dollar sign path capital P a t h then you'll see your path. Move this this Docker machine executable
+to somewhere in that path. I usually put it in slash user slash local slash bin. You could maybe
+put it in slash opt if that's in your path. You could at as a last resort put it in slash user slash
+bin. It's up to you. And in addition to Docker machine, you're going to need the KVM
+driver for Docker. So that's a separate thing that you need to download. And that one I can't
+be quite as explicit as to how to get that. You'll want to go to the get hub site of D Hilt Gen
+and look at the Docker machine dash KVM releases and get the one appropriate for your distribution.
+So that's github.com slash D H I L T G N slash Docker dash machine dash KVM.
+The process of of installing it such as it is is pretty similar. You just mark it executable
+and then you move it to somewhere in your path. And that's usually Docker dash machine dash driver
+dash KVM is I think the expected name of that of that executable. So now you're set up.
+You're set up to install mini shift. And mini shift is distributed. It is a self-contained
+pre-compiled binary. You can go get the source code and compile it yourself. But it's written
+and go or a lot of it is. So you need to full go development of environment. So you're welcome
+to do that. It's at github.com slash mini shift. But if you don't want to do that then you can
+just install it yourself from their pre-compiled binary that they release. And again you get that
+from github.com slash mini shift. Just go to the releases, look at the latest release and grab that.
+It'll download a tar file at .tgz. You can untar that and once again move it to some some
+place in your path. So now you've got mini shift installed. All you need to do is start it.
+Starting it is a rather manual process. And I think it's okay. I mean you could write I could
+imagine writing a desktop file for this. But I feel like that would be almost overkill. And you
+probably want to see the output anyway. So I've never I've never bothered with that. I've always
+just started it from the terminal and just set that terminal aside while it was running. So to
+start it you do mini shift, space, start. You'll see a bunch of output. It gives you a lot of
+different sort of status updates of what it's checking to see is true or valid and it runs all
+of these processes. And then finally it tells you that that that it's all started. It's it's
+open shift server has started and the server is accessible over a web console at some address.
+Let's call it 192.168.168.168 colon 8443 slash console. If you open a web browser and navigate
+that IP address. And again it will tell you the IP address. The standard port is 8443.
+The path is slash console. So it'll be some variation of that. But it will tell you that in
+the terminal output where to find this console. You log into or you open a web browser, you navigate
+to that page and you'll see a login screen. Now you will probably get an SSL certificate warning
+because the SSL certificate being used by this mini shift instance is a self generated SSL
+certificate. So accept the the warning or ignore the warning or whatever you need to do to get past
+that. In real life you would change to a self sign certificate and and distribute that to the
+people that that want that that need access or you would get a CI a CI sign certificate or whatever.
+But for this obviously for your own machine it doesn't really it's not that big of a deal.
+So click through that and and then sign in. And the way that you'll sign in is using the
+username developer and the password developer. The mini shift landing page that you'll see straight
+away at least at the time of this recording. Obviously everything subject to change. I mean
+they're developing it. I'm sure all the time. But by default and I think generally you'll get to
+a landing page that encourages you to get started with something. And since your login is a developer
+it assumes that your workflow is going to mirror a typical developer workflow.
+This is a pretty good way to get a feel for what mini shift is all about. So you may as well go
+down that path at least initially. Especially since without anything existing in your mini shift
+cloud there's not a whole lot to monitor or adjust. So you want to create something for yourself
+if only so that you can then imagine what might happen in the real world. You would have these pods
+running these little containers running and generating and spawning and scaling up and so on.
+So in order to see that in action you kind of need to create something. So you can click on
+create project pretty much right after logging in and then enter the name for a project. Maybe
+a hacker public radio for instance. Click create and then click the project name and the project
+list to enter its overview panel. And a project is not a container. It is simply a
+it's an interface or a wrapper I guess around expected applications. For instance let's say that
+there's a project that you that you're working on or that someone is working on on your cloud and
+you need to as part of the project is that they need a web server to be running.
+Well luckily there are pre-built projects for that so you could browse you can click the
+browse catalog button in the interface in the the mini shift interface. And look around and
+you'll you'll find a basic engine X template. That opens a configuration window. You can click try
+sample repository link to auto fill out all the fields. It fills it with demo content from open
+shifts project page on GitHub. And so once that's all filled out then you click create again.
+And now you've got a sample application that runs engine X.
+Now it won't always be that easy because presumably at some point someone will be developing
+a project that does not exist yet so that doesn't have a pre-built template for you. But
+just to get something going that was a pretty that's a pretty simple process. So if you
+if you if you create a project then you can create applications within that project and all
+it you know if you want just to learn you can use pre-built applications.
+Okay so once you've got a sample application like this engine X1 for instance then you can close
+the the the window and click the overview tab on the left of the web console. You'll see the
+the toolbar on the left. It's expandable. Get used to that toolbar. That's kind of the place
+that you're going to keep going back to frequently. In the overview panel you can click the title of
+your application to view its progress and and the state of that of that application. So I mean
+you have to wait for it to build or to download the the template and then to build it into what they
+call a pod. But once that's done then it'll you'll see an overview overview panel. It'll tell you
+where to find the application. So for instance to to go see the the it works page or whatever it is
+on engine X. I haven't seen it in a while but that that that start spade that start page that a
+web server provides so that you know that it's running. In order to see that it'll give you the URL
+it'll give you the URL of that start page so you can go take a look at it and confirm that it's
+working. And at this point I think you'll probably see like if you've installed and you've done
+everything that I've said just set up a sample application you'll kind of get a feel for the
+interface and the thing is that you would maybe normally be looking for. For instance how many
+instances of this web server are running right now? How could we scale it up? How could we add more
+instances if maybe there's a spike in traffic? Now obviously in real life the administrator wouldn't
+be the one literally monitoring the traffic and scaling up the application with frantic mouse clicks
+as more people log in that it's not how it would work. But being able to log in and look at that
+and see and then do a manual override maybe as needed that's all useful information. And obviously the
+toolbar on the left is is well worth exploring. Another thing worth exploring is what's actually
+happening behind the scenes. So this is the fancy GUI that a lot of people will see at their day job
+but somebody is looking at this thing from a different angle and the gateway to
+everything that the web console is doing is a command called OC. Now many shift ships with a
+with a command to and I think OpenShift does as well now that I'm saying that. But there's a command to
+set up your environment so that that that many shift knows or rather OC knows where where your cloud
+data is stored. So you can see this for yourself by running many shift space OC dot ENV to actually
+implement it to apply it to your environment to an eVal space backtick many shift space OC-ENV
+backtick. Then you can log in as the admin user. OC, space login, space dash U, space system
+colon admin. Keep in mind on a real OpenShift server and an environment you'd have you'd be
+logging in with LDAP or OAuth or something like that. But this is a hyper local test environment.
+It knows that it's a test environment so direct sort of default passwords and everything is
+just it's fine. Okay, so we're going to do an OC space get space users and that shows you all
+the users on your Open on your many shift environment and you'll find that there's one user and
+they're called developer. That's that default user that we just used to log into the web console.
+You can also view this user's projects with OC space project and you can create new projects
+like OC space, new dash project space, GNU world order, dash dash display, dash name equals GNU world
+order, dash dash description equals quote GNU world order, close quote. It's a lot of the same
+data for a lot of different options but I couldn't think of anything off the top of my head so
+there you go. You could also create new applications. So the new project is the thing that you
+did when you first logged into the web console to create a new thing, a place for applications to
+live. To create the application itself you can just do OC space, new dash app and then the location
+of the application of the application get repository and you know as usual you'd kind of have to
+know the environment and know what you want to do. There are sample ones online.
+You can use those. It's like if you go to github.com slash S-C-L-O-R-G.
+There are a couple of sample projects there. There's a couple. I think that one is actually
+linked from OpenShift get hub but if you go to OpenShift get hub you'll you'll find sample
+applications and that's it's the same stuff that you looked at when you installed engine X as an
+application. So the OC command in other words is the terminal command version pretty much of mini
+shift or OpenShift or OKD. Trying both of them kind of getting used to both of them is not a
+bad idea and that's about all I can say about mini shift. It's something that you should try if
+you're interested in getting started with the cloud because it's a great example of an
+open source interface for cloud for container management and orchestration and for monitoring too.
+I mean there's a bunch of stuff out there obviously that can hook into OpenShift but OpenShift
+is a really great or mini shift as well. It's a really great place to start locally to get a
+feel for what exactly would go into managing these sorts of things. Click around, learn new tricks,
+go to learn.openShift.com or whatever it is yeah try.no learn.openShift.com I think or .io.
+One of those two you can kind of get a feel for common tasks that would that would be something
+that an admin would have to do. It's the way to learn this stuff. So hopefully that helps you
+sort of break through a lot of the buzzwords and confusion about what exactly the cloud is and how
+it exists and how it runs. The idea that there are open source and hybrid clouds out there that
+do not rely on imaginary server farms that are owned by corporations that you can never quite
+put your finger on. Don't do that. Learn mini shift, learn OpenShift, learn Kubernetes.
+That's the way to get started on the cloud, the open source way.
+You've been listening to heckaPublicRadio at heckaPublicRadio.org.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast and click on our contributing to find out how easy it
+really is. HeckaPublicRadio was founded by the digital dog pound and the infonomicant computer club
+and is part of the binary revolution at binrev.com. If you have comments on today's show,
+please email the host directly leave a comment on the website or record a follow-up episode yourself
+unless otherwise stated. Today's show is released under Creative Commons
+Attribution ShareLight 3.0 license

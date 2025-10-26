@@ -1,0 +1,722 @@
+Episode: 371
+Title: HPR0371: Introduction to SELinux
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0371/hpr0371.mp3
+Transcribed: 2025-10-07 19:17:22
+
+---
+
+A
+The following presentation from the Provo Linux user group held December 10, 2008 is
+underwritten by Guru Labs. The trusted source for Linux system administration network and security
+training, GuruLabs.com. Streaming and podcast hosting bandwidth for this and many other presentations
+at podcast.utls.org hasn't provided by tier 4. The presentation titled, an introduction
+to S.E. Linux was presented by Stuart Janssen.
+All right everyone, thanks for coming to post tonight. It's kind of a small group I think
+it's because of the holidays. Christmas parties. I guess so. Anyway, I think tonight's a really
+interesting topic. We've Stuart Janssen here. He's a year instructor and a developer at Guru
+Labs. He's still a washer. Yeah, do whatever. And he's here to discuss S.E. Linux. But before
+we get started, do you guys have any known open positions or anything that the companies
+are working for? Anything like that? Things going okay? Your companies? Anyone recently
+get laid off? Yeah. Well, on that you're still hiring for systems, guys and for developers.
+So if you are looking for work or no someone who is, especially in these economic times
+that maybe we can help them out. So I'm looking for really good people. With that, I guess
+we'll go ahead and get started. It's a very small group tonight. So we'll go ahead and
+get going. Okay. Thanks. So for tonight's topic, I'm going to be talking about S.E. Linux.
+I just want to take a moment to talk about my employer, Guru Labs, because it's because
+of their generosity that I'm able to learn this stuff and come here and share it with you.
+We have lots of great Linux courses. The material that I'm using is actually, a lot of it
+is pulled from our 550 Enterprise Linux Security Administration, which we have just recently
+finished updating with all kinds of good coverage for Kerberos and maybe even audit D in
+the near future. So let's talk about what S.E. Linux is, where it comes from. Starting
+with the NSA. You might be familiar with them already, the National Security Administration.
+Oh no. We brought a minor as insurance just to be safe.
+Highly pig has made his entrance. Okay. So for those that aren't familiar with the NSA,
+there are a bunch of spies, kind of like the CIA or so on. They're focusing on signal intelligence.
+Wanted to be able to use Linux, but the security of Linux just wasn't good enough to meet
+their needs. So they started enhancing it. A lot of the work was actually based on theoretical
+research done using an operating system called Flask. And for those of us living here in Utah,
+that's an interesting detail because Flask was actually created up at the University of Utah.
+Another interesting detail about S.E. Linux, when it was first proposed for inclusion in the
+standard kernel, Linus did not like the idea of adopting just one specific security technology
+because there was nothing to guarantee that S.E. Linux would be the best long-term solution for
+everybody. And so he insisted on the development of LSM, the Linux security modules design,
+which basically allows you to dynamically load various different models. Now, for example,
+App Armor, those that are familiar with the local company Novel and their Susa product,
+know that App Armor is the standard solution on Novel operating systems. Hands down though,
+my favorite solution is S.E. Linux. I just think it's a better design. And long-term,
+I think it's going to be the winning solution for most people. But it's important to understand
+what S.E. Linux is and what it is not. First of all, S.E. Linux does nothing to prevent
+security holes or just general bugs in your software. Programmers still can make mistakes,
+attackers can still attack holes in the program. It also is not a replacement for standard
+Unix file permissions or other parts of the standard Unix model. So, for example, if you want
+to firewall, S.E. Linux could help to make your firewall safer, but it is not going to be
+replacement for net filter and IP tables. That said, S.E. Linux can help to limit the amount of
+damage from a security hole. For example, Buffalo overflow or so on when somebody takes control of
+your Apache web server. Instead of being able to escalate, upload a root kit and get root level
+access on your system, the user, the attacker is going to be limited to basically killing the
+Apache, probably not even replacing any of its content depending on how you've configured it.
+It does this by controlling access to lots of labeled resources on your system. Access to files,
+directories, you can actually limit access to ports, to sockets. Pretty much any kernel object
+or most kernel objects can be tagged with an S.E. Linux label and then you can start writing
+policy to protect those systems. Which brings us to a good point to discuss some standard terms
+like discretionary access control versus mandatory access control. The traditional Unix security
+model is referred to as discretionary access control because users can change security settings.
+A user can change file permissions, for example, or users can easily SU to other accounts.
+In a traditional Unix model, you have the all-powerful root user. If you need to be able to do
+something that only root can do, for example, a web server needs to bind to port 80. The program
+has to start as root and then it has to drop its privileges. With S.E. Linux on the other hand,
+instead of having an all-powerful root user that can do anything, you can start writing more
+fine-grained rules. For example, you could say this user is allowed to start web servers,
+which means that they can bind to port 80, but nothing else. This other user is allowed to
+modify DNS settings, but nothing else. You have an admin responsible for one area,
+an admin responsible for a different area, and you don't have an all-powerful user. In fact,
+if you're not careful with S.E. Linux, you can completely lock yourself out of the system.
+S.E. Linux is kind of a mutt. We're going to see that sometimes you refer to things by many
+different terms that mean basically the same thing. That's because it's based on several
+different theoretical models. Two key concepts, type enforcement, and role-based access control.
+Security rules are based on a label, often referred to as a context, sometimes also referred to
+as a type or a domain, and then based on that label, you can say programs running with this label
+can access files with this label. That's what type enforcement is. We already talked about role-based
+access control where you have fine-grained roles, limiting what a particular person's allowed to do.
+One of the most important parts about dealing with S.E. Linux is dealing with those labels.
+In the slide, I've included an example of the format for a label. In traditional S.E. Linux,
+you would have three pieces of information, the identity, the role, and the type. New in REL5,
+Red Hat added two new technologies called MLS and MCS. That's where you will see these two
+extra pieces of information, a sensitivity and a category. MLS stands for multi-level security.
+Maybe you're already familiar with the government model where you have different levels of security
+like confidential and top-secret and so on. Very strict rules about who's able to access what
+and what direction information is able to go. Basically, you can become more classified,
+but it can't go down the chain. MLS can be used to implement those sorts of rules.
+Now, unless you have a government contract or you work for the government, you're probably not
+going to use that. But you might use MCS, multi-category security. Let's say that you have a
+couple of projects going on, Apollo and Gemini. You can tag some files as Apollo files,
+other files as Gemini files, some users as part of the Apollo project, other users as part of
+the Gemini project, some programs as authorized to modify Apollo data, different programs are
+authorized to modify Gemini data. So that's the sort of thing that you might do with MCS.
+We're going to focus mostly on the type when we're talking about basics of SELINIX,
+because Red Hat has found that, well, all of this information is theoretically useful.
+It makes things really complex. And so, at least for the short term, we're going to focus on types,
+build good tools for managing types, build out the knowledge about types, and then eventually
+start taking advantage of the other parts of the model. And of course, if you were to go work
+for the NSA, they're already using all of this information. Another piece of important terminology,
+there are three states for SELINIX, enforcing permissive and disabled mode. Enforcing is exactly
+what it sounds like. It means that SELINIX has been loaded into the kernel, the policy has been
+read, it's being evaluated, and it's being enforced. So if the policy says to prevent access,
+SELINIX will prevent access. Disabled is also what it sounds like. It means turn off SELINIX,
+don't even load the drivers. So you have a traditional UNIX system with traditional UNIX permissions.
+The interesting one is permissive. That means that SELINIX is loaded. It is evaluating
+its policy, but it does not enforce it. So if the policy says deny access, it will generate a
+log message saying that it's denied access, but it won't actually deny access. That can be really
+useful for troubleshooting, for example. Which brings me to basic requirements for SELINIX.
+You're going to need to have a kernel that supports it. At this point, red hat is one of the
+leading distributions when it comes to SELINIX. They ship not only with the SELINIX kernel support
+enabled, but also with a very complete policy instead of tools for managing that policy.
+Red hat isn't the only one that has SELINIX enabled. For example, OpenSusa 11.1, one of the new
+features is that they're going to start enabling SELINIX by default in their kernel. You can
+add versions of Debian that have SELINIX support. You can get a SELINIX support for Ubuntu. You can
+get it for Gentoo. Gentoo actually has pretty good SELINIX support. I'm going to be focusing, though,
+on red hat because they're definitely the leaders right now when it comes to the major Linux
+distributions and support for SELINIX. Another thing that you need, you need to have a file system
+that supports SELINIX. It's going to be storing the labels we just talked about as extended attributes
+in the file system. Your standard Unix file systems, EXT2, EXT3, XFS, JFS, and so on can store
+extended attributes. If you want to use, say, FAT file systems from Windows, you're not going to
+be able to use SELINIX with that file system. Another useful thing, modified user space tools.
+We're going to see that some of the core tools like PS and LS and CP and R sync and so on have
+been modified so that they are aware of SELINIX. Most programs do not need to know about SELINIX,
+but if you want to be able to analyze a system or if you want to be able to take backups and
+include SELINIX as part of the backup, then you're going to need to have modified user space programs.
+So let's talk about some commands for exploring your SELINIX system. One of them is going to be the
+GET Enforce command. Let's actually switch over now to the command line so that I can start showing
+these. GET Enforce is very simple. It tells you what state you're currently in. You'll notice
+that I am running my system in Enforcing mode. This is my recommendation for most people. I have
+been running my laptop in Enforcing mode for about three years now and I haven't had any real problems
+for about two years. When SELINIX first came out in Fedora Core 2, Red had had it turned off by
+default. They were using a policy called strict, which had been written by the NSA, and strict was
+way too strict. So that helped to give SELINIX a bad name. For Fedora Core 3 and Red 5, Red had
+actually wrote their own policy called Targeted, which we'll talk about more in a bit. Targeted was
+much better, but it still wasn't perfect. If I had to guess, I would guess that about two-thirds
+of people would be able to run a Fedora Core 3 or REL 4 system without significant problems because
+of SELINIX. But that still means at least a third of all people, a third of all systems, would run
+into some problem with SELINIX. In REL 5, starting with Fedora 6, Fedora Core 6, Red had made big
+changes to the Targeted policy, significantly extending it, and if I had to guess, I would guess
+that at this point, probably 90 percent of people can probably run SELINIX without any trouble,
+or with only minor problems. If you have tried using SELINIX in the past and it didn't work for
+you, give it another try. It has come a long way over the years. Now if you do have a problem,
+we're going to talk about how to fix it. First step, let's just switch to permissive mode.
+So I'll say 7-4-0, and now when I run getting forcing, I notice that it says that I'm in permissive mode.
+This is something that I will do occasionally. In fact, just yesterday, I was playing with virtualization,
+and I wanted to be able to read an ISO file off of an external USB hard drive that I just plugged
+into my laptop. Because of the policy at the moment for SELINIX, my virtual machine was not
+able to read the file on the USB hard drive. There are two different ways to fix that.
+What a lot of people end up doing is turning off SELINIX, and I did it temporarily because I was
+just using the CD image for the next five minutes. But if I had planned on using it permanently,
+the better recommendation would be to modify the label on the file so that it can be read.
+I'll talk about how to do that in just a little bit. But first, let's talk about two more
+quick commands, SE status and SE info. SE status you'll notice is just a more verbose version of
+the getting force command, basically, telling me that SELINIX is loaded, but is currently in permissive
+mode. It also tells me where the SELINIX file system has been mounted.
+For the tools to actually talk to SELINIX and interact with it, there need to be a file system
+mounted. Generally, you're just going to mount it in the standard location slash SELINIX.
+Notice that this also tells me what policy we're using. I mentioned the targeted policy from Red
+have already, and the version of that policy. SE info is another command that you can use to find
+out. You'll find out, for example, the different types of roles, the number of constraints,
+bullions, etc. Now let's get to the good stuff. Labels. The core commands like LS and PS have been
+modified adding a new command option, capital Z. They will show SE LINIX labels.
+I might wonder why capital Z, and here is I can figure it's the only letter that wasn't already
+taken somewhere else. And so this is what it looks like. In my root user's home directory,
+we have two labels, both of them labeled admin home t. You'll notice that I'm focusing on the last
+part of the label, the type, because I said that's what's most important in the Red Hat policy.
+Although there are a couple of other pieces of information, one of them is labeled system U
+object R, which is pretty normal. That's what you'll see for most things that are owned by root.
+Another one we see is unconfined U object R. That's a little bit more abnormal. I actually copied
+that off from another system onto here. And since LINIX didn't know what to do with it, it just gave
+the default label from the USB thumb drive that had been plugged in. Let's compare this to
+slash Etsy. I think it's more interesting there. Most of slash Etsy, you'll notice is labeled as
+Etsy t. Just the generic, this is a system config file. But a couple of these have their own
+special label, netconvt for my YP serve conf. Or if I page up, we see s tunnel Etsy t. The
+s tunnel file has its own config type. Our syslog conf has the syslog conf t. My Samba directory has
+the Samba Etsy t. Question? We're going to see how you can control file labels. When we talk about
+file context or f context, and we'll see that it depends. The label on a directory can influence
+the label of files created underneath it, but you can also write rules so the specific file always
+gets a specific label. Now we mentioned the fact that red hat created a policy called targeted.
+You're starting to see one of the details about the targeted policy. Instead of protecting
+everything, red hat decided to target the applications that get attacked most often.
+So for example, Apache attackers love to go after Apache. There are a lot of SELenix rules
+protecting it. Same thing for Samba and NFS and DNS. And over time, red hat has added more rules
+so that for example, they now have the ability to protect your syslog conf t, your YP serve conf t,
+and so on. But you'll notice that still most of these programs aren't targeted. They're still treated
+mostly like a normal Unix program with normal Unix permissions. Let's look at the PS command.
+I'm going to say PSEZ. E to get every program Z because I want the SELenix label.
+You'll notice that most of these are labeled as unconfined t. Now back in REL4, that meant
+SELenix didn't touch them. That they were just purely, completely normal Unix programs.
+In REL5, the truth is a little bit more complicated because there are some universal rules
+that every program has to obey. Little things like you can't execute your own stack.
+That's a standard way for an attacker to take control of a program is to inject code onto the stack
+and then jump to this stack and start executing it. So it would be more correct in REL5
+to call this mostly unconfined t. But I guess they didn't feel like renaming it.
+Now as I page up through the list, eventually we will come to programs that do have their own
+label. For example, my getties are running as gett or gdm. The graphical login program is running
+as xdmt or so on. So a lot of dealing with SELenix boils down to determining the label on a file
+and making sure that that label, that context or type, grants permission to a program to access
+the file. I forgot to mention, when you're talking about a program that is running a process,
+you don't talk about the type of a process. Instead, you talk about the domain of a process.
+So technically, you say this domain has access to these types, but they both boil down to the same
+thing. They're a label. To modify these labels, we can use commands like Shicon, RestoreCon,
+or FixFiles. So let's go through a classic example of what might go wrong.
+I'm going to create my own index.html. In other words, it's a web page. It's going to be all
+nice and pretty once I get it exactly the way I want it. And then I'm going to move this out to my
+web server so that everybody else in the world can see it too. I'll say move home sjanssen
+desktopindex.html to www.html, far up my web server and try to access that web page that I just created.
+So if I go to localhost, it worked because I forgot, I'm in permissive mode. Let's set and force one
+to go back to enforcing mode. I try to go to my web page and I get a forbidden message.
+Well, silly me. Of course, I got a forbidden message. I forgot to change the file permissions
+didn't I? So we'll go to www.html. We'll do an ls-l, but it is world readable. The web server should be
+able to access it, right? And then I remember sclinics. And I do an ls-capital z. And here I noticed the
+problem. Because the file was created in my home directory, it's labeled as a user home t. And one of
+Red Hat's policy rules is the web server must never under any circumstances be able to access user
+files. That's why it's being forbidden. I need to change it to something that it can access
+by saying shakhanhttpdsys contentt index.html. Well, shakhan-t because I'm changing the type.
+And now when I try to load the page, it works.
+The most commonly used types you will memorize over time. If you are a web developer,
+you'll probably memorize the web developer types. If you are responsible for DNS, you'll probably
+memorize all of the bind types. But that's still an awful lot to memorize. There are actually
+hundreds of rules about what types to give to files. You're probably not going to memorize everything.
+So there's got to be some ways to cheat, right? Let me show you one of them.
+You can say shakhan-dash reference equals, and then tell it to look at a file or a directory.
+So I'm, for example, saying, VWW, I know that that's labeled correctly because I just installed
+the RPM. So it's got to be right. Give the same label to my index.html.
+And now you'll notice that it didn't just change the type. It changed all of the information.
+It's now systemU objectR, httbdysys contentt. It's a little bit better, but it's still not as easy
+as we're hoping, is it? There's a third option. The RestoreCon command.
+The reason I got in trouble was because I created this file in my home directory,
+and it got labeled automatically based on where it was created. In a home directory,
+it's labeled as a user home t. Well, what if I could look at all these default label rules and say,
+give this file a new default label based on its new location. That's what RestoreCon does.
+We're not actually going to see a change because, well, RestoreCon's putting it to the same thing.
+Shakhan put it to just a moment ago. But if you think things are broken and you want to fix them,
+here's a really quick way to do it. A third option is the FixFiles command. This is actually a
+shell script that works similar to the RestoreCon command. Both RestoreCon and FixFiles can go
+through and recursively relabel a whole bunch of files based on their location. One of the differences
+is instead of looking at the policy file, the FixFiles command can actually look at an RPM.
+So you could say, look at the label on the file in this RPM, give the same label to the file on my
+system right now. Maybe my policy database actually is wrong, but the RPM was correct,
+and so I need to pull it out of there. But better yet, let me show you how to cheat.
+In the story, the reason I got in trouble was the MV command. I moved a file from my home directory
+over to my web server directory. That means that all of its security context went with it.
+The owners stayed the same. The Unix file permissions stayed the same. The Sealynix file labels stayed
+the same. What if I had used CP? Using CP, I would have created a brand new file based on the
+directory I was created. It would have been given its default label, and I wouldn't even have to
+worry about Sealynix. And so there's a trick. If you want to just not worry about Sealynix,
+using CP a lot of times will just save you the hassle.
+Yes, and so when you create a new file, you're creating a new I node, and so it has to be given
+a label, and it goes to look at the default labeling rules to give this new I node its label.
+If you have a file, you will reserve that copy it. If you have a new I node, do you want it?
+So if we have anybody listening at home, Doran's comment was that the same thing will
+happen with normal Unix permissions. If you move or CP a file, your normal Unix permissions will
+be preserved with move, but they'll get brand new ones if you use CP.
+For the most part, I'm not a fan of graphical tools,
+but let me show you one that I really do like. System config Sealynix. This was something created
+by Red Hat to help manage an Sealynix system. This is a great way to explore an Sealynix system,
+or to get simple things done quickly. Don't worry though, I'm going to show you how to do it
+by hand from the command line in just a moment. Starting off, on our first screen we see that you can
+check the current status of Sealynix, whether or not it has been loaded and whether or not it's
+currently enforcing. I see that at the moment my system is enforcing when I reboot it will enforce.
+Notice this little checkbox down here, relabel on next reboot. This is one of the reasons that I
+recommend always running in either enforcing or permissive mode. When you run in disabled mode,
+files don't get labeled. If you ever decide that you want to turn Sealynix on, you get a
+whole bunch of files that have to have labels added to them. The best way to deal with that is to
+click this little checkbox, reboot the system, and when it comes back up, very early in the boot
+process, it will go through and relabel everything on your system, giving it a default label.
+Depending on how many files you have, that could take a while. On my new laptop, with a really
+nice hard drive, really nice processor, I can relabel the entire system in about 10 minutes.
+On my old laptop with a much larger collection of files, it took me more in the neighborhood
+of an hour to relabel everything. So it might be something that you want to avoid. We have a
+question. Actually, you notice just two clicks down file labeling. We're about to see where it's
+based on. But before we do that, I just want to show you, if you wanted to make a change from the
+command line, where is the state of Sealynix stored on a red hat system, EtsySysConfig Sealynix?
+You'll notice here that I can say Sealynix equals enforcing or disabled or permissive. This is
+also actually where I would specify what policy to use. You notice that I'm using red hat's targeted
+policy. Did you add a relabel in there? Actually, if you want to do it by hand, you would create a
+hidden file in the root directory called dot auto relabel. And if you wanted to find out how
+to remember that, other than looking at documentation, it's actually one of the RC scripts.
+If you look at the EtsyRC dot the RCSysConfig, there's a code right there where it's checking for
+the existence of the dot auto relabel file. Now let's talk about another aspect of Sealynix.
+Booleans. You can have parts of the policy that are optional and can be turned on or off.
+For example, I love Apache. Let's look at all of the Apache Booleans. For example,
+allow HTTPD to run SSI executables in the same domain as
+system CGI scripts or allow HTTPD to act as an FTP server by listening on the FTP port.
+Notice that both of these are turned off by default. We don't want Apache acting like an FTP
+server when the admin doesn't expect it. We don't want Apache to be able to run random CGI's
+in a less strict environment when the administrator doesn't expect it. We want to have
+tight security by default, but maybe that's a problem. Maybe you need your web server to be an
+FTP server at the same time. Well, in the past, before you knew about this, you would try to turn
+on the right module in Apache, try to restart Apache. It wouldn't work. You'd get frustrated
+and turn off SE Linux. Now you know where to go looking if you're having a problem. Go look
+at the Booleans. Maybe there's one that you need to change. Just one problem with this screen.
+In older versions of SE Linux of Red Hat systems, for example, Red Hat Enterprise Linux version
+5 or older versions of Fedora, when you click on the checkbox, it takes forever to change.
+Then you notice in Fedora 9 and Fedora 10, when you click on the checkbox, it changes immediately,
+but watch the little spinning cursor. That's actually waiting for the change to happen in the
+background. On REL5, that's how long it would take you to actually see a change to the checkbox.
+If you didn't, and it doesn't have the spinning cursor either, it doesn't give any feedback.
+So if you didn't expect that, you get impatient. You start click, click, click to try and get its
+attention. Who knows what state it will be in. Just be patient, click, and wait, and wait,
+and wait, and wonder why the heck it takes so long, wait a little bit more, and then it'll catch
+up with you. Let's say that you have looked through all of the Booleans up here, and you can't
+find one that looks like what you need. Well, you haven't looked hard enough.
+One of the Booleans up here is, turn off SE Linux protection for Apache. In other words,
+I love SE Linux. I want to use it to protect most of my system. It's just Red Hat's policy for
+Apache. It doesn't do it for me. I need to turn off SE Linux for just this one program.
+You can do that by just changing a single Boolean. Now, file labeling. The question was,
+how does the system know what label to give to a file by default? It just goes through a list of
+regular expressions, one by one until it finds the best match. Where best match, as usual,
+means the longest regular expression that matches the file name.
+This is something that's new in REL5, and it's a big improvement in my opinion. A lot of companies
+like to do things their own way. For example, I like to store all of my virtual machines on a dedicated
+partition in slashvert. Now, back in REL4, no way I'd be able to do that. You have to put it where
+Red Hat expects, or you have to turn off SE Linux, or you have to write your own policy, but that's
+kind of more than you can expect to most people. But now in REL5, all I need to do is I need to just say
+slashvert.star. All files should be given a type of, and I would need to go look it up.
+Vert image t, for example.
+That gets listed added to the list of various rules. Now, on whenever I create a new virtual machine
+on my laptop, it will be automatically labeled correctly to work with KVM, and XAND, and so on.
+I've actually been meaning to get around to doing that for the last week, so if nothing else,
+this presentation has helped fix one problem with my laptop configuration.
+Something else that you can do. SE Linux actually has its own concept of users,
+which need to be mapped to Linux accounts. We talked about, for example, system U, or user U,
+you saw that one a little bit ago. Then you can map these to MLS and MCS ranges. For now,
+we'll just get past that since we're focusing on the basics of SE Linux, and most people probably
+won't use MLS or MCS. Same thing on the next tab, where we can map various translations,
+and on the next one, where we can say S0, that actually stands for top secret or whatever.
+Network ports. Another thing that you'll notice from this tool. You can specify,
+these are the web server ports, 80 and 443. The FTP port is 21. The SSH port is 22. The FSMTP port
+is 25. And then in the policy rules, you can say web servers combined to web server ports.
+Email servers combined to email server ports, and so on.
+But what if your company is another one of those oddballs that wants to run on a different port?
+Maybe for you, port 4376 is a web server port. Well, you can come in here and you can add
+that port to the list of web server ports. And then a SE Linux will start letting a patchy
+list on a different port than what Red Hat expected. Something else that's new in RELF 5,
+modular policy. Back in RELF 4, you could basically install one big binary blob of policy rules
+or nothing at all. You would have a bunch of rules for programs that you might never install.
+But now in RELF 5, as you install software, you will also add
+pluggable pieces of policy rules to the policy database. The theory is that third party vendors can
+now start shipping SE Linux rules with their software. So for theoretically, Oracle could
+include SE Linux rules to harden their Oracle databases. And Red Hat wouldn't have to do anything
+to enable that. They've already made modular policy possible.
+So how would we do some of the same stuff from the command line? First of all, Booleans.
+There's a pair of commands, get SE Boole, and obviously the companion set SE Boole.
+Get SE Boole minus A will print all of the Booleans. The problem with doing things from the
+command line like this, you don't have that nice English sentence like allow the web server to
+bind to the FTP port. Instead, you have wacky things like user ping. What about user ping?
+Or Zen use NFS. Or let's see if we can find a really fun one.
+Some of these Booleans just make absolutely no sense if you don't know what they mean.
+Well, transition, there's a allow unconfined QMU transition. You'll see reference to transition.
+A lot, what does it mean? It means changing from one domain to another.
+Normally, programs are only allowed to stay in their domain. When they start a child,
+the child is in the same domain. But if you're granted transition, you can change from one domain
+to another domain. If we were to find the one to stop protecting SE Linux,
+you would actually be HTTP-D disable trends. Or something close to that.
+Actually, this is for door 10. I don't know what changes they've made to the policy yet in
+for door 10. No, there's a unified element that we're off to.
+Well, in Rull 5, there would have been either an HTTP-D enabled trends or disable trends or
+something like that. You change the Boolean so that it doesn't transition to a new domain.
+In other words, it doesn't go into the web server domain and doesn't get limited. The way a
+web server gets limited. The rest of the commands that we saw, as far as writing default label rules
+and translating MLS and MCS and managing ports and all that, is done by the SE-manage command.
+So, for example, if I were to say SE-manage F-context-L, this is going to list all of the
+rules for labeling files, which is quite a lot of them. Just out of curiosity, you might wonder
+how many are there? 2,784 rules. Now, that isn't a list of all the types because some of those
+rules will give the same type and some types actually aren't applied by any of the default rules,
+but there are hundreds of types to choose from.
+Another useful piece of information. Getting error messages out of SE Linux.
+Back in Rull 4, the way that you would look at log files and find error messages was by gripping
+varlog messages for AVC. In Rull 5, if audit D is installed and turned on, audit D will actually
+redirect those messages to a different destination. The end of going to the varlog audit audit.log file.
+I was running out of space on my slide, so I just combined the two. Look at varlog messages or
+look at varlog audit.log depending on what system you're on. You might wonder AVC.
+Okay, I could just memorize that. I recommend just memorizing. It's the easiest thing to do,
+but you might be curious, what does it stand for? It actually stands for the authorization vector cache.
+It's part of the kernel that caches SE Linux policy decisions, so it's to allow things to run
+faster. Okay, that's what AVC stands for. Aren't you glad you asked?
+New in Rull 5, though, we've got a much better solution. Instead of grepping for AVC messages and
+scratching your head trying to figure out what the heck is that thing trying to say, there's not
+something called SE troubleshoot, which will read AVC messages and give you more verbose information.
+In fact, it'll even give a recommendation on how to make the problem go away.
+In order to use SE troubleshoot, you're going to need to install some RPMs.
+The SE troubleshoot RPM is going to give you a graphical interface
+for viewing this information. Maybe some of you have noticed a little gold star up at the top
+of your screen if you're using a red head based system. For example, I kept some error messages just
+for us to look at. You notice that I can click on the gold star and then up pops a program that
+lets me view various messages. We see that SE Linux is preventing NP viewer dot bin that's actually
+the flash player from accessing some file in my home directory. There's actually a no one problem
+with the SE Linux policy at the moment. They've made Firefox even more strict and right now it's
+getting in the way of flash. There's a boolean that you can turn off to make your system a little
+bit less secure. My personal approach so far has been to keep the system secure and just let
+flash be a little bit broken because I don't care enough. Under that, you'll notice that there is a
+detailed description saying, what does this actually mean? SE Linux has denied access,
+the yada yada yada. I won't read all of it. And then there's a part called allowing access.
+This is how to make the problem go away. In this case, it recommends using RestoreCon.
+I don't say that this is how to fix it though because sometimes the fix will basically be
+completely turn off all security. Shoot yourself in the head. Well, yeah, you're not going to be
+able to do much in the way of dangerous things once you've been shot in the head, but it's probably
+not a good idea. That's why when you look at this, don't just do what it says. Put your thinking cap
+on and ask yourself, what the heck does that mean? Does it make sense? Maybe go online, ask for some
+help. Hopefully you're paying for a support contract, contact Red Hat and ask them for some advice.
+In this case, RestoreCon, I know that's not going to do anything to fix the file.
+So I'm just going to ignore this for now. There's additional information.
+The label for the program that was trying to access the file, the label for the file that it was
+trying to access. In other words, the source context and the target context, various other pieces
+of information. This is all the sort of information that you'd want to give to Red Hat's support
+if you're asking them for their advice on how to actually fix this problem.
+Now, GUIs are nice and all, but what if this is a real server? Probably don't want to be going around
+clicking on little gold stars on all my web servers. That's why there's also the SE Troubleshoot
+Dash Server RPM, which will put information in my log files. I can grip for the string SEAlert
+in our log messages, and it is going to give me messages like this.
+SE Linux is presenting NP viewer bin from accessing this file for complete message run
+SEAlert minus L, and then there will be a UUID. You can just copy
+that entire command. Let's copy this one.
+And paste it. Let's run that through less. And you notice that it's exactly the same thing we
+saw in the GUI a moment ago. A summary, a detailed description, advice on how to make the problem
+go away, more detailed information. Another option, SEAlert minus L, backslash star. That's going to
+give me all of the messages currently in our log messages. You could also configure your system
+to email this to you so that instead of logging into systems, every time that there's an SE Linux
+denial message, it emails some administrators and tells them about it. That's probably a good idea on
+a production system. On a development or a testing server, maybe not because every once in a while,
+you might have a problem or Red Hat might have a problem with their SE Linux config,
+and it'll generate literally hundreds of denial messages in a matter of seconds.
+In fact, just a few weeks ago, I was playing with the system and I
+watched something and I started copying several gigs of files and the system ate itself alive
+by filling, I think it was like 40 gigs of log file space over the course of half an hour without
+me noticing. Imagine 40 gigs of email messages being generated,
+useful on production, maybe not on your testing or development servers.
+Actually, I remember something like that, yeah, I think you can.
+Can you filter the messages so that certain people get certain denials and other people get
+other denials? I think I saw that there's the ability to blacklist, I don't know if I saw the
+ability to whitelist, but it's something that would be documented. On the other questions,
+we're actually going through this much faster this time since I've got a much quieter group,
+but that's good, I guess it means we get to go home earlier. Okay, now let's talk about the process
+that you would go through if you have a problem and you think SE Linux might be involved.
+You actually know all of this, I'm not going to teach you anything new at this point,
+I'm just going to bring it all together. First of all, when you're having a problem and you think
+that SE Linux is involved, switch to permissive mode quickly and see if the problem goes away.
+If the problem goes away, that means that SE Linux is involved.
+If the problem does not go away, quit blaming SE Linux and find the real cause already, okay?
+I recommend switching to permissive mode instead of looking at log files,
+because it's the only way to be absolutely certain. I've actually run into problems
+that did not generate log messages until I switched to permissive mode, and while I was in
+permissive mode, it also generated a log message with a denial. So obviously red hats engineers
+decided that certain types of denials should just be filtered out and never go to the log
+message at all. That's how I learned the hard way permissive modes, the only way to be absolutely
+certain that SE Linux isn't involved. Or there's an SE Linux preventing you from logging.
+Or there's an SE Linux preventing you from logging. In this case, it wasn't.
+It was straight up, they decided to filter all NTP related messages.
+So, let's say that SE Linux is involved, okay? The next thing that we're going to think is,
+what file has the wrong label? What do I need to fix? Looking at your log messages is probably a
+good way to find that. If not for our log messages, then the program probably will tell you.
+Apache has its error log and various other programs have their log files.
+Now, we've talked about how to restore files to the correct label using three different programs,
+Shaqon, RestoreCon, and FixFiles. Do you remember how to use the Shaqon file?
+What would the basic command look like? Anybody remember?
+Other than Klimt?
+Okay, well, the
+man Shaqon is a very good first step. Shaqon minus T is what I'm looking for,
+or Shaqon-dash reference. So, what does Shaqon minus T do?
+Gives it a specific type. This is a beautiful thing because it lets you create very small tweaks.
+For example, one of the problems that you might run into, you might need to allow your NFS server,
+your Samba server, your FTP server, and your web server to all access the same file.
+If you label it as HDDBD content T, though, only your web server can access it.
+So, you need a different label that lets other things access it.
+Shaqon minus T, public content T. If you only memorize one type,
+that's the one that I would memorize.
+It's not global access, but it is a large collection of file-serving programs,
+NFS and Samba, and so on. Klimt makes a good point. This is read-only.
+What if you need read-write access? If you only memorize two labels,
+here is the second one that I would memorize. Public content RWT.
+Watch out, though, because this might not be enough. You might also need to change a Boolean.
+For example, if you're working with Samba, you want to allow
+the NFS server to have right access, and you want Samba to have right access.
+Well, Samba is not going to allow right access by default. If it's public content T,
+it's only going to allow read-only access. You need to change it to RWT,
+and then you need to go change a Samba Boolean that says Samba is allowed to modify files
+in a user's home directory.
+Well, I heard the comment. It seems like I remember all this document in the comments
+in your Samba to take one. So if you forget that, you can go looking at the stuff
+50 lines in your Samba to take it into account. My question is, the type that you're using here
+are predefined by the policy. So what if you want to create an attack?
+You're getting ahead of us just a moment, which is actually going to be on the next slide.
+The answer is, I'm not going to tell you tonight, but maybe sometime I will later.
+We're going to talk about Shikon, dash dash reference, meaning find something that is correct,
+and just copy the same label to the other one, but without as much typing, depending on.
+RestoreCon is another option.
+So what does RestoreCon-R-R-R-W-W-W mean?
+And how does it know the default type?
+Yeah, it's defined in the policy. We looked at the system-config-SE Linux or SE-ManageF-Context,
+where you can modify that. This is a sledgehammer. Sometimes a sledgehammer is the right
+job tool for the job. When you need to tear down a wall, sledgehammer is going to get it done quickly.
+But when all you need to do is make a minor repair to your coffee table,
+you're probably going to do more damage with the sledgehammer than you are going to do good.
+If you had any little tweaks, Shikon-T, public content-T,
+so that you could share with a broader number of programs,
+or StoreCon could end up throwing all of those little tweaks out the window and bringing all
+of the problems back. So sometimes your StoreCon will make your life easier, sometimes it'll make
+it harder, be careful with it. I have never measured it. It's not really noticeable.
+It's an extended attribute. Most labels are in the neighborhood of what?
+15 bytes or so. So it adds maybe 15 bytes per file.
+Oh, yeah. The policy is stored. Actually, it's just the U-MIS-SH-SE-SE Linux. We'll grab
+the entire directory. The entire thing is about 46 megs. But that's more than just the policy itself.
+That's also other things like an explanation of what the Boolean's mean and so on.
+In the greater scheme of things, unless you're doing embedded development, you're not going to notice.
+You may have mentioned this when I just made a step into how do you deal with the types that are
+available? Yeah, I didn't mention it. I showed you how to find the default label rules.
+SE Manage, F-Context, minus L is what I showed you.
+SE Search, I didn't mention because I need to spend more time with it.
+But SE Search, I believe, could tell you that. If SE Search can't tell you,
+then the only way to absolutely know would be to start reading the policy.
+Thankfully, most of the time, though, that isn't necessary. One of the things that I was going to
+mention, ManPages. We've already seen that there's a ManPage for the tools like Shaqon.
+But there's also ManPages for different programs and parts of the policy.
+So, for example, if you wanted to find out things related to Apache, you'd say Man, HTTPD,
+SE Linux, and it's going to talk about things like HTTPD, SysContentT, or if you have CGI,
+you're going to want to set them to script exec T, if you need to read right access,
+SysContentRWT, and so on. Talks about some of the important bullions.
+For those that aren't familiar with the Apropo command, this is a real help.
+Just say Apropo SE Linux, and there's a list of all of the ManPages related to SE Linux.
+Remember, when you install software, it installs ManPages, which means it'll probably end up
+adding some SE Linux-related ManPages at the same time.
+So, that was step two. We know that SE Linux has a problem. We think maybe that it's the label
+on a file that needs to be changed. What if it isn't a problem with a label? Instead,
+it's an actual policy rule that's getting in the way. Well, then the next option you'll
+remember is Booleans. Go look at the Booleans and see if there's one that you need to change.
+We saw that you can do that with the GUI system config SE Linux, and that it has a nice
+English description of what each Boolean means. We saw that the ManPage will also describe
+what some of the Booleans mean, and we saw that if you want to do things from the command line,
+get SE Bull and set SE Bull are the way to do it. This is really useful in shell scripts,
+for example, or say puppeters on. One thing to watch out though,
+with set SE Bull, include the capital P. That makes it the change permanent instead of temporary.
+If you just say set SE Bull, HTTPD, disable trans equals one, you'll be fine until you reboot,
+but when you reboot it, it'll go back to the default settings. The minus P will also write to
+a config file so it becomes persistent or permanent. Yep.
+Do you have, if there are cases where there are multiple policies,
+the question is one file, or is it about non-pollity or one file?
+Right. It's rules in the policy, I know what you meant. Different rules can be about different things.
+So you could have one rule that talks about read access, a different rule that talks about
+write access, in which case, yes, both of them would apply. I don't believe that you could have
+two rules with the same test where you're looking at this particular object and this particular
+verb, and they are all exactly the same. I think that's a conflict, but I've never tried doing it,
+so I don't know. Again, we go back to the SE search command, which I really need to spend more
+quality time with. According to a coworker, it can do it, but I can't show you how because I
+haven't learned it myself yet.
+And those are the ones you most concerned about anyway. Looking for future planning that might be something
+as useful as far as solving the problem. Is this one, I mean, that's the trouble she will help you
+with most of the problems? Yeah. Everything that I'm teaching you tonight is everything I have ever
+needed to know in order to work with SE Linux and a little more. That doesn't mean that I know
+everything yet. For example, I need to learn more about the SE search command. There's some new
+tools in Fedora 10 that I still haven't played with, so I need to learn about those, but everything I'm
+teaching you tonight is everything I've ever needed to know. Let's say that you looked through all
+of the Booleans, and that wasn't what you needed. Maybe you needed to change something else.
+For example, a port number. You need to allow Apache to bind to port 82 for some reason.
+How would you do that? Again, with the GUI system config SE Linux, or from the command line, the SE
+manage command. The next step, if that's not good enough, you have to ask yourself, am I willing to
+write my own policy? Three years ago, I would have called this superhuman and said that most
+administrators should not be expected to do something like that. These days, it's much better documented
+so that it's actually in the realm of possibility for a competent administrator to start writing
+his own policy. In fact, with some of the new tools that Red Hat's working on, it might someday
+actually become easy to write policy. When I gave this presentation to Slug, one of the offers that
+I made was to come back at some point in the future, sometime next year, say like February or so,
+and give a presentation about more advanced SE Linux topics like writing policy and using the new
+tools in Fedora 10 and so on. If there's the interest from plug, I would be willing to come back and
+do that again, so I will say for now, coming to a lug near you. The final step when you're troubleshooting
+SE Linux is to ask yourself, okay, have I reached a point where I have to turn off SE Linux?
+I think everybody should have SE Linux turned on if possible. I think that for most people, it is
+possible. But for some people, your needs are just too specific. They can't be met yet, and so you
+might have to turn off SE Linux on a handful of systems that doesn't make you a bad person that
+does not make your system insecure. You might be a little bit less secure than you would have been if
+you had SE Linux turned on, but you know what, you're still using Linux. You're still using a
+Unix-based operating system, and it has been good enough for most people for decades.
+So if you have to turn off SE Linux is acceptable, I just really recommend give it a try. It has
+improved a lot, and you can probably actually keep it running. In the past, most administrators have
+turned off SE Linux because of pure superstition. They don't know SE Linux, so they fear SE Linux,
+and they turn it off. When your job is to keep a system running 24-7, that's reasonable.
+But now you know a little bit more about SE Linux. Hopefully you don't fear it quite as much,
+and now you can make an informed decision. If you decide to turn it off, it won't be because you're
+afraid of it. It will be because you understand it, and you've decided that you have to turn it off
+after trying every other possibility. Just a little bit about what's coming in the future.
+Some changes that have been made to SE Linux. For example, the disabled trans is actually going away,
+because it's not the best solution. We've said that trans stands for transition,
+so it's changing from one domain to another. We said that you can tell Apache not to go into the
+web server domain, but it's still stuck in some domain. It's still going to be in the init script domain
+actually, which means all of the files that it creates are not going to be labeled as web server
+files. They're going to be created as init script files. You've ever decided to turn SE Linux back
+on for Apache. That's going to be a problem. You're going to have to relabel all those files to give
+them the HEVD system content T. That's why one of the new features that's been added to the
+latest versions of SE Linux. I think this actually made it into Fedora 10. I haven't double-checked
+yet, but I think it's in Fedora 10 is permissive domains. That means instead of switching the entire
+system to permissive mode, you can be in enforcing mode for most of the system, but a specific domain
+can be in permissive mode. Apache still labels files as HEVD system content T as they get created,
+but none of the policy rules actually apply to Apache. Apache is still just your standard
+Unix system. The goal, of course, being that this is a temporary fix that you spend a little time
+in permissive mode, and then you write your own little policy module to fix whatever problem
+there is, add it to the system, and you can go back to enforcing mode so that you have SE Linux
+continuing to protect everything on the system. Another interesting detail. XGEST. This was actually
+shipped for the first time with Fedora 8, but it was kind of a preview release. It was a little
+bit bumpy and it's still being perfected, but XGEST is a really cool idea. It's for creating
+kiosk style systems. When you log in, you go into instead of the user domain, you go into the XGEST
+domain, and you're only allowed to do certain things. For example, you might be allowed to launch
+Firefox. You might be allowed to connect to web server ports so that you can surf the web or whatever,
+but you're not allowed to connect to HTTP or to SMTP ports. In other words, you can't start sending
+email or so on. There's actually a set of Booleans that can control XGEST, so maybe you don't want
+your XGEST users to be able to surf the web. You just want them to be able to run a program to
+check their enrollment if they're at a SAQ college. This is a university kiosk. The great thing about
+this as compared to most kiosks is that you have much, much, much more fine-grained security.
+You don't have to worry about people being able to find some backdoor, run some program. It's
+very locked down based on the policy. They're only able to read a handful of files or run a handful
+of programs. XGEST actually includes more than just this. In addition to the SE Linux portions,
+they also did a little bit of extra setup, brought, for example, a custom PAM module,
+so that every XGEST user has their own TAMPFS-based home directory. You might log in, download files,
+or so on. As soon as you log out, the home directory just disappears. All of those files go away.
+You don't have to worry about one person's bank account cookie being available when the next
+person walks up and logs into the computer and looks at all their cookies. You can have multiple
+XGEST users logged in at the same time. If you're coming in, actually not XGEST, but just
+GEST users without the ability to run graphical programs, have TAMPFS-based home directories for
+all of them, although it's technically the same user name. They're still not going to be able to
+access each other's files. XGEST is not fully baked yet, but very cool and with just a little bit
+of work. It could make some pretty interesting systems. Another interesting thing going on with
+SE Linux, Net Label, and SE PostgreSQL. You can actually, with Net Label, apply security labels
+to packets as they go through the network, so that when you're in one domain on a client system
+and you access a server, all of the packets you generate will be in that domain, and the server
+can make decisions about what you're allowed to access based on what SE Linux domain you're in.
+Right now this is not encrypted or any way to protect it, so this has to be a fully trusted
+machine talking to a trusted server over an isolated network to prevent spoofing. My personal
+opinion is, though, it's only a matter of time before somebody adds some strong cryptography
+to validate those contexts, and so eventually we might be able to, from anywhere in the world,
+extend SE Linux from a trusted domain to a trusted server.
+SE PostgreSQL is related to this. When you're connecting to your database server,
+instead of limiting your access to a specific file, you can actually limit access to specific
+rows in the database based on labels. SE Linux is seriously cool at least in theory.
+Haven't played with it personally to find out how cool it is in the real world.
+They're still working on it some as my impression, but it sounds really interesting.
+And that is a quick introduction to some basics of SE Linux. Any questions before we call it a night?
+Let's see, now here's where we're going to disagree, because my personal opinion is that Red
+Head Enterprise Linux is one of the most usable of available operating systems.
+I have not spent a significant amount of time on other systems.
+I can tell you pretty much though right now what you're going to run into.
+On a SUSE system, you can get SE Linux kernels, but you're not going to have any policy rules
+or anything else to really help you, because they're just barely starting to wake up to the fact
+that App Armor was not a good choice. I probably shouldn't have just said that.
+Novel has not yet admitted that App Armor was a mistake, but they did fire all of their
+App Armor developers, which tends to indicate to me that things might be changing.
+On Ubuntu systems, there is basic policy, but because Ubuntu decided to go with App Armor instead
+of SE Linux by default, there hasn't been a lot of work on the policies for it. So you're
+able to do basic things. Actually, you might know Krister Edwards, thank you. One of the local
+Ubuntu guys, he has done a lot of the pushing and nagging to make sure that Ubuntu would have
+SE Linux support, and so he's part of the reason that you're going to have at least some support
+for SE Linux on Ubuntu. Like I said, Gen2 is actually surprising one of the systems that
+has some concern for SE Linux. So if you still think the Gen2 is a viable system, you might check
+that out. And then there are smaller third-party products. Actually, there's a company called Treesys,
+TRE-SYS. They helped to create a lot of the tools for SE Linux also. What's that?
+Yeah, I have no idea how to actually pronounce it, but I'm pretty sure you're not right.
+Honestly, though, right now, Red Hat and Fedora really are the only ones that have been going
+after SE Linux for a long time with real dedicated resources. I suspect that other people
+are eventually going to change that. Clint says that that's already starting to change with Ubuntu.
+Actually, Debian too, depending on, Debian is a giant chaotic amalgamation of varying degrees
+of quality. My understanding is that parts of Debian have very good SE Linux support,
+and of course other parts of Debian probably have zero SE Linux support at all.
+I did need to agree with you. You touched on it for a little bit, but in your studies,
+if you come across any things regarding multi-system management, so if I have a question of 100 web
+servers, 40 of them are web application servers, 20 of them are static application servers,
+and I don't have different policies. I think that's maybe what you're looking at with
+the net label right at the media centralized policy. No, that is not the net label.
+What you're hoping for something is, you're hoping for something more like active directory where
+you have all of your security information and it's centralized. Not the same implementation,
+but the active directory, well, it might have problems with some of the implementation details,
+is a great theory. In all the time that I've been teaching SE Linux, you're only the second
+person that's ever asked, and it's only in the last six months that I've started to be asked.
+What that says to me is, at this point, I'm starting to see a trend, which means that Red had
+might be starting to see a trend, meaning it might be coming up at some point in the future,
+but up until now, nobody has really been thinking about that as far as.
+As it happens, there's a sudden pool of Utah developers.
+I hear exactly what you're saying. SE Linux has been growing slowly,
+maturing slowly over many years, and it's only recently that it's really starting to reach
+the point of maturity that a lot of people might start feeling comfortable with it. In the past,
+it was just the people that needed the highest degree of security or people like me that want to
+be out there on the cutting edge. This is exactly the sort of feedback that you should be giving.
+I don't know if you use Red Hat products. If you do, you want to be talking to your Red Hat
+representative. You want to be filing bugs in Bugsilla. You want to be maybe even getting some of
+your key administrators on the developer list to start expressing your concerns. Because my
+impression, and this is completely non-scientific, this is purely based on my personal experience,
+my personal experience has been that the really big organizations haven't cared until recently.
+Depends on your definition of auditing.
+Right. SE Linux lays a significant amount of the framework necessary to have very fine-grained
+auditing, and there is auditing in the form of log messages generated. For example, when I
+switched to permissive mode, there was a log message generated saying this user ID number at
+this time switched to permissive mode, so on. If you have all of that going to your central logging
+system, you could be the one extracting it right now. If there are products to automatically track
+all of that as part of some larger integrated system, I'm not aware of it, but I've also never
+gone looking for it. Maybe this is the point where you would start looking at some of the smaller
+companies that provide services related to SE Linux. Treesis is the one that I would really
+would recommend looking at. I would not be surprised if they do have some tools in that neighborhood,
+because they do seem to be even farther a little bit out ahead of Red Hat.
+Any other questions?
+I know what the performance is not noticeable. It's somewhere in the neighborhood of like one percent
+or something. In other words, it's barely even a statistical blip.
+You get kind of a scary warning at the beginning that if you step things up in a certain way that
+you could be locked out of things. If you're not actually permanent locked out as you could
+go into the distance of something and access that file and turn it off and leave it right.
+As long as you boot a kernel without any SE Linux support, actually, you know what?
+Wasn't that one of my, yeah, you don't even have to boot from a different disk.
+You can just modify the kernel arguments, adding and forcing equals zero and it will boot into
+permissive mode. There is also, is it SE Linux equals zero, which will boot into disabled mode.
+I don't like booting into disabled mode because of the problem with files not getting labeled
+correctly. So I recommend enforcing equals zero. But for whatever reason that's not doing it for you,
+you could say SE Linux equals zero instead.
+I also gave a scary warning about lots of log files being generated or lots of log messages being
+generated in a short amount of time and using up on my disk space. That's not a common occurrence.
+That was the combination of using a beta version of Fedora and doing a whole lot of file IO in a
+limited amount of time. Yes, there is a difference between beta versions of Fedora and release versions.
+The beta versions are even more unstable.
+So I'm ready to call it a night.
+Thank you.
+Thank you.
+Thank you for listening to Active Public Radio.
+HPR is sponsored by Carol.net. So head on over to CARO.NAC for all of us in need.
+Thank you.

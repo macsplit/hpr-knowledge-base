@@ -1,0 +1,157 @@
+Episode: 4331
+Title: HPR4331: Re-inventing the light switch
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4331/hpr4331.mp3
+Transcribed: 2025-10-25 23:10:18
+
+---
+
+This is Hacker Public Radio Episode 4331 from Monday the 10th of March 2025.
+Today's show is entitled, Reinventing the Light Switch.
+It is part of the series' home automation.
+It is hosted by Lee and is about 10 minutes long.
+It carries a clean flag.
+The summary is, Lee does some home automation with Bash, Python and Apache Cordova.
+Hi, I'm Lee.
+Today I'll be talking about using scripting to turn indoor lights on and off.
+Now you might say, in the past we had something called a light switch.
+Why mess with that well-proven mechanism?
+And I very much sympathise with that point of view.
+I have some sensitivity to artificial lighting myself.
+And shades or a visor are not always effective.
+So I've been in several situations where I've had to leave or give up what I was doing
+because the people who designed the building I was in had decided not to provide a light
+switch and instead had made the lighting fully automatic.
+And even if there was some remote control to adjust the lights, no one knew where it was.
+That source subject decided I'll proceed to describe the little handcrafted automation
+I've developed for my own apartment.
+This will involve several stages.
+First, the existence of an undocumented network exploit that allows control of a particular
+brand of commercial LED bulb.
+Then, writing a Python script to send data to the light bulbs.
+Then, writing shell scripts to call the appropriate Python script for different functions and
+putting these scripts on the server.
+Finally, writing a mobile app that connects to the server and issues commands to turn the
+lights off or change their brightness.
+So first, the LED bulbs.
+These are made by Whiz, spelled capital W, little i and capital Z.
+Now there is a mobile app they provide for setting up and controlling bulbs.
+So I was using this app originally, particularly for putting the bulbs on the local Wi-Fi.
+But then you're limited to only what this proprietary app allows you to do.
+So I'd come across some exploit code that was written by cyber security enthusiast and
+software developer from Finland with the handle Routendo's, about R00T ENDO.
+Now it would be nice if manufacturers of smart devices fully opened up their APIs.
+You might say this would be a security risk, but if the APIs well designed it would be secure.
+And if they're hiding behind the fact that the API is not documented, then this is security
+by obscurity, which can often be effective, but is not really the best type of security.
+Routendo wrote an article about the exploit on Medium, and there's a link to this in the
+show notes, but I'm aware there is a paywall, so not everyone will be able to read it.
+So I'll paraphrase.
+Basically, they wanted the network traffic between their phone running the proprietary app
+and the light bulbs.
+They used a method called ARP spoofing, so they would be able to access the packets of
+data as they were being sent across the network.
+So on GitHub, also linked in the show notes, is an example Python script they wrote for
+issuing commands, basically it connects to an IP on a certain port and sends some JSON.
+I've adapted this script for my own purposes.
+Since my particular bulbs don't have colours, I just implemented functions for on-off and
+change the brightness between 0 and 100.
+And while there are 100 brightnesses, I found there are actually only 10 distinct ones,
+so the least significant figure is redundant.
+Once I got this to work, I wrote shell scripts to wrap around this, to just implement
+the specific functions I needed.
+I hard-coded the IP address of the light bulbs, which I discovered for a combination of running
+end-map and looking at the device status information on the admin console of my Wi-Fi router.
+Now I'll put these scripts on my home server, which is always on, and sits in my server
+rack that is described in Episode HPR 4215.
+So to actually run these scripts, for example, from my PC, which runs Kabuntu, I added a
+text command widget to my desktop.
+I'm not sure this is one of the built-in KDE widgets, so I think I downloaded it through
+the Get More widgets feature.
+By the way, I also have a widget called Command Output that gets the weather using a script
+I described in Episode HPR 4266.
+I include a screenshot, the leftmost widget, by the way, in folks' script.
+The launch is a Windows Virtual Machine, with LibVirt, then opens Virt Viewer.
+So it's still slightly inconvenient having to turn on my PC just to adjust the lights,
+so I first thought of writing a web interface and putting it on my server.
+I did this using Python, which listens for HTTP requests.
+LibVirt serves up the user interface as HTML, or if it's an Ajax request actually performs
+the requested command.
+The trouble was, for whatever reason, this demon would go to sleep after a while, meaning
+it was not immediately responding to the web browser of my Android phone, iPad or desktop
+PC, though it would work eventually.
+So what I decided to do was create a simple mobile app to control the lights.
+Since I'd already written the HTML and JavaScript when I had made the web interface version,
+I thought it would be good if I could reuse this, but just put it inside the web view on a mobile app.
+Thankfully, there are several mobile app development frameworks that allow you to do this.
+For example, Cordover and Ionic.
+Cordover is probably the most long-standing one, and in some circles it is seen as outdated,
+but I've been using it at work on and off for quite a number of years.
+The advantage of one of these hybrid mobile frameworks is that you write the user interface
+with plain HTML, CSS and JavaScript, which are familiar to most people who have done
+any front-end development.
+But in addition, there are hundreds of plugins available that interface to native features
+on the mobile device, and a lot of these plugins will provide a consistent function that works
+irrespective of whether the device is Android or iOS.
+So in this case, I found a plugin called SSH Connect, created by Jose and Ray Perez
+Aravala, and I'll link to it in the show notes.
+The reason for using it is so I can run some JavaScript on the mobile web view,
+and it will connect to my server over SSH and invoke one of the shell scripts I described earlier.
+This plugin is for Android, so I've made an Android version of this app only, not an iOS one.
+First you have to make sure, along with Cordover, you have installed the right version
+of the Android SDK, Java and especially Gradle, or the app won't build properly.
+So I'll create the app with the command Cordover Create Light switch, and go into the folder
+that is just added, and add the Android platform with Cordover Platform Add Android, and then
+install the plugin with Cordover plugin Add Cordover, iPhone plugin, iPhone SSH, iPhone Connect.
+Then it's a matter of modifying the HTML JavaScript and CSS in the WWW folder to show whatever
+user interface and user interaction you want.
+And also with JavaScript to access the plugins to do native commands, in this case connected
+to my server with SSH.
+So just looking at the code in my index.html, I have two buttons for on and off, and a range
+input from 0 to 100 for the brightness.
+In my index.js file, I wait for the on device ready event, then attach click or input
+listeners respectively to these controls, and I call one of three functions, which are
+on, off and brightness.
+Each of these functions accesses the Cordover SSH plugin, and connects to the server issues
+of command then disconnects.
+So then I built the app with Cordover build Android, and assuming my phone is connected
+to the PC, has developer mode enabled, and USB debugging enabled and activated, then I
+can just run Cordover run Android, and it deploys the app to my device.
+In lone behold, I can turn the lights on off or adjust the brightness with this app.
+So you might say I could have done this already with the wizard, and that is true.
+So what interests me about doing it this way is I can write scripts that adjust the lights
+according to certain triggers.
+So for example, I've added to Cron so that in the early morning I have the lights come
+on and gradually get brighter, which is a nice way of waking up that I prefer to an alarm
+clock.
+And especially in the winter, when it's not light until later than it is in the summer,
+it makes it seem as if the day has started earlier than it really did.
+And I can imagine I might have other triggers, for example, were learning me to certain events.
+So I've put the various code in the show notes.
+Just to note, so far I'm just working with the four light bulbs in the main room of my
+fat, though in future other rooms could be added to the setup.
+I'm aware it's somewhat precarious to be working with an undocumented API that could change
+or be patched in future.
+I'm assuming the bulbs won't do a firmware update by themselves, though I think that
+is what all IoT devices need to do nowadays.
+And I think this opinion has been often voiced on security now, the Tweet podcast featuring
+Steve Gibson.
+I mentioned in episode HPR 4246.
+So anyway, hopefully this hack will keep working and LED bulbs tend to last forever, especially
+given the limited duty cycle and democracies I ask of them.
+In fact, it's maybe more likely that the microcontroller would fail before the LED elements
+ever do.
+So in summary, IoT devices often proprietary and give limited ability for controlling them
+in non-standard ways.
+There are ways sometimes of using undocumented interfaces for controlling these devices.
+Here I've given an example of how with some fairly straightforward scripting it's possible
+for someone to roll their own software for controlling things via the command line or
+a web interface or via a mobile app.
+I hope this has been of interest, thanks for listening, goodbye.
+You have been listening to Hacker Public Radio, as Hacker Public Radio does work.
+Today's show was contributed by a HPR listener like yourself.
+If you ever thought of recording podcasts, click on our contribute link to find out how
+easy it leads.
+Hosting for HPR has been kindly provided by an honesthost.com, the internet archive and
+rsings.net.
+On this advice status, today's show is released under Creative Commons, Attribution 4.0 International
+License.

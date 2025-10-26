@@ -1,0 +1,348 @@
+Episode: 1952
+Title: HPR1952: Time now Ladies and Gents
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1952/hpr1952.mp3
+Transcribed: 2025-10-18 11:47:28
+
+---
+
+This is HPR Episode 1952 entitled, Time Hour Aids and Gents, and in part of the series,
+Bash-Cripting.
+It is hosted by Ken Fallon and is about 31 minutes long, the summary is how to get the
+total duration of a lot of media files.
+This episode of HPR is brought to you by An Honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15, that's HPR15.
+Get your web hosting that's Honest and Fair at An Honesthost.com.
+Hi everybody, my name is Ken Fallon and you're listening to another episode of Hacker
+Public Radio.
+I've been just listening to HPR1943, the HPR audiobook club 11.3, where our very own
+David Colons Rivera, aka Lost and Bruns, was interviewed about his audiobook, a very,
+very riveting episode and I had to pause a few times to make a few notes myself, but
+one of the comments that got me to do this show was the comments that Polky made, was
+there a way to get the duration for all the media in a directory, for example, if they
+download one file, then to be able to guess the duration of that file is relatively easy,
+but to be able to get the duration of all the episodes in an audiobook, especially if
+it's serialized.
+Well, this is something I tend to do quite a lot, given the nature of my professional
+and private life here on HPR.
+So there's three ways that springs to mind immediately about that, to do it.
+One is our customer tool here on Hacker Public Radio that we use, called FixTags, which
+gives you the length in ISO 801 human readable format and I'll make comments about that
+as we go along.
+So that's basically two digits for the hour, two digits for the minute, two digits for
+the second.
+That's my personal favorite format for use in the world and also that would be UTC.
+One thing Dave added for me was that he also converts that to seconds.
+Now I'm going to be rather unfair here on Dave because his application doesn't know
+a lot more than just read that out, but it is such a handy tool that I use that quite
+a lot myself, so much so that I've written a blog post about that very self-same thing.
+So if you look in the show notes, I've done extensive show notes in this, which I did
+in Markdown everybody and converted to HTML.
+The syntax is relatively simple, you just do Fix underscore tags space and the file I'm
+looking at is intro.flac.
+So what I'm going to be doing is I'll do some examples with the intro.flac file and
+then four other flac files that we keep in the processing directory, the intro, the outro,
+the promo for non-host host and the promo for archive.org, so those four just to give
+you a comparison.
+So the output of filter tags gives you things like Alba Martis, John Lenth and this Lenth
+is the one that we're interested in and Dave has a colon to separate the field names
+from the values.
+And then he has a nice old date, in this case it's 0, 0 colon, 0, 0 colon, 3, 9 space, open
+bracket, 3, 9 space, SEC, close bracket.
+Now we've got a better problem here because I want to filter out the 39 seconds from the
+bit between the bracket and I need to get rid of the sec that string space SEC.
+And I'm going to do that is Fix tags, a strict stuff, flac.
+And then we're going to pipe it into arc and arc is this really cool arc.
+I would love people to do some shows on it, but it's got this really cool feature, two
+of which I'm using here and that is to allow two different delimiters and you can use
+specified delimitor with the capital F sign.
+So if you've got a comma separated file, X dot text, for instance, that you can go
+arc space, F single quote, comma single quote, and then print, blah.
+In this case, I'm going to use the open and closed brackets as the delimiters and they're
+going to print dollar two, but arc also allows you to do filtering.
+So I'm using the filter to grip, you know, air quotes here, grip for the world length.
+So the entire command is arc dash capital F, single quote, back slash back slash open
+parentheses, and that's to escape the parentheses, the pipe to show that there's going to be two
+delimiters, back slash back, slash closed parentheses, a closed single quote, space open single
+quote.
+And this is the bit now where we're going to filter on the length forward slash length,
+forward slash space, open curly bracket, print space dollar two, close curly brackets,
+close single quote, that's going to print the length and it'll filter just the length
+and then that particular line, it'll only print off the thing that is between open and
+closed brace.
+In this case, it'll return three, nine space SEC.
+So I'm just going to pipe that into said space, single quote, S, forward slash space SEC,
+back slash back slash G, single quote.
+And what that does is it will search for anything that's piped into it.
+And if it sees the string space SEC, it'll replace it with basically nothing.
+So what gives me if I run the command for those four files is a list, 39 new line, 16
+new line, 17 new line and 11.
+That's all very well, but it's not really very handy for me.
+So what I want to actually use is the BC command.
+I could have actually piped those into variables and said let count equals 39 and then add
+on the next iteration add 60 to 39 and then add 17 to the sum and add 11 to the sum
+of those.
+But BC is a command that allows you to do mathematics here.
+And I think Charles and J cover this before as well.
+So more episodes than that would be also.
+So what I want to do is pipe that into a BC and the normal way you can add two numbers,
+say one, one plus one, you would type echo space one plus one.
+And then the pipe character and BC and BC would return to as a result.
+So the first thing I want to do is convert these lines one on top of the other onto one
+single line.
+And the best way I found to do that was to use command substitution, thank you Dave Morris,
+who just replied to an email and he covered that in the show 1903, which is basically
+there's two ways to do this back ticks, but I prefer to use the dollar open braces and
+close brace way of doing it because you can do those nested for a start and you can also
+do anything that goes inside of there, you can put your quotes and stuff.
+So if you've got double quotes on the outside, you can continue tag quotes on the inside.
+So it's absolutely awesome.
+So the entire command I had before, the fixed acts, yadda yadda yadda up to the end of
+said, I just enclose all of that in a dollar bracket in front of the echo out.
+So that's what it says, whatever is output from this command, you just echo it out.
+And that gets rid of the new lines, a really neat way of doing that.
+And then I pipe the output of that again into said and they're called s forward slash
+space, forward slash plus forward slash g sync close quote.
+And that replaces any space with the literal character plus normally when you see a plus
+and these sort of things, it means something else.
+But in this case, I'm just having that.
+And then I wrap all of that again in another dollar at brace command substitution thing.
+And I echo that again into the BC command, actually, no, I'm not.
+I'm just piping the remainder of that into the BC command, so there's no more.
+So the number I get is one, two, seven.
+Now that's the number of seconds.
+And what I actually want to do that is make that human readable because it's nice to have
+it in seconds for calculation, but I actually want to be able to, you know, Poki wants
+to be able to look at this and see how long the show is.
+And it's a lot easier to say it's two hours, 43 minutes, eight seconds rather than give
+a big number of seconds.
+So there's several ways of doing this.
+And the best way I found, I actually wrote a program myself, but I found that the data
+command that comes with bash is more than capable of doing the majority of calculations
+of this type.
+You can use the dash D argument, which displays time, string, defined by the string.
+So you push dash D and you post last Tuesday or dash D and now you're so it's just going
+to four days.
+It's very intelligent.
+Instead of what it normally does is it, you know, if you type date, it'll give you
+whatever it is now.
+But if you do a dash D, followed by the at sign, then it will convert it into the number
+of seconds since the epoch, which everybody knows was the first of the first 1970 in UTC.
+I don't like to convert that to a date.
+So if you do that conversion, don't forget to use the dash U, which is the universal
+coordinated time because it's actually going to add the numbers.
+If you don't put the dash U in there, it'll not add the, it'll add your offset.
+So I'm plus one at the moment and it will add an extra hour to my calculation, which
+is something that I want.
+And with date, you have a wide array of options that you can specify with a percent command.
+So in this case, I'm going to be using percent capital T, which formats to a ISO 801 time format,
+which is the equivalent of percent H for hours, colon, percent M for minutes, colon,
+percent S for seconds, all of those are in capital.
+And if you do a mandate, get it.
+If you do a mandate, you can get all of this is very short, man page and perfectly readable.
+So in the following command, I do put a forward slash in front of the day command.
+And that's because I've a list, earliest they command days to be specific to my system.
+I have it, when I do days, I have four masses the way I like it, oh, excuse me, I have
+a forward format it, the way that I like it.
+So the entire command is forwards slash date to on the aliases and use the default date,
+space dash U for universal time, D for to use date from a argument, rather than use the
+system date as in now, the at sign to tell you that there's going to be a number provided,
+which is going to be the number of seconds since 1970, first of January 1970.
+And of course in there, I'm just putting in copying and pasting that entire string, the
+echo dollar thingy fixed brackets all the way over to BC, where I get that number, I
+close that again, space plus and percent T, this will be in the show notes.
+And basically what that does is it converts one, two, seven seconds into two minutes and
+seven seconds, no surprise there.
+So as a little bit of a check, what I did was I ran the time command, which I don't
+work day in time, I know, I know, I know, I know, but the time command is actually something
+that you can put in front of any other command and it will give you the real, the user and
+the system time, which just gives you an idea of what's going on.
+You got to be careful using it because if you're using the comparison for accessing
+files, for instance, the first time you run the file will be read into memory and kept
+in memory.
+We've got a lot of cache memory, Linux will do this by default.
+So that the second time you run it'll look a lot faster and if you're comparing it against
+others, so you just keep that in mind and you might need to offload that.
+So the exact same command again that I did before, I just put days at time in front of
+the slash date part.
+Instead of fix tags, asterix flag, I have fix tags, asterix mp3 and asterix.org.
+And that returned three hours, nine minutes and forty nine seconds of files that are
+waiting in the queue to be read.
+And that actually took two point nine seconds real to basically process, about three seconds
+to run.
+Now, so that's option number one, let's move on to option number two.
+And this is a command that I use, two of these commands I use every single day, hundreds
+of times a day, probably the order of mice, the commands that I use will be grep, then
+media info and then XML starless or sorry XML starless and then quite often I use media
+info as well.
+It is a utility that's available for basically all operation systems and the even
+supply it as a library.
+And you can install it by, it's in all the repels.
+And if you do that on the media info flag, what it does is give you a general section and
+a audio section that is based on the, on the fact that the mp3 file is a mpeg standard
+and it's got different, different streams inside.
+I knew I'm not going to go into this, that's covered before, maybe I'll cover it again.
+So they, so just as a comparison, it gives you the complete file name, the format is
+flak, it's the format info is free loss, audio, codec, the file size, it gives the duration,
+which is 39s, space 50ms, so 39.39 seconds, 50 milliseconds, and it's a variable bit
+rate of 701 and the album, the soccer, proper, radio track name, genre genre.
+And another thing it does is it gives you the audio track, so this is the general track
+and then the audio track, and you might think that's a bit odd.
+But what you can have in some, in some files, especially in a mpeg file, in a video file,
+you might have the audio track a shorter, then the overall length of the full track.
+So there's an introduction and you don't have an audio track, so the audio track only
+starts two minutes into the movie when all the studio flitzing things are on and gone.
+So that's normal, you wouldn't normally see that, but it is something that is possible
+to happen.
+So we've got a few issues here with this standard duration and the first one is the fact
+that it's human readable in so far as it says 39s and 50ms, and that can go up to hours
+and I have no idea if I could go today or whatever, so we have no way of actually knowing
+what's going to happen there and then it's going to be a nightmare to sort of deal with that.
+It's a lot easier to do calculations, you know, if you're just dealing with seconds.
+The other issue with that is that we've got the same feel name described in the general
+and audio section, audio sections, so for a given file there will be two entries where
+there's a duration.
+So one way to fix the first issue, to get rid of the human readable and give a second
+at least, well actually it gives you milliseconds, you can use the dash dash full option, so
+media info, space dash dash full, space intro.flack and it gives you so much information there,
+I just grept in the example and the show notes on the duration and it gives something
+10 or so different durations, all go space as a colon as a as a separator, and then our
+the first option is 39050, then the second is 390s, space 50s, that's repeated three times,
+and then we finally got the ISO, it's 601 format, 0, 0, 0, colon 39.050 milliseconds,
+and then that's repeated twice because obviously you have the general section and you've got the
+audio section, so that's actually a bit of a pain. So although there are a variety of all,
+it's pretty not, ISO it's 601 in this case, it's useful for displaying it to humans as
+a less disambiguous, it's not very nice for us because we want to do calculations as I explained
+before, and the duplicate things are a little bit of a concern as well because what you could do,
+what you might be tempted to do there is, okay, it's okay, for one file you sort it and you do a
+unique, so either sort space dash u or sort pipe unique, and that will get rid of the duplicates
+of unit 1, you got 1, and then you can eliminate the s and the ms and the colon, and then you just left
+with the single one that has got seconds on it, that's fine, but what happens if you've got,
+if you're dealing with all files, like I don't know, files that are deliberately supposed to be
+exactly, and now we're on the button, you know, you've got two files exactly the same size,
+deliberately padded to be that size, then when you do a sort and unique them, you've suddenly
+an hour short because you haven't taken those ones into account. So to get around ZS,
+MediaInfo has got the dash dash output equals XML, where the O in output is capital,
+capitalized, and the XML is also in capitals, and what that does is it gives you
+it as an element tree, so as an XML file, ideally what I would have liked there was that the
+duration would also have an element say, duration, milliseconds, duration, humor, you know,
+format one, duration, format two, format equals one, format equals two, or something like that,
+or that there was at least an idea, not that you could count on, but that is sadly not the case.
+So now we have an XML file, and what I'm doing with that is I pipe it into my old trusty friend
+XML starlet, which is something, yes, I need to do some shows on that because it's a brilliant,
+brilliant tool for working with XML files, and what it does is I'm going to use it
+basically as a way of gripping XML files, and you should never grip XML files. Every time you
+grip an XML file, a cute furry kitten dies, so bear that in mind. A colleague of mine told me
+that one day I cracked up, but it's quite true because XML is completely independent. You could have
+you know, 15 carriage returns and spaces, and you get a squash shop or mixed round or the
+elements and the attributes could be all over the shop. So it's not very wise to, you basically
+can trust gripping an XML file, unless you want to see does it occur in that file, which I do from
+time to time. But XML starlet is quite a nice tool. I'm just going to go briefly into what the
+options are. XML starlet space select that turns it into selection mode, so I'm looking for a value,
+I'm looking, I'm I'm going to ask it for a value based on the next path expression, next path
+expressions. So if you're similar to this, you know, CD dot CD dot dot CD backslash, that sort of
+thing. It allows you to do that with an XML file. So the first one is a dash t, which from my memory
+means use text space dash t lowercase. So the first was an uppercase lowercase. It says I'm going
+to build a template. And the template you always have a template and you need to find me this
+and give me that. So the find me this part is the dash m match. And then basically it's medium for
+slash file slash track square bracket attribute and the outside type equals audio, close square bracket
+forward slash duration, open square bracket, the number one close square bracket. Single quote.
+So what that does is if you look at the the the the dumb the object model of that file,
+you'll see that it's a it starts with XML medium for. So it tells you what it is. Then there's a file,
+you know, this particular file happens to be this. And then we're looking at a particular track.
+And this in the square brackets, we're asking for the track of type audio as opposed to the track
+of type general, which was up earlier. And then of that, I want the duration and just give me the
+first duration. So it treats it like an array. And then we do a space dash fee and the dot,
+which just shows me, yes, whatever that value is short, the dash in shows new line and the dash
+would pipe it to standard out with her. I don't actually need the dash in there because,
+but I put it in a force habit. That's wonderful except for the fact that medium for gives me
+things a milliseconds. The reason that does that is because it's a it's a professional level tool,
+I guess. And it there are 25 frames in a second. So we need to be able to break it down to that.
+There can even be higher. But like the 25 24 frames per second. So you need that that's a amount
+of granularity on your frame rate. So to get rid of that, a cool trick I just found on
+Dr. Go recently was to put it to cut off the last three characters of the file of that output,
+which in this case, I know will always be the millisecond component because I'm not interested in
+that. And the command for that is said single quote s. So search for forward slash dot. So any
+character and then keep going until and you can need to read this back to front. So it's escaped
+curly bracket. So slash curly bracket three slash curly bracket and then the dollar. So that
+says come back. Find me anything. Go to the end and then come back three characters and slash slash
+means replace it with whatever's between the slashes, which is nothing. And then it replaces that.
+And I of course get 39 60 17 and 11. And I do exactly the same thing again, replacing the
+spaces with the plus and I get two minutes and seven seconds again. And when I run that against the
+the list of podcasts that I have, I get three hours, nine seconds and 49, 49 seconds as a total,
+which is exactly the same as the one we got with fixed tax earlier. The difference with this,
+of course, is that it is done in point six of a second as opposed to the two three seconds
+that fixed tags took Dave, of course, is now yelling as the microphone. And again,
+media info and XML starlet are designed for this sort of stuff. So there may be faster for that
+reason. I'm not 100% sure. I might be just doing this incorrectly. I want to give you one more
+option because fixed tags is definitely not going to be installed in your system unless you have
+happened to be working for HPR. And it's quite quite a few difficult to install libraries, I think,
+would be a safe way of putting it. And I think Dave be in agreement with me on that one.
+FFM, sorry, media info and XML starlet are probably in your repositories, but you may not have
+them installed on your system. Quite a lot of systems do come though with FFM peg installed.
+And one of the tools as part of that is a tool called FF probe, which as far as I can tell it's
+it's the same actual binary that's run. And you can run that. And if you run FF probe space
+dashi to say this is the input file intro.flacking in our case, it'll print off a nice details list.
+A lot of just information about the program itself and then at the bottom it'll give you some
+information about the track, not a whole lot, but a little bit. It happens to send that to standard
+error. FFM peg and FF probe have weird ways of, or have non-standard ways of dealing with standard
+errors and also the way they, they initiate processes. You need to be careful to use an F loop
+instead of a if loop instead of a while loop, because they will run at once in a while loop and
+then stop due to the way that the open sessions. It's, I've got caught with that a few times,
+just something to keep in mind. But anyway, I send a quick way to send a standard error to standard
+input is to use a, after the input to flag FF dashi intro.flack space to greater than
+a percent one. So that was anything going to two, which a standard error will be redirected to
+standard output. And then I can grip for the word duration. And that gives me aduration colon
+space, 0, 0 colon, 0, 0 colon, 3, 9 dot 0, 5, comma start colon, lots and lots and bit raise 7,
+blah, blah, blah. So I get some information there. So what we could do in this case is
+well, the problem is here we've got a human readable day format, which I said earlier,
+it's a little bit more difficult to to process it because, I mean, once it goes to 13,
+once it goes to 59, then suddenly a digit starts appearing in one one as opposed to, and the,
+you know, the minute section goes to 0, 0 and the hour section has been incremental by one.
+That's a little bit more difficult to deal with. So luckily, though, the, you can deal with it
+using the day command, which was something that I rather enjoyed. And again, I'm using the
+forward slash date to on alias. You won't need to do that probably. The dash U to be UTC and the dash D.
+And in this case, I'm putting in, so the number that I got was 0, 0 colon, 0, 0 colon, 3, 9,
+so this time I'm putting in a date dash UD space 1970 dash 0 1 dash 0 1 T, 0, 0 colon, 0, 0 colon,
+3, 9, 0, 5 space plus percent S. And the percent S will form it as a percent floor case S will
+format it to seconds. So what that does is it counts the number of seconds since epoch. And
+we're convert, we're not using now, we're using that particular date, which is why I've had to put
+in 1970, 0, 1, 0, 1 T at the beginning was to give me the number of seconds that would have passed
+since the first of January, since 1970, which is when the epoch started. Okay, so that gives us
+a number. Now, let's see if we can do that for this intro to a flag, which of course we can.
+We put the date space that's U 1970, 0, 1 T. And then we use our command substitution percent
+open-square brackets f of probe dash I flag redirect standard output term to square F4D.
+Then we print the second field, which gives us a nice clean one except there's a comma
+tag down to the end and we use said S, F4C, F4C, F4C, G to get rid of that. We close the command
+substitution and we do plus percent S and we get a 39. Problem is, unlike the other ones,
+you can't just replace intro to a flag with asterix dot MP3 or asterix dot flag. The only way
+you can get around that is to put it into a loop and as I said, a while loop won't work
+without doing some weird directions. So I do a 4i in asterix flag do and then I replace
+intro dot flag with dollar i and at the end of it do it done. So that gives me a new line,
+39, 60, 17, 11 exactly what we had before. And I won't bore you with the details of how we escaped
+all that again and we presented an ISO at 601 format and we get 0, 0, 0, 0, 0, 0, 0, 0, 7.
+Now this time when we run it takes 4 seconds, 4.2 seconds basically to run as opposed to
+fixed tags which was 3 seconds and medium for which was 0.6 seconds. But again, the conclusions
+about this is really all kind of loosely based on what you haven't installed. So the best tool
+is the tool that you have. And some people might argue that okay because we're short of shows
+again because Ahuka and John Kulp are busy with life as they have not that employment for
+that far from it. They have as we pointed out later during the year last year they have been
+carrying quite a lot of the burden of HPR. So in the last few weeks we've been getting quite a
+few times where our seven day warning has come up. That's something I was so happy not to see
+and unfortunately now this turns me into what they call here in the Netherlands's Threskip
+which is a stressed out chicken. So if you could all kindly do some shows that would be fantastic.
+So that's it. Links are in the show notes. I did it using John Kulp's suggestion of
+retextmarkdown which is actually very good. I find the focusing your mind you don't get too involved
+in the formatting and then you can go back and tidy it all up again. Well with that I'll
+call it a halt and as you can see even the tiniest little thing can trigger geeks and one of my
+nerds supposed to do along and possibly monumentally boring show. But there you go. If you're ever
+wanting to convert dates this is date command is absolutely very useful. I'm very fast actually
+for doing quite a lot of this stuff. All right, tune in tomorrow for another exciting episode of
+Hacker Public Radio.
+You've been listening to Hacker Public Radio at Hacker Public Radio. We are a community podcast
+network that releases shows every weekday Monday through Friday. Today's show, like all our shows,
+was contributed by an HBR listener like yourself. If you ever thought of recording a podcast
+then click on our contribute link to find out how easy it really is. Hacker Public Radio was
+founded by the Digital Dove Pound and the Infonomicon Computer Club and is part of the
+binary revolution at binrev.com. If you have comments on today's show, please email the host directly,
+leave a comment on the website or record a follow-up episode yourself. Unless otherwise status,
+today's show is released on the Creative Commons, Attribution, ShareLite, 3.0 license.

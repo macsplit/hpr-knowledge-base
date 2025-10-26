@@ -1,0 +1,383 @@
+Episode: 1207
+Title: HPR1207: Icecast 101
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1207/hpr1207.mp3
+Transcribed: 2025-10-17 21:37:18
+
+---
+
+This is Hacker Public Radio.
+Hi everyone this is Glad to and this is Hacker Public Radio and I'm going to talk about
+ice cast and ices and butt and MPD and a bunch of other things.
+This is really a collaborative episode.
+I'm just taking all the glory and fame for myself contributing to this episode and not
+being heard on this episode were K-Wisher from K-Wisher.com I don't know I just made
+that up and Delwin from skyhaven.net or org or something and a bunch of other people
+who helped me finally finally understand all of this.
+So what is all of this?
+Well all of this consists of the very concept of streaming media online.
+It's done everywhere.
+We use streaming media all the time.
+You can think about it, YouTube, Netflix, that's all I can think of but there's a lot
+of them out there.
+Oh, Jim Mendo, internet radio stations, all the things that all the multimedia content
+online or a lot of it is available as a streaming in a streaming form and that's really great
+and it's a lot of fun and makes the internet a much more loud place.
+But how does it work?
+Well if you don't know if you're not I did not know either for the longest time people
+would ask me about streaming.
+I really had no clue what they were talking about.
+I mean I knew the concept but I certainly didn't know how it all worked.
+And frankly I still don't have a good notion of what exactly it is that a web browser
+or whatever is latching on to when you're saying okay give me this media and just keep
+it coming.
+Just keep getting the media as it streams to you.
+I always want my web browser or my whatever I'm using to grab media from a network location.
+I want to think that there's this self-contained finite file, you know some number of bytes that
+is predictable and I should be able to grab onto that and transfer all of those bytes
+and bits and then close the connection and that's it, that's how it works right.
+So how is it that you can open a web browser or a media player or whatever to a location
+on a server that doesn't have a finite amount of bits or bytes?
+How does that work?
+Well I don't really know the low level of that stuff.
+I don't know what the variables involved are when you're doing that as opposed to just
+grabbing a file with some finite predetermined size can't tell you.
+But we're not going to be concerned about sort of the technical background and what's
+going on behind the scenes, we're going to be concerned about the technical background
+and what's going on behind the scenes on the server.
+So client side I don't care about right now, we're going to talk really mostly about
+the server and how you as a server admin can set up a streaming server, get your content
+onto the server and then stream it out so that people can tap into it and listen.
+And that's similar, that example that's similarly I guess whatever is very apropos because
+tapping into a stream you think of maybe putting a tap on a keg of I don't know coffee
+or something or putting a faucet on a pipeline and so it's streaming this sort of continuous
+flow of information or water or maple syrup or whatever you're tapping into and then
+the faucet that you're using lets you get that content even as it continues on by.
+So I'm going to use that a couple of times because at least in my mind it helps understand
+the structure of some of the applications that are playing very important roles on the
+back end.
+So the thing that will take center stage right now for streaming media on a Linux server
+is something called icecast.
+So icecast is a it's a streaming server.
+Its job is to create a mount point on a server that clients can then connect to and get
+whatever is streaming.
+Now what's interesting is that you can start up icecast and you can run it you can have
+it all configured and start that service and it can be streaming nothing really it can
+it can be sort of if you could imagine a a pipeline without anything in it but there's
+the conduit right so you've got like this this empty stream that's important to understand
+because icecast is kind of an independent piece of this whole puzzle.
+So the process the workflow here is to set up icecast that creates the conduit for
+your stream and then to plug in different components like ISIS or MPD or but or whatever
+and feed that conduit with actual data that people that people could listen to.
+Okay so lets install icecast then obviously the installation is going to depend on what
+distribution you're running on your server so if you're running slackware you could
+install it via slackbuilds.org go there or use my sport tool sport install icecast will
+install icecast.
+Now for the record it's actually icecast two that's important not that probably there
+are that many icecast version one packages floating around out there but just know that
+actually it is icecast two and some distributions might specify it as icecast two in fact I think
+Debian does I think if you go to Debian and install it with aptitude install or whatever
+you use I think it's as icecast two that it lists I don't remember if they actually
+have one offered or what but the name of the package is icecast two anyway however you
+get there young install icecast emerge icecast I don't know all the different ways you could
+possibly do it install icecast it's not hard on any Linux or BSD distribution so you do
+that you install it and now you're left with as is often the case the executable binary
+itself which in this case will probably be in slash usr slash bin icecast or slash usr
+slash bin slash icecast two and then you'll have a bunch of or at least one possibly two
+configuration files I say at least one and possibly two because again on Debian where
+they do that whole thing of dumping some of your config files in slash atc slash default
+and then the other ones in slash atc slash icecast two you'll have you might have more than
+one configuration file depending on what system you're running so there are a couple
+of things that you need to do certainly to get this thing up and running out of the box
+as it is installed right now if you typed in icecast two or icecast or whatever it would
+fail to launch because there's an enable flag in the configuration file now in the Debian
+version it is in slash atc slash default slash icecast two and you need to go into that
+file specifically and look at the bottom of the file there's an enable equals false
+you need to set that to true if you don't set that to true then when you attempt to start
+the init script for icecast it will fail in other distributions this file will be found
+in the icecast folder itself in slash atc slash icecast or icecast two whatever slash icecast
+dot conf so just look around for that you should be able to find it pretty easily it's a small
+file and really the only thing you need to change you absolutely need to change is the enable
+flag there's some other options in there I think for logging and stuff like that but but enable
+should be set to true so do that first so that the next thing that you can do is look at slash
+atc slash icecast or icecast two slash icecast dot XML that's important because without this configuration
+file you'll be running a very very very stock configuration of icecast and that's not necessarily
+the most secure or really what you want to do okay so the icecast dot XML is a little bit more
+complex looking than it actually is it gives you a lot of examples a lot of things that you could
+turn on to make a maybe a fancier server than what we really need to do just to get this thing
+up and running so we probably won't do that but a couple of the things to pay attention to it would
+be right up at the top of this file there are limits that you can set so you can limit how many
+connections or clients can actually connect to your icecast server k-wisher had us test his
+streaming server and I think he was getting a hundred clients easily I don't remember how much
+ram he said he had on his box but he wasn't having any issues with a hundred clients I've
+not reached a hundred yet myself I don't believe and I've got eight gigs of ram it's like a I don't
+know a dual core AMD of some amount of powerful gigahertz so I don't know it's I'd play around
+with that I I leave I left it at the default value for now sources I'm limiting it to two because
+I only want there to be two sources for this icecast stream both of which exist on this same box
+so I decided to limit it to just two because that's really all I'll ever need right now so you can
+set that and other limits as well depending on what your needs are so the next thing is the
+authentication and as you might expect yeah authentication is kind of important so the this
+authentication not for you to sort of log into anything it's authentication for your sources
+and relay as if you're going to do any relay which were not in this episode but but certainly
+you're going to have a source you're gonna have some kind of thing that wants to talk to icecast
+remember because that's what we were saying one of the things about icecast is that it lays down
+this conduit and then you use little plugins or I guess we could call them sources to feed that
+icecast stream with different kinds of data whether it's an org file or an MP3 file or a microphone
+or whatever those are all sources and they need to be able to authenticate with icecast or else
+you could have totally random things being inserted into your stream without your knowledge
+and that could be a bad thing so the source password you need to set I think by default it's
+set to something like hack me and you should change it so we'll change that to let's just say
+I don't know purple llamas so we just set that to purple llamas and now that's our password
+that we need to remember because when we start plugging sources into our icecast it's kind of
+kind of want to know that password you can do the same thing with your relay password if you're
+going to do relays I'm not going to do relays in this episode you can also have an admin login
+which is something that we'll be able to actually sort of actually be used because there are some
+nice friendly icecasty interfaces that you could take advantage of once you get all this setup
+so the admin user you should give that person a name I'm going to call it not class 2
+and then the password for that I'm going to set to purple llamas as well I know that's probably
+really bad practice but it's just easier for us to keep track of all that stuff right now I think
+the host name you can actually leave as local host the next thing that you'll probably notice is
+the host name value and that is set by default to local host I actually keep it at
+local host myself because I'm not I'm not publishing a URL via icecast so it doesn't really matter
+what what icecast thinks its host name is it doesn't that's not going to be seen by anyone
+if you know that there are different ways to configure this obviously and this this is the
+way that I'm configuring it if you want to look into other ways you can we'll just keep it like
+this for now the listen socket is port 8000 by default and we'll keep it there because why not
+and um that's about all you really need there's further down the I mean you'll see a lot of
+commented out stuff probably and a lot of this is like I say it's just kind of examples of
+fancier setups that you could investigate later but for now I think all of the all of the defaults
+are pretty good so everything else basically you can just leave as is that's enough to get us
+to get us going so now you're configured you're configured with with the XML file and you're
+configured with your conf file you've enabled it in the conf file and you've set some some
+non default values for passwords and usernames in the XML file and other than that that's all
+you really need to do so now what you can do is launch icecast and the way that you're going to do
+that again naturally depends on your system on the on the distribution so if it's slackware
+it would be in slash at c slash rc dot d slash rc dot icecast if you're on devian it would be
+slash at c slash in it dot d slash icecast two and on fedora these days system control or system
+ctl start icecast dot service or whatever it is so now it started and as I've said now your conduit
+exists you've got a you've got a pipeline in place only there's nothing there so in theory if
+you were to go to a client machine and point your web browser to ht or your media player to http
+colon slash slash migrate streaming server dot com colon 8000 then you've got an empty stream now
+actually anything that would normally play a stream for you would detect that there is no place
+to obtain a stream and fail out or time out or something like that and so that would be useless
+but but conceptually that is there and and and you can still kind of see what's going on with
+icecast by simply pointing a web browser to a htp colon slash slash migrate streaming server
+dot com colon 8000 slash status dot x s l that will show you any kind of pertinent data on your
+icecast streaming server such as any available mount points of which right now there are none
+how many people are connected to your your streaming service which right now would be zero
+and and how long it's been online and things like that so that exists it's part of the icecast
+distribution I forget where they stash that it might be some place in like slash usr slash
+share slash icecast something like that but but that xsl is there it gives you a little bit of
+updates and and status reports on what exactly is going on with your streaming server which is kind
+of fun to look at sometimes and it kind of confirms that hey yes icecast is working it's up and
+running it's ready to accept a source so let's get something streaming then let's get a source
+going so that our icecast conduit can actually have data in it so that people can connect and
+hear stuff so that's not that hard and there are a lot of different options in this episode I'm
+going to give us the kind of the defaults I want to say native although I don't really know if
+that's the right word but it it's kind of the one that that goes along really nicely and was built
+I think for icecast specifically if I recall correctly so it's called ises ises there are two
+versions of it there's ises the one that exists now and then there's ises the old one what's the
+difference ises the one that exists now has auga streaming capability we like aug auga is good
+auga is great for firefox chrome chromium conqueror opera reconk xmms audacious vlc rhythm box
+just everything everything you can think of that you know and love auga vormis is a fine streaming
+format and then there's everyone else with their safaris and their internet explorers and their
+iTunes and none of those of course will play nicely with auga great so that means we're going to
+have to have two streams here the easiest way to do well the easiest way for me to do that was to
+use the old version of ises call which I don't know what it's called I think it's just called the old
+version but but it was it was named for the slack build dot org people ises dash cc I don't know
+what the dash cc was supposed to stand for I really don't but it's the old version of ises 0.4
+0.3 very specifically this is the old version of ises and the significant thing about that is
+that it it can handle mp3 streaming so if you've got the old version of ises handy in a buildable
+way and it might not be I've tried to build it from scratch on a debian box and it wasn't really
+playing that nicely with a bunch of components and I eventually just kind of gave up on it because I
+lost interest and I found a different solution which I will share with you later but right now we're
+going to go with ises so if you want to do this for real in real life you want to have two streams
+because otherwise everyone will have to use firefox or chrome or chromium or opera or whatever you
+can offer your listeners or vlc to to do org streaming correctly and and in real life for like
+maximum audience that's a little bit dicey that's a little bit tough I mean I've I've heard back
+from I used to only be doing an org stream and I heard back from a lot of people like a surprising
+number of people I was honestly surprised how how they couldn't get the thing to to work
+and the reason was was that they were using I guess a non firefoxian browser I'm guessing I
+I don't really remember exactly but they couldn't figure out I mean like they would click on the
+thing and it would want to open in some external media player like iTunes or whatever and it just
+wouldn't play and emailing people back 20 times a day saying okay you need to either install
+this component for your quick times or your or you need to install this browser or you need to
+click on it in this way that that's not realistic so you're going to probably end up having two
+streams sorry so I says the current version will only stream org I says the old version will
+stream both mp3 and org but may not be readily available for your platform either way we're
+going to go with ices for now because it's got a simple XML based configuration file that talks
+really easily and quickly to icecast but then we're going to in a later episode we will look at a
+different solution that can give you the same effect in a different way and there's there's some
+really nice features of these other solutions as well so I'm not saying that ices is necessarily
+the best solution I'm saying for now just to get this thing finished within this episode this is
+going to be the easy solution so for now resign yourself to an org only stream if you only have
+the new version of ices or switch to slackware you know you want to anyway and install ices-cc that's
+the 0.4.3 version and then you'll have the capability of having both an mp3 and a log stream
+okay so we're going to keep it simple we're installing ices and you open up the ices configuration
+file which again it's obviously going to depend on where your distribution places it for me it
+was just in slash etsy slash ices-cc.conf.new actually so you could rename it to just ices-cc.conf
+and then take a look at it in your text editor at emax nano vim whatever so right up at the top
+of this font file there's a file value that you need to set by default is called playlist.txt
+and frankly that's good enough I mean that's that's what I do but you could name it something
+else if you want the the important thing to know here is that's the playlist that's your master
+playlist that you will populate with all the names of all the songs that you want to play on your
+stream and ices will look to that file so you want to kind of either remember the name of this
+thing or set it to something that you will remember but playlist.txt seems pretty logical to me
+there's a randomized option which is set by default to one I set it to zero myself zero means
+it'll play through in the order that you specified one meaning that it will randomize your playlist
+and there's a couple of different things that you can use to handle all of this you know to parse
+the playlist and stuff like that there's the built-in engine or or module there's pearl and there's
+Python I just left it on built-in I'm not sure if there are any particular advantages to switching
+it to something else but from what I understand if you're using fancy scripts that are interacting
+with ices then yeah you might want to change it to something else so that you can kind of tap into
+different I guess APIs and stuff like that I set the execution to one to make it run as a
+background process you may want to leave it at zero for now however so that you can see kind of a
+a verbose debugging message when you launch ices just to make sure that you're getting everything right
+but in real life after I've got everything set up I set it to one so that it does launch essentially
+as a demon the next value you'll want to set is probably the log the log folder where the
+logs are going to get dumped in when you're demonizing ices by default it's set to slash temp
+and it explicitly says in a comment don't use slash temp not really sure the logic there but
+that's cool so change it to something that you feel more comfortable with and of course that the
+the the user running ices is going to have access to so that it can actually write the log file
+otherwise ices will not launch properly so what you might want to do is leave it as slash temp
+for your first go-around just because obviously it's going to be able to write log files to slash temp
+and once you see that it's working and up and running then choose where you're going to write your
+log files to it's probably going to be somewhere in var slash var slash log and and then make that
+happen and give it the correct permissions so maybe start with temp that's probably the logic
+start with temp just to for debugging purposes or testing purposes and then change it later that's
+what I did the the next thing that you're going to have to set just going continue down this
+configuration file is the streaming server that server that ices wants to connect to because I
+remember I said that icecast is a conduit so we have to point ices to that conduit we have to tap
+into that conduit and this is where we're doing that so the host name we can leave as local host
+because it is and if you'll recall the icecast server when we were setting the icecast XML up
+we left that as local host so local host local host very consistent the port
+of that host that that icecast or the streaming server is existing on that's set to 8000 by default
+and sure enough that's what we left it as and then of course the password and do you remember the
+password yes the password was purple llamas don't tell anybody so we'll set that to purple llamas
+and the protocol of course is HTTP I don't know really a whole lot about changing that from HTTP
+although for older versions of icecast I guess there was a different protocol but of course I
+just left it on HTTP next is the mount point so you've got icecast kind of creating this pipeline
+out to the world but there's not really anything to latch on to there's no data there right so
+we need to create a data point a mount point for for the browsers and the media players to latch
+on to and get the data in that stream by default it's slash ises I don't leave it as that
+because that's just a weird name for a mount point when you're you know migrate streaming server
+comms a colon 8000 slash ises it's weird you could call it slash mp3 you know you can call
+whatever you want to really something that makes sense you can also of course alias it you know
+so that if if you're listening on port 8000 and someone goes to 8000 then you could just make
+sure that they end up at that mount point you can do all kinds of fancy things but just set it
+to something logical right now for this one ises dash cc I'll call this one slash mp3 and then
+later I'll fire up just ises and call that slash aug and then you can do different metadata types
+of things like the name of the stream by default it's set to quote default stream not very interesting
+so you might want to call it you know my cool internet radio station the genre you could give it
+the genre the description the url that you want to point people to if they ever stumble across
+your your streaming server they want to know like who you are where they can go get information
+more information and then very importantly you need to set the bitrate 128 is the default I have
+personally found that's a little bit high for the the kind of bandwidth that I have access to I
+think I set it to 96 and was pretty happy with it I think I've even set it lower and have been
+complacent you can re encode it one for mono or two for stereo or just leave it to zero for
+it to not re encode you can set a different sample rate and how many channels you want and that's
+it that's the end of that configuration file if you have set all those values then you're pretty
+much ready to go with your ises streaming source the problem now is that you have no playlist so
+ises you could start it it would run but it doesn't see any music for it to play so you need to
+create a playlist you can put the playlist anywhere I put it in user local share I put it in the
+main users home folder I've played around with where it's going to go a couple of times you can
+put it wherever just make sure that that it's in a place that ises the user running ises
+would be able to access you know you don't want to put it into your home folder if you've got
+700 permission set on your home folder right so make sure that it's something that other users can
+read and the playlist is very simple it's a line one song per per line list of all the
+songs of all the files you want ises to play you're going to want to make sure that you have
+full paths set in all of your all of the song titles so make sure you go from the root directory
+into the next directory into your into your songs or wherever they exist if they're in
+slash home slash clatu slash albums slash pneumatic dark side of the moon slash track 1.org then
+make sure that you're giving it that whole path so that ises can find the songs you have to
+remember that ises isn't going to be run as clatu it's it's its own process it's going to be run
+is whatever the the maintainers of that package have set it to for you on your system and so it
+needs to have access and it needs to know where to look for all the different music that you've got
+on your system that you want to be streaming now we need to start it because obviously it's
+installed and it's configured we just have not actually yet started the process there is an
+rc dot ises dash cc that was bundled along with the ises dash cc package that I got from slackbuilds.org
+I don't know where it comes from I don't know exactly who I mean I know who wrote it but I don't
+know really who they're affiliated with or anything like that you could adapt it for whatever
+distribution you're you're running or you can simply start it manually or or roll your own the
+the command to be most aware of the the basic command is ises where ises dash cc dash b capital b
+as in background space dash c as in configuration and then the path to the configuration file dash
+f as in file as a capital f file and then the path to the playlist and that's pretty much all you
+should need to launch this thing as a demon once it's launched it has now created a mount point
+in your ice cast conduit stream type thing meaning that you should be able to now point your browser
+or media player to http colon slash slash migrate streaming server.com colon 8000 slash in p3 in my case
+like because that's what I named the mount point in the ises configuration file you remember
+that we just did a couple of moments ago so now if people point their browser with their media
+player to migrate streaming example server.com colon 8000 slash in p3 they will in fact
+hear the music on my hard drive that was in my playlist streaming via ises dash cc through
+ice cast streaming server to the world and that's it that's done now the other step that you
+would probably want to take or at least that I would want to take is to then set up ises without
+the dash cc the newer version of ises that only supports aug vorbis and use that to create an
+aug stream and that's done exactly the same way it's not a big deal is it's simply creating
+another mount point so you've got a slash in p3 and a slash aug mount point both going into the
+ises cast conduit and people can point their browser to the slash aug or the slash in p3 now in
+real life of course you don't want to have your users to really know that there's a difference right
+they users don't understand that they don't understand choice right you just want to send them
+to some place and have their browser figure out that they're that they need in in p3 or that
+they need an aug stream and you can deliver it to them depending on whichever they actually need
+so the way to do that at least the way i did that is to make a really really simple web page it's
+not complex and through the magicalness of html 5 it is really really simple and i'll have to post
+this i guess on in the show notes but it's it's literally like maybe five lines of code so it is
+audio auto play loop controls auto buffer preload equals auto and then the source src equals
+http colon slash slash migrate streaming server example dot com colon eight thousand slash in p3
+type equals audio slash in p3 closed tag source src equals http colon slash slash migrate streaming
+server dot com colon eight thousand slash aug type equals audio slash aug closed tag close audio
+and that's it so that's four lines of code it's the html 5 audio tag doing what it does best
+which is giving the user an invisible choice between the mp3 stream or the aug stream the browser
+of course checks to see which one of those it supports and then it delivers to the user a nice
+little in browser play controls and and it'll play the stream for them right there in their in
+their in their web browser and in fact you could put some error text there as well so that if
+they don't have html 5 it would it would just tell them hey you don't have html 5 you should go
+use Firefox or whatever so it that's it's as simple as that i will put that code in the show notes
+for you and and you've got it that's it that's that's the long and short of of this whole experience
+well not quite of course there's always that catch about the firewall right so if you're doing
+this you're just you've got a friend and you guys want to listen to the same music at the same time
+or something so you set this thing up you're behind a router you're behind a firewall they can't
+get to your streaming server you can hear it inside they can't hear it outside well you should know
+by now from my previous episodes on dynamic DNS and SSH and stuff which I should have the
+episode number and I don't but it's a long time ago but you should know by now that in order for
+someone on the outside to get into your network all you need to do is poke a hole in your firewall
+and it's it's it's IP forwarding sometimes it's called virtual server could be called a lot of
+different things unfortunately in each router but if you log into your router and it's usually
+something like 192.168.1.1 could be different though you kind of have to look at the documentation
+for your your particular brand of router to find out but you log into that as the admin you log
+in you can go to your firewall or your virtual server or your IP forwarding whatever they call it
+and just tell it if someone comes a knocking at this router on port 8000 then send it to
+this computer on my network this computer needs to be the one running icecast right so so just
+do an if config find out what your IP address is on that computer running icecast and so you would
+forward port 8000 from the exterior of your firewall that is from the outside world 8000
+route it over to that computer so let's just pretend like that's 192.168.1.11
+port 8000 because icecast is still listening on port 8000 so you're forwarding port 8000
+from your world IP address whatever you get back from the command curl icon has ip.com
+you get that port 8000 from that number forward it to your internal address 192.168.1.11 or whatever
+we said it was port 8000 and so now it's it's almost as if there's no firewall for that
+you can do fancier things like change the port number you know change the exterior port to
+something different like one two eight eight eight and then forward that to port 8000 of 192.168.1.11
+however you want to work it you can do it doesn't really matter but you need to do that if you
+want the outside world to hear your music so that's always a consideration whatever server you're on
+even if you don't have an external firewall you probably have ip tables running or something so
+keep that in mind when when testing this out people are trying to tune in and it's rejecting
+their connection or whatever remember you've probably got some kind of safety device in place
+there and you need to just kind of open up one port on that forward it to your icecast server
+and then it will work that's about it for icecast streaming I mean we've we've we've set it up
+we've got icecast going we've got ises playing our playlist and ises dash cc playing our playlist
+we got dual streams going and we've got an automatic failover web front end that people can use
+via html5 to stream whichever type of stream they they want to play it it it automatically detects
+what they need and make sure that they get some sound almost no matter what so hope you've enjoyed
+this episode I'm going to be back for a little bit on the different methods of automating this
+process are not automating but making your little internet radio sort of easy to use and alternate
+streaming sources so that you don't necessarily have to use ises and ises dash cc there are other
+other solutions some of them have pretty gooey front ends some of them do not and we will check
+them out in later episodes thanks for listening
+you have been listening to Hacker Public Radio at Hacker Public Radio does our
+we are a community podcast network that releases shows every weekday Monday through Friday
+today's show like all our shows was contributed by a hbr listener like yourself
+if you ever consider recording a podcast then visit our website to find out how easy it really is
+Hacker Public Radio was founded by the digital dot pound and the infonomicum computer cloud
+hbr is funded by the binary revolution at binref.com all binref projects are proudly sponsored by
+linear pages from shared hosting to custom private clouds go to lunar pages.com for all your hosting needs
+unless otherwise stasis today's show is released under a creative commons
+attribution share a line lead us our lives

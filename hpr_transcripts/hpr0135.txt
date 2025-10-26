@@ -1,0 +1,238 @@
+Episode: 135
+Title: HPR0135: LPI Ceritification Part 5 PCI Cards
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0135/hpr0135.mp3
+Transcribed: 2025-10-07 12:15:35
+
+---
+
+
+Hello everybody, my name is Kevin Fallon and welcome to this episode of hacker
+public radio. Today is a continuation on the LPI certification. Today we're
+going to be covering PC cards. As I suggested previously we're going to be
+changing our tech slightly so we're going to move from using the IBM
+documentation which I've heard some comments about that seems to be a bit out of
+date and also I was never really comfortable with the fact that it was
+licensed correctly. So we're moving to some documentation produced by
+leading edge business solutions as part of their Linux training program.
+You can find them as www.ledge.co.za. Their documentation is released
+under the GNU-free documentation license, a link which will be
+also included in the show notes. So that means I am free to read word for word
+in this chapter. They also have at the end of every chapter a quiz
+questions so I was thinking here to be a good topic to put at the beginning of
+the podcast. So first of all what is the purpose of an interrupt
+an iO address and a DMA channel. What happens when there is a resource
+conflict between two devices and under what circumstances can two devices
+share the same IRQ value? All these questions and more will be answered in the
+upcoming podcast. Okay topic one does one or one
+dot five setting up PCI expansion cards. At the end of this you should be able to
+configure various cards for the various expansion slots. You should know the
+difference between ISA and PCI cards with respect to configuration issues.
+This objective includes correctly setting IRQs, DMAs and IO ports for the cards,
+especially to avoid conflicts between devices. And this will include
+using the ISA PMP if there is a ISA Plum Play device in your computer.
+A nice thing that they have in this documentation is they have key
+files, terms and utilities. They include their directory proc DMA
+which is the direct memory addressing channel assigned to devices.
+Proc interrupts which is the hardware interrupts assigned to devices.
+Proc iO ports which is the iO ports input output ports assigned to devices.
+Proc PCI which is the PCI bus information as shown by the command
+LSPCI. PCI dump which dumps possible ISA Plum Play information.
+ISA PMP which tells ISA Plum Play devices what port to use
+and LSPCI which shows PCI bus information. Section five dot one bus architectures.
+Now we've covered quite a lot of this stuff before but as a result of
+switching documentation we're going to be covering again it's no harm to
+do a little bit of revision. A bus is physically a set of parallel
+conductors that connect the components of the computer. The components of
+the computer use the bus to communicate by sending electrical signals to
+each other. The components that are connected by the bus include the CPU,
+the system memory, RAM RAM and peripherals, disk interfaces, display
+adapters, interrupts and controllers, bus resources.
+The following bus concepts are used both by the ISA and PCI bus
+and iO address. To specify the specific components on a bus
+the CPU uses its iO address. This means that the system and the bus cannot share iO addresses.
+To read your life from a particular location and memory the CPU
+harder uses memory addresses. The ISA bus separates the concept of memory
+addresses from iO addresses although there is not a huge difference between these.
+When a peripheral requires CPU attention it issues an interrupt request.
+The CPU in response to the request stops what it's doing and speaks to the relevant peripheral
+usually to retrieve data or to send data to it. Buses generally have a number of
+interrupt request lines which enable the kernel to determine which peripheral
+caused the interrupt. If two peripherals share an interrupt request line it is
+possible that they will trigger an interrupt request simultaneously.
+The kernel must respond to both devices for proper operation.
+Shared interrupts work when interrupts are level triggered for example on a PCI bus.
+It is not possible when interrupts are edge triggered for example on a ISA bus.
+Direct memory access. Using a DMA channel allows a peripheral to copy data
+directly to in and out of computer memory. This means that the CPU is not
+intimately involved with the data transfer once it is in motion.
+Use of the DMA channel allows a device to perform direct memory access.
+It is generally not possible to share DMA channels between peripherals.
+5.3 Bus conflict resolution. The Linux kernel is responsible for managing
+the assignment of IRQs. Interrupt request lines. I-O ports and DMA channels.
+The kernel will not assign a resource to two drivers unless it is shareable.
+That's a level triggered interrupt on a PCI bus.
+A number of resource conflicts can occur on a bus for example.
+I-O address conflict. Either one or both of the devices will fail to work.
+Even if the one of the devices is misconfigured and no kernel margin has been loaded first,
+it may respond to its I-O address on cause problems.
+Another resource conflict might be shared IRQs.
+Sharing IRQs with level trigger interrupts can cause conflicts if the kernel
+only serves as one of the devices and not both.
+This is not likely with new kernels but it can happen.
+Sharing IRQs with edge triggered interrupts can cause one or both
+of the devices to fail. If a kernel module for a given device is not loaded,
+the device will never generate interrupts and will call exist with the other device.
+Another point to note is DMA channels cannot be shared.
+The kernel will refuse to assign DMA channels to two devices.
+The device for which the module is loaded first will work.
+To resolve conflicts for resources you need to reconfigure the devices so that they do not conflict.
+All cards can be configured by changing jumpers on the card.
+ISA PMP can change the resources assigned for plug and click cards.
+Some PC biases contain this facility too.
+Often the biases include facilities for changing the interrupts
+and memory locations of built-in devices.
+IRQ conflicts between devices on the PCI boss and ISA boss can be resolved
+by telling the bias to reserve certain IRQ lines for the ISA boss.
+I-O ports do not conflict since the PCI boss uses an
+independent range of port addresses.
+Section 5.4 PCI card configuration.
+The peripheral component interconnect PCI boss
+includes resource assignment as parts of its specification.
+To make a PCI card work you merely need to load the correct kernel module.
+To determine which kernel module will work you can consult the output of LSPCI command.
+The module is then loaded using the command mod probed module name.
+If there are options required for the modules you can enter them in the file
+slash egcmodules.conf and run a DEP-MOD-A.
+LSPCI lists PCI devices.
+Each device on the PCI boss is connected to a specific slot
+and this identifies itself by a manufacturer and device number.
+Typing in man space LSPCI gives us the man page for the PCI utilities command
+and it says LSPCI is a utility for displaying information
+about all PCI bosses in the system.
+Each device on the PCI boss is plugged into a specific slot
+and identified by a manufacturer and device number.
+Happily, LSPCI can display the names of the devices
+but cross-referencing them against slash user slash share PCI.ids file
+which contains a list of vendors and their products.
+That might be in a different location in your distribution.
+For example, Antobuntu, it's slash user slash share slash miss slash PCI.ids.
+Even if the vendor ID is not listed, LSPCI will tell you what type of device it is.
+To find the components on the PCI boss you can look in the file slash proc slash PCI
+or use the LSPCI command.
+Just type in LSPCI, we'll dump out a list of PCI numbers and what they are.
+When I do this, I see that 0, 0, 0, 0 is the whole storage.
+For example, 0, 2 colon 0, 0.0 is the ethernet controller.
+You can get more specific information on a particular component
+by typing LSPCI minus S and then the ID number, for example, 0, 2 colon 0, 0.0 minus V for the boss.
+And we see here more information about it.
+The IO port that's used, the memory is at where the IRQ that it's using.
+Section 5.5, ISA card configuration.
+To change the settings that an ISA card is using generally requires changing the
+jumpers on the card itself.
+The section following is one example how to change the settings on an ISA card
+which supports ISA plug and play.
+With few exceptions, the kernel module supporting ISA cards have to be configured
+with specific parameters.
+Most drivers are capable of detecting intro values,
+so the critical values to assign are the IO addresses.
+The best way to assign values is to read the relevant documentation
+and set the jumpers according to the free resources of your PC.
+You can sometimes just guess.
+Here's an example of loading a kernel module for an NE2000 ethernet adapter.
+The NE2000 driver requires the 839 old driver.
+So on the printout, the two in-smod space is 390.0
+and it gives back no feedback.
+To do an in-smod space, any .0 and that gives
+they are back no such device or address.
+And the hint is in-smod errors can be caused by incorrect modular parameters,
+including invalid IO or IRQ parameters.
+You may find more information in the syslog or the output from D message.
+So that didn't work.
+Let's guess an IO address.
+Now they put in the command in-smodspace-any.all
+space-io equals 0x220 and it gives no such device or address.
+So we learn that network card is not at 0x22.all
+and they now go and do a little loop command to find out
+everyone that is is and then at the end they do an LS mod.
+I would like to hear some feedback from people
+as to how relevant ISA stuff is to the API certification
+exams.
+Section 5.6.
+ISA plug-and-play devices.
+A plug-and-play device is very similar to a card which is configured with
+jumpers, except that the jumpers are missing.
+ISA PMP devices are automatically configured by the bias or their operating system.
+Before the ISA PMP standard was devised, many hardware manufacturers
+configured their hardware IO addresses using special MS-DOS-based utility
+programs. The ISA PMP program replaces this functionality.
+To configure a PMP device, use PMP dump redirected to slash
+ETC-forward slash ISA PMP.conf to determine possible configuration settings for the file.
+Address that file and remove comments,
+optionally change the parameters from the defaults.
+Then run ISA PMP-space-forward slash ETC-forward slash
+ISA PMP.conf to set the parameters the device actually uses
+and then load the kernel module for the device.
+Your kernel modules include a module named ISA-PMP,
+which automatically configures ISA PMP cards.
+You can configure misbehaving and on-supported cards manually by writing
+to forward slash proc, forward slash ISA PMP,
+although using PMP dump and ISA PMP may prove simpler.
+Section 5.7 kernel interface commands.
+The following kernel interface files in slash proc,
+display the assigned BOS resources,
+and that is forward slash proc, forward slash the file interrupts.
+For each CPU, proc interrupts shows an interrupt,
+which are in use by the kernel, and the number of time each interrupt has been triggered.
+The file forward slash proc, forward slash IO ports,
+shows the IO ports, which are in use by the kernel drivers,
+and are displayed by the IO ports interface.
+Similarly, the command cache space forward slash
+proc, forward slash IO mem provides memory mapping of the IO allocations.
+That brings us to the end of this section.
+We had a quiz at the beginning.
+Question number 1 was the purpose of an interrupt.
+An interrupt indicates that a peripheral requires CPU attention.
+Could be reading or writing.
+And what's the purpose of an IO address?
+The answer is an IO address can be used to edit by the BOS
+to identify a particular peripheral or a component of the peripheral.
+On what's the purpose of a DNA channel?
+A DNA channel is used for coordinating data transfers between peripherals and memory.
+This frees the CPU to do more productive work.
+What happens when there is a resource conflict between two devices?
+And the answer is either one or both devices will not work.
+It is possible that one of the devices may function unreliably.
+And under what circumstances can two devices share the same IRQ value?
+And the answer is on a BOS which uses level triggered interrupts.
+It is possible to share interrupt values.
+On the ISA BOS and on the EISA BOS interrupt sharing is not possible.
+On the PCI BOS interrupt sharing is the norm.
+And just to give you a summary of what the O'Reilly book says in relation to this.
+It describes setting up different PCI cards.
+It gives the example of three areas, the jumper,
+era, the non-volatile era and the modern era.
+It goes through the CAT PROC interrupts.
+It also refers to CAT PROC DMA, CAT PROC IO ports.
+And it says that on the exam you should be aware of the default resource assignments listed.
+You should also know how to examine a running Linux systems resource assignment
+using the PROC file system.
+It makes reference to table 3.1 which has TTYS0 come on as IO address of 3 F8 of IRQ4.
+However, there says you don't need to memorize all the device settings in PCI architecture
+but you should be ready to answer specific questions regarding some of the more common ones
+such as setting ports and such.
+Again, somebody might be able to advise us as to whether that's something that we would need
+to remember or not for the exam.
+That brings me to the end of this section.
+I hope you like the change in format.
+It's a lot drier probably but what it should allow us to do also is that if there are other
+presenters they can simply take a section from this course where and just follow up through.
+I got this information from the lot of Linux, one of the guys on the lot of Linux links,
+IRC channel, which is a nice place to hang out.
+And they've also pointed me to a CD which I'll also include on the show notes.
+Okay, thank you very much for listening, ladies and gentlemen.
+The following time we will be talking about device configuration if I don't do something else
+in the meantime.
+But for me, have a good evening and keep packing.
+Thank you very much for joining us on the Macro Public Radio.
+HBR is sponsored by Carol.net so head on over to C-A-R-O dot N-E-C for all of our team.
+Thank you very much for joining us on the Macro Public Radio.

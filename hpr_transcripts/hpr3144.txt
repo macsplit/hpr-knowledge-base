@@ -1,0 +1,173 @@
+Episode: 3144
+Title: HPR3144: Pentesting: Insecure Object Reference
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3144/hpr3144.mp3
+Transcribed: 2025-10-24 17:45:41
+
+---
+
+This is Hacker Public Radio Episode 3144 for Thursday 20 August 2020. Today's show is entitled
+Pen Testing. In Secure Object Reference
+and is part of the series' Privacy and Security, it is the first show by new host Cedric DeVroey
+and is about 12 minutes long and carries a clean flag. The summary is
+how an insecure object reference lead to a COVID-related data breach.
+This episode of HPR is brought to you by archive.org. Support universal access
+to all knowledge by heading over to archive.org forward slash donate.
+Music
+Hello everyone, my name is Cedric and I'm recording this podcast to share a story with you
+about how I discovered the first major COVID-related data leak here in our country, Belgium.
+So, I don't know what the situation is in your country, but here in Belgium,
+the entire COVID disease thing is pretty serious. We have a lot of cases.
+We also had a lot of people that died earlier this year. So, yeah, we're pretty freaked out about this
+and the result is that our government is taking really serious precautions.
+And one of these precautions is that you need to, for example, register yourself
+when you want to visit a restaurant or a bar. So, when you do that,
+you need to leave your name and a phone number and email address.
+So, in case a place that you are visiting ends up being infected that day,
+then a contact racers could actually reach out to you to tell you that there is a chance
+that you might have been infected and that you should get yourself tested.
+So, there's a lot of places here where your personal data gets registered now
+for this entire contact tracing thing. Now, of course, we haggers.
+We see a lot of potential problems with this.
+And so, yeah, this was actually the thing that I discovered yesterday.
+This was actually a disaster in the making.
+So, yeah, what happened actually? It was about noon and a friend of mine
+was a journalist at a major television station here in our country.
+He reached out to me and he said, oh, hey, Cedric, there is this new testing village in Antwerp,
+which is a very big testing facility where people can actually drive in with their cars
+and then have themselves tested for COVID.
+It's really on a huge scale. It's also organized by local hospitals together
+with a firm that is specialized in event organizing, et cetera.
+So, it's pretty huge.
+And what I, what the journalist told me was that everyone that wants to get tested
+first needs to register his family or everyone that needs to be tested
+on the website of that project.
+So, yeah, that sounded very interesting to me as a pen tester.
+So, I went to have a look at that website.
+Yeah, I immediately saw that this company, although they did very much their best
+to organize things as properly as possible in this short time
+and in this entire chaotic situation.
+But, yeah, I immediately saw that there were a lot of things that you could say about this
+from a security perspective.
+For example, the main page where a visitor landed after going to the URL
+was basically just a regular WordPress page.
+Nothing very spectacular.
+Well, WordPress has its problems, but if you configure it correctly,
+use it correctly, don't do any crazy stuff with components and plugins
+that you actually don't know anything about, then you should be fine.
+It's pretty decent software.
+But, yeah, what I saw was that on that page, there was a button,
+register yourself here.
+So, I clicked on that button and then you're taken to a forum
+where you can leave your personal data for if you want to get tested.
+So, I went through this entire forum.
+I filled it in and this is actually where all the magic happened.
+The first of all, this forum was not running on the same web server as the WordPress landing page
+where people were arriving at.
+It was actually on a some back end system of this event organizing
+that was also working on this project.
+The system was previously used for measuring arrival times in like
+running events and cycling events, etc.
+So, there was already a whole bunch of software, etc. on this server,
+which was totally not related to this COVID thing.
+So, they were mixing up all kinds of things.
+This was already one like, no, no.
+If you're working with like medical data, personal data on this scale,
+that's not things that you should actually, you should separate your data anyway.
+So, I filled in this forum.
+I said, yeah, my name is Cedric and I want to get myself tested, etc.
+And at the end of the process, I said submit and it was very funny.
+You get a button on the screen and it says,
+oh, if you want to download your e-ticket that you should print
+and lay in your car in front of the windscreen, then click here.
+Then click this button to print that ticket.
+So, I did that.
+And what happened was that moment you clicked that button.
+It actually opens.
+URL which downloads your ticket in PDF form.
+Oh, very nice.
+I got this PDF with a QR code and all my personal data
+and the time that I booked to get myself tested.
+So, fine, a lot of personal data, of course.
+No problem so far.
+Then I looked into the URL that was behind that button that I just clicked.
+And what I signed there was very funny.
+So, I recognized the server, of course, where I was on.
+It was again the same server with that mix-up of software,
+of that event organizer company.
+And what I signed that URL was that it actually had a few parameters.
+So, first of all, language, Dutch in my case.
+But that was not a major important one.
+The next one was very important.
+It was a parameter called ID.
+It had a long but just numeric value.
+So, it was basically, I guess, about 24 digits maybe.
+So, it was pretty long, but it was just numeric.
+So, basically pretty easily to enumerate.
+And then there was a third parameter in the URL which was a hash.
+And it looked like an ND5 hash.
+But what I always tend to do when I see this type of controls in URLs.
+Is I discard the parameters that I see one by one.
+So, the first one that I removed from the request was this hash parameter,
+which normally, what you see this kind of scheme pretty often when in your URLs for downloading files.
+Basically, what it says is you have this document ID, which you need, of course,
+to retrieve the file from the server.
+And you have this hash value, which is based on the content or the name or whatever random data that is related to this file.
+Now, if you know the file ID, but you don't know the hash, you can't retrieve the file.
+That is normally how this scheme should work.
+But what I did was I just removed that hash parameter from the URL,
+pressed enter to request my file, and bam, I got another PDF in my downloads.
+So, basically, what this was telling me was that the application was totally ignoring its own built-in controls.
+It didn't actually check this hash value.
+Now, as I said before, the document ID of the eTicket was just an numeric value.
+So, basically, I went down and I said, OK, I selected, like, the last 12 digits of this document ID.
+And I said, yeah, with a...
+You know, you have this tool from all wasps, set attack proxy.
+You can download it for free from sapproxy.org.
+And basically, this is just a man in a middle proxy that allows you to see all the requests and responses going between your browser
+and an application, and it allows you to modify these messages.
+So, this was what I was doing.
+I was browsing this application, true zap.
+And what I did was I selected the last 12 digits of this document ID.
+And in zap, I set, replace this last 12 digits with random values.
+And do this one time and times.
+And voila, I ran this attack.
+And like that, I downloaded the eTicket.
+So, the reservations of other people.
+So, basically, this was a very nice example of what we call an insecure object reference.
+Because you have the object reference, the document ID.
+But there is no real actual check that validates that you actually have the right to read this document, that it's actually your data that you are consulting.
+So, yeah, that's a major no-no.
+And I wanted to share this story with you because it happens a lot.
+I'm a professional pen tester.
+And I see this in really no exaggeration, almost every application that we test.
+If we find something major, most of the time, this is one of those.
+It's a very common thing.
+You need some object.
+You say, oh, we have this API endpoint.
+And you give it an ID and you retrieve the object.
+Yes, of course.
+But if you don't build any checks to see if the requesting user actually has the right to request this data.
+Yeah, then you are possibly in for a whole lot of trouble.
+Especially if, like in this case, the application goes about very personal data, name, address, phone numbers, email address.
+And basically also in a medical context because you are requesting a test for COVID.
+So, yeah, this was pretty serious.
+So, I immediately contacted the data protection officer that was listed on that website on their privacy disclaimer.
+I sent him a mail with all my findings.
+And within 10 minutes, they call me back.
+And they were super friendly.
+They said, oh, this is awesome that you are letting us know about this because, yeah, this could have been really bad.
+So, yeah, this morning, they let me know we have fixed it overnight.
+So, I went back and checked it out.
+And indeed, they fixed the problem.
+So, now, if you request a file, you actually need to have the valid hash parameter in the URL which is checked before you can actually retrieve the file.
+So, yeah, that's a valid fix for this problem.
+So, this was my first podcast on insecure object reference.
+If you have any questions, feel free to reach out to me through the comment sections on HBR or on Twitter or Facebook.
+See you later.
+You've been listening to HEPA Public Radio at HEPA Public Radio.org.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HBR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out how easy it really is.
+HEPA Public Radio was founded by the digital dog pound and the infonomicon computer club and is part of the binary revolution at binwreff.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Today's show is released under Creative Commons, Attribution, ShareLife, 3.0 license.

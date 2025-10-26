@@ -1,0 +1,238 @@
+Episode: 3020
+Title: HPR3020: Validating data in Haskell
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3020/hpr3020.mp3
+Transcribed: 2025-10-24 15:15:07
+
+---
+
+This is Hacker Public Radio, episode 3,020 for Friday, 28 February 2020.
+Today's show is entitled, Validating Data in Haskell
+and as part of the series, Haskell, it is hosted by Tukutoro Toe
+and is about 25 minutes long and carries a clean flag. The summer is.
+Tuto talks about where to validate incoming HTTP requests before acting on them.
+This episode of HBR is brought to you by Ananasthos.com.
+Get 15% discount on all shared hosting with the offer code HBR15
+that's HBR15.
+Better web hosting that's honest and fair at Ananasthos.com.
+Thank you very much.
+Hello, you are listening to Hacker Public Radio and this is Tuto Ruto talking about how to validate data with Haskell.
+So, a little bit of background. I have that space game that I have been working for and I need an admin interface for it.
+Then that admin interface is for examining and modifying the world.
+The idea is that the computer, while the computer will find a simulation for the players,
+sometimes there's a need for the game master, the person who is an admin assistant,
+to have a little bit of bulk there.
+For example, create new planets or new stars or new people,
+modify little bit of things so that the game will stay interesting.
+So, for that reason, I need the admin interface.
+And first up is for creating viewing and modifying people.
+Later on, I will add more, but people are now what I have been concentrating on.
+As usual, I won't go through the code line by line anymore.
+I will concentrate on the most interesting points.
+And on the show notes, there will be a little bit of more code than in the actual episode.
+So, there will be three end points, HTTP end points.
+So, one for is for retrieving a list of people, one is for viewing or modifying a single person,
+and one is for creating a completely new person.
+So, I'll focus on adding a new person on this episode.
+So, I looked at all about types and parsing first.
+So, there's two important approaches that I have learned recently.
+So, the first one is that you've used types to,
+and actually you should write your program in a way that the illegal state is understandable.
+So, if it's not possible to create data that is illegal, invalid, you don't have to validate it.
+If you can only create a data that is valid, you just don't need to validate that.
+So, for example, instead of checking that the index is always 0 or more in some context,
+you can just use data type called natural, natural.
+Because the data type can represent only from index numbers starting from 0 and going up.
+So, now when you are given such a data, you can be sure that it's at least 0 or greater.
+It cannot be negative. You don't have to, you don't have to separately validate it anymore.
+The card system does that for you.
+You have to remember that you have to be careful when you are doing subtractions.
+Because if you subtract 5 from 1, you will normally end up with a negative number.
+Because natural cannot represent that negative number, you would get a runtime error.
+So, you would have to check if you can do the subtraction before you do that.
+This is a limitation of natural and it's kind of true to people.
+It's kind of annoying. I don't like runtime exceptions at all.
+Another example is a non-empty, which is a list that will always contain at least one item.
+When you are given a data that is non-empty, it's always safe to check that there's a first element there.
+It's not safe to check for the second element of subsequent elements.
+So, if you are given a non-empty and you take a tail that's everything for the first element, you end up with a regular list.
+So, and if you want to check the first element you have to do, if you want to use the first element of that,
+you have to check that the tail actually is.
+So, use types to make invalid state, invalid state under 100 points.
+Another one is the new one that I learned is a pass, don't validate.
+But, when you are given some data that you transform into different data,
+for example, if you are given a JSON object and then you pass it and construct a Haskell data drive out of that.
+Another Haskell data drive, you will build your system in a way that you accept everything and then validate it.
+You should build it in a way that the pass itself makes sure that it reacts data that is invalid.
+You cannot always ensure it in every invariant, so some validation is probably still needed.
+But, so, instead of reading an after a JSON data and then checking that a record of fields are present, as an example,
+you have a data that matches to records, requires an optional field and just pass the JSON into that.
+So, if it succeeds, you have data that you want, the different tails, you either have a missing field or they have wrong kind of data.
+And, it's good to clearly express what kind of data the system objects accepts and operates over.
+So, how does this relate to our space game?
+We are creating that interface for creating new persons.
+So, there's a function signature, generate person M.
+This is the actual thing that creates a new person, generates it.
+It is a random Gen.C, fat arrow, star date, arrow, person options, arrow, danji, person.
+So, meaning that if you are given a current date and options that deliver what kind of person you are after,
+you are given a random moment, which can be then run to get that person that is generated.
+The person options is currently very bare bones, because the people in the game are very bare bones.
+There isn't that much of detail into them yet.
+I will add more options later.
+So, there's only one optional field that's therefore that is maybe, and that's for specifying age options.
+So, better than options has a one field, maybe age options.
+And again, age options is an arcade value like data type that has two possibilities.
+It's an age bracket that takes two ages or exact age that takes a one age.
+So, if you are given an age bracket, you are especially telling the island a person who's age is between these two numbers.
+And if you are giving an exact age, you are saying that you want a person that has this exact age.
+And finally, the age is a new type that runs natural that I talked about earlier.
+So, it means that age can never be negative.
+It can never be functional or decimal.
+You cannot have a 1.5 years old things.
+Age is always whole years, so it's one or two years.
+So, I decided to test that this because for kids, those months in your age are very important.
+It's a big deal that you are 5.5 year old, instead of 5 or 5.25.
+But for adults, it's not that important.
+We count age in whole years or even decades.
+Or the older you get, the bigger you need to start using for counting the age.
+So, our code for this is in the show notes if you want to have a look.
+But it's not that important.
+And the important is to remember that there's a person option, have an option field.
+Age options that has two possibilities.
+Age has egg, age or age bracket.
+And age is always a zero or more.
+I wrote a parsing JSON by hand, because in case that the number is less than zero, we will react it.
+So, this is our parser that actually checks that if it's zero, like a less than zero, we will react it.
+We cannot parse it.
+And that will instruct whoever is using that JSON parser that now you got invalid data.
+So, all this means that when you are creating a new version, you have different kinds of options.
+You can say that I don't care about age at all, then computer will pick some for you.
+You can say that I want specifically 25 year old, for example, specific age.
+Then computer will use the current date of the simulation to calculate the date of birth of that person.
+That's why we need the current date.
+Or you can give a age bracket in which games the computer can calculate the date of birth based on the current date and the bracket.
+And age is always in there that is zero or more.
+So, these things are insured by the type system.
+Okay, there's still possibility of an error.
+So, nothing ensures that the age bracket makes sense.
+We could have a bracket from 10 to 5, and that does not make sense.
+It should be from 5 to 10.
+So, we still need a little bit of validation here.
+I mean, in theory, you could just think that in that case, you just flip them around and then you end up with a bracket from 5 to 10.
+But I like to build systems in a way that they don't assume that a column made some sort of mistake and try to fix it.
+I would like systems to work in a specific manner that has been agreed upon.
+And if incorrect data is given, then they are reacted and say that, hey, there's a problem, fix, fix.
+Because that in the long run leads into less problems in my opinion.
+So, no, so we still need a little bit of validation here.
+And here we are going to use a library called data.validation.
+That is quoting from the instructions manual.
+Data.validation is a data type like either, but we're then accumulating applicative.
+So, that doesn't really say anything if you're not...
+If you haven't used this before, so what this means to me is that I can validate multiple aspects of data and collect errors in a list.
+So, the validation doesn't stop on the first error.
+So, it's really handy for getting all the problems at once.
+Instead of ending up in the situation where you fix one error, send the data and then you get a message that, hey, this is another poll.
+The thing is incorrect when you fix that and then try that.
+And it's nice that you're given a whole list of errors that these things are from.
+So, you know, go, we have this validate active person.
+This is a function that we use to validate age options.
+This is the options that tell the game of the system, what kind of person to create.
+So, validate active person has a data signature of person options, arrow, validation, list of error code, person options.
+So, when you are given...
+When this function is given a person options, it will give back a list of error codes and original person options.
+And that if validation succeeds, that list of course will be ending.
+It can be combined for more complex validations, so you don't have to write all the validations into single function.
+It's actually a very, very good idea to break it into multiple functions.
+So, in our case, we have a validate age options that take person options, returns validation error code, list of error code, person options.
+So, this will take the person options data, validate the age options part of it and return the result call.
+And I tend to call this into... in show notes, I might have a look at it.
+But the thing is that in our validate at person that takes a parameter of version options, we are just saying pure opt.
+This pure takes the version options and transforms it into validation, list of error code, person options.
+And the error code in this list of error codes is empty.
+So, it just transforms into it into the different form.
+And then it calls a less than asterisk, validate age options.
+So, here we are validating the age options part of it.
+And that less than asterisk will combine the list of error codes.
+So, pure opt turns a person options into validation result, and then validate and then less than asterisk operator will go, will combine the result of validate age options with that.
+And then validate age options, as I said, will check that the...
+Basically, it says that if there is no age options given, it sucks it.
+If there is an age, it sucks it.
+And if there is an age bracket, it checks that the first number is created.
+Sorry, smaller or equal and the second number, then it sucks it.
+If the check fails, it returns failure age bracket, start with created and end.
+Okay, and like I said, you can combine these things.
+And then, if we had more options to present in our personal options, we could just add validation photos through.
+So, in the validate age person, we would just use that less than asterisk and add another function.
+And add another function, another function to chain all those checks together.
+If we had a really complex validation, we could have some sub...
+I think, for example, for name, because names are in the game pretty complex, you have different kinds of formats for the names.
+And sometimes you have a first name, and sometimes you have a first and last name, and you can have a cognoment and a regnol number and whatnot.
+So, you could have a validate name options that is called in the validation of the person option, and in that validate name options, you could have multiple steps.
+Because the signatures of the functions are the same, so you can just easily build more complex and more complex checks.
+And then you can just... when you are validating, you are just calling it one validation function.
+So, I hope you could follow that probably a bit unclear, but if you have a look at the show notes, it probably makes more sense.
+So, then we want to put all these things together.
+So, we have a function called post admin API at person of that is of type handler value.
+This is the handler function that handles post actions to the admin API at person root.
+And it returns a value, meaning it returns a JSON data.
+Another reason to call out, but I'm just going to walk through what it does.
+So, first, checks that the current user is admin.
+Then, it gets the JSON content with message, left arrow, Rikaia JSON body.
+And here, you are doing already a little... here, you are passing the data into JSON format.
+And if somebody tries to pass an exact eight, exact eight minus one here, then the parsing fails.
+And you get an error and that error is the only thing to call it.
+Okay, but if parsing succeeds, then we are loading our current data from the database and validating the person options.
+Again, if the validation fails, we are returning a list of error codes and descriptive strings.
+I didn't talk about how to turn those error codes into descriptive strings or how to decide what kind of HTTP code use as a return code.
+But those two functions are basically just...
+The error message is just a function that maps from error code into the string.
+And the function to get the HTTP code is just error code, list of error code to the HTTP code.
+So, nothing too tricky. You probably can imagine how to do a big case study.
+It says that if the error code is this, then you give this string and if you give this string.
+So, then we have validated data that is in syntactical correct, validated data.
+We get a new random number generator because we are creating random versions based on the options.
+We need a random number generator.
+We call generate person M with our current started and the past JSON data.
+And then use the eval run with the random number generator to run that component computation.
+Then we end up with the person.
+And if you look into show notes, we are going to test this.
+This means this let part means that this is a pure computation.
+This always returns the same value.
+Of course, this is a random one.
+That value depends on the random number generator that you passed in that.
+But the thing is that this pure computation doesn't touch the database.
+It doesn't read system data or anything.
+I like building the system in a way that is as much as possible of these computations that don't touch into the database or any external resources.
+Those things are easy to write in a way that they don't accidentally fail or throw a random error.
+Now that we have this generated person, we use, we just call rundbinsertperson.
+So we are just inserting person into the database.
+We get a primary keyback or value for the primary key of that person.
+That's the person ID.
+And then we just return JSON and give it the primary key and the person.
+When some system calls a API, it will be even tack the ID of the newly created person and the actual person that was created.
+Or they will be given back on XDP error of some kind.
+But that's all about if there's nothing else else to creating a new person yet.
+I'm hoping to add more options and more things here, but that's what it is currently.
+And then there's that page where the administrators can view people, view persons of the game, edit them and modify them.
+I mean, modify and create new ones.
+So in closing, types should represent only valid states.
+You should strive to build your data in a way that it's not possible to have incorrect states there.
+You parsing while parsing, you should react in valid data, obviously.
+And you should...
+And then there's a...
+You could parse in several steps and validate as you go.
+In our example, we could have a browser that is from JSON to person options and from person options to the validate person options.
+Then you wouldn't really need a separate validation step anymore.
+And if you have questions, comments and feedback, they are very welcome.
+They say to reach me if you need an email or in the MasterDont.
+MasterDont.ro.
+We are in Tuturdo at MasterDont.ro.
+Adaster.
+You've been listening to Hacker Public Radio at HackerPublicRadio.org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out how easy it really is.
+Hacker Public Radio was founded by the Digital Dove Pound and the Infonomicon Computer Club.
+And it's part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly.
+Leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released on the Creative Commons, Attribution, ShareLite, 3.0 license.

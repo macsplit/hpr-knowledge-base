@@ -1,0 +1,151 @@
+Episode: 1422
+Title: HPR1422: Setting up and using SSH and SOCKS
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1422/hpr1422.mp3
+Transcribed: 2025-10-18 02:06:11
+
+---
+
+wow
+cool
+man
+Hi everyone, this is Sipon in North Carolina for Hacker Public Radio.
+I would like to thank everyone at HPR for the great service that they offer and allowing
+the community the freedom to report on tips, tricks, news, apps, and everything a hacker
+would find interesting.
+Today I would like to speak about how I use SSH and SOX proxy.
+This topic actually came up while I was at my employer one day speaking to a co-worker.
+We have a vendor that offers some advanced training on their products, but they do this
+in video format from their website.
+Our network from the TCP stack, it actually blocks all video streaming.
+It doesn't matter what website you go to, the video stream itself will be blocked so
+you can go to YouTube, but the video will be blocked so you can embed the video into
+another web page.
+You can get to the web page, but the video will be blocked.
+I needed to watch some of these videos for some advanced training on a couple of topics
+with our vendor software, and I was speaking to a co-worker that this was very inhibitive.
+I could understand why they wanted to block these because of bandwidth, so what I ended
+up doing was setting up a SOX proxy through my home network.
+I don't have a VPS, I don't really have a need for one, but I did have a need to watch
+these videos.
+So these are the kind of things that we're going to talk about today, and this is how
+I did it.
+I'm actually running Fedora20 at this point.
+So the first thing we need to do is, obviously, install SSH and whatever distro you use, run
+that application to install software on Fedora, it would be yum, space, install, space, open
+SSH-server, space, open SSH-client, and this would be similar to how you would do it
+on a devian-based system, like Ubuntu or devian, or Mint, it would be pseudo-space, app-get-space-install-space-open-ssh-server-space-open-ssh-client, same thing.
+So now that we have SSH installed, it's a good idea to configure a couple of things that I always, whenever I have a
+fresh install and I want to configure SSH, there's two main things that I need to configure, and these are in the
+configuration files, and I believe that on both of the distros as far as devian-based and RPM-based, arch might be different, but we
+need to edit the configuration file, and those are located in Etsy-slash-ssh, and it's the SSH-d underscore config,
+note the D, and this is the configuration file that runs the Daemon.
+The first thing we need to do is make a copy of the original file. I always do the whenever you edit a configuration file, I'll always make a
+backup, so we do CP, space, slash Etsy-slash-ssh-slash-ssh-d underscore config, a space, slash Etsy-slash-ssh-slash-ssh-d underscore config.backup.
+Now you can put .bk or whatever you want, but I always just do .backup.
+Now we need to edit the original config, so we do Van or Nano or whatever your preferences are.
+You'll see a lot of stuff within this configuration file, but the one thing that we're going to be mostly concerned about first is the port.
+I don't like running SSH on its native port 22, from my preference, I like to have something a little bit more obscure,
+and you can check out a website to make sure that you're not going to be using a port that something else needs like Apache.
+You don't want to put SSH running on port 80, that would be very counterintuitive.
+So the first thing we look for is where it says port 22, and just like backing up a file, I'll always put a comment,
+I'll always comment out what I'm getting ready to edit, so I don't erase what it was before, originally.
+So we put a hash symbol in front of the port 22, and next space we put port space, and for this demonstration I'll use port 6188.
+Not really sure why I use 6188, but I think that's what I used on my Debian box.
+So now we have the port changed, and the next one that I like to do is server key bits.
+I like to bump that up some, instead of the default, which is 768, I change it to 2048, my preference.
+You can leave it as default, or you can change it to 1024 if you want, but 2048 doesn't really seem to hinder the performance any so.
+I always just boost up the key bits there.
+So now we have the port changed, and we bumped up the server bits, and we can save that.
+So however, if you use them, it's colon WQ, and then nanodes, whatever, we save the file.
+Next thing that I had to do on my Fedora box is change some settings within SE Linux, and I want to pause here for just a second and tell you,
+we had a discussion, I can't remember if it was in the IRC channel, or I was speaking with someone, but they were talking about disabling SE Linux, don't disable SE Linux.
+It's there for a reason.
+It can get in the way sometimes, but there's a reason they can get in the way, and it's better to learn how to manage it than it is to just disable and forget about it.
+So for this Fedora, 20 bucks, I put in an addition to the SE Linux, and from a command line, we fired up and the command for to add the SSH.
+So SE Linux is not block it would be SE manage space port space dash a space dash t, and then it's going to be a the port type.
+And then a space dash p, and for this case will be TCP space, and then whatever your custom port was that you changed it to in the configuration file.
+So the dash a is to add, so we're going to add something to SE manage, and the dash t stands for type, and it's going to be the port type, and for this one, the port type will be SSH underscore port.
+And then the dash p is the protocol, and in this case, it's going to be TCP instead of something like maybe UDP.
+So for this command, for SE Linux, we did SE manage space port space dash a space dash t, space SSH underscore port space dash p space TCP space 6188.
+And we're done. So the next thing we would need to do is on this Fedora box anyway, is to allow some firewall settings to go through.
+Fedora has a firewall manager that we can easily configure. So we fired up the firewall manager, and you will see a tab that says ports, and then a button down at the bottom it says add, so we click on the add.
+We're going to keep the protocol as TCP, and for the add port, one type in the custom port for that you obviously did in the configuration file, which in this case will be 6188.
+Save that, and we're done.
+Another piece of added security that you might want to take a look at, if you're doing this on some other box Fedora, there is, you'll have to compile it yourself, but there is another script called deny hosts, and that's d, e, n, y, h, o, s, t, s.
+It hasn't been developed in a little bit, I don't think, but you can install it is in the repost for devian. It is just added security. It adds anybody that tries to do a little port knocking, and especially on port 22 since that's the kind of default port for SSH, it gets banged a lot.
+So anybody that does a little port knocking from the same IP address, I think it's three times, but you can set that in the configuration files, but the fault it's either three or five.
+It adds their IP address to the deny host list, so they can't get to you.
+So after we do these steps, we just need to restart SSH, Damon, and if a door that would be service space, SSH, d, space, restart, and on an Ubuntu or devian base system, it would be pseudo space slash etsy slash init dot d slash SSH, space, restart.
+So now SSH is all up and running, we have it configured the way we wanted, and we just need to test it. I always like to do my first test of a fresh SSH install on the local host or the computer that we installed SSH onto just now.
+So if we start a terminal and type the command SSH space, our username, the at symbol, local host, space, dash lowercase p, space, 6188, and enter, we should get a prompt to put in our password for the user that we just used.
+The dash p and port number 6188 is saying that we are issuing the SSH command, but we are using the port 6188 since that is what our SSH Damon is listening to since we configured that in our configuration file above.
+Now the first time that we run this command on a new host that we have not SSH into before, we are going to get a prompt that says the authenticity of host and then the host name can't be established.
+ECDSA key fingerprint is, and then it has a long bunch of characters, are you sure you want to continue connecting? Yes or no?
+And at this point we must type the word yes, yes, and once it finishes, you will have the key fingerprint of that server added to your known host list.
+Now just a side note, if you SSH into a computer and it adds the key fingerprint to your known host list, and let's say down the road, the host name doesn't change, but the server for whatever reason gets rebuilt.
+Now when we try to SSH into that computer again, we are going to get an error because the key fingerprints don't match.
+And it's an easy thing to fix, but if it does come up with an error like that, and you know that this is your server, your computer, and you have not rebuilt anything or then any type of edits, then that's going to give you a word of caution.
+But let's just say that we know that we rebuilt the box and we need to fix this error.
+So if we go into the hidden directory under our home, the dot SSH directory, there is a file there that's called known underscore hosts.
+And if we open that and just a text editor or whatever, we'll see all the entries that will have the host name and then the key fingerprint.
+We can just comment out or erase the bad key, save the file, and then try to SSH back into it.
+And the good key fingerprint will be added to your known host list.
+Okay, so now we have SSH installed, we have it configured, a little bit hardened, and we can actually SSH into it, hopefully, all that work to all right.
+Now what we need to be able to do is to be able to access the home network from my network network.
+Now the internet provider that I use gives out dynamic IP addresses.
+So I might not know what my external IP address is on any given day.
+And also since I have an internal router between my computer and the internet providers modem, the external address is only going to get me so far.
+So this is where my router comes in.
+The router that I have is a Linksys E2500, and it has a few key features that will help out with this.
+And one of those features is the addition of DDNS, and this is dynamic domain name system.
+And from Wikipedia, I want to read this, it says DDNS is a method of automatically updating a name server in the domain name system.
+It's often in real time with the act of DNS configuration of its configured host names, addresses, or other information.
+Now the service that I use is called DINDNS, that's DYNDNS, and I have set up just a free account, and it allows me to send DINDNS, my external IP address, and they will resolve it to a host name.
+And you do all this whenever you set it all up, you create your host name, and they give you your suffix and everything for your given host name.
+So my router has the ability to link in with DINDNS to update it automatically, so the only thing I have to put in is my username, password for the account, and my DNS servers, and the router are adjusted to their DNS servers, and so everything is synced.
+Now when I want to SSH into my home network from work, I can simply just use a host name, and I'll have to worry about my external IP address updating.
+Now another key feature of the router that I use is port forwarding, and I had this set on a router that anything coming in on a certain port will be forwarded or routed to my home computer, and in this case, we're talking about SSH.
+So I have in the router set up for the port forwarding, I have an entry that's just called SSH, and the port is set to 61-88, and it has an entry for my home computers, IP address.
+Now what happens if my router reboots, or my computer reboots, since my computer is set up for DHCP, and I might have be given a new IP address when the computer reboots, maybe a kernel update or whatnot.
+Now this is where DHCP reservation comes in, and this is very handy, so I have it set up in my router that whenever the MAC address associated with my network card needs an IP address, it always gives out the same one.
+So no matter when my computer reboots, as long as I have the same network card, then my computer will always get the same IP address.
+Now if your router that you use does not have a method for doing this updating of the domain name server, you can also use a script that you can get off of a source for which is called DD Client, and it's a simple Perl script, and it automatically updates your external IP address to a network service, a domain DNS service.
+And it doesn't only just work with DNS, but that is one of the main ones that it does work with.
+So now we have this all set up, and I should be able to access my home network from my work network.
+At the office, I have to use Windows, so there is a program that you can use since Windows does not come standard with an SSH client, it's called PuTTY.
+The configuration of PuTTY is really simple. When you fire it up, you're going to see in the very front it says Hostname, and that it's going to be the Hostname that you set up when you register with DIN DNS, and the port is set to the port that I used in the configuration of SSH, and in this case it's going to be 6188, and the connection type is set to SSH.
+Now what I can do here is simply just SSH directly into my home computer, and I'm going to be able to move files around, I can copy a file into Dropbox or whatever you have you.
+But the real goal here is to be able to get to an internet site where it is currently being blocked unfortunately on my work network.
+So this is where socks comes in, and socks stands for socket secure, and it's just kind of like SSH where it's a secure shell, this is a socket secure.
+And it's simply going to route the information between a client, which is the computer that I'm on at work, my Windows laptop, and a server which is my home network through a proxy.
+So socks performs at layer 5, if you're really interested in all that, it's actually really interesting to see how this information is being passed along.
+But the socks service itself is located on the TCP port of 1080.
+Now if we open putty back up, there is a menu over on the left hand side, and there's a section that says connection, and then you're going to look for something that says SSH and then tunnels.
+And under source port, we're going to type 1080, and leave the destination blank, but under it, you're going to select a little radio button that says dynamic.
+And so here in my Windows computer, I'm telling putty to make a connection to my dynamic host name on that port, and to make a tunnel connection on port 1080.
+Now this tunnel is going to make all the traffic from port 1080 through port 6188.
+So the SSH creates the socks proxy to listen for connection on a local port 1080, in this case.
+And when it receives your request, it routes the traffic through the SSH connection between my client and my server.
+So where this is going to become real handy is setting up your browser, maybe it's Firefox, and that's what I'm going to talk about, to use this proxy to route your internet traffic.
+So if you open up Firefox, and go to the tools menu, and then under options, then advanced, there's a network tab, and under connection, select settings.
+And you're going to change this to access to manual proxy configuration, and then under the socks host, you're going to enter local host, and for the port we're going to enter 1080.
+Now all traffic within Firefox will go through port 1080 on the local machine, to port 6188 on my server at my home computer.
+And you can test this if you leave the configuration by default, not the manual proxy settings, and you go to a website like IP chicken.
+And then when you make these settings, go back to IP chicken, and you should see a significant change, hopefully.
+So I also use a lot of portable apps. When I do this, it's going to sound really nefarious, but it's really not.
+I have a USB stick, and it has three applications on it, and they're all portable applications, and it's putty.
+It's set up with these configurations, and they're saved with those configuration settings, and also use portable Firefox with these settings that we just talked about, and also use portable pigeon.
+So if for some reason I wanted to connect in with Google Hangouts, or pop onto free node, and chit chat, then it's the same situation.
+Under portable pigeon, if you say create account for free node, or whatever, there is a tab there that says proxy, and from there you will just choose the proxy type as socks 5, and the host will again be local host, and the port will be 1080.
+And this is going to work the same way that Firefox does. All of your traffic that you're going to be routing through the program is going to be going through your socks proxy.
+Now, you must have the SSH session running, and then fire these applications up, otherwise you're going to get an error, of course, it can't get through the proxy.
+So that's a little side note. So first we fire up the terminal, or putty, make the SSH connection into the host, and then we fire up our portable apps, and we can stream our videos as needed.
+We can chit chat on free node if we wanted, and everything is going through our home network. The only connection that is being made on our work network is the SSH connection back into my home computer.
+Everything else is hidden away and unseeable from unwanted eyes.
+So I hope this information was helpful in some way, and if you have any suggestions, comments, critiques, any type of comment that you want to make, I highly encourage you, I would love to hear from you.
+And hopefully you'll be able to use this in the future. And I thank you everyone very much for listening this far, and I hope everyone has a fantastic day. Thanks a lot.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by a HPR listener like yourself. If you ever consider recording a podcast, then visit our website to find out how easy it really is.
+Our public radio was founded by the Digital Dark Pound and the Infonomicom Computer Club. HPR is funded by the Binary Revolution at binref.com, all binref projects are crowd-responsive by lunar pages.
+From shared hosting to custom private clouds, go to lunarpages.com for all your hosting needs.
+Today's show is released under creative comments, attribution, share a like, lead us our license.

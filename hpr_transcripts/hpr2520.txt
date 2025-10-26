@@ -1,0 +1,121 @@
+Episode: 2520
+Title: HPR2520: Diffie-Hellman and Forward Secrecy
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2520/hpr2520.mp3
+Transcribed: 2025-10-19 04:39:16
+
+---
+
+This in HBR episode 2,520 entitled Diffie Helmand and forward secrecy and is part of the series, privacy and security.
+It is hosted by a huker and is about 18 minutes long and can in an explicit flag.
+The summary is using Diffie Helmand key exchange to implement forward secrecy.
+This episode of HBR is brought to you by an honesthost.com.
+With 15% discount on all shared hosting with the offer code HBR15, that's HBR15.
+Better web hosting that's honest and fair at an honesthost.com.
+Hello, this is Huker, welcoming you to Hacker Public Radio and another exciting episode.
+This time I want to build on what we did previously looking at the Diffie Helmand Merkel and take an application of this to something that is called forward secrecy, which is something that has gotten increasing attention in the last few years.
+When we do examples of cryptographic protocols, you might have noticed we're frequently talking about Alice and Bob, just because it's A and B.
+These are the two individuals that are always communicating with each other and then by convention the eavesdropper is Eve and so on.
+We may tend to think of these as just individuals communicating, because that's what the examples are like, but in the real world.
+The environment is more often one of an individual communicating with a server and establishing secure communications.
+This usually involves both Diffie Helmand and a public key method such as RSA.
+How does this process work in practice? I will present here a high level conceptual view of the process that will help us understand the principles involved.
+The first part of this is the client hello message. Everything starts with the individual. If I go to a website, either I may find that it creates a secure connection by default or if it doesn't, I have installed a browser plugin called HTTPS Everywhere from the Electronic Frontier Foundation and there will be a link in the show notes for this.
+That will tell the server I prefer a secure connection if possible.
+I am still at the mercy of the website since they need to have installed and configured the necessary certificate for a secure connection.
+But the starting point is me contacting the server. Amazon has not, to my knowledge, ever initiated a session by logging me in and asking,
+hey, do you need anything today? Though I must say if they figure out how to do it, I would not put it past them.
+So when I initiate a connection and try to make it secure, the first thing that happens is a negotiation over the cryptography.
+My browser will initially offer a client hello message that looks somewhat like this.
+TLS underscore DHE underscore RSA underscore with underscore AES underscore 256 underscore CBC underscore SHA.
+Well, I'm sure that's all entirely clear. So moving, no, of course I'm going to explain what all of this means.
+Every piece of this has some kind of a meaning associated with it. So it starts with TLS.
+So what that means is we are trying to establish a TLS or transport layer security connection.
+The TLS is something that has basically superseded SSL.
+And that's because there were some insecurities with SSL and it's just the most practical solution was to move towards a more secure protocol.
+So TLS says, this is what I want to do. I want to initiate a TLS connection.
+And the next DHE, that says I want to use Diffie Hellman ephemeral DHE for the shared secret used for the session.
+Then RSA. So I'm going to combine this Diffie Hellman ephemeral with RSA, which is the public key protocol used to create the secure initial connection.
+AES, that stands for Advanced Encryption Standard. So with AES says this is how I want to establish it. This is the cryptographic standard I want to use.
+256 says I want it to be a 256 bit connection.
+CBC is Cypher block chaining. And then finally SSH, SHA using the secure hashing algorithm.
+You've probably seen SHA in a number of contexts. So this should offer the strongest encryption my browser is capable of.
+But I don't want to get into the negotiation of protocols right now. I'll just note we've talked about some of this before. Protocol downgrade attacks like Poodle are one of the reasons that SSL has been deprecated in favor of TLS.
+Bad guys found a way they could try and force the browser to log on with a very insecure type of a connection. So with TLS, that's not possible.
+Now, that's the client hello message. Not surprisingly, there's going to be a server response to this called the server hello message.
+So when the server gets my client hello message, they respond and basically they will either accept the proposed options from the client.
+And you know, my proposals should have been for the strongest encryption I am capable of maintaining.
+Or if they were not acceptable, the server should simply say I'm sorry. We're not willing to connect at that.
+So generally speaking, if malware has not taken over your life, you shouldn't run into a failure because of a bad security protocol.
+Any modern browser should be offering a very good level of encryption security here.
+Now, in addition to that, when the server responds and let's assume that they are accepting my options, they're going to provide two key items.
+The first is a certificate to authenticate the server, which contains the public key of the server.
+This is standard public key encryption kind of stuff. And also a random 32 byte number, which will be used for the Diffie Helman key exchange.
+Now, note that all of this is still in the clear. We are still negotiating for a secure connection.
+And if you go back to our previous thing on Diffie Helman, note that Diffie Helman key exchange is all based on the idea that your messages can be observed as they travel over the internet.
+So we're not relying on secrecy of the messages. In encryption, we may rely on, but we assume people can actually somewhere along the way insert wire shark or some other packet sniffer and sniff the packets and take a look.
+Now, the Diffie Helman key exchange. This is how we start the process of establishing a secure connection.
+So recall with Diffie Helman, we've got a random number from the server. Now we have to come up with a random number of our own, which we will encrypt using the public key of the server.
+And that encryption means when we send it back, the server will be the only one that can decrypt this.
+So the server gets this back, decrypts the message using its private key. So now the client has a random number it got from the server.
+The server has a random number it got from the client, and now we can apply Diffie Helman process to create a shared master key that will be used going forward.
+The handshake process therefore concludes with change cipher spec messages, which switch from the public key encryption enabled by the certificate to the symmetric Diffie Helman key just negotiated.
+Okay. Sounds pretty good, but with security, one of the things you're always saying is where could this go wrong?
+This process is secure against eavesdropping, just as we saw in our first look at Diffie Helman, and the use of public key encryption to initiate the secure communication makes it safe as long as you were careful about the certificates.
+As noted in previous tutorials, man in the middle is possible, but only by substituting a different certificate.
+In a corporate environment, at least in the United States, if you use a company computer, they may intercept communications by putting their server in between and establishing connection on both sides.
+IE, one connection to the client, the other one to the remote server, and managing certificates both ways.
+But now if you're careful about inspecting your certificate, you will at least know if this happens.
+Using your personal computer does not provide any justification for this unless you have a really bad ISP.
+And there are standards like OCSP stapling, and if you're not sure what all of that's about, we did an episode on TLS SSL certificate issues and solutions that goes into more of it, and I'll put a link to that in the show notes as well.
+And that is a technique designed to make it very difficult to spoof certificates in any way.
+But a couple of big problems still exist.
+First, control of the server may be lost due to malicious cracking, law enforcement, or any other reason.
+If that happens, any keys that have been employed might be obtained from the server, and then the communications could be decrypted.
+I might not care if the communications regarded my purchase of specialty teas from Amazon.com, but if they were sensitive emails, I might be very concerned.
+The second issue would be if the messages were intercepted and stored for future decryption.
+We know that this is an arms race, and that encryption methods that looks safe for now might become much less safe if there is a breakthrough in technology such as quantum computing.
+It is known that the NSA has a facility built to store stuff that grabs from the internet with an eye to being able to decrypt it in the future.
+That is what has sparked the interest in forward secrecy.
+My data may be secure now, but will it be secure in the future?
+Now, forward secrecy, sometimes you will hear referred to as perfect forward secrecy, I really do not like that.
+The reason is it is not perfect protection.
+We have consistently said that in this area we have a technological arms race, and that is an argument that no perfect solution will ever be discovered since any improvement in encryption will at some point be matched by an improvement in decryption.
+And forward secrecy cannot protect against brute force decryption.
+If quantum computing makes all your keys as strong as tissue paper, anything encrypted with those keys will now be an open book.
+Now note, however, that there is a developing field of quantum encryption, which looks at harnessing the power of quantum computing to protect your data and communications.
+As I said, this is an arms race.
+What forward secrecy does is provide key protection, and it does this by using new keys for every session.
+What this means in practice is that if someone got their hands on the key you used when you wrote an email on January 9th, it would be no help at all in dealing with your email on January 10th.
+Neither would it help with any web browsing you did on January 9th since that would be a separate session from the email.
+And because there is a new key used for each session, one requirement of forward secrecy is that keys would not be stored. They would be used within a session and then discarded.
+This does point out one potential weakness, however, which is that a user has to trust the server to follow the protocol in this respect.
+And I can imagine a service provider of some kind violating this due to sheer incompetence or because of a requirement from law enforcement.
+There is a reason so many countries insist that all email providers locate servers within the country where the government can get its hands on them.
+Now one of the early adopters of forward secrecy was Google.
+Adam Langley from the security team posted a notice on their security blog on November 22nd, 2011, called protecting data for the long term with forward secrecy.
+And again, I'm going to put a link to this in the show notes.
+In this short blog post, he mentions that Google supports forward secrecy using elliptic curved if he helmin.
+And in an interesting coincidence, exactly two years later, November 22nd, 2013, Twitter announced in its blog under the heading forward secrecy at Twitter, again link in the show notes, that they would also be using forward secrecy and similarly said the following.
+There are two main categories of Diffie-Hellman key exchange.
+Traditional Diffie-Hellman, DHE, Diffie-Hellman ephemeral, depends on the hardness of the discrete logarithm problem and uses significantly more CPU than RSA, which is the most common key exchange to use in SSL.
+Elliptic curved if he helmin, ECDHE is only a little more expensive than RSA for an equivalent security level.
+Vincent Bernat benchmarked this at a 15% overhead relative to RSA over 2048 bit keys.
+Diffie-Hellman ephemeral by comparison used 310% more CPU than RSA.
+Finally, Apple published a specification called app transport security that is now mandatory for all apps.
+It has several provisions, but one of them involves forward secrecy.
+I have an article from the SSL store that talks about this, a good description of what this provision is.
+ATS, that's app transport security, also requires the use of TLS 1.2 and a ciphers suite that provides forward secrecy.
+Developers will need to ensure their server is configured properly.
+TLS 1.2 is the most recent version of the SSL TLS protocol and most modern servers have it turned on by default.
+Forward secrecy refers to the way that connections are encrypted.
+An encryption cipher which supports forward secrecy, like ECDHE, is able to offer security to past sessions, even if the private key is compromised.
+So, server providers are moving towards this to improve the security of their customers' data and communications.
+So, I hope this helped you to understand a little bit better what forward secrecy is and how that is going to help you to be more secure.
+So, as always, reminding you to support FreeSoftware. This is Ahuka signing off. Bye-bye.
+You've been listening to Heka Public Radio at HekaPublicRadio.org.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contribute link to find out how easy it really is.
+Heka Public Radio was founded by the digital dog pound and the Infonomicon Computer Club, and is part of the binary revolution at binwreff.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise status, today's show is released on the Creative Commons, Attribution, ShareLite, Free.O license.

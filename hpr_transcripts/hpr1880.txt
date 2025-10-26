@@ -1,0 +1,310 @@
+Episode: 1880
+Title: HPR1880: Arduino Bluetooth HOWTO
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1880/hpr1880.mp3
+Transcribed: 2025-10-18 10:45:29
+
+---
+
+This in HPR episode 1,888 entitled, Arduino Bluetooth How-To, it is hosted by Klaatu and
+in about 42 minutes long.
+The summary is, Klaatu talks about getting a Bluetooth module for an Arduino and how to
+make it work.
+This episode of HPR is brought to you by AnanasThost.com.
+Get 15% discount on all shared hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's honest and fair at AnanasThost.com.
+You're listening to Hacker Public Radio.
+My name is Klaatu and this is going to be an episode about the Arduino and Bluetooth control.
+So, my girlfriend, Slannite Cupcake, had this project where she needed to build a little
+basic remote control car, essentially, for this class that she was teaching on.
+Well, it was actually what do you call it observatory?
+A program to introduce people to the concept of how Martian rovers were.
+And so she figured it would be cool to have a class where people made a remote control,
+quote-unquote, Mars rover, and maybe did an obstacle course or something like that.
+So the choice for this project was we figured in Arduino and then people would control it via their
+smartphone or laptop.
+So if you do a quick internet search for Bluetooth modules for an Arduino or any embedded device really,
+there seems to be sort of one out there that everyone uses.
+And actually, it's actually two, but everyone calls it by one name and that is the HCO5HC-05.
+Actually, as I said, there's the HCO6 as well, but a lot of posts online kind of just call them the HCO5.
+It's kind of confusing actually because it turns out, and then actually it's even more confusing than that,
+because like wireless cards or graphic cards, people can, from what I can tell, use the HCO5 or HCO6 chip
+and manufacture the actual Bluetooth module themselves.
+So you've got like all these HCO5s and HCO6 all being called HCO5 and all of them from different manufacturers.
+So you look at one online and there's like six pins on that one and you look at yours and there's only four.
+And you think, why is this different? Well, probably just a different manufacturer.
+So it can get a little bit confusing, but the basics of it is pretty much the same no matter what,
+unless you start really getting in there and wanting to hack on the firmware of the chip itself.
+In terms of the user-facing functionality, it's all basically the same.
+And I'm going to run through the basic setup for all this stuff with you right now.
+Now, in the past, I have done some episodes of HackafolureGradio and my own podcast at www.geneworldorder.info
+where I read a lot of code and kind of like expect people to actually transcribe it.
+I could do that in this one, but I don't want to because I have a feeling that to do that well,
+there'd be a lot of code to read and that would get pretty boring.
+So I'm going to kind of do an overview, but there are a lot of places online that you can get more information
+and I will refer you to those soon.
+So first thing, of course, is that yes, you do need an Arduino.
+I've been using the Uno pretty recently a lot because it's cheap,
+and we have needed a lot of them for, you know, large to medium-sized classes.
+But I've used the AT mega something or another as well.
+It's all basically the same, right?
+It's an embedded microcontroller thing with some pins in it.
+Okay, so as you perhaps know, if you plug the Arduino into your computer via the USB port,
+you can talk to that Arduino via some serial port.
+And the serial port on all the machines I've ever tried this on has been located
+at slash dev slash TTY slash ACM zero.
+I've seen online some people saying that it could be located somewhere else.
+I've just never had it anywhere but slash dev slash TTY slash or TTY ACM and then something.
+Zero usually, but I mean, if you unplug it and then plug it back in before ACM zero
+knows that it's been disconnected, then you could get an ACM one, for instance.
+But that's where I find it. So I'm going to refer to it as that,
+because that's where I usually see it.
+And as I've said in my previous Arduino episode, which was quite a while ago now,
+you can get started with the Arduino pretty simply.
+You plug it in and you download the Arduino IDE, which is a process based,
+a little IDE written in Java, and start programming.
+And it's pretty simple and there's a bunch of example sketches is what they call them.
+And so you can load up examples and make the Arduino do pretty simple things pretty quickly,
+like you can get the LED to blink and things like that.
+So for this project, what you would need is a really,
+it can be a super basic little program to basically accept control,
+like instructions, from some pin on the Arduino.
+And then depending on what it receives, perform some action in an output port of the Arduino.
+As I've said, the use case here was a little remote control car.
+That's not exactly the most obscure thing to do with an Arduino.
+If you do an internet search, you will find instructions on how to do this.
+But just to give you a quick overview, essentially you would set up two variables,
+an integer, INT, for instance, a light, like an LED light.
+We could do motors, but then we would need a lot more than just one variable.
+So I'm just going to do an LED light.
+We're going to turn it on or off with a VEBLY 2.
+So you would set up a variable and you could call it int light equals.
+And then you would assign it to whatever pin in the Arduino that you're going to plug that light into.
+So let's just arbitrarily say that that's pin number seven.
+And then you would set up an int for incoming data, or something from the Bluetooth.
+So we'll call that BT data, Bluetooth data.
+And we will assign that to pin zero.
+Zero being, of course, the RX pin on the Arduino.
+Now that might be different for you if you're not using the Arduino Uno.
+But on the Arduino Uno pin zero is labeled RX.
+Now RX and TX, if you don't know, are the input and output channels for the serial port.
+So anything that is being sent from, for instance, the Bluetooth module,
+you will send from the TX of the Bluetooth into the RX of the Arduino Uno.
+And then going the other way, you'll be plugging the TX from the Arduino into the RX of the Bluetooth.
+So it's kind of, if you just think about it as a crossover, you know, in Ethernet,
+if you want to send data from one computer to another computer over an Ethernet cable,
+you can't just plug a standard Ethernet cable between the two, right?
+You either have to go through a switch, or you have to buy a crossover cable,
+which swaps some of those tiny cables in the Ethernet head, swaps them around so that the data, you know,
+goes from one to the other, and they don't collide.
+Same principle here, more or less.
+So, I mean, it could be exactly the same.
+I don't know that much about how cables work.
+So I'm saying, I'm likening it to that without making any claim about the electronics.
+But I digress. So let's do a void setup now.
+So a void setup, of course, is the default sort of the init sequence.
+So when you start this application, this little program on the Arduino,
+this is what will run first, and then it will proceed to go into its main loop.
+So a void setup, parentheses, parentheses, curly brace, pin mode,
+parentheses, light, comma, output, closed parentheses, semicolon.
+That's a pretty standard thing in Arduino programming.
+You'll see that a lot, and all it does is, it's obviously using that variable,
+the integer variable, light, which is set for pin seven,
+and we're calling that an output pin.
+We're putting that pin into output mode, meaning that it's going to send a signal
+to whatever we have plugged into that slot, into that port.
+Makes sense, right? Okay, so then we'll do a digital right,
+that's another standard Arduino command, digital right, or function, I guess.
+Digital right, parentheses, light, comma, low, closed parentheses, semicolon.
+Now, this is saying that we're going to output, when we start there,
+when we start there, do we know it's going to send a signal digital right,
+W-R-I-T-E, to the light, which is, of course, pin seven, right?
+And it's going to send the signal low, which I'm not sure if that,
+if low is the same as like zero or false or whatever,
+but that sets the thing to its lowest value.
+So it's essentially saying zero or false.
+It's saying turn the light off if it is, you know, if it's not already off,
+turn it off.
+And it's good to do that when you set up the thing and you're in it sequence,
+because the Arduino obviously doesn't actually know if the LED light
+or the motor or whatever is on or off.
+So starting right up from the unit sequence, saying, hey, turn everything off,
+that way we start from a known value.
+Okay, so that's setting up the hardware.
+So if you were doing something with motors, you would have a lot more there,
+as well. You would have digital rights to all of your motors,
+turning them off or whatever you want to do.
+Next, it would be, we'll invoke the serial library of the Arduino,
+which is the word serial with a capital S, has to be a capital S.
+So serial dot begin parentheses, 9600 close parentheses, semicolon.
+The 9600 is the BOD rate at which we will be speaking to the Bluetooth module,
+that's important. If you set it to something that's that's non-default
+for what you are speaking to, you may either miss data or misread data or whatever.
+So you'll kind of want to check on that.
+But there aren't that many different BOD rates that are kind of like standardized out there.
+So if you can't tell, you know, if you get something and it doesn't tell you one way or the other
+and the internet doesn't seem to know, you could actually just try a couple of different standard BOD rates.
+So not that big of a deal. And I'm saying BOD BAUD.
+Okay, so the next line, then it's our semicolon.
+And the next line is serial dot. Well, actually we don't need anything else yet.
+That's the init sequence. I had another line in there, but I'm deciding not to do that
+because it might confuse things. So we'll do a closed curly brace.
+So that's our setup. So that's like what, four lines in our setup? No, it's three lines in our setup.
+Not bad.
+So the next thing, as I said, so the setup is the init sequence.
+That happens once when you turn on the Arduino.
+The next thing you want to do is kick it over into its main loop.
+And for that, you need to create a loop. So it's void, space, loop, parentheses, parentheses, curly bracket.
+There's a little bit of error checking that we should probably do.
+Technically speaking, this, strictly speaking, it's not necessary, but this is a little bit cleaner.
+So we'll just say if parentheses serial dot available, parentheses, parentheses, greater than zero, parentheses,
+and then curly brace because we're in it if statement.
+BT data equals serial dot read, parentheses, parentheses, semicolon, closed the curly brace.
+So what that is saying is that as long as the serial port is available, then assign the variable BT data,
+which, if you'll recall, we established at the top of the program, set BT data to whatever's at serial dot read parentheses,
+or whatever's happening in the serial dot read, parentheses, parentheses.
+So that's setting the contents of BT data to whatever it receives from this function serial dot read.
+And the serial dot read thing is just to built in again.
+It's part of the Arduino serial library, and you can close your curly brace there.
+So I mean, like I say, strictly speaking, you don't need that if loop, or that if statement rather,
+but it's safer to do that because that way it waits for the serial port to be available,
+and then it kicks into serial read mode.
+Okay, so then you can, I mean, really this is it.
+This is the final stretch.
+We've got about eight more lines maybe.
+So you can do a switch, and the switch is going to take BT data.
+So your switch statement is listening to everything coming in through the serial port,
+because BT data is assigned to the serial dot read, and your switch statement is taking BT data as its input,
+and it's just looping over and over to do that.
+So then you do a curly brace, and you do a case, CASE, space, quote, let's do E, quote E,
+it's closed quotes, colon, not semicolon, but colon.
+And we'll set that to digital right, parentheses, light, comma, high, closed parentheses, semicolon.
+So we're just saying if you get the E key as input, set the light, which is on pin seven,
+to its highest value, whatever that is.
+And then semicolon, and then serial dot print line, or print, printl, PR-I-N-T-L-N,
+and then parentheses, quote, light, light on, closed quote, closed parentheses, semicolon.
+And that's just a debug statement.
+You probably won't even see that to be honest, but it's there just in case we need it.
+And then BT data equals quote star, quote, semicolon, and then break semicolon.
+I think you'll get the hang of this.
+So the next one is case, quote, let's do R, closed quote, colon, digital right, parentheses, light, comma, low,
+closed parentheses, semicolon.
+And then the same thing, some kind of debug statement telling you yourself that, hey, the lights are off,
+and BT data equals quote star, quote, close semicolon rather, and then break semicolon.
+And then online, I've seen a lot of people do a delay.
+Delay, parentheses, 5,000, closed parentheses, semicolon.
+I don't know if that's actually necessary.
+All it's really doing is slowing down the loop, really.
+It's just kind of like, all right, let's wait.
+And then we'll loop back around.
+Maybe not strictly necessary.
+And then curly brace, curly brace to close all of your different, I'm sorry, that was just one curly brace, I think.
+No, no, two, because we're in the switch statement and then the loop, yeah.
+So curly brace, curly brace.
+Okay, so there you go.
+That's your little basic program.
+So what you're doing there is you're saying the, you know, assuming that you're using WASD as your input
+for your controlling of the Martian rover, you're hitting E to turn your lights on and R to turn your lights off.
+And that's setting up your program.
+And if you click the verify button in your Arduino IDE, it should verify.
+And if not, you can go correct all your forgotten semicolons and misspellings of your variable names.
+So you've got the Arduino setup now essentially to read data in from the Bluetooth and then forward some command on to something else that is connected to it.
+Now the trick that I'm really, this episode is actually really supposed to be about, it's setting up the Bluetooth part.
+And that's a little bit more confusing than what we just did.
+And there's a lot of conflicting information online, surprise, surprise.
+But it's actually not that hard. It's just, it's something that you have to do and understand and then you're done.
+So the first note that I should make here is that the, like there are, there are smartphone controllers that we found for the Arduino over Bluetooth.
+You can just grab it from the Google Play Store if you're using Android.
+But the problem is, of course, that not everyone is using Android.
+So we had to assume, I mean, there's probably realistically, well, I can say for sure that there is not a program for Firefox OS that does that.
+But there's that other mobile operating system out there. And I have no idea if they have a Bluetooth controller for that.
+They may, they probably do, but I don't know because we don't have access to that mobile OS.
+So we figured, well, we'd better make some kind of like fallback little simple application that will, that that can control this Bluetooth module just from a, from a laptop.
+So I set about doing that and learned a whole lot about Python serial modules as well as Bluetooth on the computer, like how, how you can get,
+how, how you can send serial instructions via Bluetooth essentially. And this is, this, it gets tricky.
+And there are lots of things that will trip you up. So for instance, my first day of trying this, I just had the Arduino plugged into my computer.
+And I kept thinking that, that when I was sending signals to dev TTY ACM0, well, that should be getting passed on to the Bluetooth module, right?
+Well, no, not at all, actually, not nowhere near that that you're completely off base. So no, that's not how you do it. In fact, you don't want to have the Arduino plugged into your computer.
+Could be because that, that, or, I mean, I guess you can, but you, if you do that, you will probably forget and you will start talking to it and doing things wrong.
+So I've warned you. The other thing to do is, or the other thing that you will probably try is to send signals to this, like dev TTY ACM0 thinking you're talking to the Bluetooth over this, that serial port or something.
+And that, that's wrong as well. Just get out of your mind that the dev TTY ACM0 exists or that you're, you know, whatever you saw when you plugged into your Arduino, that was the Arduino, not your Bluetooth module. I promise you.
+The way that you have to set up a Bluetooth on Linux, I mean, well, okay, so two things. First of all, you can, you can pair your computer, your, your, your, your actual laptop or whatever, to a Bluetooth module. You know how to do that, right?
+I mean, you go to your system settings or whatever, you go to your Bluetooth control panel, you pair a device, and it's, it's simple and we've all done it.
+I mean, I don't even have any Bluetooth devices really, and I've done it. Well, obviously I have, but I mean, even before, before I started playing around with this HCO5 and HCO6, I, I, I'd done it. So it's, it's pretty common. You, you have the occasion to do that.
+So you do need to do that, but the way that you do it, you also need to tell the system, you, you need to marry that Bluetooth device to as a specific serial port that you can, that you can talk to.
+So the first thing to do is to attach the Bluetooth module to your Arduino. In order to do that, you'll need either a breadboard or some kind of, you know, basic circuit board.
+Breadboard obviously makes it a lot easier because you don't have to solder anything. So if you plug it into a breadboard, you power the breadboard, you can send the, send some power, like 3.3 volts to the VCC connection on the HCO5 or 6.
+And then, of course, you send the ground to ground. That's pretty simple. And then, as I said, RX from the Bluetooth goes to the TX of the Arduino and the TX of the Arduino goes to the RX of the Bluetooth crossover.
+Okay, that's connected. Done. Now you need to add yourself to the serial group so that you have permission to talk to the serial, to a serial device.
+Slackware has that already set up. It assumes you want access to dial out. Other Linux distributions do not seem to have that automatically set up.
+So that's fine. All you have to do is do a user mod. And so as either root or with pseudo do user mod space dash A for append space dash capital G for supplemental groups.
+And then space dial out that's DIA L O U T and then space and then your username and hit return that adds you to the dial out group, which is the default group that controls and manages the serial device of devices of your computer.
+So now you need to log out. You can reboot, but you don't have to. You can just log out and then log back in. It's just basically once your desktop starts, it got a list of all your groups. And it's not going to check for that again. Why would it? So you log out log back in. And then if you do a groups command on the terminal, you should see that yes, the dial out group is now something that you are in.
+Okay, so all that's done. So now you have to set up. You have to marry the Bluetooth device that you're going to connect to to the RFCOM port of your computer. The RFCOM is, I guess, RFCOM, RF communication probably. It's a serial port and that's where you want to talk to this thing.
+I mean, I guess technically, no, I think you should do it here. I was going to say you could probably mess around with other settings, but let's just do it this way.
+Okay, so the first thing that you want to do, and this is going to sound weird, but the first thing you want to do, you have to tell your computer how to connect to that Bluetooth device, meaning that Bluetooth devices usually have some kind of pin code so that, you know, not just anyone can come, can stroll up and pair with that device.
+The default pin code for pretty much every HCO5 or HCO6, as far as I can tell, is 1, 2, 3, 4.
+You can change that if you go into the firmware and tell it what pin to use. We're not going to even go near that right now because it gets really complex because the HCO5 and the HCO6, and then you got different manufacturers who give you different pin accesses.
+Yeah, it's just, it's not something that I want to get into, and it's actually quite frustrating. I've been fighting with that for quite some time now.
+So anyway, so we'll do a, we need to get the MAC address of the Bluetooth module, of your specific Bluetooth module. The way that you can do that is either, you know, just turn it on, get, get, get power to that Bluetooth module so that it's broadcasting itself, and then go to pair it with your computer.
+Usually, or your phone, even, and usually you'll see the MAC address when you go to pair a device. If, if for some reason that doesn't work for you, then you can, if you plug the Arduino into your computer with the Bluetooth device attached to it, do an HCI tool space scan, and that should return the MAC address of the Bluetooth.
+So let's just say that mine is 2015-05-21-17-39.
+So I need to make a directory for that MAC address in my var-lib Bluetooth folder. So that's su-c or sudo, whatever you use, make-dur-slash-var-slash-lib-slash-blue-tooth-slash, and then the MAC address.
+So 20-slash, backslash-colon, 15-slash-colon, 05-slash-colon, 21-slash-colon, 20-17-slash-colon, 39. That's made that directory.
+Now we need to make a file in that directory called PinCodes, P-I-N-C-O-D-E-S, and that's going to contain the numbers 1, 2, 3, 4.
+You can just do that with an echo statement. So again, with sudo, or su-c, whatever you use, sudo echo, quote, 1, 2, 3, 4, close quote, redirect-slash-var-slash-lib-slash-blue-tooth-slash-20, and then tab, and then slash PinCodes.
+Okay, so now you've got your, you've got that device listed by its MAC address, and it's got its own little PinCode inside of its folder in a file called PinCodes.
+So that means that automatically, well not yet, but eventually automatically, that Bluetooth will be able to connect to that computer without prompt, without interactive things happening. You can just make that happen.
+Okay, so now you need to edit the configuration file for the Bluetooth RFCOM configuration. So that is EMAX, or VIM, or whatever you use, slash Etsy, slash Bluetooth, slash RFCOM.conf, and you need to do that as root, because it's in the slash Etsy folder.
+And it's a pretty self-explanatory file, to be honest. It's all commented out, so uncomment the relevant parts. And in the end, it'll look something like this. RFCOM 0, curly brace, bind yes, semicolon, device 2015-0521, so your MAC address, you don't need to escape anything.
+It can just be 20 colon, 15 colon, 05 colon, 17 colon, 21 colon, 32 semicolon, and then channel one semicolon, and then some kind of comment, I don't, it's probably not even necessary, but it was there, so I used it.
+Comment, quote, HC-06 is what I'm using, close quote, semicolon, close curly brace, save that, and then restart your Bluetooth. So however you do that, whether it's system control, or slash Etsy slash RC dot D slash RC dot Bluetooth space restart, however you do it, restart Bluetooth, you don't know how to do it, restart your computer.
+Something needs to jog the Bluetooth, a little internal configuration status, so that it sees that RFCOM now belongs to 21, 1505, or whatever your MAC address for that Bluetooth module is.
+Now, while we're waiting for you to do that, I will note here that at one time I was, I was kind of thinking of coming up with a little quick, just a really quick and simple application that would, you know, use like Ksudo, KDE Sudo, or what is it, KDE SU, or GTK Sudo, or whatever those two things are, to prompt the user for the root password.
+And then if you had the root password, it would, it would ask you for the MAC address of the Bluetooth, and then it would do all that stuff itself. I kind of ran out of time, but I feel like, especially if you have more than one Bluetooth module, we had like 16, it actually gets kind of confusing to try to make sure, okay, this Bluetooth module has to be along with this laptop, because if we get it mixed up, then they won't connect, and it will, may him will happen.
+So, that's how you do that. And yeah, it's a bit of a, it's, you know, there's some setup there, obviously, it's not necessarily, you know, there is a little bit of setup, but that's fine, you can do that, and then once you've done it, you don't have to do it again.
+And that's how that's done. Okay, so the next thing, then, the, I guess, the final step of this, really, is to come up with some kind of application that will then control the, you know, talk to the Bluetooth, and that's the real trick, except not really. It's actually really, really simple.
+I came up with a really basic little pie-cute front end for this. I will send, I will post the address of that, that repository. It is, I mean, I'll put it in the show notes, but just so you hear it, it is getlab.com slash makerbox slash rovecon.
+R-o-v-c-o-n. That's the repository housing, housing these, these files. The, the files are, are pretty simple. Don't get confused by the structure of the, of the repository.
+The rovecon file out in the root level is just a starting script. It doesn't, that's not the application. The application you're looking for is in user share, pie-shared Mars Libs, and the, the one that actually does anything is the gooey.py.
+I'm not going to read all 193 lines of this little program, which, I mean, you have to admit, is nothing. You know, I mean, 193 lines, that's nothing, but it's a bit much if we were going to read it ourselves.
+So basically, the unit, the unit statement, you know, sets up the, the layout and, and sets up all the buttons and does things like that. It's pretty simple, pretty basic. It's just, it's very verbose. That's like, of the 193 lines, that is literally 102 of them.
+So the main loop is the part that's kind of the most interesting. That's got all the button presses. And so I'll just, I'll read you like one of the, the most common ones. So, for instance, well, first of all, the, the one that listens for stuff to happen is the function, send, com, death, send, com. And that's, it, it, it listens for an action from, from the user.
+And from, from the serial port, specifically, it's listening, you know, in on the serial port, which we define with the Python serial library.
+And depending on what value it receives, it triggers, it triggers some kind of value to, or bites to be written to the serial port.
+So that's one caveat I want to make sure that you understand. If you do what I did initially and do, and do like a serial dot right, or actually it's, well, it could be serial. It just depends on what you call the variable. But yeah, serial dot right, parentheses value, closed parentheses, it will probably fail.
+What you need to do is do a self, yeah, self dot serial dot right, parentheses, bites, parentheses value, closed parentheses, closed parentheses. In other words, the serial port doesn't know what to do with the raw data. As you send it like the ASCII code or whatever, you have to send it like something as translated through this bites function.
+I honestly don't really, I didn't have time to look into why it was happening. All I did was find out the solution and plug it in because I was really, really short on time.
+So what the user is doing, of course, is pressing buttons and with the PyCute framework, I guess, you assign, you know, you connect to a button press to some function in your program.
+So what I have are, well, what I actually have are forward back, right and left buttons, but I also have a light button. So I call that deaf go underscore light parentheses, self closed parentheses colon. And it just basically says if the light, if self dot light dot is checked, then we'll print lights on again just for debugging. And we'll say self dot syndcom parentheses.
+Quote, W, why do I have W there that doesn't make any sense, closed quote, closed parentheses, I don't think that's really correct, I didn't want W.
+Oh, I did because the program that I was using, yeah, okay, that's fine. So W, self dot light dot set icon. Oh, yeah, that's just for the graphic. And then, of course,
+otherwise, if the lights are off, then we'll send a lowercase W because the program that, that we were using on the smartphones, kind of had all these key presses assigned to it. And we wanted to use, you know, for consistency, we wanted to use the same, same signals, because that's what the Arduino would be listening for.
+So that's, that's why it's W and not like something other than that.
+Yeah, and that's, that's all it does really is it sits there and listens for an input on the keyboard or on the GUI where you're printing, you're, you're clicking and it takes whatever value you have caused to occur. And it tells syndcom, the syndcom function to send that value
+over the serial port to, of course, the Bluetooth device.
+Now, the place that that happens is, I mean, normally you might think it would be in the init sequence. And that's initially kind of where I was thinking it should go, but then I realized we don't want necessarily the application to attempt a Bluetooth connection whenever you start the application.
+Because what if, what if everything's not ready then? So it would be silly to, to require, oh, you can't use this application unless you started it after you powered on the Bluetooth device.
+That seems a little bit clunky. So I just made a connection button on the application itself. And so again, in PyQ, you click a button and you connect that to a function. So it's deaf. I have deaf go underscore con blue.
+I forget the go thing was somehow something in my head was like, oh, every function is going to be preceded by go.
+So connection con blue is obviously connecting Bluetooth. So deaf go underscore con blue self. If self con blue is checked, then we'll try to make a connection. And the connection that you make is self dot serial or self dot SER or whatever you want to call it.
+Equals serial dot serial. That's weird, but it's true. The Python module is called serial. And then the thing that you want to use from that serial class is dot serial with a capital S.
+And then it's parentheses quote slash dev slash RF comm zero, which you'll remember we we assigned on the computer at the system level. Hey, that's my Bluetooth thing with this pin.
+And close quote call 9600, which you'll call is the broad rate close parentheses. And I did some error checking in there. You know, if we get an error back, then we stop it and being to connect and we just tell we printed out. Oh, there's an error.
+And I think somewhere in there, I have a status bar. Yeah, here it is. I have a status bar saying yes, we've been connected. And really I should I should add that status message in case of an error as well. So we get we get the error read out right there.
+So that's the interface. But I just didn't have a chance to get to that yet. So yeah, that's it. There's there's a disconnect function in there as well. But but that's that's the thing you really need to know is like is the self.
+You know, SER equals serial dot serial capital S parent quote slash dev slash RF comm zero close quote comma 9600 close parentheses. That is what makes Python set that serial destination RF comm zero.
+So that when you send stuff over, you know, serial, whatever that is serial, then it knows where to send it. It sends it to dev RF comm zero. And of course, on the system level without Python, anything that the system receives at slash dev slash RF comm zero as long as you're in the dial out group.
+The system knows, oh, well, that's my gateway out to the Bluetooth module with this MAC address. So the signal gets forwarded on to the Bluetooth at that MAC address. And then of course, on the Arduino, the Bluetooth thing sends whatever it's receiving through the TX port, which gets read in to the Arduino on pin zero slash, you know, the zero otherwise known as RX, which of course, as we know triggers the Arduino then to say, oh, I'm going to send that same.
+I'm signal or I'm going to send this signal either higher low to whatever's plugged into pin seven and then that will make your LED light come on or turn off.
+And that same principle applies no matter what if it's a if it's a motor, if it's a servo, if it's, I don't know, that's all I got for you, servos and motors and lights.
+So yeah, that's that's how you do LED. No, that's how you do Bluetooth. That's how you do Bluetooth stuff with the Arduino with a little bit of high-cute thrown in for good measure.
+And I will put lots of links in the show notes. I'm sure or at least one link. Thank you very much for listening. This has been hacker public radio. I hope it's been enjoyable to you.
+And if you have anything you've been working on or thinking about or or musing about or wondering about record an episode and send it in, it's actually not as hard as it sounds.
+You can just sit there and ramble and people will accept it as an episode. They don't know. They're just like, this is what hacker public radio is. And you know what, in the end, that's exactly what hacker public radio is.
+Okay, that's enough. Thanks for listening. I will talk to you later.
+You've been listening to hacker public radio at hackerpublicradio.org. We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HBR listener like yourself.
+If you ever thought of recording a podcast and click on our contributing to find out how easy it really is.
+Hacker public radio was founded by the digital dog pound and the infonomicon computer club. And it's part of the binary revolution at bnw.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released on the creative comments, attribution, share a life, 3.0 license.

@@ -1,0 +1,154 @@
+Episode: 2133
+Title: HPR2133: Compression technology part 1
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2133/hpr2133.mp3
+Transcribed: 2025-10-18 14:43:21
+
+---
+
+This is HPR episode 2,133 entitled Compression Technology Part 1.
+It is posted by first time post-the-wishup and is about 20 minutes long.
+The summary is introduction to data reduction methods, run length and coding.
+This episode of HPR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15 that's HPR15.
+Better web hosting that's honest and fair at An honesthost.com.
+Howdy folks, this is 5150.
+If you're going to attend the Ohio Linux Fest this weekend, October 7th through 8th,
+be sure to seek out the Linux podcasters booth.
+It is a collaboration between hacker public radio, the pod nuts network,
+chronopathic oncast, Linux logcast, and your other favorite shows.
+The show hacked of the new single board computer and virtual private server show
+is graciously providing swag in the form of mugs, stickers, and t-shirts.
+And I am bringing an unwarranted t-shirt from Kansas Linux Fest 2015, an upgrade year.
+That's going to be first come, first serve, under the desk, so you're going to have to
+ask for ends of stickers.
+And we'd love to meet all our fans in Columbus.
+See you there.
+Hello, HPR listeners.
+My name is Subishov and this is my first podcast for HPR.
+I come from Berlin in Germany and I want to speak about compression technology.
+The plan is to make more than one episode out of it because it's a wide field.
+And in this first episode, I want to lay out some foundations about data, theory, redundancy,
+transformations, and give an example about a very simple compressor from the old times
+called RLE or run length encoder, run length encoding.
+Okay, let's go on.
+First a short bit on information theory.
+The first word is entropy.
+This means chaos in data.
+For instance, if you take bytes out of the random generator, then you get very chaotic
+or optimally totally chaotic data, which has no structure and every bit has a space.
+This is uncompressible by any method.
+But nowadays we have many data, which is not full entropy.
+So there is second word, redundancy.
+This means, for instance, for written text in a language that the words repeat from time
+to time like this and that.
+And there are some rules how the language is built and this counts for redundancy.
+And redundancy is what compressors are aimed to reduce, to make more efficient data storage
+or like less transfer over the internet with compressed data versus the raw data.
+Then next term, lossless versus lossy compression.
+One code or text has to be compressed lossless so that the decompressor can reconstruct the
+origin in the data bit by bit because programs would just crash if some bits are flipped.
+And for other data types like the color information of pictures or like the audio wave from
+your receiver, lossy compression like an MP3 or JPEG images can be okay because this
+lossy compression exploits the function of the human ear and the human eye that cannot
+recognize every different bit in a sample, in a sound or in a picture.
+And I'm talking about ordered data stream, usually when you compress a file, the file starts
+at position zero and then you have a longer stream of bytes or bits and at some point the
+stream ends.
+So the compressor usually creates a bit or byte stream with the compressed result and
+the decompressor's aim is to parse the compressed stream and reconstruct the original data.
+Okay, transformations, there are sometimes it can be useful to transform the data before
+compressing to make the compressor more efficient. For instance, when you have a temperature
+sensor and you record the sensor data, usually over the day the temperatures don't spike and
+drop so fast. So when you use a delta transformation, you take a temperature reading and the next
+temperature reading and subtract them from each other, then you have the delta, the difference
+between these two values. So and then you record the first temperature value and then you only
+transmit or record the differences to the last reading. So usually you get much zeros plus one
+and minus one because temperature ramps rather slowly. And so you have only three different
+values and this can be compressed much more efficient like when you record 40 degrees, 41 degrees
+and so on and so on. For image or audio compression, it's good. You can exploit much more
+compressibility by using a fast Fourier transformation like what is done in JPEG and MP3 files.
+And because you change this structure of the data, the compressor can spare more bits and then
+the decompressor reconstructs the the data field and then the inverse fast Fourier transformation
+reconstructs the next two original sample or part of the picture.
+With that like MP3 can usually cut off the data size by 1 to 10 and JPEG pictures can also really
+pictures saved in JPEG format are usually much much smaller like the original BMP style file on the
+disk. And then which is good for general date program or specially text compression,
+this is Boros Wheeler transformation or VWT which is exploited by the BZP2 program you may be
+seen before file ending BZP2. The special property of the Boros Wheeler transformation is said
+it does not work on bitstream or bytestream but on whole blocks of data at a time and it is
+lossless as well. Okay now going more to the RLE part of this talk for example fax machine you may
+know them they're not so common anymore where we have internet but still they are used to send
+documents to other companies or something and with a standard fax resolution of 100 dots per
+inch a whole A4 sheet of paper is amounts to 826 by 1169 pixel that makes next to a million of
+pixel because fax machines only transmit black and white every pixel is one bit so that makes about
+120 kW and the fax modems transmits communicate with other fax machines at 9600 BPS so that would be
+around 125 seconds or even more so protocol if you would transmit these fax pictures uncompressed
+there the fax G3 compression was invented and so standard pages like letters with not so much
+text and many white fields on the paper on the paper can be transmitted in 10 to 20 seconds per page
+but in the worst case when you put the piece of paper into the fax machine with the gray
+with the gray noise pattern the transmission can even last much longer than 125 seconds
+because for very noisy data the G3 compression even enlarges the compressed
+the enlarged piece the G3 compression will even increase the file size by compressing
+because it's not made for such chaotic data but unusual stuff you put in the fax machine it works
+quite well okay another example in all times on windows 3.x and windows 95 98 and so
+there was a startup logo in 16 colors in 640 by 480 pixel size and this boot or startup logo
+at much black area around and in the middle of the screen there was this windows Microsoft logo
+uncompressed this picture took 300 nibbles the 300 kilo nibbles or
+invites that would be 150 kilobytes to put it on a disk in a file and with the RLE compression
+these logos were only like 10 or 20 kilobytes big because RLE on like the fax compression
+shines when you have long run of identical bytes so okay now to the after some introduction
+going on to the part with the RLE compression explaining the RLE compression algorithms
+where there are many different brands but I will talk about a simple RLE with prefix
+and a simple RLE compression without prefix codes in my example I work with
+I work with 8 bit symbols so every byte in the data stream is one symbol so I have 256 different symbols
+and every of these symbols can arise in the input data so and because I want to make one
+output stream out of the input stream so I use inband signaling I have to use a trick to put in
+the repeat count which realizes the data compression okay let's first let's try an RLE compression
+without prefix so I take the first byte from the input and I put it out because the first byte
+I can't really do something on that I carry it on and then I look at the second byte
+and if the second byte is the same like for instance first we had we start with this windows
+boot logo it starts the first first lines are big runs of zero bytes because the logo is in the
+middle of the screen so I see zero byte I put it out and I see a second zero byte I put it out
+and then I start counting okay by three by four by five la la la by 99 by 100 okay
+by the way when I am at byte 100 the counter is at 98 because I don't count the first two bytes
+because they are already put out okay and now for instance I see a different byte okay and then
+I write out the byte with the counter and then I start over okay I read this different byte at
+position 101 and put it out and I read byte number 102 and this is different 201 okay I put it
+out as well and byte 103 is the same as 102 okay now I put it out and start counting again like before
+and so on and when I hit end of file I write out the remaining counter or the last byte I didn't
+put out and then I'm finished and the decompressor then reads the file byte by byte and when he hits
+two constitutive identical bytes the next byte is read as a counter and then this the former byte is
+repeated that much times okay so far so good but for instance when I use RLE on ASCII text
+in many languages we have WL or WS letters or similar or WT and in this case
+I like for instance I have in Lossi I have two S I read the S put it out I read the second S put it
+out and start counting and then I see the Y okay so my counter is still 0 and I lost the byte in
+compression because I have to put a length byte after two identical bytes this can hurt the
+compression if I don't use RLE for very regular data but there's a different approach on RLE
+which I called RLE with prefix that means I have two types of counters like I use one bit
+as a flag in the counter byte I use one bit as a flag if compressible data follows or
+uncompressible data follows and the remaining seven bit I use as a counter from 1228
+so when the compressor reads the byte reads the first bytes
+it checks if there are identical bytes and if there are more than two or more than three or
+more than four depends on the layout identical bytes are found the former bytes which were
+uncompressible are prefixed in the to the output the prefixed byte is written with the flag
+non compressible and count bytes and then the bytes are put from input to output and then
+it counts the identical bytes to be compressed and stops at the first non-identical byte again
+and then prefixed with the flag repetition is put out and then the byte of the data to repeat it
+to be repeated so that means under bad circumstances uncompressible data the
+compressed data will be up to 128th of the file size bigger but it's not so much and usually
+you use RLE on good compressibility a very good very systematic data so you usually don't hit this
+128th file size increase
+yeah that's just so far what I wanted to say already it's very simple maybe try and you're
+scripting programming language of your choice to to write a simple RLE compressor and T compressor
+and try it out with different data sets and get a feeling how RLE works and my pro tip is
+then take a hex a hex viewer or hex editor and look into the original data and in the compressed data
+and yeah that should be very easy to understand yeah and next time I will cover the next
+advanced compression algorithm so far have fun and hear you later
+you've been listening to hecka public radio at hecka public radio dot org we are a community podcast
+network that releases shows every weekday Monday through Friday today's show like all our shows
+was contributed by an hbr listener like yourself if you ever thought of recording a podcast
+and click on our contributing to find out how easy it really is hecka public radio was founded by
+the digital dog pound and the infonomican computer club and it's part of the binary revolution at
+binwreff.com if you have comments on today's show please email the host directly leave a comment on
+the website or record a follow-up episode yourself unless otherwise stated today's show is released
+create of comments attribution share a light 3.0 license

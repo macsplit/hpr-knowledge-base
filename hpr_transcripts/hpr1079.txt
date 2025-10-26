@@ -1,0 +1,934 @@
+Episode: 1079
+Title: HPR1079: Distributed Systems Podcast
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1079/hpr1079.mp3
+Transcribed: 2025-10-17 18:39:03
+
+---
+
+Welcome to the Distributed Podcast. My name is Jonathan Oliver.
+And I'm Renatham Dylan. Today we're short a couple of co-hosts due to some scheduling conflicts,
+but we really wanted to introduce a guest here. He is on the LMAX, he's one of the co-architects,
+I guess, of the LMAX Disruptor Project. And we're very excited to talk about that. So with that,
+we will ask Mike Barker to introduce himself. Yeah, hi, I'm Mike. I've been
+developer at LMAX for about three years. My current role is sort of head of the performance
+of stability team. And yeah, we built, I was quite closely involved in the original design
+of the Disruptor, but also there's a large amount of infrastructure code that we built around it.
+So our own reliable messaging and our own events will start to teach you for which the
+Disruptor forms a fairly key part. Now Mike, tell us a little bit about you, some of your
+development background, you know, what platforms have you worked on, what programming languages,
+you know, a lot of our audience is fairly uniform in terms of the programming languages that
+they like to use. So we're curious to just get an outside take here and get some of your background.
+Yep, okay. I'm mostly a Java guy. I probably picked up Java first when I was at university about
+about 12 or 13 years ago. I've done a fair amount of other stuff as well done, but some pieces of
+C and C++ and the odd bit of .NET here and there. So mostly a Java guy, I work for Nortel initially.
+It's my first job doing network management systems and then I spend a fair bit of time doing
+just sort of consulting type work and systems integration and that type of stuff, a little bit of
+J2BE, mostly sort of core Java stuff. And that was probably, and then eventually made my way to
+Elmax and got a lot more involved in the high-end performance and concurrency space.
+Awesome. Now what platform are you currently working with? What's your development platform of
+choice as far as operating system? We're pretty much Linux based across the board, so even,
+you know, our development environments running on Fedora, our production environments running on
+Redhead Enterprise. It's all Java based, a lot of core Java stuff, and we use the Resident
+Application Server as our main app server for the Web-in side of things.
+Nice. Nice. And I'm just curious what your IDE is and stuff, because on the .NET side,
+it's always, you know, Visual Studio, Windows, SQL Server.
+Yeah. I'm an Eclipse guy. We have quite a few people that use IntelliJ, and it's always,
+it's always interesting to have various discussions over which ones are best.
+You know, for us being mostly .NET guys, you know, anything that JetBrains puts out,
+IntelliJ, PyCharm, ReSharp, or anything, you know, they're build server,
+we just, I've had nothing but praise for them, because they've just an incredible team.
+Yeah, they did some pretty good work. I have to admit that even though I'm an Eclipse user.
+Okay. Well, we can end the podcast now, then I guess.
+So, well, I guess, yeah, we need, I'd like to know a little bit about the, first of all,
+Elmax Distropter. What, you know, can you tell us about the origins of the name?
+I've heard where it came from, but I just want to get it straight from the source.
+Why Disruptor? What was the motivation behind that name?
+It's got a funny story. Originally, when we looked at it, it was very similar to Phasers,
+which are a library that was introduced. I think its bait is what fork joins based on.
+And it was, and it had a very, very similar pattern to that. So, it was sort of going through
+the, the Star Trek analogy of Phasers and Disruptors. The other name is it came from,
+we wanted to be a little bit disruptive. We wanted to get people thinking about concurrency
+in slightly different ways and thinking about computing in slightly different ways.
+So, if you ever look at the website and things like that, we spent a lot of time
+trying to explain how it works, and in a lot of detail, rather than just saying,
+here's a great framework in a way you go, but trying to say, this is actually
+how concurrent, how CPUs behave. Here's how various parts of concurrent systems work,
+and this is how the Disruptor works as a result of that. So, it's not just about,
+here's a great tool, but here's a way to improve your understanding of computers in general.
+Nice. Okay. Well, let's, let's talk for a minute about, you know, what, what problem
+were you trying to solve, and then we'll delve into some of the specifics of how it was
+implemented and some of the design choices. But what was the issue that caused you to say,
+we need to write, I mean, this is, this is every developer right here. Let's write a framework.
+Yeah. Yes, it's a very, has a good point. I mean, we, yeah, we probably have a little bit of
+the, the not-invented hair syndrome where we work, but where it came from is we were looking at
+reliable messaging and durable messaging for our platform. And we've got an event-sourced
+architecture for our system. So, all of our core high-performance services run on the basis of,
+they're purely asynchronous. They simply respond to inbound asynchronous events.
+They have some sort of business logic generally sort of represented loosely like a state machine.
+And as they receive events, business logic rules get executed and they admit resulting events.
+So, the idea with event sourcing is that your business state inside of that service is always
+recoverable by simply replaying a journal of those messages that are coming to your system.
+Okay. So, now I need to pause you here for a second because the canonical event sourcing that
+has been flying around in at least in the .net space and making its way out from there is
+that you have the, you know, domain aggregates and then you dispatch a command to this aggregate.
+So, it's a command saying do something and then once that the domain aggregate decides to perform
+that action, it publishes one or more events. And so, what you're saying is that events come in
+and then events go out. Is that sound right? Like, yeah, I mean, it's largely the same thing.
+I think you could interpret invents as commands, particular type of event. The core for us is that
+it's a consistent audit stream of messages that are then persisted to some sort of journal.
+The idea being that recovery is simply about replaying that journal. So, the key things for us that
+when we look at our event sourced architecture, that our journal is very fast and our business logic
+is deterministic. So, given some initial state and some set of events, we will always end up with
+the same business logic state at the end. So, event sourcing for us was much more about how do we
+recover from failure? Okay, so failure recovery got it. Okay. And go ahead. Yep. So, when we started
+looking at durable messaging, one of the things we looked at when you start looking at event sourced
+architectures is you start realizing not only is there business state inside of a service deterministic,
+but actually the set of output events which is left your system is also deterministic. So, it's just
+simply a function of your initial state and a set of inbound events. So, it's possible to reproduce
+all of your outbound events by replaying your journal as well. So, you start looking at that saying,
+well, we could implement durable messaging by whenever we send a message out, some broker type
+system will persist all of the outbound messages. And then some downstream system when it wants
+to recover can go to that store and pull those messages back. But we felt that since we already
+had the messages being written to a journal, we actually already had a store of those events.
+It was simply had to go through the business logic in order to create the outbound events again.
+So, the simplest solution we came up with was just to have a ring buffer when we send our
+messages out. So, in memory, we keep a cache of those events that have been sent.
+And in the case where we have some downstream system goes away and comes back again and wants to
+late join into that stream, it can simply re-request the messages from that ring buffer.
+And that's where the concept of the ring buffer being sent to the disruptor came from.
+How big is this ring buffer?
+It gets pretty big. Some cases we've got over 20 million entries in the ring buffer.
+Okay, we've got pretty much for a pure memory system. So, performance being fairly crucial
+to our environment, the only time we ever go to disk is to write to this very fast journal.
+We try to keep everything else in memory, which brings in some really interesting design constraints.
+So, it's a lot about a lot of the design of some of our high-performance systems,
+is about really well understanding the problem domain and trying to understand what that working
+set is and keeping that working set such that it's not monotonically increasing.
+It's probably the technical term. If you're in a situation where you're trying to keep everything
+in memory, you have to very clearly decide about what sort of data do you no longer need in some sort
+of when a transaction occurs. A good example is something like a trade. So, in a financial system,
+you receive orders from different sets of customers. And it's only when those orders match in terms
+of price, do you get a trade occur? But the exchange itself, once a trade has occurred and it's
+sent that trade out or sent it off to some other remote system and no longer cares about it,
+that trade data is effectively immutable and no longer relevant to the exchange itself.
+So, the idea is we are only keeping the current set of orders inside of our exchange and not all of
+the trades that have ever occurred. So, that way we keep our working set fairly monotonic. It
+doesn't increase over time. It'll increase probably with the number of customers, but that's simply
+a capacity planning issue. At that point, you just charge your system and you have different
+sets of servers for different sets of customers. Or generally something like buy instrument, for example.
+So, you might have one set of servers dealing with your FX instruments and other set of servers
+dealing with your equities instruments, for example. Okay, my brain just exploded.
+I'm not too much into the financial markets. I do understand them well enough, but not any level of
+depth that you guys would go into. Okay, so I do have one technical question, then I want to get
+back to the theory behind it, the disruptor. But what kind of RAM requirements then do you have
+to have? Here's all this massive stream of events, 20 million ring buffer of 20 million buckets.
+What is your 32, 64 gigs around? What are you looking at on your servers?
+We're actually not that high. We're around about four, I think we're running it about four gigs,
+with a maximum limit of about eight. Wow. Our business logic doesn't actually take all that much
+memory. You can probably fit all the business logic into less than a gig, probably even less than 500
+megs. The ring buffers do take a lot of space. One of the nice things about finance industry is it's
+being the business models have been so heavily refined. There's a fairly good understanding about
+the key input and outbound events. Actually, you can cram them down to quite small sizes. Our
+actual messages are pretty small, maybe 128 bytes. 20 million, 128 bytes buckets is not too bad.
+Just a quick take a question. How do serialized messages like custom serializers or
+mathematical library or format? We do a custom serialization. We just define for a given message,
+we just define a marshaler, and that gets given an output stream it just writes to. When a message comes
+in, we just basically, we don't actually do any serialization out to the journal. When a message comes
+in off the wire, what we're storing in the disruptor inside that ring buffer is the serialized form.
+Our journaling becomes really, really simple. We all need to know as the size of the message and the
+bytes. We just very quickly take the serialized form out of the ring buffer and stick it into a journal
+file. But then it does the unmashing side inside the business logic, and that's just basically a class
+that's associated with the business object or the business message and just un-serializes it into
+a new object. Interesting. So you guys have your own custom serializer. What was that not invented
+here syndrome? Was there some performance requirements related to serialization then?
+Yeah, it's probably our most expensive in terms of CPU. If it is actually message serialization,
+we started initially with things like Java serialization. This was before some of the more
+modern ones have turned up, like protocol buffers and thrift. Although we think how we did some
+benchmarks, we think our approach is actually a bit quicker, but it doesn't have some of the
+nice backwards compatibility features. You're going to open-source that one too? Probably not. It's
+very tightly wired into our business logic, unfortunately. For example, Java serialization is
+terrible in terms of performance. I mean, good examples. It stores the entire name of the
+fully qualified name of the class inside the serialized form. When you're running down it 128
+byte messages, the serialized form of the path name for that class can actually be larger than
+the data itself. It becomes very, very inefficient. How do you re-associate the data
+back with the message without at least storing something that says here is the original class
+that it was serialized from? We have an integer. You just have a little byte that's associated
+with the message. It's a metadata. Then we have a registry of all of our marshals and
+marshals. If you see this number, grab this instance of the class and serialize it or deserialize it.
+Nice. Okay. Let me get back to the original motivations. I mean, here's this. We haven't even
+really gotten into too much about what the disruptor pattern does, but what was the motivation behind
+writing it? Why did you guys write another library or a framework? Yeah. Once we started,
+once we wanted to do this, recoverable messaging using these ring buffers, we found that
+that the ring buffer was effectively replacement for a queue. So when we send a message out,
+it goes into a ring buffer and then a thread on the other side does the dispatch, and that thread
+will handle any request to rewind and replay any messages that need to be sent as a result of
+some sort of late join. So we basically had a structure that did a similar sort of thing to a queue.
+So passing messages from one thread to another. And back before we started the disruptor project,
+before we started taking the whole ring buffer stuff for, we did a lot of research on queues
+and how queues behave and how long does it take to push a message from one queue to another,
+because we have quite a few of these. We probably have 10 or 23 hops on an entire end-to-end flow.
+And so you're talking just traditional consumer producer consumer pattern where you've got a
+producer here, sticks it into a queue structure, one or more consumers read off of that and then do
+their work and push stuff onto another queue. Yeah, so we spent a lot of time researching that.
+We looked at all of the standard queuing implementations that we could find,
+and we did a lot of latency comparisons, and what's really was really interesting about that
+is actually it's incredibly high. We're talking, if you're talking about a business transaction that
+sort of got a one millisecond latency goal. Okay, that was the other question. Your SLA is one
+millisecond, is that right? Yeah, that's our goal. Okay, so if you've got, say, 10 thread hops
+via a queue, we found that some of the average latencies for some of these collections was 30, 40
+microseconds. You start adding those up, 10 of those, that's three to 400 microseconds. Just been
+moving a message from one thread to another. And it seems also extraordinarily high. So we just,
+once we built this ring buffer structure, we benchmarked it. Now first versions were terribly,
+terribly slow. But when we started digging into some of the reasons for that and some of the reasons
+why the queuing implementations are really, really slow, we started to discover why, and the key
+thing for us was that in any concurrent system, the immediate thing that will kill any form of
+performance is contention. So it's any form of shared resource where you have multiple threads
+trying to write to the same piece of data. So any time you need to, any of the time that happens,
+you need to either use a lock or some sort of CAS operation. And once you start introducing multiple
+threads doing this, not only does the performance double based on the number of threads, it can skyrocket.
+I mean, the difference between an uncontended and a contended thread is probably three or four orders
+of magnitude. And just a quick little alert, you said the CAS operation, which is compare and
+swap, you know, compare this value. And if it does match, swap, otherwise do something else.
+Yeah, so that's the CPU level instruction, which is available into the .NET and Java through
+various different APIs, the atomic APIs and Java. And I believe that it's the interlocked APIs in
+.NET. So even those under fairly heavy contention can start to slow down unexpectedly. So we came
+up with the idea of what's called the single writer pattern. So whenever we're doing any form of
+concurrency at ALMAX, we always try and focus on only ever having a single thread writing to
+any one piece of memory. See, idea is a thread owns some piece of memory. It might be a business
+logic thread, owns the business logic data. The journal will own the journal file. So nothing
+else we've ever tried right to that file at the same time. And once you get to that approach,
+you don't need any locks. You don't actually need any form of resource, any form of
+contention control, either casual locks. The only thing you need to worry about at that point is
+things like ordering a visibility. And that was the design approach that we took forward for later
+designs of the disruptor. In fact, there's only one place throughout the disruptor code where you
+have any form of contention. And that's when you want to try and have multiple threads writing into
+the same ring buffer. And then you use a compare and swap. Yeah, and then we use a compare and swap.
+Okay, that's easy enough. So then, I mean, you're talking about one millisecond of latency through
+this whole thing. I mean, let's take a typical message coming in off the wire, walk me through
+this message going through all of the parts of the system then, and then finally being
+published out as a result on the other side. I mean, how you said 10 or so thread hops. I mean,
+what is this? What does this typical workflow look like? So into end is based on a fix. We use
+in the finance base, the fix protocol is fairly common. And that's the one that we're measuring at
+the moment for that one millisecond goal. So we've get an order request over fax. So that comes
+into a socket based fix server. Did you say facts like a paper fax? No, no, fix if I x. Okay, okay.
+That'll be my exit accent one millisecond with a fax. Anyway, yes, okay. Yep. So we get a fix
+message off the wire. That needs to be decoded into some form of business object by the fix server.
+It has to have a degree of authorization applied to that to ensure that it's being
+sent from the right person for the right reasons and basic security requirements.
+It's then turned into our internal wire format. And then it's placed into an
+into an outbound into a disruptor to be pushed out the multi-cast. We use the LB
+Informatica's ultra messaging bus. So it goes over over the ultra messaging bus into an exchange
+server that'll take the message off the wire. It will place that into a disruptor.
+It will we have four or so threads hanging off of that that main disruptor. The first one is
+obviously got to journal the file off the disk for durability. So it takes that message and it
+sticks it on. It writes it to disk. Is that what you're saying? Yep. Okay. And to a very fast
+journal file. And I would imagine it does that like in a batch. So the messages that come in during
+the next 500 milliseconds write all those to disk. Is that sound right? Uh, slightly different.
+The batching algorithm we've come up with and the one that's actually baked into the disruptor
+is that you basically you batch sort of as the messages arrive. So if you imagine something like
+a disk IA, which is a bit slow, it's probably slower than your network IA. You receive the message.
+The first time that the first message that turns up, you're just right straight to disk. But you'll
+get a natural pause due to the latency of writing to that disk. So when you come back,
+you may have a backlog of messages. And there's just take all those and just write them out.
+Okay. So every time the disk is just constantly writing as fast as it can. Yeah. And you'll just
+get at the sort of natural batching effect. But it's really quite good because if you're
+the three-body disk is lower than the three-body network, it allows you to catch up.
+And in cases of when you get big bursts of traffic, it alleviates some of those queuing effects
+you can get with some of the other, some, you know, some other types of queuing systems.
+Now I would imagine that you'd have quite a bit of CPU, it'd be fairly CPU intense because here
+you are taking it off the wire, deserializing it into or do you do not even deserialize it to
+write it to the disk. You just say, here it is. And raw byte form, write it to the disk.
+Yeah, exactly. So the former that comes off the wire, we just take a little bit of an extra
+header to it and then just write it off to disk. There's another thread hanging off that
+hanging off that ring buffer that's sending over to an HAPA. So our core systems run our primary
+secondary. Oh, okay. Master, master, slave. So if one goes down, the other one just picks up
+where we're left off. Yeah. So we're sending a stream of messages out to that server.
+That's the exact same wire format that has been written to the journal as well. So it's all
+you know, very, very consistent across the board. And so that message will arrive in a secondary,
+going into a very, you know, almost the mirror of the disrupt that's happening in the primary.
+And as soon as that message is seen by a thread, it'll just acknowledge back the sequence number
+that it's seen. So once we have the message written off to disk and once we have the message
+seen by the secondary, we then allow the business logic 3 to continue. And that's where we do
+the unmashing and then start processing the business logic and sending out of ends.
+Okay, now I have a question. So you have, it sounds like the ring buffer would be
+slow consumers could be problematic. So in other words, you have, here's this network hop and then
+you have it. The acknowledgement takes a long time to come. Does that, doesn't that cause the
+ring buffer to back up if the consumer, one consumer hasn't acknowledged up to a certain point?
+Does that make sense? Yes, yes. It's one of the reliability guarantees that we make though. We say
+we won't start processing a piece of business logic until we know we've got it on disk and we know
+we've got it in a second memory space. So we do have some catches for that sort of thing. If we
+find that the secondary is for some reason down or there's a very, very slight network connection,
+after a period of time we'll stop waiting for acknowledgement, I'll do acknowledgements from
+the secondary. We'll switch into a mode which we call being at risk. So you know at that point
+our operations team know at that point that one of our systems, there's something occurred and
+we're running without H.A. support at that point in time. And is there a job to get H.A. back
+online as quickly as possible? And the system I would imagine automatically detects when everything's
+back online and then switches back to its safe mode. Yes, it's one of the, if you ever pick up
+the disruptor code you'll find that it's fairly key to it as sequence numbers. So we actually do
+just about everything but on the basis as sequence numbers. So there's like a global sequence.
+So you're working with in a strongly consistent environment where,
+okay so back up for a second, you mentioned that the incoming messages were ordered. Now I know
+that off the wire coming, you know, transcontinental type, you know, from one exchange, you know, I don't
+know if you guys work on the the New York Stock Exchange or NASDAQ or anything like that or is it
+just the London exchange that you're working with? We run it else is actually our own exchange.
+Oh, okay. So but but in any case, you know, it's coming out of the exchange.
+Messages ordering is not a guarantee of messaging. And so where, where do the incoming messages,
+how do they assign an order? We perform that, perform that role using the disruptor. So we get some
+guarantees on ordering. Let me guess everything is using the disruptor in your system. Like the
+disruptor is a pattern and you've applied it throughout the entire system. Yeah, pretty much. So all
+of our messaging and a lot of our inbound message handling uses a disruptor pretty much across the
+board. That the ordering comes from, there are some ordering guarantees that we get from the
+messaging bus itself. So if a thread sends a message on a topic, those messages will be ordered
+from the same thread, if you like. So that means that if we've got something like an order placement
+and an order cancel, if they've come off the same thread, they'll arrive in the same order.
+But if it's off a different machine, you lose that guarantee. As long as they're on the same
+topic. So that's basically the only order guarantee we get from messages being sent to us.
+But basically we have two threads. We have two network buses and the messaging bus we use
+has basically one thread per physical network. But they are writing into the same disruptor
+and the disruptor forms the role of the sequencer at that point. So it's once they're in the disruptor,
+that's now our global order for all of our messages. And for that point on, it's just a single
+stream of events all the way through to replicating to our HAPR, replicating out to our disaster recovery
+site and being written to journal. Okay, so now these global order, I mean, an integer seems
+rather limited at this point, at least a 32-bit integer. I mean, is it like a 64-bit integer,
+is this like 128-bit number that just keeps getting bigger and bigger? It's a 64-bit number.
+And how close are you to the end of, to wrapping around a 64-bit number?
+We estimate, I did a little bit of an estimate actually the other day. And at about 100 million
+transactions per second, it'll take about 1400 years. Wow, how many transactions a second? The
+1400 years was impressive, but how many transactions a second? That would be at 100 million transactions
+per second. Okay, so if, but you guys aren't doing anywhere near that. No, not even close to that.
+I was going to say that is a big, I mean, all the financial markets in the world don't do anything
+like that, so. Yeah, so it's plenty. And by the time we get close to that, we probably have
+native support for 128-bit. Oh, yeah, yeah, but you won't be in charge of it at that point,
+so it's somebody else's problem. Yeah. Okay, so I interrupted here and we were talking about this
+message that was, we figured out the ordering global sequence number, it's a 64-bit integer,
+and then, you know, it's, it's, it's being written to disk. There's an IO thread.
+What happens if there's no messages? Is there, is there just like a thread spin that you've got
+in there where? The disruptor comes with a couple of different strategies for this. So one of the
+things that we found that once you start separating along using using the single right principle
+is that you can separate how you wait for messages and the correctness guarantees.
+So we have a number of different options. We have one where it will sleep, we have one where it
+will use a lock in a notification, wait notify type approach, we have one where it uses
+called thread dot yield, another one which is just a plain hard busy spin. So given different
+different platforms, different hardware available hardware resources should determine which one
+of those you use. A good example is she turned up in the mailing list the other day. If somebody
+was had four threads, so four, one disruptor producer and three consumers all running on a
+dual call machine with hyper threads, so that's four logical cores. And they were seeing some very,
+very weird latency results running some of our performance tests. And the interesting thing is
+they had selected, well, we had, it was in our performance test, we had selected the busy spin
+strategy. And while you have four logical cores, all the threads should be able to spin
+independently and quite easily. What you actually find is with hyper threading, if you've got a hard
+spin, it will actually steal resources from the other hyper thread, because it will speculatively
+execute that loop. So it's saying it's seeing that condition in that loop and it will pre-fill
+the instruction pipeline with a whole bunch of instructions, starving the other hyper thread
+of resources. So if you try and use a busy spin on a system that's only just got enough hyper threads
+to support all your threads, your start seems a weird latency numbers. So yielding works better
+in that situation. So you're not a fan of hyper threading then, are you? It depends on what you're
+doing. There are some neat things you can do with hyper threading. There would be a way around this,
+if there is an instruction provided on x86 anyway called ports, which allows a busy spinning thread
+to tell the CPU to not speculatively execute the condition for that loop. Unfortunately,
+it's not available in Java. So the one that works best in that situation is our yielding strategy.
+And you apply that and all of a sudden the latency starts coming back. But if you've got plenty of
+physical cores, then the busy spin ones are fastest. And then you just have the standard locks and
+stuff. If you're very, very starved the resources, so you're in a say web server and you've got quite a
+lot of publishing threads or quite a lot of disruptors running, then you might want to think about a
+locking strategy or even maybe a sleeping strategy, depending on latency requirements.
+Are you able to run the disruptor then as a framework of source for a web server?
+Yes, I think we're using it in our web server for when messages come off. So we get an HTTP
+request come in. We do a better business logic. And then when we publish the message off to
+our core services, the publishing component has actually got a disruptor underneath it that does
+all the message dispatch. I believe that somebody's started an open source project to actually
+write a full HTTP server using the disruptor to do all of the free management.
+Wow. Okay, so sorry. Getting back to this, we've got the disk. Message is journal to the
+disk. That's really the starting point for where things begin to happen, right? But you said that
+the disk is done concurrently with other executions. So the business logic is actually executed.
+You know, the messages arrives off the wire. It's journaled and executed.
+It's journaled and replicated. So when we did our initial design,
+we focused a lot on the cedar architecture. We have a number of stages. Originally it was sort of
+here's a journaling stage. Once we're done journaling, we'll do replication. Once we're done
+replication, then we can do business logic. But one of the advantages of the disruptor is that
+you can actually parallelize a lot of those sections if you want. So we see journaling and
+replication as being sort of at the same level if you like. And so those two actions can happen
+in parallel. And they've got different resources, usage as one's using a network resource,
+one's using a disk resource. So there's no, yeah, there's no contention that which is great.
+But the business logic needs to wait on those. But so the, with the way you set up a disruptor,
+as you say, right, okay, I've got those two threads. I want to take the minimum sequence
+of those two, we call event handlers. And once that minimum sequence is now available,
+I can then start the business logic. So once it's been journaled or replicated?
+Once it's done both. So we take the minimum of the two. Got it. So let's say you've pumped in
+messages 5 through 10 into your system. You've managed a journal up to message 8, but you've
+managed to replicate to message 7. The business logic will come around and say, right, okay,
+the minimum of those two sequence numbers is 7. I can process messages 5 through 7 now and
+progresses that way. So that way we have sort of a gating. But the gating is very, very lightweight.
+It's just looking at sequence numbers. And as far as the sequence number, then, you know,
+here's these consumers that are reading the sequence number, at least in a multi-core CPU,
+or even dual socket CPUs, things like that, you know, that that number is not a,
+may not be representative of the true state of the system. And so is it just the next time it
+comes around, it gets the real, you know, here it's reading through 7. But in reality, 8 has just been
+written. And so it just comes around the next time, oh, 8's available now. Is that what happens?
+Exactly. So as long as, as long as this is with the ordering and visibility constraints,
+you just want to make sure that one of the sequence are always, always going to be increasing.
+So you will only, it's, you will only ever see messages that have been completed. You won't
+accidentally see a message, then have the number go backwards and you need to do something tricky
+to forget that out. So the way that, for the way that it works, it does any piece of
+necessary work that needs to be done. And then it will update its sequence number. And that's where
+the concurrency, the concurrent operations come in to ensure that we order those two operations.
+So we make sure we order the writing into the ring buffer to the, to the increment of the
+sequence. So that we make sure that the sequence doesn't increment until after that message is
+actually there and available to be read. Okay, that's, and then it executes the business logic.
+At which point it produces one or more events which go into, let me guess, a ring buffer.
+And then you have how many consumers on the other side at once the, you know, I mean, the cool
+thing about event sourcing here, at least in this particular case is that if the messages,
+let's suppose the machine resets or something like hard crash, whatever, if the message is never
+make it out, it never happened. And so you just load it back up. How long does it take to load back up?
+You know, here, here your machine, I guess you have dual, you know, you said the master slave
+scenario. So it doesn't really matter. But how long does it take to bring a system online,
+if the machine reboots, whatever happens? That can depend largely comes down to how well
+implemented the business logic is. We did have a problem where it took quite a long time
+in terms of, in terms of hours. At one point, we did some optimization work.
+We're talking minutes normally. Okay, and is it, is it just like using a snapshotting kind of
+mechanism where you say, here's the state for this particular symbol or whatever in the financial
+market for this symbol, here's the state at this point in time. So you just snapshot every
+few hundred thousand events or something? We snapshot on a daily basis. So overnight, we have a
+short downtime, we're in about five minutes at the end of the day, and we do a few operations
+in one of them just to take a global snapshot. So we take the entire system and say, here's the
+memory state. So in a case of failure, it's just grab that snapshot and grab the next load of
+journals and replay them through. And in your case, like downtime in the middle of the night,
+doesn't matter, does it? No. Okay, so then it's a perfect opportunity. If you're doing like a 24-7
+global trading thing, a five-minute downtime would be catastrophic. Yeah, I mean, there's talk
+of trying to move away from that. There are strategies that you can employ as well. We were thinking
+about doing something. One of the things I've had in my head is having a tertiary. So you have primary
+secondary tertiary, and then you can take the tertiary down and snapshot that and leave the
+primary secondary up and running. So you'll just have a snapshot at a particular sequence number.
+So this is the state at that point. Yes. And then if those, if the primary secondary go down,
+they can grab the snapshot from the tertiary, say, oh, is that sequence number is where it was
+snapshot at? I'll just start from the next sequence on in my journals from that point. And then
+you can hot run overnight as well. No, but when you bring everything back online, you're bringing
+every the state of the entire system back into memory. Is that correct? So it's not like, I mean,
+if this was a Facebook scale thing, I mean, keeping everything in memory, well, then again,
+they do have lots and lots and lots of servers. But let's just imagine for a moment that they
+only have a few dozen servers. Keeping the entire state of the entire system in memory would be
+untenable. And so you would have to be working with a disk quite a bit more. I mean, have you ever
+considered an architecture like that where let's, you know, here's the short lived business
+entities that have, you know, they live for a couple of hours, maybe, and then they just die.
+And so we don't need them in memory anymore. How would you do a system like that?
+That's something we already do. And that's not something the disruptor itself solves there.
+That's just for us, we just sort of focus on a business modeling, sort of a business modeling
+problem. And you look at the particular business entities and what their life cycle is.
+Again, talking about the difference between orders and trades. So when a trade occurs,
+we don't hang on to that. We send a message out saying, here's the trade. That goes out to our
+system that reports trades out to a clearinghouse. But it persists it off to a database.
+At which point you remove it from memory and it's gone and it's done. And it's only there for
+reporting analytical purposes. Yeah. And they can go through a different path and, you know,
+trying to do some of the analytics across a trade, you know, a whole big series of trades.
+Actually, databases are really good tool for that. It fits quite nicely into a relational model.
+So we just use relational database for it. Okay. So then we talk about object life cycle here.
+That also brings up an interesting question, at least in garbage collected environments,
+you know, the Java.net types. Wouldn't your garbage collection, I mean, you're working with lots
+and lots and lots and lots of lots of objects here. I mean, what does the garbage collection latency
+look like? And how does that impact your system? It's our biggest cause of latency. It's something
+we probably haven't paid as much attention to as we should have early on. There are a number of
+strategies that you can employ. We're looking at various third-party JVM implementations that
+have better garbage collectors than the one that comes out of the box as a potential short-term
+solution. Longer term, I did some experiments and they're actually one of the things that disrupt
+it does give you and over and above some of the standard queuing models as it allows you to build
+zero garbage systems. So when you build up a disruptor, you supply it a factory to pre-build
+the entries into the ring buffer. And that's something that we do. We pre-allocate a whole bunch
+of byte arrays there. So when a message comes in, we're not actually allocating anything. We're
+simply copying the message from the wire into the byte array inside of the disruptor.
+Yeah, in the disruptor there, I think this, I just had a little aha moment, is this,
+I mean, the messages in the buffer are pure bytes, is that right? In our case, yes.
+Okay, because I was here, I was thinking of like object references going through the entire system
+at least in one process space. Yeah, you can, I mean, you can do both. The disruptor allows for
+allows for either. But in terms of, if you want to go for very, very low garbage systems and very
+sensitive systems, we find the best approaches to use the disruptors for handling the serialized
+forms of the messages. So in a typical system, if you look at it from our perspective, you see,
+there's a disruptor for all the messages coming in, and that's storing the serialized form
+that they arrived onto the network in. And then there'll be a disruptor for messages that going
+back out, so outbound events. And they've actually got the serialized form to be written out onto
+the network. So we do all the unmashing in the same thread as the business logic. That sort of
+seems to be the easiest way to give you a very deterministic memory usage for entries into the
+disruptor. Interesting. That's, okay, I'm just, I'm going through that. The only time you ever really
+need to deserialize something is when you, as you're when you're doing the business behavior,
+because it then needs to be in an object form, and then finally just serialize it back to the
+byte stream. And then, and then maybe maybe like a transition going back over to the exchange or to
+whatever to interact with an external system. Yeah. So you're just, you're basically, if you look
+at most of our disruptor usage, but basically storing the serialized form, there are a couple of
+techniques that we've been playing with in terms of actually reducing the garbage created on deserialization.
+There's a couple of tools floating out there. Javolution is an example of one where you can actually
+rather than creating an object from the serialized form via some sort of stream, is you actually do
+sort of it like an overlay style behavior. So that if you imagine you have an interface that finds
+your business object, you, you can push a byte array or a byte buffer behind that and you say,
+okay, get me the ID. And all it knows is the, the offset into that, into that underlying byte buffer.
+And we'll just take the, the eight or so bytes that's needed, pull those out, convert those into
+a long and return them to you. So you're only ever dealing with the only time you're actually
+going in and creating any data as such is when you actually get down to the primitive level of your,
+of your object model. It's an interesting approach. I've prototyped it and it works very, very well.
+You do have the constraint though from the developer perspective that a message only has a limited
+life cycle. It's only valid for the lifetime of the request. So if you need to take it out and store
+it somewhere, you need to construct an object to represent it. But if you mid-model your problem well
+enough, you know, they'll probably have a natural home. Now all of these things are just, you know,
+here's this extreme optimizations that you found for your business domain. You know, have you
+benchmarked this system in terms of number of messages per second per core? I mean, what does this
+typically look like? Yeah, we've got some, we've got, you know, we've got quite a decent set of
+performance tests. So we try and run as close to sort of very similar to our live load as possible.
+Our total throughputs are not as high as some exchanges, but the really interesting
+perspective is when you actually look at burst traffic. You can get a lot of messages effectively
+arrive in the same TCP packet. So while you may only be dealing with one to two thousand messages
+per second, you can often run into situations that you have 30, 40, 50 messages turn up on the same
+micro-second. So this is where a lot of the performance stuff comes in, especially around some of the
+the smart batching algorithms. So when you get this big burst of messages, you can deal with it as
+efficiently as possible. So we've built performance tests that look at the sort of the bursting
+behavior we're seeing in production and try and replicate that in our performance tests as well
+and try and see if we can get sort of similar latency numbers in our performance testing environment
+that we see in production then optimize from there. I guess the big thing here for you guys,
+of course, is the latency. And then as far as messages per second, you can always just scale,
+scale this thing out to more machines to get to achieve higher numbers.
+Yeah, I mean our throughputs fairly, it's fairly stable. For our throughput to jump a large amount,
+there actually has to be some sort of business change. So either we're putting new instruments
+into the system for people to trade on or provisioning new market makers of the main things that will
+drive additional volume. So our throughput numbers are fairly predictable. So normally with the way
+we do performance testing, as we don't say how many message per second we can we do, we normally say
+we should be able to do, here's our business, our current production flow. Let's put a factor on
+that 2, 3, 10, whatever. So we need to be able to do that. Now let's make the latency acceptable.
+So it's all about the latency. But even so, I mean in terms of messages per second, I'm just
+curious is it, you know, 10,000, 20,000, 50, 100 million messages per second per core that you're
+able to do. In terms of the whole system in to end. Let's do just your business logic and then
+let's expand it out and do the whole system. The business logic, it's gone up and down from it.
+We had initial implementation was able to do millions of messages per second. As we've added
+features, that's come down, we've been doing optimizations, bring that back up. It's somewhere
+between half a million and 2 million messages per second. That is so cool. The really interesting
+thing is if most of that doesn't come from high end optimizations, most of that comes from one
+being purely in memory, just go for a pure in memory model, being really, really careful with
+your domain modeling. So really understanding the business problem, designing it really well,
+and then standard computer science 101, write data structures, the right algorithms can get you
+to those sorts of levels. And a lot of people are really surprised by that and that's a single thread.
+So we actually only have one business object thread in our system, which surprises a lot of
+people and not people think, oh, modern software, you have to go very heavily concurrent. But we
+actually find that you can do quite a lot on a single thread, especially if you're avoiding any of
+the complexities of locking in care's operations or any form of concurrency or concurrent structures.
+I mean, it sounds like the disruptor pattern is just non-blocking on steroids.
+Pretty much. Non-blocking, not just disk IO, non-blocking at the CPU level, non-blocking memory,
+I mean, you don't even need software transactional memory, STM, anything like that. It's just
+non-blocking all the way through the entire system. That is so cool.
+Yeah, so that was the basic idea of the design is just to move messages between threads as fast as
+possible. Okay, so then from an end to end perspective, how long, what is your, you said your
+goal was one millisecond end to end? Did I hear that right? Yeah, and I would imagine you're
+achieving that. We're getting close to it. We're getting close to it. We probably can't officially
+release our numbers, but our mean is fairly close to that goal and our two nines and four nines
+stretch a bit further out with the biggest constraint on that being just being garbage collection.
+So that's how our biggest challenge at the moment to bring those numbers down is finding a bit
+away, either creating less garbage or finding a way to bring in a garbage collector that's better
+than what we've currently have. And when you say end to end, this is still, this is traveling
+between multiple, there's several network hops in between. Yeah, so there's the four network hops.
+So there's a hop from our fix server that's doing the original message decode to the exchange.
+There's the replication hop and acknowledgement back. And then there's the hop back to the fix server
+to send the acknowledgement to the order back out to the end user. So four network hops there.
+That is so cool. And all approaching one millisecond, that's incredible.
+You know, because here we are, at least in my domain, you know, if it's half second,
+that's probably pretty good, you know, per message. It's just no big deal. We can do higher than that,
+but it's so to hear this kind of volume is always interesting to see. Because at that point,
+I mean, it drives your architecture a lot more profoundly than it does in at least my case,
+because our latency requirements are so low. It's like, oh, as long as it happens, I mean,
+for us, it's the reliable messaging, not necessarily the latency that really gets us.
+Yeah. It does focus the mind. It forces you to think about with a lot of the high performance
+stuff and the low latency stuff, the most obvious thing is it's all about simplicity. It's, okay,
+here's my flow into end. What can I remove from it? The best optimization is the one where you
+just don't do something. So especially talking to some of the other people in the industry,
+largely it's about pulling out parts of the infrastructure that get in the way. A good example,
+and one that comes up a lot especially on just the low latency networking part is kernel bypass.
+So you can actually go faster if your message doesn't have to travel through the kernel.
+So there's a couple of networking network card vendors, for example, that do a fully
+in user space TCP stack. So their device driver just simply talks to a chunk of memory,
+bit of memory mapped IO to grab the packets off the wire, and then it does all the TCP decoding
+in user space to avoid all of the costs of the kernel in terms of doing all device management.
+Now I do have to ask about the operating system choice then. Here, I've worked with Fedora,
+I've worked with Debian Ubuntu, various flavors of Ubuntu, but I'm curious why the choice for
+Fedora slash Red Hat Enterprise? It was just what we were using at the time, it seemed like the
+best choice when we made it. We've been running the same platform production for quite a few years now,
+and we've got a big hardware refresh. So we're going back to the drawing board a little bit,
+looking at what's going to be the most appropriate solution. The biggest drivers of that nowadays,
+what JVM's does it support? There's a number of other Java virtual machines in the market,
+Azul has one, IBM has one that we're looking at, and it's what platforms do they support?
+It is one of my key constraints. If it doesn't run on Ubuntu server, then maybe we shouldn't really
+be considering Ubuntu server. Just about everything runs on Red Hat Enterprise. Suces Enterprise
+server seems to be another common one that people are willing to support. So that's probably the
+biggest driver. Fedora is quite nice and the fact that you can stay very, very up-to-date with the
+latest kernels. One of the things that we really want to do in production, we're still running a
+fairly old kernel. We want to go to some of the newer kernels, we have some of the low latency
+software preemptive scheduling changes that have come in in more recent kernels, which should give
+us a performance boost. As far as Linux goes, I'm going to throw this out there. What kind of
+performance would you expect out of the disruptor on a Windows-based system? Dozens of messages
+per second perhaps? It's pretty good, actually. We've one of the interesting differences between
+Windows and Linux for server-side messaging and things like that. When you try to just get
+messages passed backwards and forwards, we actually find that Windows schedule is better,
+which is really surprising because people talk a lot about Linux and how good the scheduler is.
+And actually, just doing a simple ping-pong style test, we were testing just with a lock-in-fact
+and measuring the overall runtime. If you run the same test without using 3Dfinity or anything
+like that, the result on Windows system is actually about four or five times better than on Linux.
+So one of the things you can also apply to that is you can actually set up 3Dfinity. When you start
+sitting 3Dfinity, everything comes back down to the same level and is quite a bit faster again.
+So it's interesting that at times, in certain workloads, Windows schedule is quite a bit bitter.
+So in your case, with threat affinity, what you're referring to is that here's this thread
+and it owns this particular task. You never have to deal with swapping and context switching and
+bringing it in and out of main memory and so forth. Is that correct?
+You're just telling the kernel in the strongest possible way to say,
+keep the thread on this core because it's going to do the same thing for quite some time and I
+want it to cache to stay hot and I want it not to be moved about.
+Do you have a really big like, your CPUs do they have really good size level 1, level 2 caches on them?
+Yeah, we're using some of the Xeon chips and stuff like that, which have the
+the much larger caches than the standard desktop chips.
+The biggest cost in terms of context switching is not the cost of the OS context switch itself.
+It's the fact that if you're on one core and your thread gets swapped out and brought back on
+a different core, it's the cost of having to rebuild the cache. So it's the number of cache
+misses you getting by having your thread rescheduled quite a lot and we found that with the
+Windows scheduler, without any form of thread affinity, the threads tend to stay roughly on the
+same core. With Linux, it seems to hop them about quite a bit and you start seeing quite a big cost
+in terms of those cache misses coming through and that's where you see the additional performance
+hit. You know, and here you talk about keeping everything in memory, you're not just talking about
+like in the main, in main RAM space, you're talking about as much as you can in L1, L2.
+Yeah, well, being or trying to design your algorithms and trying to think about your data structures
+in ways that you make life easy for the compiler and the CPU to keep those sorts of things hot.
+A good example is internally and now inside the disruptor, we use arrays rather than link lists,
+for example. So as your threads are moving through the disruptor, picking up the events,
+you start to get things like cache striding benefits. So it takes the whole array and it puts
+it into the L2 cache. If possible, the other thing a CPU can do is if you're moving very
+predictably through memory, if you're going in a linear sequence, and I believe if you get two
+cache misses in a row or two page faults in the row, one of the other can't remember exactly which,
+it will go, ah, you're heading in that direction through memory. What I'll start doing is start
+pre-fetching those cache lines into memory. So by the time you get there, it's already hot and
+cache. Well, something like a link list, because the pointers in the link list can be to anywhere
+in memory. There's no way the CPU can see any sort of predictable memory access profile,
+so it can't do any sort of sort of pre-fetching or any optimization of your algorithm.
+Now, and you've talked a lot about Java, and at least in the Java world here in the last year or
+so there's been quite a bit of talk regarding Oracle and licensing and all these kinds of,
+even to the extent that Google has largely used Java, has even considered moving off of them.
+And I was curious if you guys had even any considerations along those lines, you know,
+is Java an old language, would you upgrade to something newer, or is it just been working great
+for you guys, and let's keep going with it? You know, it works for us, and it works well,
+when I personally am not in the space where I see a lot of talk in the Java community about
+something you were programming languages, so there's a lot of talk about Scala and Closure and
+Cruevian, all those sorts of things. And I was originally, you know, big fan of some of these
+things, but more and more, especially working with people at Mount Thompson and my boss,
+the guy called Dave Farley, the more and more I work with these sorts of guys, I'm more
+and more focused on what I'm doing and actually understanding problem in modeling it.
+The language almost sort of fades into the background. Often you're, you know, often you'll
+come across a pro, you know, across a problem and say, oh, if I had Scala, it'd be really easy,
+I'll just create a closure. But I've got a very awkward implementation in Java, but I find
+actually starting to focus on actually what's the problem I'm trying to solve. How does this actually
+work? What's the business model? The model starts to evolve, and then you write the Java code,
+and it's actually still pretty simple. So I think it's, I personally find that the argument to
+move to another programming language, for example, because it's easier, it's often a case that
+people haven't really put the effort into thinking about the business problem well enough to
+model it really well in Java. So it's one of those things that works for me. I'm fairly
+confident that Java for, you know, for businesses anyway, who are making an investment in it,
+will be fine. It'll be well maintained. They're throwing lots and lots of people resources into
+testing and development to keep the Java ecosystem going. I know they've done some damage to the
+community, and I believe that they're actively trying to repair that. Yeah, with Oracle, you never know.
+Yeah. Okay. Well, okay. So then another question I have is regarding the testing strategy,
+because here you have this unfiltered byte stream coming in from your FX server. And, you know,
+rogue packets or, you know, just malformed messages, things like that. How do you prevent that?
+I could see a situation where you have this malformed request coming in, and everything's in
+memory. And then all of a sudden, your business logic, you know, throws an exception or something
+like that. And all of a sudden, now you have to, how do you prevent that? Or is that even a problem?
+Up front of validation in a lot of automated testing is basically our approach. I know you can
+use some, you know, you could use things like STM and stuff like that. So if you get a message in
+it, make up just state, you simply roll back to the previous, previous version and discard the whole
+event. We tend not to do that because of the high memory allocation and garbage collection costs
+of building a system like that. So we spend a lot of time doing a lot of automated testing.
+To talk about, yeah, process for a little bit, we, the way we generally develop is very story-based.
+So we have a new piece of functionality come through from the business, they want us to add.
+We do some modeling, we try and understand the problem. And then we build out a set of automated
+acceptance tests for that that run into end. We then write those tests, put them in, they'll
+fail initially, do the necessary work to get them to pass and then commit a whole lot into
+our source control system, which then deploys several copies of the whole system onto a fairly
+large grid of machines and then just runs all of these tests. We've got about about 4,000 odd.
+And it takes around about 35 to 40 minutes to run all of those tests.
+But the interesting thing is we also, by doing a huge number of tests, especially on a single system,
+as we get a lot of the noise that if you like. So we don't really see too many problems with
+corrupted packets. But the interesting one is, it finds a lot of concurrency bugs. We found
+concurrency bugs in our messaging products in MySQL, just the result of every single time we do a commit
+to our source control system, we're bringing the whole system up and running a huge barrage of
+tests concurrently. So we have maybe 20 or 30 clients driving a single system at a time,
+each running their own individual tests. And so at that point, it drives out all these concurrency
+issues. And you said years in MySQL, is that the database you guys are using just for message
+reporting and so forth? Yeah, storing trade histories, users own order histories,
+things like just the basic crud style, things like instrument metadata, account information,
+and principle information, things like all of our financial reporting, those sorts of things
+we use the database for. Because it's on a different cycle, it's got different
+zero requirements, and also things like financial reporting just falls naturally into the
+relational model. Now, as far as the database size, then, I mean, are you starting to run into
+other little issues with the database where you have to start sharding the load because you have
+so much going into it? Or are these tables getting extremely large, you know, terabytes in size?
+Which is sharding strategy you look like there? They're actually the volume of data and now
+and our databases is a lot lower than we expected it to be. Early on, we did put a lot of engineering
+if it and the matter that we're actually in production, put a lot of resource into the database,
+and it's barely being touched. So, you know, we're doing a bit of a re-fresh and a re-architecture
+fairly soon. We're going to pull away some of that resource and make it available for other systems.
+Our really heavy volume IO is actually all the generally very simple files. We tend to not
+use databases for the stuff that we're trying to write 1,000, 2,000 times a second. We find
+actually journal files tend to be a much better solution for that type of problem because they're
+often written sequentially and often read sequentially as well, so we very, really need some of the
+advanced indexing and searching features. And as far as, you know, here's these journal files,
+what about data corruption and so forth, silent data corruption. What file system are you guys
+running on? We're running X3 at the moment, EXD3, and that was pretty well. Most of the time we're
+trying to run replicas. It seems to be for us the easiest way to give you redundancy is to try
+and do a lot of the replication at the application level. So, like we're seeing with the, so we've
+got primary secondary, we've also got a DR system for Xchange. We're looking to sort of build
+that out, same with our, we've got a system for storing a historic market data. What we've
+do is got a system in production, a system in DR, and they're both making their own copies of the
+data. So you can make sure you can do various checks to make sure that you're not getting some
+sort of silent corruption or something's broken in that space. So at that point, do you guys
+like do any sort of hashing on the, on the files every so often to make sure that there's,
+there's no corruption going on within them, or is it just, just the replication it takes care of
+for you? We haven't done so much hashing, it's something I think we should probably put in. But
+good examples is we do a lot of testing of the replication and journaling systems. So one of
+the tests we do after we've run our 4,000 acceptance tests is we shut the system down,
+taking a snapshot, bring it back up, didn't run a bunch of tests through to make sure the memory
+state's still consistent. We then shut it down, delete the snapshots of false adjourn or replay,
+and make sure again that the memory state's still consistent, run a few tests through it that way.
+So we tend to focus a lot more on testing in the continuous integration space than we have on some
+of the other things like taking hashes and doing reliability checks in production. But it's
+something we're definitely looking into, probably do more of on the future.
+This is amazing. So I guess are there any other aspects of the disruptor that you wanted to
+comment on and put out there? I know you guys have a number of different papers and there's an
+InfoQ presentation on this, but are there other aspects that you wanted to just put out there to
+help us understand a little bit more about it? I'm trying to think of what would be a good
+thing to mention. I think the key things with the disruptor, if you're wanting to look at
+an understanding concurrency, I mean the main thing for us, especially when it comes to high
+performance concurrency, is the single writer pattern. That is pretty much number one is just any
+way that you can avoid contention, do it, and the disruptor is an example of us doing that.
+Probably the most interesting aspect in terms of performance,
+one, the ability to reuse the slots in the ring buffer. To be able to have a choice between
+having perhaps the style of having newly constructed and mutable message events, to having
+a byte arrays that can be mutated and overwritten and reused in a way that's completely safe as well.
+So we take care of the concurrency control there. Probably the third is the parallelization
+capabilities, the idea that like what we do with the journalist and the replication that you've
+got two independent resources that are under contended. Both of those event processors can read
+from the ring buffer in a free, uncontended fashion, do things in parallel, and then
+gating on these things to find out where they're up to is fairly simple by simply looking at
+the minimum of those two sequences. I have a question there just to make sure I get this right.
+So you have one producer, two consumers. Consumer one needs to indicate that it's done
+back to the producer and consumer two also needs to indicate or no, the producer doesn't even care,
+does it, it just keeps going. There is an indication. Everything is done off sequence number.
+So if you pick up the dystropic code, there is a class called sequence. And so the
+the disruptor itself has a sequence, which we call the cursor. And then every independent event
+handler has its own sequence. So the way that we avoid any form of right contention is that
+when a message is consumed by an event handler, rather than going back and telling the ring buffer
+or the sequencer that it's consumed that message, it just increments its own counter saying,
+here's where I'm up to. And that's a structure inside of the disruptor. So that way you don't
+wrap around and get ahead of the slowest consumer. Yep. So the disruptor itself, you pass to the
+disruptor. I see the sequences that you want to say, these are the things to gate on. You know,
+don't wrap around the ring buffer until you see that this particular sequence number has reached
+a certain point. So we have the wrap protection built in as well. But you can even switch it off.
+You don't have to, you know, you can specify a sequence that's, you know, you're an empty
+set of sequences. So it doesn't even, doesn't even worry about that too much. One of the other very,
+very nice benefits of doing that, what, doing it that way by having the event handler increments
+as it's sequence once it's done, is you get some transactional behaviour that you don't get with
+queues. So if you imagine when you're trying to shut a system down cleanly at the end of the day,
+one of the common things to do is you allow the system to queues. So you turn off the input
+taps and let all the messages drain out the system. You wait to all your queues are empty,
+and then you shut the system down, knowing you're in a known good state. There is a slight
+corner case with that as that the queue could be empty, but the thread that's taken the message
+from the queue may not have finished its business logic yet. So it may be yet to write a message
+out to a queue further down the line by updating a sequence after all the work is complete.
+All we have to do is just track track and make sure all the sequence numbers are up to the same
+value. And at that point we can be assured that the system is quiesced. So you set down the producer
+regardless and then just wait till the consumer indexes are up to that to that cursor level.
+And then you can be assured that even that both the display is empty and also the running threads
+have finished the piece of logic that they are working on. This is all very fascinating. I mean
+the reading for it as I was going through it was like just very revealing to see the
+insides of the CPU and stuff because it's a lot of stuff is so close to the metal that it
+doesn't really matter at least in a lot of what I've been working with. But in your case the CPU
+architecture matters a lot. And I mean I could see a pattern like this being adopted
+straight into the JVM after a period of time. Yeah I mean we'd love that to happen. I know
+the couple of guys from our company went over to Java one last year and there was a lot of people
+who were very enthusiastic about it. Yeah this should be in the standard libraries it would be
+really great. So hopefully it'll be interesting to see if that does happen. It'll take time I think
+if it does. Java 9, Java 10 maybe. Yeah probably. Yeah if anything I mean there's still
+still I mean an hour and about three to infinity at the moment in Java. Maybe Java 9.
+I know the 0MQ guys are I guess their hope is that it'll be adopted straight into the
+into the core into the Linux kernel. And so they have. Go ahead. Yeah I think there are there are
+as interesting there actually are other structures that are ring buffer based and floating around
+and device drivers and stuff. The really amusing comment that we had from one guy I think it was
+actually a guy from a zool and he was looking at our disruptor architecture and we're explaining
+it all to him he goes that looks like a high speed network card. That was really you know quite
+interesting that actually the design itself is not new at all. It's simply just an application of
+a lot of old ideas and principles into a new domain. And then actually there's probably if you dig
+around there's probably a lot of other places you know generally in the high performance computing
+space it actually got some of the designs already. So for me you know I look at this architecture
+and it really sounds I mean messaging is just the core piece that goes through out it permeates
+the entire system messaging. And I mean that seems to be the you know with the high performance
+you know as opposed to just HTTP rest you know everyone talks about how rest is going to be the
+what we can just use rest and do HTTP and that's going to be you know your your system will be
+as scalable as the web. But I mean in the end it all comes down to messaging. Yeah yeah absolutely
+and one of the probably the one of the things that I find most important about messaging is that
+and one of the things we try to do especially in our high performance spaces of our architecture is
+be absolutely strict with asynchronous behavior. So avoid the request reply style of messaging. So
+avoid having the case where you've got an inbound you've got a thread sending a message and it has
+to stop and wait for the response event. We try to be very very strict about saying right we send
+an event out we're not going to wait for the response it'll turn up sometime later or maybe we
+don't care about it but we're not going to stop and block that thread until that occurs. We find
+that's one of the the biggest constraints to scalability because often your piece of logic
+is very very short and getting it dispatched onto onto a thread for the disrupted to push out
+asynchronously compared to the amount of time it has to wait for the message to go out in the
+wire across the network into the service back out and back to you is is order of magnitude is
+different. So if you're talking about trying to scale a system up in terms of the number of threads
+the amount of cores that you need available to process all your inbound requests. If all of that
+logic processing is purely asynchronous then actually it will scale a lot better because the amount
+of time your thread is tied up waiting for stuff you know shrinks incredibly. It's one of these
+approaches that takes a little bit of time up front it's a bit of a cost initially you have to start
+thinking in terms of asynchronous models probably the state machine model is one of the best
+that we've seen so you send an event out you move your system into a particular state and event
+comes back with some sort of correlation and ID you find the appropriate piece of business data
+and then you just adjust it state again based on that event coming in and but once you adopt it
+you sort of pay that over that you sort of pay that sort of mental mental overhead or that
+mental cost in terms of your understanding but once you've paid it it's pretty much that across
+the board the cost of doing sort of synchronous request reply type systems is that they seem very
+very attractive and easy early on they're ridiculously difficult to make scale well that's one of
+the one of the lessons we've learned we introduced in our infrastructure sort of a request
+reply mechanism and we regretted it in a sense. That's typically the case. Rhino do you have any
+other questions for Mike about the disruptor pattern? Not really I've been historically taking
+notes all of the entire talk and it's like okay I don't have any questions because my own
+ring buffer is overloaded with information I have to do. Yeah that happens from time to time
+when I was reading the papers on the disruptor it was like whoa this is really good stuff you know
+because non-blocking IO wasn't a big deal but at least again for what I'm doing but I can see how
+by taking that out of the picture getting rid of the blocking I should say at every a single level
+can make it scale to crazy ridiculous levels and I would imagine that in most programming languages
+that you could achieve generally you know similar degrees I guess it depends on the language
+implementation but you know high high performance I guess there is a dot net implementation of
+the disruptor that's you know they they claim you know a few hundred thousand messages a second
+that they can squeeze out of it as compared to the job but where you guys are mentioning you know
+several million per second I'm doing pretty well actually they we've met the guy actually
+Olivier who's doing the dot net port he's done a really good job of it as well he stays really
+current with what we're doing I believe I mean he was it was it was a couple of factors different
+at most it's definitely less than a more of magnitude difference I know when he was first starting
+haven't seen his performance numbers recently but I know when he was first starting we were quoting
+25 million and he was quoting 17 million those sorts of differences so it's staying very current
+it's staying and it's still providing I think a lot better performance than some of the internal
+dot net queuing implementations yeah those are I mean you know here we're we're excited now with
+dot net 40 we have we have a non blocking or I should say a concurrent queue where we don't have
+to do our own locking and stuff and it does it all internally but it's still just locks and
+and compare and swap operations under the hood yeah yes I mean it's interesting just a benchmark
+these things I think that's what that's what one of the things I find most interesting is
+especially in the Java spaces people tend to look at what people are telling them and then
+don't do any tests the number of times I've seen talks on concurrent frameworks and new language
+features and new tools is they'll talk about how great the tool is and how well works with multi
+core systems but there won't be any numbers there won't be any numbers that reflect how much better
+it is and that's one of the things we've tried to do from day one with the disruptor is you
+have performance testing sort of front and center and say you know not claim anything unless we've
+got numbers to back it up and you know I think I think it's not only makes the argument more
+convincing but it's actually pushed us to try harder and harder to actually make those numbers look
+better and better well now with the disruptor I mean I would imagine that the patterns fairly
+well established and integrated into your architecture and so do you spend a lot of time tweaking
+the disruptor itself or do you spend most of your time now working with the ancillary and when I say
+ancillary what I really mean is the the primary systems like the business logic and so forth
+it's more in the business logic and we have a we have an infrastructure wrapper over that that
+does the things like the marshaling it has a couple of layers so it makes it makes events look
+bit like method calls so you just pass a bunch of objects into a method call that takes care of
+the dispatch and the messaging and the reliability and the reinventing on the other side
+but that's been fairly stable for a while as well the biggest thing for us especially from the
+response perspective now is the garbage collection that's what we're what we're largely fighting and
+then other things we're putting a lot of effort into a things like monitoring stuff like that so
+there are little tweaks happening to the disruptor we released 2.8 a little while ago we ran into
+a problem with the situation where you've got multiple threads writing into a single disruptor
+a lot of customers a lot of people using disruptor were coming back and saying on systems where
+they've got lots of threads all quite heavily continuing on the disruptor they're seeing very very
+poor performance numbers and I was able to replicate those numbers and so we've had to I had to
+do a tweak recently to change the way that the multi-threaded claim strategy works such that
+we could deal with that contention in a you know a fairly clean and efficient way
+and it's one of the interesting observations about contention not only does it make things slow
+it makes things really really complicated if you look at the code for the multi-threaded claim
+strategy versus the single-threaded claim strategy is just so much more complicated because you
+have to deal with you know with these multiple things trying to write to the same piece of data
+and then you have to deal with the compared swaps and atomicity at the CPU level and so forth
+well one of the one of the questions I had just to wrap things up you know you talked about the
+master slave a little bit I was just curious to to find out a little bit more about that how
+you know primary system failure how does this I mean is there just some kind of heartbeat where the
+slave just picks up and says oh they left off at this I mean if you're if you're going and doing
+the same code on both systems and only one of them is producing out actually to the wire the slave
+I would imagine we just watch that and say okay now I know where it left off and it knows where
+to start up we're we're still actually running it's a bit more of a warm standby so it's a manual
+switch over operation at the moment the the way that it works internally is that the state is
+exactly the same so the primary and secondary look exactly the same and actually to the secondary
+it's just receiving the same stream of events happens to be over a slightly different channel
+but it's still going into the same instance of the disruptor the same business logic the same
+journaling and actually the same replication and events being sent out all we've done on the
+actual sending threads on the other side of the disruptor is we just switch off the actual scene
+so it's just basically doing no-op operations on the other side so the state is replicated across
+the two oh so the dispatcher like everything like it's got it does the same business operations
+and then when it goes out to publish over the wire it just says no op yeah so there's just basically
+a boolean switch am I on no don't actually write to the disc or don't actually write to the network
+device so the the the the ring buffers that sit in front of the publishers for messages going
+back out on the wire are still filled up with the same set of events and this is where the
+determinism becomes very very important so making sure you have determinist business deterministic
+business logic is very important so in the case that if we failed over to the secondary and
+somebody tried to late join in again we've got the same set exact buffer of messages for them to
+replay if they need it we're granted your latency is a lot higher you know during a switch over
+operation but hopefully that's you know I mean do you have have you ever had to pull the switch and
+you know the primary is got some problems and had to shut it down and let the bring the secondary
+up and have it take over no we haven't as yet we haven't had an incident like that in production
+but I'm certain happiness happened one day have you have you run tests for that just to make sure you
+can I mean this is what like Netflix does and stuff they're like hey let's do let's do like
+they're using the Amazon cloud and they say well let's shut this system down and see what happens
+and see if everything else like our failovers work properly yeah we'd like to our latency
+requirements are very very tight so something like that will probably perturb the system a bit too
+much from a latency perspective but I think there's things things that we'd like to do we'd like to
+we'd like to be able to hot deploy for example and the only way to do that is to have some form of
+cut over in the middle of the day so but the the way that we we test this is again we have
+we have an automated system test which you know shuts one of the systems down promotes the
+other one ensures that messages are still flying between the two and then bring the other one
+back in and has it like joins switches back over between the two and ensures that the state's
+correct so we're confident that it works has it you know have we done a production not yet we do
+have to do DR failover tests in production but we tend to do those offline so that we don't have
+to actually worry about it really affecting things yeah well this has been a great
+conversation I've really enjoyed a lot of the the details that you've been been giving here
+you know I guess in many respects if if our listeners don't necessarily if they're not as
+familiar with the disruptor pattern it almost seems like a precursor to this podcast to go and
+just look at what what's going on and then listen to this because it's it's this is a big fire hose
+to listen to without any background yeah there's there's a it's amazing how you know it's actually
+quite a simple piece of code if you have a chance to look at it's probably only about two three
+thousand lines of code in total but you know and it actually feel very simple but it's it's an
+abstraction over some you know quite quite deep con deep concepts and that's why we've been a lot
+of time writing about it and talking about it and doing presentations on it because there's
+actually a lot of learning there as well and that's what we think is actually more valuable
+my personal opinion is that I've seen a lot of people talking about concurrency in the industry
+and they use the term our tools are woefully inadequate and I don't believe that personally I think
+our tools are pretty good I think it's as developers our understanding is woefully inadequate we
+don't spend enough time digging down and the experts are not helping us understand the building
+tools for us to use but not actually increasing our own understanding and one of the important
+reasons for that is that actually at the CPU level all concurrency is the same all concurrency is
+shared memory concurrency and there's a bunch of instructions that help you with ordering invisibility
+and every tool that you run into including a disruptor and STM actor models all these sorts of
+things are simply abstractions over that concurrency model but being an abstraction there's a translation
+cost between that abstraction and what's actually happening and if you don't understand where that
+translation cost occurs then you're not going to know what's going to be most appropriate for your
+system so it's about sort of understanding what's happening lower down given a tool that I'm going
+to use what the cost I'm going to be paying do those costs become fairly light in terms of the
+type of application I'm building or do they become very very heavy well thank you very much this
+is like I said it's been an excellent to listen to and this seems like one of those where I
+want to have a follow up here but it's going to be a while because to wrap my brain around all the
+the implications here is it's going to take a while so thank you again okay you're welcome and
+if you want to do a follow up no problem just let me know when you'd like to do it all schedule
+a year out or something like that yeah yeah I mean probably just on closing there's obviously the
+the disruptor page it's on Google code there's also we'll make sure there's plenty of links up
+there but there's a quite a long series of blog posts written by a colleague of mine called Trisha G
+about understanding the various components of the disruptor a lot of people say that they've
+read the paper founded a bit dry and academic but have read Trisha's posts and they're a lot more
+accessible and they provide a lot more understanding a lot more quickly and then Trisha and I've also
+done a couple of talks about some of the internals that disruptors so I make sure those are all
+available linked linked to from the Google code website and we could put those in the show notes
+as well I've gone over most of that stuff the paper I found I thought it was quite fascinating
+just because it was such a different way of thinking about the problems from the traditional models
+in any case this has been a great podcast so read not to any any final closing thoughts
+well not really aside from the fact that this really detailed and really nice
+explanation is of the structure seems to be like almost a tailed dress before building an event store
+excellent okay so that's it for today and we'll see you next time
+you have been listening to Hacker Public Radio at Hacker Public Radio does our
+we are a community podcast network that releases shows every weekday on day through Friday
+today's show like all our shows was contributed by an HBR listener like yourself
+if you ever consider recording a podcast then visit our website to find out how easy it really is
+Hacker Public Radio was founded by the digital dark pound and the economical and
+computer cloud HBR is funded by the binary revolution at binref.com all binref projects are
+crowd-responsive by lunar pages from shared hosting to custom private clouds go to lunar pages.com
+for all your hosting needs unless otherwise stasis today's show is released under a creative
+commons, attribution, share a life, do those own lives please

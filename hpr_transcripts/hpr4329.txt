@@ -1,0 +1,210 @@
+Episode: 4329
+Title: HPR4329: Maintaining The Remote System
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4329/hpr4329.mp3
+Transcribed: 2025-10-25 23:09:20
+
+---
+
+This is Hacker Public Radio Episode 4329 for Thursday the 6th of March 2025.
+Today's show is entitled, Maintaining the Remote System.
+It is part of the series programming 101.
+It is hosted by Harry Larry and is about 17 minutes long.
+It carries a clean flag.
+The summary is, how to maintain a remote system that is behind a firewall has no
+port forwarding and a no-ni-p.
+Maintaining the Remote System.
+I have renamed the project Libra Indie Archive because the name the Indie Archive is already
+someone else's domain.
+I never would have renamed the Indie Archive, but I do think that Libra Indie Archive
+is more descriptive, hence better.
+I am getting close to a pre-beta push up to Codeberg.
+Anyone following along who wants to help test, you can do this with two or three old systems.
+Let me know.
+Email Harry Larry at gmail.com or on Macedon, I am at Harry Larry at Gamerplus.org.
+I have decided to develop and document for Zubuntu first, and here's the reason why.
+I bought an older HP small form factor office system with four gigabytes of RAM.
+HP Compact 4000 Pro Pentium Dual Core E6600 3.06 GHz 4GB RAM.
+$30 on eBay with shipping and taxes.
+I was testing Libra Indie Archive on it because of the age of the system, Ubuntu wouldn't
+install.
+I tested it with some BST systems and installed Indie Archive without a GUI.
+Ghost BST didn't install, but Midnight BST did install, so I used the Midnight BST GUI
+and installed Indie Archive.
+None of this was easy for me because I'm a BST noob, and unless you already used BST,
+I can't recommend it for Libra Indie Archive.
+Remember, not all Indie producers are computer programmers, and I want Indie Archive to work
+for those producers as well as for the computer savvy.
+Then on a web, I thought I would try the Zubuntu 24.04 distro, and it installed no problem.
+Thanks XFCE for keeping it light.
+The other reason I am developing and documenting for Zubuntu is that I can use the Zubuntu
+install document and install on Ubuntu or Debian with only minor differences.
+I know because I tried it.
+This is probably also true for other Debian and Ubuntu derived distributions.
+So if you want to help, you could take the Zubuntu install document and see if it works
+on other distributions, write down what you had to change and let me know.
+I plan on making an install checklist out of the install document, and it would be great
+to have a checklist with the actual commands for several distributions.
+So that was the intro, now onto the topic.
+I am planning on installing remote near and remote fire systems, remote near being
+a short drive away, or maybe in your home if your studio is not in your home like mine.
+And the remote fire further away to avoid losing data in the case of a regional catastrophe
+like flood, fire, tornado, or hurricane.
+Still, even a short drive is not what I want to do.
+Anytime there might be something, I need to check on a remote system, so I have devised
+a way to manage it from the secondary system.
+When a remote system is delivered to a new location, it will be headless, no monitor,
+no keyboard, and no mouse.
+At the remote location, it is plugged into a UPS and attached to the network with an
+Ethernet cable and attached to the UPS with a USB cable.
+Then it is turned on.
+Even without a keyboard or a mouse, there is still some local control of the system available.
+As part of the remote system install, we go into the power management settings, and
+next to when power button is pressed, we select shutdown.
+So a short press on the power button initiates a Ubuntu shutdown, just like the shutdown
+that you get from the menu or Alt F4.
+If that doesn't work, a long press of the power button will turn the system off.
+This is like unplugging the system or losing power, and it is not recommended, but Ubuntu
+will rebuild the file structure when the system is restarted.
+And if you do lose power, the UPS will send a signal to the computer shutting it down,
+with the control shutdown, just like a short press of the power button or a shutdown from
+the menu.
+I would like to carry this one step further and enable automatic power up for the computer.
+A quick search shows cyber power power panels software for Linux.
+Also, you can set a power restore function in the BIOS to restart the system when the
+power is restored.
+I just checked and this worked on my little HP.
+So with just the power button and an attached UPS, you can get both manual and automatic control
+of shutting the remote system down and restarting it.
+Pretty cool for a rather sparse interface.
+If you know more about how to set this up, please let me know.
+There's a big jump between doing a search to see if something is possible and actually
+implementing it.
+Okay, that was the easy part, now for the fun part.
+First off, the remote system is probably not going to be at your place, but at the home
+or business of friends or family.
+And they probably don't have a static IP, and they may not be able to implement port
+forwarding in their router, and they may not be able to control their firewall.
+So we can't go, I'll just SSHN what I need to fix a problem.
+And you don't really want to change their setup anyway, because all of the above add
+to their security risk.
+Also, their router undoubtedly gives dynamic IP addresses, so we want the remote system
+to use that, because when we are setting it up, we might not even know what some net
+there land uses.
+But at the same time, it does to make any sense at all to try to maintain a remote system
+that you can't log into.
+So the tool for setting up a terminal session on a remote system is called a remote tunnel
+reverse shell.
+The remote system is already connecting to the secondary system with R-Sync SSH when
+the crime job fires off every day to update the files.
+So the secondary system is running an SSH server, and the remote system has the public
+key that allows access without entering a password.
+There are two parts to setting up a remote tunnel reverse shell.
+The secondary system has to be listening for the remote system on a port.
+I use port 7070.
+And then the remote system runs a bash command with the dash i parameter that means reverse
+shell, and the port 7070.
+I'm using NC to set up the listener, NC-LVNP7070.
+L is listen, V is verbose, and means support is restricted to numeric values.
+P is port, and 7070 is support.
+I chose to port number 7070.
+You can use any available port, but the listener has to use the same port as the remote system
+uses in the bash call, which is this, bash dash i greater than ampersand slash dev slash
+TCP slash your static IP from your ISP slash 7070 zero greater than ampersand one.
+This is the order of events.
+On the secondary system, I start listening, NC-LVNP7070.
+Then a script runs on the remote system, and the bash command.
+And then a command prompt opens up in the terminal on the secondary system that's listening.
+And you are logged into the remote system, and you can look around and check things out,
+and even move or delete files until you exit, except it didn't work.
+Of course not, nothing ever works the first time.
+Two other things have to be changed that we're going to talk about now, the firewall and
+port forwarding.
+These things are already discussed and installed on text, because we had to fix the firewall
+and port forwarding for the remote system to log into the secondary system to pick up
+the new files.
+To set up port forwarding, log into your router from a browser attached to the router,
+like for instance, a browser on your secondary system.
+You open the browser and type into the address bar 192.168.1.1, which is right most of
+the time.
+On my setup, I type 192.168.2.1, because the ISP's router uses the 192.168.1 subnet.
+How do I know which to use?
+This is also covered in install.text, because to connect from the primary system to the
+secondary system, I have to connect to the static IP that I assign to the secondary system.
+So my primary system has the static IP 192.168.2.11, and my secondary system has the static
+IP 192.168.2.12, which allows me to SSH into the secondary system from the primary system.
+And this means my router is at 192.168.2.1.
+Your router is likely at 192.168.1.1, because that's the most common land subnet.
+Anyway, in the browser, I open the router's control console, and then I have to enter
+the password.
+If you don't know what it is, you have to find out and write it down.
+Check what the defaults are for your router by searching on the internet.
+The defaults might work.
+If they do, change your login and password and write them down.
+Do not leave your router defaults in place.
+That's a big security risk.
+After you're logged into the control console, check around in the menus for port forwarding.
+I already had to do this to make SSH work from the remote system to the secondary system.
+In that case, I had to forward port 22, the SSH port, from the internet to the secondary
+system.
+Here's how that works.
+On the remote system, I type SSH, in the archive, at your static IP from your ISP.
+Since it's coming in as SSH, that means the router sees port 22.
+The router checks the port forwarding table and sees that incoming traffic using port 22
+should go to the secondary system, in my case, 192.168.2.12.
+So the incoming SSH goes to the secondary system, which is my SSH server.
+What a coincidence.
+So in order to use port 7070 to open a tunnel from the remote system to the secondary system,
+I have to add a row to the port forwarding table with 7070 as a port, and 192.168.2.12
+as the IP, except on your land, the IP address may be different, except it doesn't work.
+I bet you guessed why, it's the firewall.
+On the secondary system type, pseudo-UFW status.
+It should show you that port 22 is allowed because otherwise you wouldn't be getting SSH traffic.
+It probably won't show you that port 7070 is allowed.
+So type, pseudo-UFW allow 7070.
+Then check the status again and see if it shows 7070.
+Here's a nice firewall link with instructions.
+And the link.
+It still might not work even though it should.
+Why?
+Operator error.
+You may have typed 7000 instead of 7070.
+I did that.
+Or any other little typo in any of the commands.
+When this works, you are ready to test the reverse shell.
+The remote system can SSH into the secondary system, and we have added port 7070 to the
+port forwarding table on the router, and to the firewall on the secondary system.
+This is great.
+But how do I know when to listen and how do I get the remote system to issue the bash
+command that sets up the reverse shell?
+Remember, in the future, the remote system is going to be sitting somewhere with no monitor,
+keyboard, or mouse.
+Only computer programs are required to remember the future.
+After all that setup, here's the clever bit.
+I have a text file on the secondary system named LetMeIn.Text, and it's a flag with
+two values.
+The text file either reads yes or no.
+If it reads yes, it means I'm here at the secondary system and I want to log into the
+remote system.
+If it reads no, not so much, I'm not really trying to log into the remote system at all.
+The remote system has SSH access to the secondary system since that's the way it picks up new
+files with our sync SSH.
+So the remote system can use our sync to copy the LetMeIn.Text file over to its hard drive.
+And it does this every five minutes with the cron job.
+On the remote system, type sudo-s to become root, crontab-e to edit the root crontab.
+Add this line.
+Slash-5-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-s-
+If I forgot to do something, I can start listening again. But if I'm done, I edit Let Me In.Tex to say no. And the remote system will quit trying to set up a reverse shell every five minutes. But wait, there's more. E-mail notifications. I set up e-mail notifications with Mailerscent for file integrity reports using Curl. To do that, I'm going to start listening again, but if I'm done, I edit Let Me In.Tex to say no, and the remote system will quit trying to set up a reverse shell every five minutes. But wait, there's more. E-mail notifications. I set up e-mail notifications with Mailerscent for file integrity reports using Curl. To do that, I'm going
+to write a script called Send.sh that takes a file name as an argument, and then sends me an e-mail with the contents of the file in the body of the e-mail. So when I run my file integrity program, if the log files are larger than they should be, it means there is a discrepancy, and that log file gets e-mailed to me so I can check things out. Maybe with my remote tunnel reverse shell. I also check this space with the F and send a disk space report. Using Send.sh
+when I run check.sh and detect a yes and let me in.Tex, I call Send.sh with Let Me In.Tex as the parameter, and I get an e-mail that says yes, meaning the remote system is trying to set up a reverse shell. So if I change Let Me In.Tex to yes on the secondary system, and I wait five or 10 minutes without getting notified, I may just have to make a call. Maybe the nice people who are hosting my remote system have lost power, or internet, or maybe the
+they will have to push a button. If that doesn't work, I may have to make a trip. I hope it's remote near and not remote far.
+So when I was testing the e-mail notifications part of check.sh and fiddling around with the code, all of a sudden I quit getting notifications at all.
+I learned a lot about bass scripting, trying to figure out what I did wrong, and it turned out it wasn't me.
+After I sent myself numerous e-mails saying yes, from a weird e-mail address, Gmail decided they were spam. So went into my spam folder and marked the notification e-mail as not spam.
+That fixed it for me, but if you were setting up e-mail notifications for Libra Indie Archive, or for anything, be sure you whitelist the e-mail address so that the e-mail powers that be, don't suddenly decide that your notifications are spam, and you quit getting important notifications.
+In Gmail, you set up a filter entry with the Notifiers e-mail address and set the action to be never send it to spam.
+Because getting these e-mails is important. First, they remind me to have the secondary system listen. Then they remind me to change let me in.text from yes to no after I'm done with the remote terminal.
+And while you're changing let me in.text to no, make sure the listener is off. Leaving it listening for an extended period of time is a security risk.
+So there's a lot of little moving parts involved in this. Kind of complicated, but still fascinating. Almost done.
+I didn't think this would be so long, and now I'm exhausted. I am including slightly redacted and well-commoded copies of Check.SH and Send.SH in the show notes, which will be on hacker public radio, and on my Delta Boogie Network Gamer Plus blog at home.gamerplus.org.
+As always, I appreciate your comments. Thanks.
+On this otherwise status, today's show is released under Creative Commons Attribution 4.0 International License.

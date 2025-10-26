@@ -1,0 +1,183 @@
+Episode: 2885
+Title: HPR2885: ONICS Part 2: Filtering and Extraction
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2885/hpr2885.mp3
+Transcribed: 2025-10-24 12:43:47
+
+---
+
+This in HP are episode 2885 entitled Onyx Part 2, filtering and extraction and is part of the series, networking, it is hosted by Gabrielle Evenfire and in about 17 minutes long and carrying a clean flag.
+The summary is in this episode I discuss commands to filter and slash or extract packets from a packet trace file.
+This episode of HPR is brought to you by Ananasthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's honest and fair at Ananasthost.com.
+Hello Hacker Public Radio listeners, this is Gabrielle Evenfire.
+This is Gabrielle Evenfire.
+This is Gabrielle Evenfire.
+This is Gabrielle Evenfire.
+This is Gabrielle Evenfire.
+This is Gabrielle Evenfire.
+This is Gabrielle Evenfire.
+This is Gabrielle Evenfire.
+This is Gabrielle Evenfire.
+Hello Hacker Public Radio listeners, this is Gabrielle Evenfire.
+Today I'm going to do my second episode in a series on bash scripting to manipulate network traffic and packet traces, primarily through the Onyx Tool Suite.
+On my last episode on this subject 2882, I covered basic installation and packet capture, inspection, merging of streams and packet transmission.
+So if you are just jumping into the middle of this series, it's probably worth going back and checking out that episode just to see how to get started.
+Now in this episode, I'm going to be talking about filtering and dissecting packet traces and streams.
+And just as a general note during these first few episodes about the Onyx Tool Suite, I'm going to show only the very basic use of the various tools.
+But most of the tools have a lot of very powerful and flexible options, can be used in a variety of ways.
+So as you get into this, it's worth taking a look at the ManPage. Every tool has a ManPage, and every ManPage has multiple examples of how to use each tool both by itself and in combination with other tools.
+Now for this episode, we're going to, instead of grabbing some random set of packets from the network, we're going to grab a specific trace of packets that I happen to have stashed in the Onyx repository for unit tests.
+So you can follow along with this, or you can check the show notes, where I will have in detail all of the things that I'm describing in this podcast.
+So let's start by making a scratch area to do our work in. So let's do Mkder slash temp slash packets, and then change into that directory, CD slash temp slash packets.
+And now let's find the packet trace I was talking about to do that.
+You, let's say the Onyx git repository was in slash foo slash bar slash onyx, then what you would want to do is CP slash foo slash bar slash onyx slash tests slash data slash packets slash sample dot XPKT.
+And then space dot to copy it into the current directory.
+Okay, so now we've got this set of packets. Let's see what's inside.
+Well, the first and easiest thing we can do is count the packets and the bytes in the packets.
+So to do that, we'll use the p count tool.
+So to run it, we'll just say p count sample dot XPKT.
+And that will return 90 total packets and 19,082 bytes.
+Okay, well, maybe we don't want to look at all of those packets all at once.
+So let's get a feel for what's in there in a little more detail.
+We know that we've got 90 packets, but we don't know if that's all from one connection or 10 connections.
+So we're going to now look at this packet trace using the NFTRK command,
+which stands for network flow tracker.
+And to do that, let's say we want to, you know, just see what are the flows in this trace file.
+We would run NFTRK-D, dash T, sample dot XPacket,
+and then pipe that to grip.
+And then in all capital letters, end, capital E, capital N, capital D.
+And doing that, we'll get a bunch of lines that all begin with the pipe symbol
+and the words flow end and then another pipe symbol.
+And that flow end will be in all caps.
+And each one of those is basically an event from that packet trace indicating the end of a flow.
+See the NFTRK tracks all sorts of events like when a flow starts or when it sends more data and when it ends.
+And since we're just trying to just take a look at what are the flows in this connection,
+we just can look at the end events.
+And that gives us what we want to know.
+That's why we grip for end in all caps.
+We could have just gripped for start, but I tend to grip for end because the end events also include information
+like how much data was sent in each direction of the connection.
+So you get a little bit more complete status for what happened during the flow.
+Okay, so we ran that command.
+And let's just say we don't we don't want to count how many of those connections there are by hand.
+So instead we can do NFTRK-D-T sample.x packet pipe grip all caps end pipe WC-L.
+So now we're taking that those end events and we're saying hey word count will you please count the number of lines.
+And that will exactly correspond to the number of flows in the connection.
+And that tells us that there are 10 flows in this trace file.
+All right, so 90 packets, 10 flows and about 19,000 bytes.
+All right, well let's say we are only interested in the TCP flows in this trace.
+Okay, so let's now just peel out the TCP connections and the packets that are part of a TCP connection.
+So this is basic filtering of the connection.
+Okay, so to do that we're going to use the PFLT command for packet filter.
+So we'll give it the command name, then a pattern to match on, then the input file and the output file.
+So we can do PFLT TCP sample.x packet TCP only.x packet.
+So now this is going to create a TCP only.x packet trace that has only the TCP packets from the sample.
+Now we could see what was in that.
+We can go P count on TCP only and that tells us that there are 73 packets, about 17,000 bytes.
+And then we can use an FTRK to see how many TCP connections.
+So an FTRK-DT TCP only.x packet pipe grip end all caps pipe WC-L.
+And that tells us two, there are two TCP connections.
+So those two TCP connections were taking up most of the traffic in that trace file.
+Now if we wanted to be really, really fancy, we could have actually chained all of those together.
+And I'll show you an example of that in the show notes.
+It'll, it would make for a very poor reading.
+But we could have done the filtering and the counting and the tracking all on one bash command line and gotten the output.
+And then that would have given us the information without having to save it off to a file.
+So let's move on.
+And so now we've filtered out and we've got this trace file that has only the TCP connections.
+Okay. So now let's actually look at them, and we can do that by doing nftrk-dt-t-test-packet slash-tcponly.x packet or just TCP-NFA packets since we're in that directory.
+Then we pipe that to GREP and we see that we have these two connections and if you look
+at across that line we'll see the server ports, SPT, are 22 and 80.
+So we had two connections.
+One was an SSH connection and one was a plain old HTTP web connection.
+OK, so now we've done a little bit of filtering.
+We've done a little bit of inspecting onto what is going on in this flow.
+I just want to talk briefly before going about how else could we filter this traffic?
+We can filter on a variety of patterns.
+We could say we only want IP or IPv6 and TCP or all sorts of things.
+Or we only want traffic that is going, that is TCP and going to port 22.
+I'm going to go into more detail about those patterns in a future episode.
+But if you are interested in learning about them I would suggest you do Man, Onyx underscore
+Proto because you see that command shows all of the different fields that the Onyx
+tool suite recognizes all the different protocols and all of the fields that can be
+matched upon.
+But let's say we aren't interested in individual flows, maybe we care about ranges of packets.
+So let's say we just specifically wanted to pull out packets 3 through 6 in the trace
+file.
+So for that we would use the PXTR command for packet extract.
+So in this case we could do PXTR 3 comma 6, no spaces between the comma and the 6, PXTR
+3 comma 6, sample.x packet.
+And then the output file name, so we'll say packets, dash 3, dash 2, dash 6, .x packet.
+And that creates a new trace file that should only have 4 packets in it, packets 3 to 6.
+And you could verify that by say using the x packet dump command on the sample .x packet
+and trace file on the packets 3 to 6, x packet file.
+Okay, now let's say, so we know how to pull out a specific subset of packets, but what
+if instead we want to exclude a set of packets.
+Like let's say we want to drop packets 5 through 10 from the stream.
+Well, it turns out there's no nice tool to do that, but there is an easy way to do it
+using packet extract and command line scripting.
+So the way we would do that is first we would extract the first 4 packets and then we would
+extract the packets starting from packet 11 and going to the end and appending that to
+the first 4 packets.
+So the way I would write that would be pxtr, 1,4, sample .x packet.
+And then let's give the file name, let's call the file, not dash 5, dash 2, dash 10 .x packet.
+And now we're going to run pxtr again, pxtr, 11, none in all caps, the word none in all
+caps.
+And again, no spaces between the 11 and the comma or the comma and the none.
+So pxtr, 11, none, sample .x packet.
+And now two greater than signs and then not dash 5, dash 2, dash 10, .x packet.
+So now we have this file, not 5 to 10, x packet.
+And so that was the original sample except for packets 5 through 10.
+The two greater than's, you should recognize from bash scripting, that is to say append
+the output to this file.
+So the first command created the file and put the first 4 packets in and the second command
+appended the rest of the packets that we wanted to that file.
+So no one command to just carve out to say drop a bunch of packets from the middle of
+the stream, but an easy two for that could do it.
+Now let's talk about finally one more command we've done a little bit of carving.
+Let's look at a really a kind of a fun tool that you is very hard to, I have never seen
+anything like this in other tools and so I'm very happy with it.
+Let's look at one that tells us what's the difference between two packet streams.
+And that's called pdiff.
+Okay so we're going to take, we're going to run the following command pdiff sample .x packet,
+.-5-2-10.x packet and pipe that to less.
+And what it should tell you sure enough is that there were a set of packets that were
+deleted from sample.x packet in order to get to the not 5 to 10 x packet file.
+Now pdiff doesn't know which really came first so you can actually flip that around.
+You can run it in verse and you say pdiff not-5-2-10.x packet, sample .x packet and pipe
+that to less and it says oh well the first trace must have had the following packets inserted
+into it in order to get to the second trace.
+So the order matters.
+The first file is sort of the before and the second file is the after and pdiff shows
+you what must have changed in that packet stream in order for the first trace to become
+the second trace.
+So it provides a handy way of saying if you have a capture that was say on one part of
+your network and then another capture that was on another part of the network, you could
+run pdiff between the two trace files from those two parts of the network and say well
+what changed, what happened to the traffic as it moved from one part of the network to
+the other.
+Okay, so that's the pdiff utility.
+All right, that's what I think I'm going to leave it here in this episode.
+So we looked at a few more tools that help us analyze and dissect what's going on in packet
+traces and streams and let us sort of carve them apart, you know, pick out packets that
+we want and then and pull them out into separate files.
+So I think in the next episode, we'll go into much more depth about how we can do pattern
+matching on the packets in these trace files.
+Okay, I can see by the way, I just want you to know that there's a call for shows right
+now. So if you guys are out there thinking that you have a topic much more interesting
+than me droning on about packets, then I would heartily encourage you to get on there
+and and and create a show because I wasn't planning on reduce on putting this one out
+so soon, but it looks like we really need shows.
+So get out there and support HPR. As always, if you want to contact me, you can email me
+at evenfireatstf.org. So this is Gabriel, even fire, signing off. Bye-bye.
+You've been listening to Hacker Public Radio at Hacker Public Radio dot org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out
+how easy it really is. Hacker Public Radio was founded by the digital
+dog pound and the infonomicum computer club and is part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment
+on the website or record a follow-up episode yourself.
+Unless otherwise status, today's show is released under Creative Commons,
+Attribution, ShareLite, 3.0 license.

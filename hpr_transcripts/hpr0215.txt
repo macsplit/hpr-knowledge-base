@@ -1,0 +1,341 @@
+Episode: 215
+Title: HPR0215: Guide to using linux Rainbow tables
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0215/hpr0215.mp3
+Transcribed: 2025-10-07 14:03:36
+
+---
+
+music
+Well, hello and welcome Hacker Public Radio listeners to Phoenix's Student Huckers
+Guide to Linux.
+My name's Aaron, but you guys as usual can call me Phoenix.
+Today I'm going to be talking about Rainbow Tables and how they can be used to crack passwords.
+As usual my podcast is for educational purposes only and it's not here to teach you how to
+hack people.
+A little bit about myself, my name's Aaron Finnan, sometimes known as Phoenix, I'm an
+ethical hacking student at Avatar University Don D. I've been doing this for about 2-3 years.
+I'm also a very passionate Linux user and I've been the current president of the Avatar
+Linux Society for about 3 years now.
+My show notes will be available on the Linux Society website which is www.thelinuxsociety.org.uk
+and that's www.thelinuxsociety.org.uk and as usual my slides will also be made available.
+My show notes will also be made available at our good friends over at the Linux Basement
+which is www.linuxbasement.com.
+The reason that I wanted to talk to you about Rainbow Tables is to actually find this stuff
+really interesting and every geek likes to know something about something and this is
+quite interesting stuff.
+I mean I own up it's as far from Linux as I could get, apart from the prime lesson
+here is that Unix is not vulnerable to these sort of attacks.
+This is to do with sorting your hashes and all of this stuff which I'll explain at the
+end when I talk about possible countermeasures.
+Although I say that this is as far from Linux as you could possibly get, I do use Ubuntu
+with a package called offercrack for cracking or lag manager hashes and my examples in my
+show notes will be using that as well.
+offercrack is available in Ubuntu repositories but I think it's available in the restricted
+ones.
+It's also worth knowing about this type of technology because WPA is also vulnerable
+to this sort of attack as well but not as much.
+What I really want to talk about is it puts the reality of what would seem impossible
+possible.
+You can take 7 trillion possible password combinations in minutes with a 99.9% chance for probability
+when using Rainbow Tables and that's just mind blowing stuff when you think about it.
+I mean why would this stuff be of interest to you just in case because I said so isn't
+enough.
+Personal security.
+I promise that your views on password security will change hopefully after this talk.
+If you've not already adapted strong password security this should scare you enough to do
+it.
+I haven't met anyone that isn't surprised by the power that Rainbow Tables harnesses.
+I'll also show that this technology is available to everyone out there.
+Fingers crossed you'll listen to this, go home and try it and it will work with ease and
+what that will show is that in reality anyone can do this, anyone that can use Google can
+password crap using Rainbow Tables.
+Like I say one of the tools that I use is available in the Ubuntu repository so it goes
+to show you how easy it is to get a hold of.
+This could be used against multiple organizations that use land manager hashes and you probably
+have contact with them so all that you might not be vulnerable people that you know could
+quite possibly be.
+And if I say it and as I've said before if you haven't I hope by the end of this podcast
+that you'll start to implement a strong password policy.
+So what I'm going to kind of go through today is a little bit of terminology, talk about
+the mistake that land manager hashes made and what they're about and how that mistake
+is sort of shown into the fabric of time.
+I'm going to talk about how you use Rainbow Tables, I'm going to touch a little bit of
+the science about it, I'm going to talk about some of the countermeasures and also how
+Rainbow Tables are not just for windows hashes and other types of attacks that can use for
+this as well.
+Now terminology is not my strong part and I'm not much of a mathematician either so you
+have to bear with me but when I talk about a hashes what I'm talking about is a hashes
+kind of like a short identify a fingerprint or something more complicated.
+Hashes are produced using a one way mathematical function they're used in like database systems
+and security and cryptographic systems as well.
+They used to store passwords.
+I mean in English they're unique like your fingerprint and they can't be reversed like
+you know like 1 plus 1 is 2 you can't you know you can reverse that mathematical function
+you can't reverse a hashes.
+It's been used in security for a long time but it's also been a way of verifying data
+integrity as well.
+I'm sure plenty of people have downloaded distributions and you'll see that there's a check
+some MD5 hash that you can calculate to make sure that your disk that you're downloading
+has not been corrupted or hacked or something like that as well.
+So you could you know the author puts up what the the hashes and then you can check that
+across.
+I mean I'll talk about how we use that in passwords and in operating systems.
+I'm also going to talk about lookup tables and computer science lookup table is a data
+structure usually in a ray or an associative array and often used to replace run time
+computations.
+It just means that there's less processing time being used at the time and the memory
+is easy to the answer is easy to pull out of the memory once you know this lookup table
+is loaded.
+I'm also going to talk about reduction function.
+It's not easy to explain well it's not easy for me to explain is probably the fair
+apart.
+I mean I'll try but you can't understand understanding a reduction function is not
+pinnacle to today's episode whatsoever at all.
+In essence it's a way of solving a complex problem by turning into a simpler problem.
+I either sounds like a making sense or it sounds like I've been smirking something to
+be honest with you but the reality of it is is a reduction function is a way of changing
+one complex problem into another simpler problem and if you keep on reducing the problem
+you eventually you'll find a way to solve it you know like I say allow the make sense
+to you or the one but as I say it's not pinnacle that you understand this to being able to
+use rainbow tables so don't panic if I've done enough job of explaining it I'm sure
+there'll be plenty of people that know kind of a little bit more about it.
+Now what I really want to do is set kind of set the scene I mean you have to remember
+in the beginning there was a world without passwords and computers were a resource that
+was shared that weren't cheap there were big mainframes and people went and spent time
+in front of it then eventually someone decided that they needed to protect their system
+from unwanted users and you've guessed that passwords were implemented and as the word
+says you know password if you get the word right you pass through and that's the it's
+not really rocket science a good old friend Stolman had you know it has a famous talk you
+know I'm sure you'll be able to find it online about how he was at the artificial intelligence
+lab at MIT and they implemented passwords and he had the password database and it's very
+interesting I'm sure you'll find it on Google video or something like that.
+The problem with locks is that they have to be unlocked with a key or if they have to
+be unlocked into a key they can be tricked into thinking they're being unlocked with the
+right key you know lock picks tend to trick a lock depending on the skill of the picker
+you know and in in reality you lock a door humans always want to know what is behind it
+well in the computer terms it's a sequence of characters that can be course referenced
+with a particularly user to verify their identity that's the lock and that's the key the
+lock is the system saying no the key is your sequence of characters that the computer
+knows if you tell it that that it should let you through as that user with everything
+that's tangible you know it can be recreated or simulated in computing you know much so
+what we can do is we can simulate the sequence of characters and that will let us through
+the door it's not really you know like I say it's not really rocket science I mean the problem
+lies that in the reality you need to store the character sequence on the computer so it can be
+cross referenced against the user now basically what we're saying the plans for the key are on the
+system does someone could just look at this this character sequence and say oh I know your password
+not so bad if it was your family but if you're in an organization and you want people to use
+individual accounts you know what people to be able to look up other people's passwords so we
+need to find so so there was a we need to kind of find a way of storing the plans to this key
+onto the system without it being understandable to the user what I mean by that is that we can't go
+and look it up and say oh I know your password is password and we need to be able to store it
+on a system so that if anyone looks it up it doesn't make any sense at all and this is kind
+of where hashes come into to to their fruition I mean a hash can't reverse this store the hash
+when a user inputs their password it's converted into the hash and if the two hashes match
+then then they come and if they don't you keep on retrying pretty clever if you think about it
+because what this means is the computer never stores the password on the system one of the
+computer does is store the hash so you input your password it puts your password through the
+hashing function and if the two hashes match in you go if they don't you don't get in so it's
+very very simple but it's very very clever because like you said before we don't have to store
+the actual password on the system but the problem really lies is that humans have a problem
+of remembering complex things so we all tend to you know people tend to use simplistic passwords
+you know stuff that are words that are easy to remember and in reality you know you
+a system that relies on a human being is always vulnerable to the human factor and something to
+remember I mean you know the problem really lies in here that with enough force locks will always
+be broken so we can if we go back to remembering this human factor of not being able to not storing
+you know using passwords that are easy to get a part of a dictionary we can start
+brute folding the lock until it eventually opens it doesn't have you know and that is basically
+the first way the first kind of a car to use against breaking password security was just to basically
+make a list of possible passwords basically a dictionary and keep on trying those possible
+combinations until the password hashes the right one two hashes match and in you go
+the more complex the harder it is for people to to remember so humans tend to choose the path
+of least resistance so they always choose something easy to remember and if it's easy to remember
+then it's even easier for us to guess and that's something to remember as well
+so as you can imagine the countermeasure really to this was to start storing passwords that
+were not in the dictionary out for new merits so password one is not going to be an
+dictionary it's still very guessable but if you start separating words with letters and replacing
+characters with special characters what you'll find is they're not an dictionary they don't become
+easy to guess and it takes more and more and more time to stop brute forcing this lock
+um so as I say password policy started implementing that you need to use
+often new merits and and and whatnot we've all seen them before so we go back to how
+these are stored on the system and I spoke earlier on about land manager hashes or LM hashes for
+short um this is a mistake that's pretty much been sewn into the fabric of time and as ideas go
+this is probably this is probably a stinker of all ones our good friends at Richmond think
+that we lovingly call Microsoft came up with this in fairness I don't think anyone could have
+guessed the knock on effects that this mistake would have had but I'll explain what a land manager
+hashes well I explain how you get a land manager hash how Microsoft do it to take a password
+and then converted all often into all uppercase characters um so if you know you had a capital P
+a lowercase A a capital S a lowercase S a capital W a lowcase O a capital R a lowercase D
+and the password would become password all in uppercase if it's longer than seven characters they'll
+divide it into two sections containing seven characters so if we took the word password the first
+would be P a S S W O R then they would get another they would get they would split into another
+plate containing the D and the rest would be the folder space then the hash each part individually
+and then put the two together and they call that land manager hash it's a very simple explanation
+I'm sure that some of you guys you know we'll think that's a really layman's version but it in
+essence is is how it's done so what's so wrong with doing it that way well first converting
+everything into uppercase cuts the possible combinations down massively by a by a factor of 26
+also the hash for an uppercase password and the hash for a lowercase password will generate
+two different two different hashers so by capitalizing everything we knock out a factor of 26
+off the possible character set so if we had the whole possible character set including capital letters
+there would be 95 keys and most keyboards to choose from by uppercasing everything you cut that down
+269 splitting the hash splitting the password into two has the following sort of consequences
+69 to the power of seven is a hell of a lot less than 69 to the power of 14
+69 to the power of seven works out about seven trillion possible combinations by
+in comparison 69 to the power of 14 is about 55 set trillion possible combinations and trust me
+that is a real word set trillion it's s-e-p-t-i-l-l-i-o-n as I say we're able to attack both halves
+independently which means that we are only ever cracking a seven character password
+regardless of the length of the password the character if the password is you know 14 characters
+we're still cracking two seven character passwords and as I say they can be cracked independently
+but however don't get me wrong seven trillion is still a really big number
+um but splitting it up into two bits makes the process really simple for us and in the reality
+this has been this mistake has been etched in time for backwards compatibility
+all Windows systems have the ability to store the password as LAN manager hashes however in
+Vista this option is turned off by default and in exputes turned on by default so they are trying
+to phase out but it's going to take a long long time for this to be to be done I mean the idea
+of the tradeoff is really simple if we have enough time we could generate all the possible
+hashes of up to seven characters we could store them and use them time and time and time again
+okay it takes very little memory to brute force each seven character combination however
+it takes a lot of time to do it if we store all of these possible character combinations
+these seven trillion possible seven character passwords and we say each password
+takes up about 21 bytes of data okay if we multiply that by about seven trillion I'll give you a
+rough idea of the amount of space required to store it is somewhere in the region of 145
+thousand terabytes of storage you would need which is still pretty unreachable for most people
+in today's standards now but there is an answer and this is using the time memory tradeoff we do
+some of the hard work first we do a lot of the mathematics at the beginning in essence we trade
+time memory in space and we find a happy medium so I mean why I was you know what if I told you
+there's a way that we could cheat here that we could store all seven trillion possible password
+combinations without actually having to store the physical seven trillion possible combinations
+and this is where this reduction function that I talked about earlier on comes into essence
+we store the start like the clean text passwords at the start we put it through a reduction
+function seven times and we store the final output and then we just delete everything in the middle
+and what happens with this is that what a rainbow table in essence does is takes the hash looks at
+the end of this chain and if it finds a match then it knows what the password is if it doesn't find
+a match at the end of this chain then it uses a reduction function and the hash moves along the
+column until it finds the right possible combination it just means that we're able to store
+huge amounts of possible data without actually physically storing the data you know and if we find
+that it's going to be in that chain then we can just unfold that whole chain and find the answer
+and that in essence is what a rainbow really does and we store a lot less data and we do a lot
+more into computations at the beginning but it means that we have this data set that we can use
+time and time and time again I mean like I say my sure notes will have a little bit about the time
+memory trade off if you want to find out anymore obviously a quick google and you'll find lots of
+more information there as well so in essence you know what is a rainbow table and well it's basically
+imagine this massive lock up table full of all the possible combinations lots of chains side by
+side like as you cut the middle out and then you store the beginning and the end of the chain okay
+so you're left with the answer and the last computation in the chain from that if it's not in there
+we can work back the chain and use some of the processing time at the time use some of the memory
+that we have on the system and work out the password if it's likely to be in that chain so we're
+not having to generate thousands and thousands and thousands of possible wasted processes cycles
+working on something that's not going to be an answer here we're limiting our search to
+that physical set there I mean in essence it sounds pretty simple but you know it takes a
+you know it takes a while to it takes a while to generate these tables it was a guy called Philip
+I think his name is Philip Oshlin and Terrible it pronounced since I named him so I hope he doesn't
+take any offense but he kind of came up with this idea and he went and worked on the offer crack
+kind of software which made this all you know available now what I did and I'll make these notes
+available as I said I downloaded a copy of offer crack from the Ubuntu repository and then I also
+downloaded some hash files now there's lots of software that you can use to capture land manager
+hash files I think it's PW, PW dumper in the program is called but you can basically get the
+where a hash is normally saved on a Windows system I think it's at system 32 config and I think
+it's a SAM file as A.M I've talked about that the last time and I did changing Windows passwords
+as I say I mean I installed a copy of offer crack on my laptop and from the same website I was
+able to download a set of rainbow tables that had a 99.9 percent chance of cracking these passwords
+I was able to put in this 32 these 32 passes that I had got off this site for testing purposes
+they were made available I'm sure you can find them online they'll be available in my notes as well
+and with this table I was able to crack nearly all of the passwords on a low spec system in about 10
+minutes it was pretty phenomenal stuff that size of the table was only 710 megabytes so you know
+it's pretty easy to put the size of a distribution when we think about it very easy to do now to
+basically have all the possible passwords all the possible character sets the actual rainbow table
+size is only 64 gigabytes so basically to crack nearly any LAN manager hash which is pretty much
+any Windows system bar Vista you'd be able to download a set of tables that are 64 you know 64
+gigabytes and size it I mean it's in this day and age you can buy a terabyte hard drive for 99
+pounds and you know so it's not not unavailable to everyone the the beauty about using Linux is
+is that we we're not susceptible to this sort of attack we use something called salt and your
+hash so even if we had the LAN manager hash thing which we don't but even then we would take
+this password and then we would use what's called a salt which is something on our system unique to
+our system okay to generate our hashers from which would mean if we were needing to generate
+rainbow tables to hack Linux systems what we would need to do is find the salt of the system what
+the system is using to salt and then generate all those tables now the 64 gigabyte data set that
+I was talking earlier on the rainbow tables takes two years to compile okay so if you had to do
+that every time you wanted to hack a Linux system you can imagine it's just it's not worth doing
+and hopefully someone would have changed the password by them you know nearly all other operating
+systems actually employ something like this which is apart from Microsoft they don't seem to
+salt their hashers at all which is very strange but stuff like you know open BSD does Linux does
+I think open BSD salts its hashes with I think 128 bits salt which you know gives you a massive
+idea about how long it would take to to generate these tables now some of the possible other
+countermeasures to this as well is that if you think that the time it takes to compute these tables
+kind of goes up dramatically the minute that you pass 14 characters the time it's just a huge
+amount of time so if you employ a password that's longer than 14 characters it's a good start
+you see in a Windows system if you use a password that's longer than 14 characters it will have
+to be stored as an NTLM hash which doesn't get split which doesn't get capitalized it means that
+you're not going to be susceptible to these like to to this rainbow attack but when we we talked
+about password security at university one of the things that we kind of really
+bang the drum about is actually pass phrases are a lot better than password lots of reasons
+a pass phrase will generally take you past 14 characters but it also makes it very simple to
+remember as well because if you think about spaces spaces are a character as well so if you use
+something like my past you know my space bank space password space is space this this will take
+you through huge amount of possible combinations compared to if you had a password of only 14 characters
+or something like that so pass phrases are a far more secure way of securing something they're
+also incredibly easy to remember so you know you could use you know people as I said earlier on
+humans tend to take the path of less least resistance so say you're going to choose a password
+that's based on your your favorite football team for me it's going to be very easy for me to sit
+back and say all right that guy supports ranges so I'm going to try ranges one ranges two ranges three
+ranges four blah blah blah blah blah now what happens with a pass phrase is we could do something
+like the sentence my favorite football team in the world is ranges it's going to be incredibly hard
+to guess and it's going to be incredibly hard to sell rainbow tables so you're going to need
+you know petabytes of data to store the possible sequence in that so you know one of one of the
+good count measures here is to remember that that using a pass phrase is easy to remember brings out
+huge amount of characters involved it's easy to type I mean that's the requirement for a good
+password really easy to remember long and easy to type well that's why a pass phrase is probably
+better than a password there are other uses for rainbow tables as well they can use they can be used
+to crack lots of different tables as well there is a there is rainbow tables for the ntlm
+hashes the md5 hashes the sh1 hashes but they can also be used for hacking wpa psk as well
+not to the same extent because when what happens for for for the hashes for that is that they are
+generated using the ssid as well so you know you need to know the ssid then you need to generate
+the rainbow tables and they're each generated off each ssid now there is a list of the thousand
+most popular ssid's and pound to a penny belkin 45g will be up on the top there and so on and
+so forth but as I say it's kind of a type of salt so if you use a very individual ssid for
+your wireless router chances are you're not going to be vulnerable to a wpa to a rainbow attack
+on your wpa I think the data set for a wpa rainbow table is about 500 gigabytes so it goes to show
+you you know you need a lot of bandwidth now the other thing to remember with rainbow tables as
+well and I apologize because it just dawned on me that I haven't mentioned it before most of
+these rainbow tables are available for download you don't need to generate 64 gigabytes of data
+you can actually download them there's also a lot of websites online link free rainbow tables.com
+that have you know massive massive massive rainbow tables that you can download via torrent
+that you don't need to pay for or anything like that so that's always worth remembering as well
+I mean every like I say every possible character set for the lm hash total 64 gigabytes I mean it's
+you know so within the reach of everyone is unbelievable the software we use to generate these
+tables and to use these tables and to store these tables is for most parts free and available on
+the internet as well and as I say I'll have lots of links available in my show notes so if that
+you if you are interested please come along for Linux to say any dog dog UK and have a look at
+the slides and the show notes that I've got for this so kind of enclosing Google is your friend when
+it comes to searching if you find an MD5 hash why don't you put it into Google it sounds really
+strange but Google is this in reality this massive storage engine out there it's not just a
+search engine if you take like the MD5 hash for phuba and stick that into Google it will tell you
+that it's an MD5 hash for phuba not all of them will be in there but I think there's a story about
+how how a website was hacked and then did the guy can understand how he done it you know he
+managed to get the MD5 hash but it just didn't work out how he worked out what the password was
+and in the end what happened is the guy taken the MD5 hash and stuck it into to Google and you know
+someone had already cracked it and there was the password took seconds to do but it sounds stupid
+but I have to say this to everybody every day you know lots of people every day when it comes to
+finding out stuff use Google you're going to find the answers there the information has been out
+there for a long one time on this this I think this technology is 10 15 years old
+passwords are always weak regardless of the hash and algorithm if you use something that's
+simple to remember or simple to guess then you're always going to regardless of what's used
+you're always going to be vulnerable to someone going I guess your password is so remember try
+and use phrases they're very very hard for people to guess they're incredibly hard to generate
+tables for and should kind of take you off this you know take you off this attack remember you
+should always try and make your password over 14 characters long it makes the computation time
+to generating tables virtually you know virtually impossible you know when you start using 18 and
+19 character passwords they're incredibly hard to guess they're incredibly hard to generate tables
+for as well and as I say never let Microsoft choose security for you your job to choose your
+securities your job to investigate what's the best for you as I say all of them I know it's
+about how you can go about using rainbow tables and some of the some of the stuff that I've got
+will all be available on my on our Linux Society website and also on the Linux basement as well
+so hopefully you're going to have enjoyed this episode today and go out and play
+and use this technology now remember don't steal someone's hashes and crack them you'll be
+breaking the law if you do that and you could face the jail okay so that's Phoenix Student Hacker's
+guide coming to an end for this month before I go I would like to do a big shout out to my friend Chad
+Wallenberg over at the Linux basement he'll be coming up to episode number 3030 happy birthday
+over there you guys Chad you've done a fantastic job and let's hope the next 30 is just as good
+as okay anyway thanks very much this has been Phoenix Student Hacker's Guide to Linux this is
+been exciting off
+thank you for listening to Hacker Public Radio
+HBR is sponsored by caro.net so head on over to C-A-R-O dot anything for all of us

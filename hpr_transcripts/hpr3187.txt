@@ -1,0 +1,88 @@
+Episode: 3187
+Title: HPR3187: Ansible for Dynamic Host Configuration Protocol
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3187/hpr3187.mp3
+Transcribed: 2025-10-24 18:28:11
+
+---
+
+This is Hacker Public Radio Episode 3187 for Tuesday 20 October 2020. Today's show is entitled
+Ansible for Dynamic Coast Configuration Protocol. It is hosted by Norrist
+and is about nine minutes long, and carries a clean flag. The summary is
+how I use Ansible to configure my open BSD router. This episode of HPR is
+brought to you by archive.org. Support universal access to all knowledge
+by heading over to archive.org forward slash donate.
+I am going to talk about how I use Ansible.
+I am going to talk about how I use Ansible.
+I am going to talk about how I use Ansible to configure my home router's DATP
+and DNS servers. I use Ansible a lot, both at home and at work.
+This is not going to be an Ansible tutorial, but I want to show you an example of one way I use Ansible at home.
+If you are looking for an automation tool, Ansible is a great place to start.
+DHCP is a convenient way to make network administration easy. Most devices will try to use
+DHCP when they first connect to a network. For working, DHCP setup means devices
+when they are first plugged into the network will just work.
+DHCP becomes inconvenient when you want devices to have a known static IP address.
+It is difficult to run a service on a network if the address of the service is unknown or keeps changing.
+DHCP can be configured to give a specific IP address to a host based on the host's MAC address.
+Static DHCP assignment solves the problem of running servers with DHCP assigned addresses.
+Some DHCP servers like DNS Mask will combine DHCP with a DNS resolver.
+I use OpenVSD as my home router. DNS Mask is available on OpenVSD as a package,
+but I prefer we are possible to use what comes with the BSD based install.
+So I use Ansible to configure OpenVSD's included DHCP server and DNS resolver.
+The DHCP configuration requires the host MAC address and the desired IP address.
+The DNS configuration requires the IP address and the hosting.
+I keep the host data in a CSV file, one host per lawn with the MAC address IP address and hosting.
+I'll have an example of the CSV file in the show notes.
+I have multiple subnets in my home network and I have a CSV file per subnet.
+I use an Ansible template for the DHCP and DNS config files.
+The template takes the data and loops through it and creates configuration entries for each lawn in the CSV file.
+The OpenVSD based install includes unbound as a caching DNS resolver and NSD as an authoritative DNS server.
+I use local.land as a domain name for my local network and Ansible builds the Zombal for local.land.
+The Zombal contains the A record entries for the host on the network.
+Unbound runs on the normal DNS port, port 53 and forwards requests for local.land to NSD which are on port 8053.
+The Ansible playbook I use to set up NSD and DHCPD will be included in the show notes.
+I won't read the entire playbook but I will walk through what the playbook is doing.
+The first few lines the playbook tell Ansible what hosts to run on and initiates the task list.
+In this case I normally run this Ansible job on the OpenVSD server so the host is set to local host.
+The playbook starts by reading the CSV files using the Ansible CSV module.
+The CSV tasks specify what file to read.
+The field names are in the CSV file and the name of the variable that will hold all the data that's read in.
+In addition to the CSV files for the DHCP host, I also have a CSV file for hosts that have statically assigned addresses.
+Most of the entries in this list are for either the OpenVSD server itself or for my FreeVSD server and its jails.
+The next task is to create the DHCPD config file using the Ansible template module.
+The task contains the name of the source template, the path to the file that we will be built from the template and a command to validate the config before overriding the DHCPD config file.
+A quick note about the validate command and how it works. Ansible first creates the template file in a temporary directory.
+If you have a validate command in the task Ansible will run that command on the remote server against the temp file.
+If the validate command returns an error, Ansible stops and doesn't override the destination file.
+In this case, Ansible runs DHCPD-NC%S. The %S is a macro that points to the temporary file.
+Whenever possible, I recommend using a validate command with Ansible tasks.
+You'll see another example of validate in the next task.
+Other times I use validate is when I'm modifying Apache configs or Etsy suitours.
+I'll walk through quick the DHCPD-Config file and how it's built.
+It starts with setting the options for the domain name and the DNS servers.
+Then there's a configuration block for each subnet.
+Inside the subnet block are options for the DHCP range.
+Requests from hosts that are not specifically listed in the DHCP config will be assigned addresses in the defined range.
+To prevent warnings and the logs, I keep the static assignments outside the defined range.
+Next in the subnet configuration block is the template loop that uses the data from the CSV files.
+Ansible uses the Genja templating engine.
+You'll recognize the syntax if you've used Genja before.
+I won't read the Genja code, but the basics are to loop through the data from the CSV files.
+Then using the field names defined in the CSV steps, substitute host.fieldname for the data that will go in the template.
+There will be an example of the rendered DHCP output in the show notes, as well as the full DHCPD config template.
+The next section of that Ansible Playbook is to create the DNS zone file.
+The zone file template creates an A record for each host in the CSV data.
+The zone file template and a sample of the rendered A records will also be in the show notes.
+The final steps in the playbook are to restart DHCPD and NSD.
+Unbound which forwards request to NSD is also restarted to clear its cache.
+Finally, the easy part, run the playbook to apply the configs with the command Ansible-playbook and then the path to the playbook file.
+I hope this was useful and give you some ideas about how you can use Ansible.
+Please leave any questions in the comment section and I'll see you next time.
+You've been listening to HECCA Public Radio at HECCA Public Radio.org.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out how easy it really is.
+HECCA Public Radio was founded by the Digital Dove Pound and the Infonomicon Computer Club
+and is part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise status, today's show is released under Creative Commons, Attribution, ShareLite, 3.0 license.
+Thank you very much.

@@ -1,0 +1,469 @@
+Episode: 2435
+Title: HPR2435: Server Basics 102
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2435/hpr2435.mp3
+Transcribed: 2025-10-19 02:58:42
+
+---
+
+This is HPR Episode 2435 entitled Server Basics 102.
+It is hosted by Klaatu and is about 49 minutes long and carries a clean flag.
+The summary is Klaatu talks about SSH configuration on the server you set up in 101.
+This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+Hi everyone, you're listening to Hacker Public Radio.
+My name is Klaatu.
+This is part two of my server basics mini-series.
+So in the previous episode we spoke about what a server is and how it can be anything but
+how it really should be something that can actually withstand a lot of users using it.
+We talked a little bit about running Linux on it and we talked about new server versus
+old server.
+Old server being basically what we really just call a shell account these days where you
+just have people logging in via a terminal and it's all text-based and it's very cool
+but not very realistic in the modern world.
+That's just not what people expect when they say, okay, we need a server for our business.
+Now, we want clouds and services and apps.
+We want apps essentially is what it boils down to.
+So in this episode we're going to talk about setting up that server that hopefully as
+part of your homework if you're following along you set one up already.
+My recommended setup for this kind of stuff, I mean there's really anything but I mean
+if you're asking me then I'm going to say, well, throw Fedora Linux on a computer and
+then on top of Fedora Linux install the virtual manager, the virtual manager package which
+is a nice GUI front end to something called Qemoo with a KVM back end and all that means
+is that the virtual machine is looking at your base system and using what it can out
+of that and it's virtualizing everything else on top of it.
+So you've got this kind of hybrid virtualized machine that's a little bit your computer,
+a little bit made up computer.
+And into that virtual machine you should then install Cintos 7.something.
+I think they're late to 7.4 or maybe I'm behind, I don't remember, I haven't looked.
+But that's what you'll use as a server for these exercises.
+And I mean you don't have to do it along with me obviously, you can just listen and
+then experiment around it on your own.
+But if you're completely lost and you have no idea what you should be installing or what
+you should look at, that's what I'm suggesting to you.
+So after you've installed the Cintos thing and you've created your root password and
+your user, it reboots from its installer and you go through the final little setup steps
+and then or actually on Cintos I don't think there are.
+If you did the minimal install there, there are, you basically reboots, you get booted
+to a text terminal, a text console and you're good to go, that's your Cintos experience.
+And honestly that's exactly where we want to be, that's a good place to start.
+I should mention however that that's not necessarily where Red Hat expects you to start.
+And by that I mean if you were to call up Red Hat support and ask a question about something
+that you weren't clear on, they tend to, at least in my experience, tend to assume that
+you've got a desktop running and that you've got sort of, you know, GNOME, classic edition
+and that you're using GNOME terminal and things like that.
+So that's just a point of interest.
+The minimal install images are kind of handy because they're super small but they are
+very minimal.
+So that's not necessarily the standard but it is an option and that's kind of the way
+I usually go because at the end of the day I just don't want to desktop on my server.
+But that seems to be something that a lot of places kind of really kind of expect you
+to actually have access to that interestingly enough.
+It doesn't matter, it's all running the same stuff in the background anyway.
+Okay so whether you've got a desktop up or whether you're just staring at a text console,
+it's a server so things are connected to it, otherwise how could it be serving something?
+I mean right now you're sitting in front of a computer essentially, it's a virtual computer,
+you're sitting at it so that would be an analogous to taking your physical server and
+plugging in a monitor so maybe it isn't serving anything because it's a closed loop system
+and that's all it has right now.
+But more likely in how things work in big places is that you've installed the OS or the
+OS can pre-installed on it from HP or Dell or whoever your server vendor is.
+You've turned it on and then you've SSH into that computer or you've connected to it.
+However your server vendor has told you to or whatever your workplace has in place.
+So if you log into your computer and you do it probably has root but you could do it
+as your own user and then switch to root or you could use sudo if you set that up.
+I think if you marked your user as an admin user then you are added to the sudo group,
+the sudo group without having to do anything.
+I mean you have to type in your password but you don't have to physically add yourself
+to the sudo group.
+So the command to check if indeed SSH for instance is running would just be system CTL status
+SSHD and that will tell you that oh yeah look at that SSHD is active, it is running.
+It has been running since I turned to this computer on five minutes ago.
+Cool.
+So that's a good thing to know that's you are running, you are serving something from
+this server already which is SSH.
+And maybe that's good, maybe that's bad I don't know but presumably you wanted that
+open because you have to reach the computer.
+But that means that it is serving something so that means that on port 22 so if any computer
+in the world sends a little message to this computer even if it's just a random message.
+If it sends a message to this computer well the message wouldn't be random.
+The fact that it's reaching this computer is random and it's got that little port 22
+text in its little header and it says hey I would like to log in over a secure shell.
+Then your computer will answer to it, hey yeah cool what's your password.
+And that right there is kind of an acknowledgement right it's sort of it's saying number one yes
+I exist whether you knew or not that I existed I do exist and by the way yes I am running
+SSH and yes you may try to log in.
+So that's a lot of information to a script that wants to then hammer your server with
+a bunch of usernames and a bunch of passwords in order to try to get in that's probably
+not a good thing.
+So the classic first move would be to pseudo edit with some text editor which since we
+don't really have one installed yet except for that one that I don't use it would be
+pseudo yum install jove because jove is a small little emax clone or a small little emax
+I guess is what it really is it's not a clone of emax it just happens to be another emax.
+So install that and then you would want to do pseudo jove or emax or vim or whatever you
+want to use nano pseudo jove slash edc slash sshd slash sshd sorry slash sshd underscore config
+and the first one the first thing you got to do there absolutely got to do it is change
+the port that sshd is listening on from port 22 to something else interestingly it can
+be anything else it doesn't actually it doesn't have to be you can just make stuff up it
+is better to use a port at the higher end of the spectrum just because most of the ones
+at the lower end are sort of spoken for already although I mean you could it's not impossible
+to collide with known you know with existing ports you don't necessarily want to if you
+can help it especially with the common with common known ports that you might you might
+think it seems like a really good idea right now and then realize later that oh there's
+some standard service that you didn't realize you were going to need that you're totally
+now needing and it turns out that you redirected your ssh to that port and now you've got
+a conflict that you have to resolve you either have to use a non-standard port for your
+standard thing or you have to use you know whatever so you can find out I mean if you're
+really into that you're really curious you can find a list of all the assigned ports as
+it exists at the i-a-n-a dot org site there's a big long url I'm not going to remember to put it
+in the show notes but if you if you do a search for assigned assigned port numbers on the website
+i-a-n-a dot org that's the internet assigned number something association then you'll you'll find
+the list but again that's not super super important right now it's just happens to be there it
+happens to exist the the important thing is that you want to get rid of port 22 as a valid place
+to answer requests for ssh you just kind of want to put that somewhere else so I mean sure look
+you're not up against people really when you're trying to secure your server you're up against
+scripts and scripts are tireless things so it wouldn't be unreasonable to expect scripts to send
+out a request across your entire server on every port with a request ssh in it's not impossible
+it could happen I don't really see it all that often today but I mean that doesn't mean it's
+not going to happen at some point but I think typically conventional wisdom right now is that most
+scripts are designed to hammer port 22 because the real dumb dumb's out there running servers
+not really knowing enough to move ssh they just left it on port 22 and if they know if they've
+done something stupid like that chances are they also used some stupid easy to guess string for
+their past their ssh password and they've they've probably got a user with a certain name certainly
+route and and so you know there's there's all these like sort of probabilities that people can
+kind of figure out and so if you can figure it out then you can just have your script
+hammer on that set of possibilities and your your likelihood of success goes up because if you
+start looking at other ports then you're dealing with someone who ostensibly knows a little bit more
+about well maybe maybe I am on port 22 22 instead of 22 but if I knew to do that then maybe I
+also knew to disable route login and maybe I'm not even using password um password authentication
+on my ssh so in other words the defaults I think are they tend to to to be the the ones that you
+really want to sort of almost get away from so to do that as I said you are going to edit slash
+ssh slash ssh slash sshd.config and you're going to and I'm I don't have an internet connection on
+a virtual machine as I'm speaking so if that's happening to you and you're probably not doing it
+along with me maybe you are I don't know who you are what you're doing but um if that happens to you
+and after you've set up a virtual machine don't forget your basic Unix commands and your knowledge
+of how Linux works um so if I don't have a DHCP address on my virtual machine um and and I feel
+confident that I've well even if I don't feel confident that I've set up my virtual machine
+environment correctly uh the the thing that I would think that I would want to do oh jove doesn't
+even exist in um the repositories for syntax isn't that funny I'm I feel sure that I've installed
+in the past maybe it was from some other repository uh anyway the thing that I would want to do is
+DH DH client and that will probe for a lease and there we go ipa 192 168122 181 perfect so now I've
+got got a got a internet address now so now I can do a yum search for jove and indeed it is not
+in the repository I guess that means I'll have to install emax oh such a pity um
+yep couldn't be happier so I'm installing emax which should happen pretty quickly on this
+fiber connection so yeah it happened as I spoke so um what we will do is we will go in there and
+see where at the very top of the file practically it's port 22 so you'll uncomment that and you'll
+redefine it as port something else 2222 you could do that or you could go higher 22123 22456
+22 I mean it doesn't even have to start with 22 I just keep doing that because at least at
+least that's a little bit more memorable for you as the as the person who's going to have to
+then use this ssh port so um so it doesn't have to be you know it can it can really be anything
+so I'm going to read I'm going to set that something different I'm going to go with 22123
+and the other thing that we want to get rid of is the ability for the root user to log in at all
+so if you do a search through the document you should eventually find something called
+permit root log in and that is commented out and it's set to yes so I'm going to uncomment it
+and I'm going to explicitly set it to no I don't know if that's 100% necessary I just like to be
+explicit rather than implicit so if there's a statement there where I can set it absolutely to
+know or to yes depending on you know what I need then that's what I'm going to do so that's how
+I do it the other thing that we would want to do we want to disable password authentication now we
+don't want to do that yet because we haven't set up the infrastructure that we need to make that
+possible so before we do anything about that eventual goal we'll save and close now to make
+those changes actually take place we'll have to restart this service and that's a this is a
+pattern that you're going to get used to in server maintenance in general there's there's kind of
+there's a there are several patterns but one of them is you know when you you want to start
+something you want to start a new service you'll install this off where well in this case
+I said it was already installed then you'll want to configure it that's what we're doing right
+now and then you'll want to start or restart the service so just kind of remember that it's
+her that that incantation that that that pattern that ritual is something that you will get very
+familiar with and the more you kind of remember that the easier it becomes to to just do that by
+default and then there aren't any instances where you're sitting there posting on forms like an
+idiot you know I've installed in genex web server nothing's happening I've checked my firewall
+rules I've checked this I've checked that well why isn't this working and someone says did you
+start the service you're like oh my gosh no I didn't okay so we want to avoid that but anyway so
+so we've we've saved we've closed and now we we theoretically we believe we want to restart the
+service and that depends on how you start services on your system if you're following my advice
+and using syntax as your server distribution then you would do a system system CTL
+status not status restart sshd now it and don't worry if you got an error I'm going to address
+that in a moment if you're using something else maybe it's a slash atc slash rc dot d slash sshd
+restart or I don't know what else something something else would use well I do slash atc slash
+rc dot d slash rc dot sshd restart but anyway the point is you need to learn how to start and
+restart and check on services so some incantation that you will learn from your distribution
+documentation will inform you how to do that so if you just did that along with me or if you do
+this at some point and you get an error back that'll be too bad but that is just what happened
+actually so I restarted sshd and it says failed because a configured resource limit was exceeded
+system CTL status sshd dot service and journal CTL dash xe for details so if you I mean looking at
+logs is always a really good idea and it's something that server people talk about all the time
+they say did you check your logs all the time you're going to get that now logs live generally
+in slash bar slash log and that's kind of where it gets a little bit squirrely because you're not
+really sure where what which log you should be looking at all the time and that that that does
+and it actually even it even varies from distribution to distribution because log files are
+malleable people can assign any application to go to any log file you know developers I mean
+or even just someone packaging the the software or yourself if you're installing from you know
+if you're building it yourself then the log files can be anything so it's sometimes it sometimes
+it is difficult to know what to look in sometimes it's fairly obvious like okay so it's an ssh
+thing so it's probably got something to do with security so if we did a tail on slash bar slash
+log slash and then you kind of looked and you said oh well here's one called secure maybe that's
+helpful and sure enough fail error error fatal error error fatal okay so yeah we've got some
+errors there and it's telling us some some stuff about permission denied wait a minute how can
+permission be denied I'm rude it doesn't make sense this is bogus now the other thing that you can
+do if you can't figure out what what log to look at is use the journal ctl when prompted if it
+tells you hey you can look at journal ctl dash xe that just takes you to the bottom of the file
+then you can do that and it spits out a bunch of information for you sometimes it's more
+information sometimes it's the what you would read in the log anyway it just kind of depends
+on which log you looked at and we we get a little bit of of a different story here it's it's
+something about error bind a port to two one two three on zero zero zero zero zero failed permission
+denied pid file var run sshd pid was was not readable yet after start so yeah we've got we've got
+some problems but I don't know that it's super obvious as to what that is but then if you if you
+do a emax slash or joe or vi or whatever you're doing a slash ssh slash shd again because that's
+the configuration file that we just recently can modified so maybe we introduced an error or
+something well no we didn't so if you read the comments and that's always an important thing to do
+and it says pretty clearly here in the comments if you want to change the port on an s e linux
+system you have to tell s e linux about this change and it tells you exactly what you need to
+type in which is s e manage port dash a dash t ssh underscore port underscore t dash p tcp
+port number cool so luckily I've chosen a text editor that has extra features such as a built-in
+little shell so I'm going to do a control x two to split my screen and then go control x o to
+go down to my other screen and then do in a alt x i'll just type in shell now I've got a shell
+and now I'll just copy and paste with my with my editor that command bring it down into here
+and I know that my port is two two one two three and that should do it
+and it didn't do it because s e manage command is not found so what that means probably is that
+I need to do a yum search for s e manage that really didn't turn up a whole lot I mean it shows a
+lib s e manage but I don't think that's what I'm after so I'm just going to do a yum search for
+s e linux in general and oh that's much better so we've got we've got s e troubleshoot we've got
+s e tools and s e tools console and that's pretty good so let's let's do all of those things let's
+install the s e tools s e tools console and s e troubleshoot that shouldn't take long either
+there we go and then we'll try s e manage again just to see dash dash help maybe just to see
+if it exists yeah okay so there it is so it was in one of those packages now if I didn't want to be
+quite that half hazard I could have done a little bit of research with yum to find out exactly
+what contained s e manage command but I just I don't know it doesn't seem worth my time to go to
+that trouble when I can just install a bunch of related tools that I'll probably need anyway
+so s e manage port yep s s h underscore port t t c p t t one two three two two one two three
+and there we go so s e linux is doing some stuff in the background to make this all possible
+okay it returned nothing so I'm going to assume success and now I will close emax I do not need
+to save anything because I didn't change anything this go and now we'll try it again so system ctl
+restart sshd and there we go now we're now we're now we're getting somewhere so I didn't get an
+error that time so if I do a system ctl status sshd it tells me that I am running and it even
+gives me a little bit of a snippet of the the most recent log entries which was starting open ssh
+server pid files not readable yet server listening on two two one two two so cool that's a good thing
+um the the other way another way to to learn about what we've just done is with something called
+net stat which is a pretty pretty important tool to have but it's not installed on this minimal
+image that I installed that I guess this is the the disadvantage of of doing a minimal installs
+that a lot of the stuff that you would assume to be installed on any unix type install you
+they're just not there but you don't panic you just have to then kind of look at at where it is
+and install it and then there you go so I just did a yum search net stat it came up with a bunch
+two two things either net snmp and net dash tools and so I installed net dash tools because it happens
+to know that's where it is at some point maybe I'll go over yum in more detail so that there's more
+of a clue as to how to find out where missing commands actually live but I think that's outside
+the scope right now I kind of assume some Linux familiar familiarity and the ability to look at
+commands and kind of learned how to use them I'm more interested in the the concepts here so now
+that we have net stat you can do a net stat command or you could do a help first to to see what kind
+of things that you are interested in in utilizing this thing for and in this case we want to look at
+ssh and we know that ssh is running on port 22123 because we we told it to and so if you do it net
+stat dash dash help you can see that there is well there are a lot of options and you could you can
+play around with those but but I'll just bring your attention to the one called dash dash listening
+so if you do it that's a net stat dash dash listening or is it just listen no listening
+then that's a screen full so we just do a maybe a pipe that the head just to keep that sort of
+a little bit more contained and and only because I happen to know that we're looking at the top
+I mean normally I wouldn't do that if I didn't know where I would be looking but in this case I
+knew that we're looking so I'm just doing the pipe to head just to keep it easy so first line
+right now at least on this system is TCP and it's 0.0.0.0.0 colon 22123 and with a state that
+that is in is that it is listening so we know from that that something is listening on port 22123
+and that's a good thing to be aware of we want to be aware of that because even though now we've
+we've super secretly and cleverly moved our SSH target from port 22123 it's still an open port
+essentially I mean it's not open open like anybody can just come in and just hang out
+but it's a responsive port if someone throws a message at that port even if it's chosen at random
+and they throw a message saying hey I'm looking for SSH on this port and they happen to get a
+reply from you saying yes I am running SSH what would you like to log in at then that's that's
+kind of an invitation to come in if they're a vampire that's enough so they may not have the
+right username they may not have the right password but they could certainly try and if they're
+a script all they got this time they'll just keep trying unless you do something about it okay so
+this is a great introduction to something called fail to ban and I do want to get to that sooner
+than later I guess but before I do I still want to talk a little bit about the whole SSH thing
+and you may have heard some of this before so I don't want to belabor it but root is a known value
+everyone knows that every unix server is going to have an account called root and it's kind
+of a problem and it's something that a lot of servers are now addressing by not enabling the root
+account so that there is no root account that can be logged in and that's a pretty good first
+step to be honest it's it's because if we're assuming that okay we've moved port 22 to 22 123
+but we're assuming some script is still going to ask at some point that's going to ask 22 123
+hey I'd like to come in and obviously if you're going to go to the trouble of trying to get in
+you're going to try to get in as root because that's the easy target if you win on that one you've
+just won the game so you say yes I'd like to get in and my name is root and the server says well
+that's not possible because we don't have an root here then you've just left that script with
+with nothing but guesswork now it just has to randomly guess what user accounts you might
+possibly have on your system that would have active shell accounts which I mean even if they think
+of something like you know something fairly common like let's say engine X or or or nobody or
+whatever then or even honestly even like get like chances are that that if you've set those services
+up you have disabled an interactive shell log in that you you've not you've not let you've not
+allowed for the possibility that someone literally named engine X spelled in GI and X is going to
+come along sign up for a shell account you know you're going to give them a shell account and they're
+going to SSH in and to do productive work that's just not going to happen so so you you set the
+shell to that user to like slash bin slash false or you know whatever so that's a great thing
+to do the other thing that you can do for SSH is just tell it straight out look if anyone says
+that they're root do not let them log in even if they have the right password because it's just
+not going to ever happen so you we already did this but you would set in slash at the slash SSH
+slash SSH D config that permitting the root log in is set to know so that's great the other thing
+that we can do related to this is not enable password authorization at all for anyone that seems
+really odd but it is possible and in fact it's a very good idea the way we do it is we use SSH
+keys instead so when you are trying to log into a server rather than using a password to get
+into that server you simply have a private key file on your computer that you're at and you
+have the public key version of that file over on the server and if those two key files match up
+then you're allowed in and if they don't then you are not allowed in and in theory you're the
+only person on earth with that private key the private key file that matches that particular
+public key so I've got an IP address here of SSH 192.168.122.181 that's my virtual machine
+address so if I do an SSH space dash p22123 clap two at the big long IP address I just gave
+and once again failure so this can be frustrating you know you think okay well I had it and now it's
+now it's not working well this is the beauty of scintoss really honestly it it it comes by default
+with a firewall in place. So if you do a system, CTL, status, uh, firewall, D, then you
+see that, hey, there is an active running firewall happening. And so when you try to SSH into
+your server X from from the outside, certainly to a non-standard port. I mean, SSH might
+be let through the firewall, but SSH on 2, 2, 1, 2, 3, there's no way. So that's a great
+thing. This is, this is a, a bonus. Um, it just, the, the, it doesn't feel like a bonus
+because it's, it's resulting in total and utter failure. That's okay. We can fix this.
+So firewall D is a front end to, I would say, traditional IP tables. Um, IP tables is the
+firewall used on a very low level on a Linux system. There are similar things on BSD,
+IP, F, W, uh, P, F. They all work differently and they have different syntax, all the same basic
+concept. Of course, it's a firewall. So you've got signals that you let in and you have signals
+that you let out. And there are, then everything else you, you disallow. Now the danger with firewalls
+is that you can easily lock yourself out very quickly with like one, one command. You can
+lock yourself out of your own server because you forgot to open some port and then you started
+up the firewall and suddenly your connection with that server is severed. So do be careful when
+messing around with firewalls. Always make sure that you are not accidentally severing your
+connection with that server. Now, since we are physically hooked up to this virtual server right
+now, we're not really in danger of that. And, and you could certainly, you can play around with
+that in your own spare time if you ever want to because it is a good thing to sort of get to know
+and get to hate because it's, it's, it, it has happened to everyone at some point. We have all
+at the beginning of our careers have been logging into, we've logged into a server and we think
+everything's fine and we swap the port from SS, for SSHD from the default to the non default.
+So we've basically, we've, we've got this hole in our firewall that let us through for port 22.
+But then we move port 22. We say, yeah, we don't want that there. So we put that over there.
+There's no hole there in the firewall. So we no longer have that connection and we throw up the
+firewall and maybe it retains the worst time is that when it retains the connection that already
+exists, that's a pretty common rule in an IP tables. It's like, hey, if an established connection is
+there, continue to allow it. But then when you log out and try to log back in, you find, oh my gosh,
+I can't reach it anymore. What happened? And you have no idea because when you threw the firewall up,
+it didn't appear. It seemed like everything was right. And it turns out that yes, you had a
+temporary pass because you'd already, you were already connected. But that doesn't mean that you
+can get back in. So be careful with that is what I'm trying to say. And and we're physically
+connected to this thing right now. So it's not, it's not really a danger.
+So what we will do though is we'll invoke firewall D or actually it's firewall dash CMD,
+firewall command. Why it's not firewall CTL, like system CTL and a bunch of other CTLs,
+but pulse I think what is it? Pavu CTL. I don't know. I don't know why it's not something sensible
+like that. I alias it to FC anyway. So firewall dash CMD is, it works differently than
+IP tables. And that's actually okay because IP tables can get pretty complex. I mean, firewall
+command honestly can get pretty complex too. But whether or not you need to learn IP tables,
+it doesn't really, I'm not convinced. I kind of hesitated against firewall D when I first
+learned about it because I'd kind of already started learning IP tables and I thought,
+geez, do I really want to relearn a different firewall set of commands. And and just in the interest
+of integration, it's actually fine to just use firewall D. And I think on the Ubuntu flavors
+and the devian stuff, it's, I think they opt mostly for UFW possibly. So same, same backend,
+IP tables, a different front end. It really, it's kind of up to you. And I tend, in this sense,
+I tend to just default to whatever the system wants me to do, which I know that sounds absolutely
+disgusting. It's like, oh, you have to forge your own way. But in this case, actually, I just go
+with integration because that way, the most important thing for a server maintenance, I think,
+one of the most important things when you're doing server work is that is that all of the work
+that you do survives a reboot. That's the most important thing because if it doesn't survive a
+reboot, that's when you get the, that's when you have to go in to this to actually be physically
+present at the server farm. Because if it survives a reboot, then worst case scenario, you know,
+power outage, whatever, it gets, you know, power back comes back on, the server comes back up,
+and it's everything's already working again. You don't have to go in. You just get, you get the
+call, hey, there's a power outage, you can't do anything about that. So you go back to sleep,
+and then you get the notification that the server's back online, and you're thinking, cool.
+I guess the power came back on, the server rebooted like it was supposed to, and everything came
+back up. If you don't have that, then you're not going to have any peace of mind when the server goes
+down. That's the problem. So I like it to be integrated such that I don't have to worry. Did the
+firewall come back up when the server rebooted? Well, of course it did. It's all tied together
+and in a neat little package that's going to, everything's going to start back up. So firewall
+D has that advantage of kind of being tied into the system D or the init system, and so it'll
+just come right back up when the server comes back on. The command to add a rule in firewall
+command is firewall-CMD, space-zone-equals-public, because that's the default zone for firewall D,
+and there are a couple of different zones, but the public one I tend to just kind of stick with,
+there are theoretically better ones, but public I'm actually pretty comfortable with,
+and then space--add-port-equals-22123-slash-tcp. So if you try to add a port, then it won't necessarily
+know what kind of traffic you want to allow in. So you have to tell it specifically,
+I want to add, you know, I want to allow TCP traffic, in this case, on this port.
+There are other ways to add rules, like you could define it by saying dash-add-service-equals-ssh.
+But again, as I said, I think earlier in this very episode, I like to be explicit when I can be.
+So it's nice to have human readable friendly names, like SSH and stuff like that, but I would
+rather make sure that we all know what we're talking about. In this case, I want this port
+to be open for this protocol, and that's what I want. Now all that did was add that rule to the
+current running state of the firewall. So if it's something that we want to have happen all the time,
+we need to also add the dash-permanent-flag, and that saves it to the configuration file.
+And there are ways to go back in there, and we could tell it, well, this friendly name,
+SSH, actually maps to 22123, so I'm going to keep using the friendly name, but that's the
+basics right there, and I'm not going to, again, the specifics of the commands are less important
+to me than the conceptual stuff. Okay, so now that we've added that port to our firewall,
+in theory, if we go back to a terminal on our local computer outside of our virtual machine,
+and of course, to get the IP address again, it would just be IP-space-a, and that tells you
+that eth0 is this 192 address, and then I'll go back out to my local machine, and I'll do an
+SSH-p22123, clat2at, the IP address, and sure enough, it tells me that this is a machine, and here's
+its EECDSA key fingerprint. I'm sure that I want to continue, yes, type in my single letter
+password that I put in for myself to make this easy, and there we are, we're in the server, and we
+could type hostname, and that was very helpful because I didn't define one, so it's localhost.local
+domain, but anyway, I know that it's not my local computer, it is my virtual machine, so now we've
+SSHed into our virtual server from our laptop, or whatever you're using, just like you would,
+if that was a real server. So from here on out, I guess we might as well just keep using the
+SSH connection, because that's probably how you're going to be interacting with this thing normally,
+so you can exit out of that, we don't really want to be SSHed in right now, to be honest,
+so I'll exit out of that, but we have confirmation now that we can reach the server via SSH,
+so now what we're going to do is put our SSH key over on the server, our public key, so
+you can do that with a little shell script called SSH-copy-id, and on most Linux distributions
+that I use, well, all that I use on a daily basis, it comes pre-installed, so I just type in SSH-copy-id.
+If you don't have it installed, you can look around for it and see if it's available for your
+distribution, I think it might also be on the open SSH site somewhere, and if not, you can do it
+manually, it's not actually that hard, this just happens to make it easy. So do an SSH-copy-id,
+and then you do the whatever, clat2.at192.168, you know, the destination, the place that you're
+SSH-ing in to, and then I think you also need, if I'm recalling correctly, the dash p22123,
+and yeah, it looks like it has, it has detected me, it has gone to the correct port, it is offering
+to copy the keys to the server, so I'm typing in my password, and it says that we're all good,
+it says that that should work. So now if I just change this to SSH-clat2 at that IP address,
+at that port, I'm just logged in, it didn't even ask me for my password, that's, it's as simple as
+that. Now if you look at what that did on your server side, you'll see that you've got an LS-A,
+well, if you do an LS-A, so I've just SSH-Den, dash A, and I see that there's a new folder here,
+and it's called dot SSH, and then if you look in dot SSH, you'll see that there's one file there
+called authorized keys. Okay, so now why don't you do it at cat till the slash dot SSH-authorized keys,
+and you see that there's this big, long, ugly sort of string thing looking at the, in the authorized
+keys, and it identifies itself as an SSH-RSA, big long string, and then clat2 at this, this computer
+in a host name. Cool, so that's all it did, the copy, the SSH copy ID just took my public key,
+the one that's okay to share, and it just put it into the authorized keys file on the server.
+So now anytime, as we've already seen, that I do an SSH clat2 at that IP address, at that port,
+SSH, well, what I'm offering it is my private key, like, you know, and I'm holding up my private key,
+and then the SSH responds and holds up the public key, and if they fit together, I'm in,
+and if they don't, then I am not. In the likelihood of some random script kitty out there having
+a copy of my personal private key that happens to go with this server is pretty slim, especially since
+I can generate as many private keys as I want. I can have a different private key for every server
+that I use, and the trick to that is simply using SSH-I for identity, and then you can tell it,
+hey, okay, I'm SSHing into this virtual machine, let's call it, I don't know, Bobcat,
+so if we know that we're doing that, maybe I generate a special SSH key just for that,
+and so then I can do an SSH-P for the port 22123, and then dash I for identity file, and I'll point it
+to .SSH, let's say I called it Bobcat underscore RSA, no pub, because I want to point it at my private key,
+and then class 2 at, and then the big long IP address, hit return, and I'm in, so you can have
+lots of different keys for, you know, one per server if you want, the likelihood of someone having
+copies of all your private keys are lower than the likelihood of a script trying a million times
+to get into your server, and actually hitting upon the right combination of user name and password.
+Now the other, the last thing we need to do then in this process is to go back as root, so there
+where I go, and then go back into slash atc slash SSH, SSH-D config, and find that password
+authentication rule, which is online 77ish, and I'll uncomment it, password authentication
+right now is set to yes, I'm going to set it to no, and then remember after you configure,
+what do you do? Yeah, you restart the service, so we'll do system CTL restart SSH-D, now it's
+restarted, and now I'm going to exit, I'm going to cross my fingers, and I'm going to try to SSH
+back in with no password involved, and yes, I'm in, so we have just, now if we were to switch users
+and try to SSH in, well here, I'll do it right now, so let's say that I SSH as root,
+and it says permission denied, it doesn't even, doesn't even ask me for, you know, it doesn't
+do any, it just permission denied, how about if I do SSH as HPR denied, how about get denied,
+so there's no, there's no interactivity there, it's just, it's denial of service,
+and that's what we want, okay, so this has been a little bit of an introduction to SSH,
+it's been a little bit, no, it's been a pretty good introduction to SSH,
+been a little bit of an introduction to firewall, and now I think we should probably talk about
+fail to ban, which someone else has covered in hacker public radio history, I think that's how I
+learned about it actually, but we'll do that another time, because this episode has gone on for
+a longer time than I sort of realized it would, so next episode, we'll talk about fail to ban,
+it's a great little application, it takes almost no effort to set up, and it is well worth setting up,
+so we'll get to that next time, until then let's say your homework is to create some SSH keys
+and practice logging into your virtual server over SSH, and reading up on firewalld,
+over at firewalld.org, have a good time with that, see you next time.
+You've been listening to hacker public radio at hackerpublicradio.org,
+we are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HBR listener like yourself,
+if you ever thought of recording a podcast, then click on our contributing to find out how easy it
+really is. hackerpublicradio was founded by the digital dog pound and the infonomicon computer club,
+and is part of the binary revolution at binrev.com, if you have comments on today's show,
+please email the host directly, leave a comment on the website or record a follow-up episode yourself,
+unless otherwise stated, today's show is released under Creative Commons,
+Attribution, ShareLite, 3.0 license.

@@ -1,0 +1,358 @@
+Episode: 3072
+Title: HPR3072: The joy of pip-tools and pyenv-virtualenv
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3072/hpr3072.mp3
+Transcribed: 2025-10-24 16:13:13
+
+---
+
+This is Hacker Public Radio Episode 3,072 for Tuesday 12 May 2020.
+Today's show is entitled The Joy of Pittles and Pie and V Virtual NV,
+and is part of the series A Little Bit of Python. It is hosted by Klacky
+and is about 24 minutes long
+and carries an explicit flag. The summary is
+how to manage your dependencies and environment isolation when developing in Python.
+This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+Thanks for watching.
+Hi, I'm Klacky.
+For the last year I've been working full time as a Python web application developer
+and I learned many things along the way.
+Now I knew Python the language and I've been using it for the better part of a decade
+but working with build scripts and other automation that I was doing earlier
+and working on an application that is going to be developed by maybe one core team
+and then other temporary contributors which could be deployed in multiple places,
+automatically installed and has a large set of dependencies.
+That's quite a different thing.
+Then you not only need to know the language, you also need to know the tooling around the language
+and around all of these other concerns.
+There's two main things that are really important.
+First is the dependency management.
+I have an application, I need these frameworks and libraries to make it work
+and they in turn have their own dependencies that make them work.
+That all needs to be handled especially when you start upgrading things
+or otherwise playing around with different versions of things.
+The other thing is you want to be able to develop these things in isolation.
+Maybe I'm working on the latest version but there's a couple of days older version running in production
+and there's an issue there.
+I want to be able to check that out and not get a conflict between what's installed now
+and the development version and what's installed in production.
+Maybe I have several projects running.
+Each project could have its own set of dependencies or it will have its own set of dependencies.
+Between two different projects those dependencies might be in conflict
+so you need to be able to isolate different projects from each other.
+This is something you always want when you do application development doesn't really depend on the language
+but the tooling is different for each language.
+When you handle requirements you want to handle it in two steps.
+First of all there's the requirements that I want.
+We are using an application, it uses framework xyz and it needs to be version 4
+because that's the API we're developing against.
+Then there's the dependencies of xyz itself and the dependencies of those dependencies.
+That's the set we call the transitive dependencies.
+When we are developing on our level in the application we don't really care about these other dependencies
+because we don't program against those interfaces.
+When it comes to troubleshooting we want to be able to pinpoint where something is different
+between this thing that is working and between this thing that is not working.
+It's well known that in common developer excuses it works on my machine
+and you want to be able to avoid that if it works on my machine it's supposed to work on your machine.
+If I just say I'm depending on xyz version 4
+maybe you have version 4 and I have version 4.1
+or maybe we both have version 4.1 exactly
+but your version 4.1 depends on some other package version 3
+and maybe my xyz version 4.1 depends on that other package version 5
+because maybe you installed your packages Thursday last week
+when xyz dependency was released at version 4
+and maybe I installed mine this week on Tuesday
+and then maybe this dependency version 5 was out and xyz pulled in that instead.
+So what you do is you define both.
+You say here's the stuff that I want
+and here's the stuff that that happens to mean today
+and that's a snapshot of the situation right now
+and that means if everyone installs from this same snapshot of versions
+of all the dependencies and transitive dependencies
+then if we ignore configuration and other such variation right now
+then at least in terms of the software that is running
+if it works on my machine it should work on your machine as well
+and if I run into an issue you should be able to reproduce that issue
+on your machine.
+Let's call that first set of direct dependencies
+the abstract dependencies and let's call the
+very detailed locked down to each version of each transitive dependency
+let's call that our locked dependencies.
+Now some people say that if you develop a library
+you should use abstract dependencies and if you develop an application
+you should use these locked dependencies but I disagree
+both are required whether you are developing an application
+or you're developing a library because one describes the set of situations
+where this thing is supposed to work that's the abstract dependencies
+like according to all the documentation that we have
+if you use version 4 of xyz with our library or application
+it should work and if they break something they should call it version 5
+but then there's the locked set of dependencies that we have actually verified
+and which we can use to reproduce an issue from one system to another
+and here comes the fun part in Python
+there is no standard way to have abstract dependencies and locked dependencies
+and here's where this distinction of application versus library comes in
+so what people would do traditionally would be to say
+okay I'm developing a library and in my setup.py
+which is the project description that you need to have
+to be able to upload your package to the Python package registry
+in my setup.py if I'm developing a library I should say
+a range of versions of my direct dependencies
+because then someone who depends on my library
+and depends on some other library needs to be able to allow the package manager
+to figure out a set of dependencies that fits both of those dependencies
+and then people who develop an application would say
+well I want this application to always install the same versions of things
+so they might have a locked down set of dependencies in their setup.py
+and then there's requirements.text and that's what people would use
+if they're just developing an application internally
+and they're not really looking to upload it anywhere
+so they don't need to have a full package description
+they just want some executable documentation
+that says here's what you need to install in order to run this thing
+so what they would do would be to develop the application
+install packages as they need them and then run pip frees
+with output to this requirement.text and pip frees just looks at
+what packages do I happen to have installed and dump that
+and that's not really a way to manage a list of dependencies
+so I started looking around and okay if there are no standard tools
+that can keep an abstract set of dependencies and a locked set of dependencies
+what other non-standard tools are there
+but before we go into that let's talk about the other part
+of the deployment and development problem
+so we had this list of dependencies and how to manage that
+and then we also have I have multiple applications
+that I'm developing and they each have their own set of dependencies
+so how do we isolate them from each other
+and the way you do that in Python is you use virtual environments
+a virtual environment is basically a directory that is a small fake
+complete Python installation with Python and packages and everything
+and when you are in a virtual environment
+you install packages and you act as if you would be installing them globally on the system
+but actually they are confined to this directory
+it doesn't involve any kernel level containerization or anything like that
+it's not a real virtual environment in that sense
+it's just a Python virtual environment
+like we pretend this is a system installation but actually it's contained to this directory
+okay when I started my research I found two tools that seemed like the tools the people are using
+and one was poetry and the other was PIPENF
+so I looked at poetry first because it was supposed to be this modern thing
+that addressed several issues with PIPEN with other tools
+and it uses the standardized PIPROJECT.TOML
+which is where you're supposed to put tools settings these days in Python
+so that you don't spread it out over several different files
+non-standard files
+so I don't quite remember why I didn't like poetry
+on paper it looks very good
+but I think I felt like it was too big a tool
+and it tries to do all kinds of things
+and I really just wanted something to manage my requirements
+I didn't need a tool to handle uploads to PIPI, the package index
+and I didn't need to have a project specification and all that
+I just wanted to go from list of abstract dependencies to list of log dependencies
+so I may have running to some other issue also I don't know
+but anyway I left poetry behind and I looked at PIPENF
+PIPEN does pretty much what poetry does
+except that it puts these package requirements in PIPFYLE
+instead which is also a TOML file
+it's just named PIPFYLE because PIPROJECT or TOML didn't exist at the time
+and when you generate the locked dependencies
+that ends up in a file called PIPFYLE.LOCK
+so it's not in PIPROJECT or TOML
+and I used PIPENF for my own personal use
+but I didn't want to have to convince others to use this tool
+or that tool I just wanted to have this simple requirements dot text
+that people can just pip install dash R requirements dot text
+and just get what they need
+and all these others sophisticated stuff I felt was too much to try to explain
+to maybe someone joining the team temporarily to just add some feature
+or some external contributor
+but then I learned from people on the Fediverse that what PIPENF does internally
+is actually it uses PIPTools
+PIPTools has a command line tool called PIPCompile
+which just takes either it reads setup.py or runs setup.py and gets the requirements from there
+or you can feed it a requirements dot in file
+which is just a list of lines which would be parameters to a PIP install command
+and that's your abstract dependencies
+and then it outputs a requirements dot text
+which is your locked dependencies
+and that's also just in PIP install argument format
+so it's all really neat and readable
+and people have been using Python
+know it and understand it
+no tumble files, no built-in virtual van management
+and just one text file
+and you generate another text file
+so we went with PIPTools and PIPCompile for all our projects
+so that's the dependency management
+just use PIPTools very simple
+and what about the virtual end management?
+well you could do it manually
+just python.m virtual n which is an external package
+or python.m vn which is the built-in functionality in Python 3
+but it may or may not work depending on which version of Python
+several different versions of Python break the vn functionality
+and you might have to use virtual n anyway
+and a condo which we use at office
+is one example where vn doesn't work
+and you have to use virtual n instead
+so you can do that manually
+python.m virtual n and then directory name
+and then when you want to use that virtual environment
+you source directory name slash bin slash activate
+and then when you're done you deactivate
+and these commands will put the right python on the path
+and make sure that all the packages are handled
+within this confined directory
+but this is a little bit annoying
+so there are several different ways to manage your virtual environments
+first of all it could be nice to have the virtual environment
+not be in your project directory
+it's very common to create a virtual n vn inside your project directory
+but then when you run some static analysis tools
+or you search for things you might end up having this huge set of dependencies
+that you're accidentally running analysis or searches on
+so you want to keep it outside and then the path becomes longer to type
+so then maybe you create some alias
+so some people use something called virtual n wrapper
+which basically allows you to have a global set of environments
+and then when you want to work on your project
+you just type work on project name
+and that activates that particular virtual environment
+now I had already been using pipnV
+so even though I left the package management behind
+I just ignored that there's a pip file in there
+I still use the virtual n management of pipnV
+so you can do pipnV shell then it creates a new shell
+and in there now you're in the virtual environment for Python
+or you can do pipnV run some command in that virtual environment
+and then come back to you
+so you don't have to activate and deactivate
+and you just confine all that to a sub shell that runs this virtual environment
+and when you exit then you're back in your normal world
+but even that just running pipnV shell became a little bit annoying
+especially if you're jumping back and forth
+and now I need to fix something on production
+or now I need to run this script over here
+you have to exit and then pipnV shell somewhere else
+so in the end I looked up how to use pinV and pinV virtual n
+and I'm very satisfied with the result of that
+so what pinV does is it's a manager for different Python versions
+so you can use it to install these different Python versions
+and then you can also use it to switch between them
+so you could use Python 3.6 in this directory
+and you could use Python 3.8 in another directory
+and it has a file that you affect using just pinV local
+and then name of one of these Python versions that you have installed
+and then it runs it writes the name to this .python-version file in the directory
+and it doesn't hijack the CD command or anything like that
+it's just that you put the .pyn-slash-shims directory first in your path
+and it has files there for any Python-related command
+you might want to run and if you install a package
+it adds the scripts of that package to the shims directory as well
+so that when you run a Python-related command
+in reality you run the shim from pin
+and it looks up which Python version I'm also supposed to be using now
+could be the default version or it could be something specific for this directory
+and you can also even specify a specific version for this shell session
+so you could say right now I want to use Python 3.5
+and then you can do that in that shell and when you exit that preference is gone
+that's pretty neat and pin-virtual-n adds virtual environments to this
+and a virtual environment then becomes just like another Python
+in the list of pythons that you can define
+so you can say pin-virtual-n and then which Python version you want to use
+and then name of a virtual environment that you want to create
+and then you can say pin-v local name of that virtual environment
+and now when you are in that project directory and you run Python
+that means you run Python that belongs to that virtual environment
+if you're somewhere else then you run Python
+it means you are system Python for example or whatever Python you have set
+in your pin-v preferences or for this specific shell
+so you have a lot of flexibility here
+installing PyNv is very easy
+you just clone the PyNv repo to your home directory slash dot PyNv
+and then installing PyNvirtual-n is very simple too
+you just clone that repo into dot PyNv slash plugins
+slash PyNvirtual-n and then to activate them you put three lines in your
+dot bash profile
+so first you need to add PyNv bin to your path
+and then you run PyNv init- and eval the results of that
+and then you run PyNvirtual-n init- and you evaluate the results of that
+and that's all in the installation instructions for these packages
+but I also show it in the show notes
+now I mentioned that we use Anaconda in the office
+and we have our own installation scripts for Anaconda
+that configures it with our internal CA certificates and all of that stuff
+so I don't use PyNv to install Python versions
+but it works well together with Anaconda
+so I can just do konda create dash p
+and then I point inside dot PyNv slash versions
+and I create a Python version there using Anaconda instead of using PyNv's built-in functionality
+and it just works so that's pretty neat
+and from that point I can use PyNv to create virtual n's for the Anaconda environment
+and switch between different Python versions and virtual n's in different directories
+even though they come from Anaconda originally
+so that was a lot to unpack
+and there's a lot of further here for more episodes
+but I think this is good enough for today
+so I think I owe you a show on just reproducible builds
+what does it mean?
+how can we make sure that runs on my machine?
+it's not an excuse anymore
+that's a whole episode
+and when I'm working at home
+or well I'm doing my hobby projects at home
+I don't use PyNv or any of these things
+I use Nix
+and that's also a whole episode of its own
+how do you use Nix together with Python?
+and then of course
+now that I mentioned setup Py
+but actually setup Py is deprecated
+and there's not really one standard to replace it
+quite yet there's a bunch of tools
+that do what setup Py used to do
+there's poetry
+which not only handles the dependencies part
+but it also handles the project definition part
+and one tool that I have come to like
+is Flit I've used it in the office
+to package some things that we actually want to package
+to install them from somewhere else
+Flit is very lightweight
+and only does what you need to do
+so that's worth all episode of its own as well
+and also when you are handling all these environments
+you're installing packages and all that
+in the end you want to test this in a reliable way
+and make sure you didn't make any human mistakes
+so that the tests you run locally are the same
+that the tests you run on for example Jenkins
+and for that there's a tool called Talks
+which is also worth an episode of its own
+so I'll hold you a whole bunch of shows
+we'll see when I get to them
+my name is Klake
+you can find me on the free social web
+as Klake at Libranet.de
+and until next time
+this has been Hacker Public Radio
+uh
+uh
+uh
+uh
+uh
+uh
+uh
+uh
+I've been listening to Hacker Public Radio
+at Hacker Public Radio.ci
+we are a community podcast network
+work that releases shows every weekday Monday through Friday. Today's show, like all
+our shows, was contributed by an HPR listener like yourself. If you ever thought of recording
+a podcast and clicking our contribute link to find out how easy it really is, Tech
+or Public Radio was founded by the Digital Dog Pound and the Infonomicon Computer Club,
+and is part of the binary revolution at binwrap.com. If you have comments on today's show,
+please email the host directly, leave a comment on the website, or record a follow-up
+episode yourself. Unless otherwise stated, today's show is released under a creative
+comment attribution. Share it like 3.0, isn't it?

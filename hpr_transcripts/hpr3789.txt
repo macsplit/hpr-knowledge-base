@@ -1,0 +1,227 @@
+Episode: 3789
+Title: HPR3789: Common lisp portable games including acl2 formal logic
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3789/hpr3789.mp3
+Transcribed: 2025-10-25 05:22:30
+
+---
+
+This is Hacker Public Radio Episode 3,789 for Thursday the 9th of February 2023.
+Today's show is entitled Common List Portable Games including ACL 2 formal logic.
+It is the first show by Newhost Screw Tape and is about 54 minutes long.
+It carries a clean flag. The summary is describing exploratory liberal common list portable games.
+I am using ACL 2 formal methods.
+Alright everyone, one take. Let's do this.
+I want to call this show ACL 3 where the first ACL is going to be, what was I thinking of?
+Alright, I've forgotten the first ACL.
+The first A is going to be ASDIF which is a system definition facility and other system definition facility for common list.
+Let me say the C is code and the L is taken from the word module.
+So ASDIF can compile modules of your common list system.
+And then the ACL 2 that remains, because I guess that 3 was an exponent, is Kaufmann's ACL 2 which is a computational logic for applicative common list.
+Which is an automatic in interesting senses formal verification tool.
+So it helps you understand and reason about books of first order logic that you've defined.
+And the primitive tools for this logic are a subset of our favorite language common list.
+But only purely functional subset of it except for single threaded objects which are this whole big thing which would be monads in Haskell or ML.
+And I have a slightly deviant approach to this which is what they're hoping that you'll do or what it says in their book.
+And Kaufmann's maybe both of Kaufmann's advances in formal methods books where there are two of them, circa 2000 about ACL 2.
+Where he emphasizes, listen, you have to be kind of doing serious analysis like doing mathematical proofs and the automatic part of ACL 2.
+It's not automatic in that it thinks of what you want for you and can't do that.
+What ACL 2 can do is go at super, super, super human speeds checking that you haven't said something incompatible yet.
+In the future we'll give a better definition than that.
+But that's how I think of it when I'm wildly unprepared and I've just turned on a microphone.
+And so what the task that I kind of set for myself is someone showed me a cell phone game where you paint roads and then there's some AI logic for cars that once the roads are connected cars will spill out of one location.
+And they'll each independently try to follow a road to reach an exit location their roads have been connected to.
+And it seemed like a really fun kind of game.
+The particular game I was shown doesn't really matter and I don't intend to do anything similar to it, but I really liked this idea of having sources and sinks and letting the person paint with their finger or a mouse.
+A drivable region or a navigable region and then having units try and try and traverse from the sources to the sinks and giving them some notion of simple AI.
+And so where are we going with that? Oh yeah, so I just wanted to make this as a game in common list, which is why I've named this as the project car game.
+But I don't really like cars or the widespread support of car infrastructure in our cities. That's not what this show is about.
+But I'm renaming that car to be car from common list where if you think that it cons has a car cell and a killer cell, yeah, maybe it's car like that.
+I should explain more about as if, but let's talk about the car game first and in the future we can go into more detail about everything.
+I'll listen to what I say in this episode and then I'll address my many shortcomings, possibly in a formally rigorous way, whatever the word formal means.
+So in this car game, my premise for, oh, so I want things like like if I have well-defined AI behaviors to some kind of simple AI behavior and a road that's been painted in a well-defined way, I would like to be able to prove true statements about the game and the behavior.
+And the behavior of cars, roads, sources and sinks in the game. But at the same time, I would like to have a game, ideally that can be played on a tablet.
+And you could paint roads with your fingers basically and then marvel as units move along your roads. And I don't know, you can have all the joy of civil engineering, I guess, highway design or robot walkway designs.
+But these two goals are kind of at odds in that playing a game is a very side-effective thing. You know, the player can look at a picture, maybe a moving picture of what's happening. There's a clock running, I guess.
+And the player issues controls whether they're their touch or mouse events or keyboard inputs, which are all side effects.
+And for a compilation, for a wide range of compilation targets, embeddable common lusts is a handy compiler because it can slide in anywhere that supports C and C is the thing that works everywhere.
+So I had to reconcile how am I going to get formal theorems about my defunds behavior. Defund is how you define a function in common lusts. And reconcile that with a playable game. And maybe there are two approaches and I went for one of them.
+The approach I didn't go for is you can put basically any side effect you want. As long as you have a monadic notion of it, you can have streams and files and stuff.
+In ACL 2's von Neumann state object, it's more primitive way of just representing single threaded states.
+But instead of trying to cram everything into ACL 2 because I'm being so badly behaved already, I wanted to have in my system definition, I'm going to have one module, which is like files in a subfolder of your lists.
+And have that be the defunds and have the rule all defunds, so common lusts function or process definitions have to be in that module. And they all have to be admissible in ACL 2.
+So ACL 2 in order to do its automatic checking will only accept functions that are total. There's a well behind, well defined behavior for any input it can get.
+And the input has to be able to be anything that's not actually very important. But anyway, you have to handle all possible inputs that the define can get.
+And it has to have a well defined output as well.
+And a handy if sometimes an elegant feeling way to do this is a bit basically instead of having iterators, you're going to use recursion, KL recursion, which has some efficiencies as you know.
+And the recursion has to clearly terminate at some point. If it doesn't look like the recursion will definitely terminate, the function won't be admitted.
+And some of the kind of built-in theorems and tools of ACL 2. Not a built-in book, but kind of primitive to the system.
+It's very good at telling that inferring simple measures. So you might have two lists as the argument of a defun and say, well, if either of them is not a proper consp, which is an ACL 2 recognizer for non-empty true lists.
+They have what's called guards, which are a way of cutting away great swaths of possible erroneous inputs.
+Anyway, so ACL 2's recognizer proper consp will deal with anything that isn't a list and then that isn't a non-null true list.
+So we've got these two lists and we've dealt with all the non-list cases somehow, or we're dealing with them, I guess.
+And a really easy measure would be if you're emptying one list into the other, and then the measure could be the length of the list you're emptying.
+And if every recursion that list loses its front element, I guess we wouldn't say pop, because that sounds kind of side-effectly, but the recursion might be that it moves the car of the second list into, it just appends it to the first list.
+And then recurses now with the one shorter second list, and then when the second list is no longer a proper consp to return the first list.
+And so that would be an example of a recursive function, so a non-trivial function with a measure that we didn't have to specify ourselves in that we're just draining one list into another list, and it goes by at least one every time, and once the list is empty, it's the recursion is over.
+So we have an exit condition, there I guess, which is important to our well-defined recursion.
+Where was I trying to go with this? Yes, so the defunds are all going to be kind of like that, and they're going to be all right, because common list compilers, like everyone I guess, know about tail recursion.
+Because iteration, you would have to prove a lot about what iteration means, but what recursion means is pretty clear, including mutual recursion maybe.
+So I had to start putting together what kind of defund tools I'm going to need for my car game, which all of the logic should be in these defunds.
+I wanted all the logic to really be ACL2 lists, even though I'm using it in common lists.
+So I have to port the definitions of ACL2 primitives out of ACL2 and back into common lists for things like that proper constate.
+And ACL2's documentation, because ACL2 was implemented in common list, they have, for your reference, how they defined everything in ACL2 in common list.
+But there's not just defunds, so I have another module, which is side effects, and the side effects, that it is, the side effects deal with all the side effects, and the defunds module deals with all the defunds.
+And there's also a macros dot list, which is the first thing that loads, and I decided the macros dot list will kind of bite some nature.
+It will be acceptable to ACL2, because macros don't really do anything, as long as you have a well-defined common list macro.
+Did I have anything else? Let me take LS and look at what's actually in my project. No, not this file.
+Oh, and then so I've got a folder, which isn't really a module, because it's not, it doesn't do anything.
+There will be no value, or from the carcatgame.asd, the list system definition file, this folder is unnecessary.
+But this ACL2 folder is kind of where the magic happens, with ACL2, having there as well.
+And it's normal to have a packages dot list to include your package definitions, because your package definition and your system definition are obviously different things.
+So, and that's that, and I'll have a readme.org, or I've got one kind of sitting there in this folder anyway, which I need to clean up.
+But I'll put on my go for vlog over on SDF's BST server there, which you can reach from my go for club, SDF vlog, which is a go for log, I guess.
+Why are you listening to me if you don't know what that is? No, you're listening to hacker public radio, hopefully.
+Ask someone else. Ideally ask me, you could ask me on my mastodon, and you could find me via hacker public radio, or via SDF.
+But I'm in that kind of every man side of the SDF mastodon, not the cool kid side.
+So, what are we going to look at? I'm not just going to read code, but I am going to, I think, just try and wax a little lyrical about what are the defunds I have at the moment.
+So, all of these are well defined and can be admitted as this module.
+So, it's a common list as the three module for a common list game.
+But I've given the package the nickname ACL2 user, which is the default user package name within ACL2, which also has these package namespaces, I guess.
+And so, normally, the package is actual name is CarGame, but then in the file that can be certified as ACL2 books, I'm just going to refer to the CarGame package as ACL2 user, just as a kind of heuristic there for me.
+It might be a more beautiful way of doing that if you know one, tell me, but that's what I'm figuring out.
+So, my defund sort of API, I guess, here, all of the functions operate on what I've been calling stodge, so single threaded object.
+So, a von Neumann state object, I guess.
+But actually, actually, these stodges are just, oh, so stodge would be monad in some other languages, but the stodge is really just a common list, association list, which is just a list.
+And it's members, if it's not nil, are all conses.
+And I think they just have to be, the members are conses, that's really the condition.
+And these are used for, they're simple to reason about way of categorizing data and replacing data in that you just make a new list, association list, by adding something onto the front.
+And if that thing on the front, if the car of the cons was already in the a list, you just terminate the first time you find a name, so you can update previous entries by just adding an entry with the same car to your a list.
+If this is ambiguous, you know, tell me and we'll work on that.
+Well, I'll listen to this, and the second episode might be better, or might be worse, who knows.
+So, I have a reset that just makes an a list that is kind of, it's prepared to have, or it's got a cons of the name nodes, and a cons of the name robots, and a cons of the poorly named last node,
+which is actually like what the next node key should be, because I was kind of using increasing number key identifiers for the different nodes.
+Then I have a defun named add node, which adds a node to a starved a list, and so that a list.
+So it takes an a list, which is implicitly going to be the curter of the nodes in the a list, and returns it with another node of the rowing column.
+And it will also get the key of that node from this last node, and increase that last node.
+And so it's a stateful way of operating, but secretly, the single threaded objects are acceptably functional. They're well defined in some kind of way.
+So we have that add node, and we have a get node from from Heidi and the a list, where we'll get the node, or Nell if it doesn't find it, I guess.
+And it will just search for the node from the front of the a list, so that when the node is updated, it can just be added to the front again, and only the frontmost one will be found.
+Then I had clean a list, which is something I shouldn't have done, so it's like my guilty admissions first episode.
+Oh, that would have been a way better name for this show, guilty admissions, but clean a list, which I had this function just to delete a list content that wouldn't be reached anymore.
+So well, it's interesting to have that stuff, because it gives you an actual history of changes that have been made.
+If some very deep recursion was happening, or lots of updates had happened, I was worried that this a list would get too big during some of the automatic proofs.
+So I added this clean a list that takes an a list that has members that will never be accessed again, and gets rid of them.
+And then I also had D-Doop IDs, which was really just clean a list, but specifically for nodes, so that nodes that had been changed, it just kind of cleans out the old ones.
+Well, I think this is a mistake, because I have to do a whole bunch of proof work to show that these functions basically aren't doing anything dangerous, but I do think that they will give me some performance optimization in groups, which might be desirable, because I didn't talk about that.
+I wanted to talk about that. One sort of disagreement I have with everyone else about ACL2 is I'm not very interested, and I've actually read some other people talking about this as well, so who knows how derivative my ideas are here.
+If you compare Coke, which is like C-O-Q, which is a proof assistant, and it's like a very watchful pen and paper, where instead of using a pen and paper, you express yourself to Coke.
+Coke doesn't do anything automatically, but it does, I guess, automatically, but in a different sense, keep tabs on whether you've said something that's obviously incompatible with the previous ideas or lemmas that you've fed.
+And that's not the behavior, so I guess ACL2 does do that, and that's how you're meant to be thinking about ACL2.
+But what I like is that the process of ACL2, no, not the process, the automatic process inside ACL2 will do things that you could never possibly do yourself.
+And it's not that I want to have a regular proof assistant and do regular proofs, and sometimes it accelerates me a little bit by doing things I couldn't voluntarily, automatically, doing things I couldn't possibly have done myself.
+I'm really, really specifically interested in engendering behaviors that I can't possibly do myself.
+And then I can just feed all the hard work.
+Calvin, if Calvin ever hears my voice, he'll be unhappy with me for saying this directly into ACL2.
+So my challenge is to speak in a way the ACL2 automatic components understand easily, and then train myself to do the minimal amount of work to trigger an ACL2 behavior.
+And then I don't want to know anything about what ACL2 can do for me.
+I just want to know how a few good, heuristic approaches to just doing my own minimal amount of work, and maximizing the amount of work ACL2 does, which there's some pitfalls to my approach.
+But yeah, this was kind of my theory where I wanted to not do anything recognizable as trying to use a pen and paper to do the proof myself.
+I purely want to reach a state where ACL2 will get my vibe and do a proof in a way that I wouldn't have been able to do it.
+And then we'll kind of gather those together and well, we will show some things are true about my car game.
+I should mention for people who aren't familiar with computational logics or first-order logics.
+So a way that I think it's useful to present formal proofs, formal in some sense, formalist, everybody's kind of bashful about the word formal or the word formal is not a very formally defined where it kind of means serious, I guess, or robust.
+It can be seen as being different to regression testing or if not regression testing.
+So regression testing is where you write a test of your program.
+So your program, there was a mistake found in your program and you write a test that should trigger the mistake.
+You fix the mistake, but every time you update your program, you rerun these tests to make sure you haven't reactivated that mistake or gotten to that mistake state again.
+So that's the testing approach.
+And people also then try to imagine mistakes they might make before they make them, which is not a very robustly defined approach to imagine things that haven't gone wrong but maybe could go wrong.
+So I would refer to this as ad hoc testing. I think I've seen referred to it as if you want to argue with me about my language.
+You're very welcome to write about it on your go-for-flog or contact me on mastodon or somewhere like that.
+Oh, I'm screw tape incidentally on go-for and on mastodons.
+So I would be, I guess, at screw tape at mastodon.stf.org.
+And my flog would be go-for.club slash one slash users slash screw tape.
+Alright, I think I've just been rambling at you for half an hour. Do you think I'm just going to upload this one no matter what it's like?
+We did eventually. I think I got the order of these topics a little bit wrong because I wanted to try just doing this off the cuff while staring at a directory or at my common less system definition directory here.
+What are the defunds? So I had ad exit because the point of these nodes. So I was imagining this car game where I'm just making arbitrary decisions here.
+But I'm kind of trying to choose low hanging fruit for things to prove theorems about.
+So I have all these nodes and they're in the cutter of an a-list and they are themselves another a-list with numeric keys, I guess.
+And then, so I wanted the kind of players screen or what they're interacting with just to be a regular worth of linear non-dense, I guess.
+If I need to say that space, space, space of nodes and the ideas these nodes can have exits to each other.
+So it might be exits to its nearest neighbors, but the exits could really go anywhere. So one of the nearest neighbors might not be connected.
+So I would describe this as a hypergrid. So I have a simple a-list notion of a hypergrid.
+And then, did I say non-dense? It might be very non-dense in the future if the hypergrid only exists where a road has been painted.
+Yeah, and so I have a define that takes the old nodes list and adds an exit from some node ID to another node ID and then it returns the a-list with that node updated.
+So I have a list, which is a single threaded object, which is kind of state-heat, and then I'm adding nodes to it.
+And then I have a notion of connecting these nodes with this add exit. And I have my regretful pseudo-efficiency witchcraft.
+And then I just had a few utility functions for reciprocal connections and for just making rectangular grids recursively.
+So while some people have books pre-made and robust books made in ACL2 for reasoning about iteration, and you can also use common-lists array syntax, even though it's secretly being represented as a list inside ACL2.
+Yeah, I decided to use a non-dense a-list here.
+Right, so I did all of that, and then what were my side effects going to be? I can't remember if I did anything in this.
+Oh, that's pretty cool. I'll push the picture of this on my gopher and master it on for you to look at.
+So because I realized, in many ways, I was redoing one of my implementations of the Land of List Wampus Hunt, which is a great common-list learning book, Land of List, which is named going to be SCM recommended to me.
+Well, having a hyper grid was kind of, I guess it wasn't necessarily a grid, but these hyper-connected nodes, where hyper means the connections can do anything, not just go to locations next to each other, and there can be any number of them, that kind of stuff.
+So because of that, I had a side effect. Oh, that is actually a defund. I guess I used defunds in the side effects as well, but they were kind of side effect defunds.
+I'll think about whether that's kind of robust. So I guess there are logical defunds, and then there are pure side effect defunds.
+And so this defund, which I seem to have named dot star, which is a bad name, because that's not really what it does, uses very non-ACL-2 common-lists loop macro to print a graph of this dot, kind of directed graph visualization.
+And then textual definition using common-lists string formatting. And then turns that into a PNG potentially, or any other output that dot has, then another side effect I see here, uses FET, which is my preferred image viewer to show you the visualization that has been made.
+This is some nice side effects. I was also, so they should get their own module, but I was also having in the side effects, the definitions of ACL-2 primitives that aren't in common-lists, they're definitions in common-lists, as in a sufficiently accurate way.
+I don't think these are exactly like proper consp, I have a definition. But I didn't actually, oh no, yeah, this was the embarrassing admissions show. And what do I have?
+So for proper consp, I've just quickly defined that to have roughly the right behavior, which is, and so if it's a function of an object, I have, and, odd, consp, odd, no-kitter, last, odd.
+Oh yeah, and so that AND, odd, means that it's a non-null object, has to be a consp, and consp, and has to be a true list. So the cutter of the last element of the list has to be nil. So I think that makes it a true list.
+It's probably a better way in common-less to represent that. Then I also had ZP, which is an ACL-2-guarded version of 0P, that I've just got doing 0P there.
+And I know you're thinking, maybe this could have just been a half-hour show, even though we've gone for 40 minutes already. But, the ACL-2 folder in my list project, where I'm hoping that you install common-less, maybe ECL.
+Hi, if you wanted to distribute something like my game here on C-supporting platform, so Android, or Apple Objective-C, or a sane environment, like OpenBSD, or NetBSD, or FreeBSD, or Linux, conceivably, if one must.
+Let's quickly talk about those dependencies then. And so I had to build ACL-2 myself, but just on the environment I'm staring at right now, it's an AMD64 OpenBSD.
+And SteelBank CommonList has been ported to AMD64 OpenBSD. And so I just, you know, packaged at SPCL as my CommonList Compot. Oh, actually, I guess. Oh, yeah. So I'm using two different CommonList Compilers. I've used SPCL with ACL-2.
+Where SPCL is just kind of faster, in a lot of, in general, than embeddable CommonList is. Though the actual game projects will be built with ACL, which is also, ACL is super portable.
+It doesn't have, like, the harsh or dangerous kinds of memory access that SPCL requires for speed. So what happens?
+I think SPCL uses M-MAT in a way that OpenBSD is not always very content with, whereas ACL just makes all the C programs and OpenBSDs can deal with that in a happier way.
+Where was I going with this? Yeah, and then I just downloaded and built ACL-2 with SPCL. And so that's the ACL-2 I'm using. And if you're on Debian, Debian definitely already has ACL-2 built.
+Debian's normal ACL-2 package has been built with GNU CommonList or CL-List, I guess that one's normally called.
+It's seen us from GCL, the same thing. Yeah, I'm going to say they are. So on Debian, I guess you would just apt install ACL or ACL-2. Sounds pretty easy.
+And then I guess you would also just apt install ACL or if you're on OpenBSD like me, I guess, Package and ACL. And then you're where I am.
+I guess if you had, I'll have a script somewhere for downloading my package. I kind of play coy with not having GITs for things.
+Because for one, I realized that it uses a BearGit repository for as its kind of storage object. On OpenBSD, we would normally use Game of Trees rather than Get.
+Where Game of Trees has useful behaviors, whereas Get, the historical Get has every behavior under the sun. And that's too complicated for simple-minded OpenBSD user, such as myself.
+Anyway, we're going to run out of time if I just keep talking at you. But so let's talk about this ACL-2 sort of data folder that I've also gotten the project.
+And so I think it's really exciting thing. There's a make file. And this is a little bit tricky, which I'm probably breaking some norm of ACL-2 here.
+So I basically wanted to have my ACL-2 book certification. I wanted to shell script it. So I wanted to create these ACL-2 certified and compiled books as an automatic side effect when I'm doing other things.
+So I have a shell script, which, I mean, you're invoking ACL-2 in your shell, right? So there's no reason you can't just do that ACL-2, then left angle bracket, left angle bracket, EOG.
+And then just put all of your, or you would just pipe, sorry, just use standard input and pipe the file that, I don't know, I guess you wouldn't do that.
+So you could do what I said in the first place. I should actually look at this.
+What did I name this? I'm going to say it's named the ACL-2 test. All right, ACL-2, angle bracket, angle bracket. I've got what that's called in shell.
+So the shebang is just been SH. And I'm doing ACL-2, angle bracket, angle bracket, and double-poked EOG. And then I just have my purely functional ACL-2 certification just being piped into ACL-2.
+And when we reach the end of file, or EOG again, quotes EOG, it just ends. And so I guess I include book card game. Oh, no, I have a separate thing for certifying this. So this assumes we've already certified card game.
+I think I have that in the reading because I wanted to make people do the certification by hand, because that's the responsible thing to do.
+Anyway, include book card card game in package ACL-2 user, which from ACL-2's perspective, it believes that it's actually just using the ACL-2 user default user package.
+But ACL-2 user was actually alias to card game in the ASDF-3 system definition. So that's a little bit of chicanery. I'm guilty of again there.
+And what is it doing? I guess it defstogges a stogge. And then I have a trivial theorem, which is a 1 by N nodes space in my AList node sense.
+The number of nodes will be N, which, well, that was just my example theorem. And it's a little bit tricky because what I found is so far, I haven't used guards effectively enough.
+So I have to prove a lot of things are true about ALists, which if I'd written in slightly better form ACL-2 already, I think, has theorems about what's going on with an AList.
+But I was having difficulties with guarding out strings. So I think there are places where a string could be put and it would lead to a weird behavior.
+It's a work in progress. This show is a work in progress. Let's go see if I have...
+Oh yeah. So anyway, I guess the reason that that shell script is called ACL-2 test is that it was a test theorem in ACL-2 just to exhibit ACL-2 being driven automatically by SH.
+Let's V make file. Oh yeah. So I've just got make all, I guess, and make clean, which cleans out the old compiled ACL-2 book certification in a way that you're not meant to do, but this was a quick hack.
+Then I have macros. Oh, this is where it's being certified. I see it. Man, I should have looked at this before turning on my mic. So macros and macros just pipes certify book macros to ACL-2, which will then assume me there's no error, certify the book macros.
+And then car game, which just print apps, which, yeah, print apps include book macros, new line, certify book car game one, because there's only one thing in macros and pipes that ACL-2.
+And then copy list, which in all actually happens before those two book certifications, copies car game dot list, the defunds file into the ACL-2 data directory and also copies macros dot list.
+Oh yeah. So it just copies those two source files that are using the nickname ACL-2 for car game. And then it certifies them just as amazing SH-1 liners, I guess. And then test afterwards, which is it runs that ACL-2 test I rambled about a little bit.
+This is kind of the set of tools that I'm working with at the moment for, on one hand, I want to just make a game, except make a game really applicatively. So I have that explicit separation.
+I eventually use STL-2, which I quite like for STL-2 is a reasonably low level cross platform high level. It has a notion of mouse events and keyboard events and game controller events and touch events and graphics.
+And there are extensions for high level audio and loading images as well for it. And so I kind of want to have this. And so that STL-2 stuff, which I think might be, might be, I won't do portably, but I could do it with the common S-CFFI package maybe.
+I'll think about it, but I like to just write ACL because it's more transparent what's happening, but that binds us to only loading that system in ACL.
+So I think I'll do more episodes of this as well. And after I've listened to this one, though I might just try batting my eyelids at hacker public radio and seeing if they'll take this, if they consider it up to snuff.
+I'm going to look at what I think needed more exposition, or I just got flat wrong in the event I managed to notice that. And build on my approaches to making games, I guess specifically for mobile devices, but also kind of free to me device like normal environments.
+So you don't have to worry very much about making a game for normal environment. But yeah, just making C-like elf games in common list, but doing it in a modular approach with as if three.
+In a way that the applicative, the logical parts of the game are also certified ACL to first order logical list books.
+Yeah, so I just I would like everyone to have the capacity to do those two things. Clearly I would benefit greatly from some feedback here.
+So if you are normally a web person, do hit me up on at screw tape at mastodon.stf.org, or if you're if you're in the go for hopefully I already am aware of you, but you could also join the go for.
+Which might be might be my my non radio show with a list to go for show where that one is is about kind of go for community news and and common less not covered by by anything else I'm doing.
+Whereas I'm going to keep trying to submit these ACL to but kind of quirky ACL to applicative, but with a different meaning if we were to the applicative meaning I'm applying it to to making side effective games ACL to automatic proof certified book programs.
+Alright, I think hopefully we're out of time I'm turning off the mic. Thank you everyone. I love you all. Goodbye. Feel free to give me feedback if you would like my next show to have a higher standard or if you if you're participating if you're already an ACL to expert you might have some guidance or harsh criticism to share with me and and I welcome that enthusiastically.
+Or you might want to make some games and further make some games that you have some first order logic proven behaviors of but you don't want to do all the work.
+You want to do even more work to trick ACL to into doing things you kind of know how to do yourself but but it's fun or to make ACL to do things. There's a lot of value to that I promise.
+Alright, goodbye when Claudio M engendered me to do this. I haven't actually listened to Claudio M's shows yet but that that's on my on my to do list for today. I was going to record one of these cold and then try listening to Claudio.
+Alright, goodbye everyone. I love you all.
+The Internet Archive and R-Sings.net. On this otherwise stated today's show is released under Creative Commons Attribution 4.0 International License.

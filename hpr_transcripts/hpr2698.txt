@@ -1,0 +1,290 @@
+Episode: 2698
+Title: HPR2698: XSV for fast CSV manipulations - Part 1
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2698/hpr2698.mp3
+Transcribed: 2025-10-19 07:39:52
+
+---
+
+This is HPR Episode 2698 entitled XSV4 Fast CSV Manipulation Part 1.
+It is hosted by being it and in about 31 minutes long and carrying a clean flag.
+The summary is written in Rust, XSV is my new favourite tool for manipulating CSV files.
+This episode of HBR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HBR15.
+That's HBR15.
+Better web hosting that's honest and fair at an honesthost.com.
+Hello Hacker Public Radio fans, this is Be Easy once again.
+I went with another episode.
+This one is folks around one of my favourite topics which is the manipulation and handling
+of structured data and text format.
+What does that mean?
+Basically messing with CSVs and stuff.
+So it's a lot of part of what I do with my job and something I enjoy doing it which
+is weird because who enjoys doing stuff like this is sometimes it can be really tedious.
+But it's very important when you have lots of information that you want to maybe you're
+doing a data migration and you're exporting from one database into a flat file and doing
+some data munching on it then importing into another file or maybe you've been given some
+data and you are supposed to put into a new system but it came out of Excel and there
+is no rules around how the data was gathered so it didn't look very good coming out.
+So that's what this is really about.
+It's about being able to take stuff like that and I'm going to be talking about in particular
+a tool called XSV.
+Now for a long time I used a different tool, CSV cut and I still do on occasion.
+It's a Python command line tool that has some functionality that XSV does not but what
+XSV does it does way faster and just as well as CSV kit.
+So in a future episode I'll go over CSV kit and in a future episode as well I'll go over
+some of the more advanced features of XSV but right now I'm going to go over something
+that is something that I do pretty often and I want to be using the file that is a part
+of the XSV documentation.
+So XSV can be found at github.com slash burnt sushi slash XSV and there is a file as
+a part of the documentation called worldcitiespop.csv and I will be from now on calling it in this
+episode world city's population.
+So that's what it is, it's a file of all these different cities and what the populations
+are where they're located in the world.
+And so say you get a file like this and you want to know what's the first thing you want
+to know about it.
+Well how big is it?
+You can go to your command line and type in something like wc-l you'll get a line count
+which is fine but XSV has its own tool inside of it.
+So let me get to my data and I can do a command called either wc-l worldcitiespop.csv or
+I can do XSV count worldcitiespop now.
+For reference my computer that I'm using right now is an Intel Core i7 8700 with 3.2
+gigahertz.
+So it's a beefy machine 12 cores but I've run XSV using a lot lower spec hardware including
+a suce triple ebook and it runs excellently across all those different places.
+In this case this file has a 3,173,958 records.
+Now when you run wc-l on the same file you'll get one more number one higher than this
+3173959 and that's including the header.
+So one thing that XSV does is it takes away the header rules.
+So if you just do XSV dash dash help you can see all the different commands and all
+the different options so there is, you can see that there are a bunch of different commands
+and we're going to focus on just a couple.
+First when we talked about was count the next one I want to talk about is okay so now
+I know how many lines are in this file how long it is how wide is it so there's a command
+you can either do something like head dash one in the file name and that will give you
+what it looks like but XSV has its own thing that has some advantages to it so if I do
+XSV headers in the name of the file I get an output with two columns the first column
+is the numeric order of the row of the column and then the next column is the name of that
+or the data that represents the name of that column.
+So in this case there are seven columns they are country city accent city region population
+latitude and longitude.
+If I do XSV headers dash dash help so really nice help in this in this tool you can see
+that there are it doesn't just do this you can you can do a dash j and that will hide
+that column index you can do a dash dash intersect which is a really useful thing we are looking
+at different files and you can so with a dash dash intersect you can say XSV headers dash
+dash intersect file number one file number two and it will tell you the it will give you
+a list back of all the columns that intersect between these two files so if there is another
+file that also has the word country spelled the same way with a capital C it will show
+you that that column is duplicated so this is useful sometimes we were working with the
+database data and you have two different tables and sometimes like sometimes you'll be
+able to see where the foreign keys are by using this type of command and it's just really
+nice the output.
+So there are some common options that you usually have in XSV one is dash D or dash dash
+delimiter that tells you the different types of delimiter that you could have in that
+file so if it's a tab delimiter file instead of a common delimiter file you can specify
+tab instead of comma or if it's piped delimiter you can specify that as well.
+In some of the other commands they also have a dash O or dash dash output in the file
+name so you don't have to redirect the output into into a file you can actually use dash
+dash output in the file name and that is another way to get into a file.
+Alright so what have we done we've looked at the length of the file we looked at the width
+of the file but now I'm looking at these the names of these columns and I know that when
+you're doing data cleaning you always want to look at data quality issues that you might
+have where someone there might be two different representations of the same information so someone
+might have spelled the country wrong or the city wrong or the region wrong and you might
+want to be able to see what are the distinct count of all the countries for instance.
+XSV makes it really easy so when you're looking at something like that you if you see it's
+not the case in this file but if say that the word United States was all the way spelled
+out and there are two different records in here one with United States with a capital
+U and a capital S and another one with a capital U and a lower case S so when you
+run this command you would see two different records one with three million and one with
+a hundred thousand and you'd say oh look it looks like a hundred thousand of the records
+should have the same value as that other one that has three million so something they
+can go back to your data cleaning and clean up and then get the output and resume your data
+cleaning something I do I just got to tell you I do it way too often so if you're not
+into that kind of stuff you're probably pulling your hair out when you hear it but something
+that is really useful and I enjoy doing it but let's get back to it so if I go XSV frequencies
+the name of the command and if I do dash S which means select and then country which is
+the name of calm that I want to look for distinct characters for then the name of the file
+world cities pop and it'll give me a list of all of the values of country so there are
+three in the output there are three columns each delimited by a comma most of the time
+we're dealing with XSV the output of the command is a CSV file or CSV object in standard
+in a standard out and you either put that into a file or you could pipe that into another
+command so in this case we have three columns the columns are field value in count and since
+I'm only looking at country I only see in the field column I only see country in the
+value I see all the different values that we have for country and then there's a count
+now you can see that there are 10 in this list by default it limits the output of frequency
+to 10 records to do a different amount of the frequency you can use dash dash limit after
+the entire command and you can put three so now I'm going to see three I think I think
+you can do dash dash all I'm right no not that is all you can do dash dash limit 100 if
+you want to and it gives me the hundred top 100 countries based on the count the frequency
+count let's go to frequency help so yeah so there is a limit
+you can set the limit to zero to disable the limit so if I want to see everything I
+do dash dash limit zero and it brings me all of the countries and I can see that there
+are four one two three four five countries that only have one record so if I was doing a
+data cleanup I'd look at that and worry that that there was a data entry problem right there
+because why were there why would these only have one record each when they're 31 million
+or 3.1 million records it's probably accurate but in this example but you something you want
+to check so now I've looked at the frequency I've looked at and I can do some cleanup so sometimes
+you might want to just take this file and take some of the data out of it and not all of
+it so let's say I just want the country or say I don't care about the longitude and latitude
+in this file there's a command called xsv select and I will let you to choose column if you
+go to xsv select that dash that's help you'll see that there are different ways you can select
+information different columns you can either do it by the column name so xsv select name
+one comma name two comma name three and that will make sure that will match those column names
+and I'll put them to standard out you can do the column numbers starting with the number one
+so you can say if I want the first column and the fourth column select xsv select one comma four
+if I want the first four columns I can say xsv select one dash four or if you can use the
+column name so in this example I could say country dash population and that will give me all the
+columns between and including the country and the population column so what we wanted to do in my
+example is another example where you can either do we can you can use the exclamation point
+and when you use something like an exclamation point you want to put your select and you want to
+put it inside of single quotes I want to do xsv select dash not so the exclamation point is not
+so not longitude comma latitude world cities and now I'll get everything except for those last two
+columns so that's very useful you can also go I want just the last just the from the third column to
+the end so I can do ssv select three dash or from I can either and nothing after the dash I can
+also go region dash and just go from region to the end so lots of different options you can use
+this for it's really nice interface so I recommend if you are interested in this type of thing
+definitely checking out all the things that xsv has in store so now we've gone over a couple
+different use cases one one thing that is important to know that it does have this ability to do
+an index and when you run xsv index it's going to output a binary file that stores a bunch of the
+ifer information about all the data in the original file so it makes things like the
+frequency and another command that we're about to talk about next called stats happen a lot faster
+so if this is a command that you're going to if you're going to do multiple things on this on this
+one file you probably want to run for and it's really big so I would put big over well it depends
+on your hardware but I would put big over a million records you might want to run index first to
+make it every time that you run frequency for instance it goes faster or stats which is the one
+we're going to talk about next make to make them go faster so talk uh so uh but stats you can get
+all types of statistical or not all types of but you can get some statistical information about
+the world city's pop.csv file and by default let's just go dashes help on it you could it it uh
+gives you for all the columns that you have selected so you can say dash s and then just indicate
+individual columns and if you don't do every column um but it looks at the main max min and standard
+deviation for all the um for for all the columns if you want to look at more there's a dash dash
+everything command that gives you a lot more information uh and these are the the following things
+are the items that you can see in that dash has everything you can see the mode which is the most
+common value uh the cardinality which is how many that most common value is or how many different
+items there are uh like kind of like at this distinct count um there's a median
+and and so you can to get those individual items instead of getting everything you can do just
+dash dash mode dash dash cardinality dash dash median and it'll give you just those items
+if you do dashes everything it'll give you all those uh if you're going to use a big file
+you do want to put the index down first using mode according to the documentation using
+mode cardinality and median by themselves will uh will hold the csv in memory so if that's a limit
+that you might have uh so check that out part out there's another option called dash j or dash dash
+jobs by default they'll use all of your CPUs to run the calculations but you can specify how many
+CPUs to use but uh let's just try an example so i only want to look at for instance
+the uh let's just do dash dash first let's do xsv uh index world sees pop just to get the index
+file down and then we are going to go stats dash dash everything and then you'll see the um the
+output of that oh let's run it there it is um and it's kind of a jumbled mess to look at it
+when it first comes out because they're you know they're common to limited and some of the values
+are blank so it's kind of hard to look at there are two formatting things you can do to the output
+of xsv that that help it one of them is called table and sometimes if you have a
+lone number of columns or really big screen tables a good idea so it'll put a column
+near format for the output where there's uh equal spacing between each uh each item so let's try
+that xsv stats everything world sees pop and we're just going to pipe that right into xsv table
+and the output of that oh the output of that is a nice uh a pretty formatted list of all
+all the data that we're talking about so you can see there's a field column and there's a type
+and then there's some min max min length max length so for these uh you for the ones that are
+type text or as they call it type unicode it'll give you the min length and the max length
+and then it won't give you a mean standard deviation for any of those because it doesn't make sense
+but it does give you a mode and a cardinality for the um text type values if you have integer or floats
+you can see that you'll have a min max uh mean standard deviation median mode cardinality
+so it's really nice uh when you have a lot of these items it really is kind of hard to see
+everything when you're using the the dash uh the xsv table so another option you can do is instead of
+piping it into um instead of piping it into um into table we can pipe it into flatten and what
+flatten does is it moves all of the items that are in a column and you can do this on the on the
+file the original file itself or if you you could run a head command and then pipe head into xsv
+flatten just so you can get us uh a smattering of what the data looks like in a format that is
+easier to look at in the terminal and so what it does is is instead of having every column
+instead of it being every record in a row and all the data for every row in columns it
+puts every record in a block separated by a line that just has a pound sign or a hashtag on it
+and every field is on its own line so for instance if i when i run that command
+uh xsv when i run flatten on the stats uh everything command the first the first block has and
+every block is going to have the same fields uh there's going to say in this case field type some
+min max min length max length median median all that stuff and then it has a pound of the
+repeats it and the pound of repeats it and pound for every record and so the first time i'm looking
+at the field of country and it has all the information the second block i'm looking at the field
+of city the third block i'm looking at the field of accent city and so on um it so very nice
+uh way to to output the information another uh so now i've done i've done some things we're
+looking at i've looked at some of the statistics around the file uh there might be some other
+manipulations i want to do with it so one thing that we did is we selected another thing we might
+want to do is we might want to sort so let's look at uh different ways you can sort so xsv
+sort is that command and you can do sort dash s and specify the column that you want but let's
+look at the help just so we can get a more uh thorough view so like i said you can do
+dash s and then the column name or the multiple column names you can do um
+dash capital dash capital n to do a numerical value sort so for people who are not familiar with
+this concept um if you sort a string and the string are numeric looking and you have the numbers
+one two three and twenty one it's going to put twenty one right next to two because the way
+string sorts work is going to keep the two together and it's going to put the threes together
+but if you do a dash capital n it will it will do what you will expect it to do which is put one
+two three twenty one the dash capital R option will allow you to do a reverse sort
+and so in this case we have this file let's say um we have our frequency so let's go back to our
+frequency command so we have frequency dash s world cities uh and right now we are sorting it by
+it by default is sorted by the value so let's do dash dash limit uh limit uh 25
+oh that's that's that's the dash s limit zero and then pipe that into
+xsv sort so we know that in the frequency command we have field value in count as the as the
+fill names so let's go dash dash s value and now we are going to sort by the uh country name
+instead of sorting it by the uh the max count and so when I do that I get an output of a csv file
+uh looking format that starts the first record is country comma a d comma 92 if I did it without
+that it will put the one with the highest actual count of a frequency in there which i don't
+remember what it was let me take that off which is uh cn which is china okay it makes sense
+so uh sort is very useful another thing you might want to do instead of sorting is you might want to
+search so search is a something that you might want to say i let me just find all the countries
+that begin with the letter u in which case you would use xsv search dash dash s country and then inside
+of single quotes you would put your regular expression in this plate and i know it's only two
+characters for this field so i do u dot and the dot means any character and then the rest
+so you'll see that i will get all the ones that start with u s uh with u so there's u y u z u s
+another one that you can do so say i want to look at all of the cities with the name
+with the word woods in it and so i do xsv search dash s city and then inside of single quotes dot
+asterisk which means any characters any amount of times woods and then dot asterisk at the end
+so to find anytime the word woods is anywhere in there i run that and i can see that there is
+a bunch of records in the u s and then some in canada most like a couple of barbenos where there's
+the word woods in the uh in the file under the city column so we've looked at uh so now we've
+looked at how search works and like i said all these things can pipe right into each other so say
+you want to first search for all the ones that have the word woods in it and then you want to do
+a frequency count of just those well now you have your way of doing that you you run your search
+first pipe that into xsv frequency and now and then you can put that into another file if you want to
+so you can see how these how one the u s philosophy and the way you use a pipe to redirect
+things really works well and how xsv really does well with that type of those type of operations
+so um we'll say we're already getting close to a half hour here so i think we're gonna call it
+there uh but uh actually there's one other command that's before we before we completely call it
+let's look at the slice command which is uh another way so one way one way that we just did a search
+for was by looking for a specific specific uh words in somewhere in the file but if you want to
+just do specific lines in the file you can do that with the slice command so let's look at um
+slice dashes help so slice works in a couple different ways so you have the dash s
+start dash en dash l length and dash i index so what those items are so say i only want a single record
+i would i would go um um i would use dash i so dash i means index so if i only want the
+one million eight hundred seventy second record i would do dash i and then that number
+why would you want that uh i don't know i guess it's useful for some situation
+but say you have a file that's already in a good order or you just did some manipulations
+to put this file in the right order and you want a specific section of of the information
+using um slice is gonna be a lot faster than using um search because you're not doing any
+reggae so anything you're just looking up uh the index if you run the index command on
+on the file first it becomes instantaneous to find these the find these files and any uh any of the
+slices so with dash s you can do that's where you start so say i want um record starting at
+number one million i do dash s one million and if i wanted exactly 50 from one million i would
+use dash l 50 but if i wanted to so you can use dash l instead of dash and instead of dash
+e to specify the amount of records if i wanted from one million to one million five hundred seventy
+two i could put dash s one million dash s dash e excuse me that second number so dash e will tell
+you the end of the range of your slice dash s tells you the beginning and instead of using dash
+e you can specify the number of records that you want there's also uh you can also do
+if you leave dash e or dash l off it'll do from that record to the end so that's another option
+so say you don't want for whatever reason the first um the first one million records
+will do that one really fast so let's just do xsv slice world cities
+csv from from let's go three million that's the how many zero one two four five six so if i just
+want the last everyone after three million i get all those records after three million if i want
+all the three million the ones after three million and then just the first uh ten from three million
+one to three million ten i can just do that and it gives me those ten records the thing that's
+really great about xsv is that you don't ever have to worry about where the header is the header is
+always there so it always returns the header in your output all right so like i said we're at a half
+hour now i think we're going to call it but uh leave me uh comments on hack about radio's site
+if you have any uh questions i want to have some show notes that's going to give some of the basic
+information but most of this is pulled directly out of the documentation of github so definitely
+check that out um the links for both the file that i'm working with and the the repository where
+you find xsv itself where and you can find binaries of it or in the show notes so please check
+it out and as always hacker republic ready you fans keep hacking
+you've been listening to hecka public radio at hecka public radio dot org we are a community podcast
+network that releases shows every weekday Monday through Friday today's show like all our shows
+was contributed by an hbr listener like yourself if you ever thought of recording a podcast then
+click on our contributing to find out how easy it really is hecka public radio was found
+by the digital dog pound and the infonomicon computer club and it's part of the binary revolution
+at binwreff.com if you have comments on today's show please email the host directly leave a comment
+on the website or record a follow up episode yourself unless otherwise status today's show is
+released on the creative comments attribution share a live 3.0 license

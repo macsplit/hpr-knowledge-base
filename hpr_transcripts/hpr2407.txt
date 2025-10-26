@@ -1,0 +1,256 @@
+Episode: 2407
+Title: HPR2407: The Lost Episode Part 2
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2407/hpr2407.mp3
+Transcribed: 2025-10-19 02:26:14
+
+---
+
+This is HBR episode 2477 entitled The Lost Episode Part 2.
+It is hosted by AniBill and is about 22 minutes long and carrying a clean flag.
+The summer is.
+AniBill talks about flashing firmware to add a 328 b-chip to get a transistor tester kit
+working.
+This episode of HBR is brought to you by AnanasThost.com.
+At 15% discount on all shared hosting with the offer code HBR15, that's HBR15.
+Better web hosting that's honest and fair at AnanasThost.com.
+Hello, this is AniBill and I'm back to do a follow up to what I called The Lost Episode.
+It was a while back there.
+It was about a transistor tester kit that I got from China that after I built it up, it
+did not work at all.
+What I found at the end of the previous episode is some of these tester kits.
+This is an open source project, the code for these transistor kits.
+It seems that some Chinese manufacturers have taken like the specs or the board builds
+of this open source project and are making boards for it.
+They're sending you kits.
+It's the board.
+It's all the parts you need to build the kit but what some of these guys are not doing
+is they're not flashing the firmware onto the Atmel chip, that's the brains of this
+thing.
+When I built up my kit, I stuck my battery in there, I pressed the button on the rotary
+encoder, which should turn the board on and it just lights up the screen and there's
+nothing else.
+There was a long adventure, digging into AVR-DUDE and AVR-DUDES and flashing these chips
+and having to find X packages and e-proms and, well, I'll go over to a bit here.
+So let me find this bookmark.
+I have so many bookmarks I've been doing this for probably five hours, hours yesterday
+and hours this morning.
+So I'll link to some of this stuff in the show notes.
+The first thing that I started doing the show notes already, the first thing I linked
+to is the PDF for the guys who are doing this project.
+I think, well, it's two guys that have been running this project.
+I'm not going to be able to pronounce their names because it looks like it might be
+German.
+I don't know if one guy started it and the second guy picked it up or they're both still
+involved, but the one guy is Marcus Friedrich and the other guy is Karl Heintz, Kubeiler,
+Kubeiler, K-U, BB, EL, ER, with the Umla on the U. Sorry, I know I'm butchering you guys
+names, but that's the first, the PDF you're going to look at.
+It goes through an explanation of the whole project where it came from, the different boards,
+the different boards that are out there, it goes into some of how to flash it.
+It links to where you can get the hex code, well, I'll get into that in a second.
+Anyways, this is a good resource.
+The other thing I found out that I needed was I had an Arduino and I kept putting this
+chip in the Arduino and trying to push the firmware to this chip with the Arduino.
+I guess you cannot do that.
+From what I'm reading is the Arduino has its own bootloader and it's just that bootloader
+is there to run the Arduino and to upload its sketches.
+What we're doing with this chip in this tester is it's a blank chip, there's nothing on
+it.
+You're going to put the hex code in there and you're going to put your own like eProm bootloader.
+It really has nothing to do with the Arduino.
+It's just that the Arduino uses this chip as well.
+If you go searching for stuff like I did online, like DIY 2016, transistor kit, anything,
+you're going to end up in an Arduino site and it was just leading me down the wrong path
+left and right.
+If nothing else, maybe this episode will help you not to have to go down all these different
+paths.
+You're going to go down paths of different Atmel chips, different Atmel chips in different
+products.
+These things have been used for years and years.
+It's not just the Arduino that came out with them.
+They've been in microcontrollers and like controlling PLCs and things like that for years
+and years.
+Anyways, the first thing I had to do was order a programmer.
+So the programmer was like $8, it was an Amazon, it's, I can take a picture of that too.
+It's a USB, oh darn, I forgot the name of it already.
+USB ABR.
+Bring it up, bear with me.
+A USB ASB and it's by a company that is FISCHI.de but there are like 40 or more of these
+boards.
+So depending on which one you get, you're just going to have to know which kind it is because
+you're going to have to put those values in here in Averdude or what I want to talk
+about after that.
+Next thing you do is you need to put your blank chip, well I put my blank chip in the Arduino
+Uno board.
+You can get a separate, you can do this on a breadboard with a couple of capacitors and
+things.
+Just link to the right to the chip because this programmer is going to power the chip.
+You don't really need there, I'm not using the Arduino to use any of its internal circuitry
+or its power supply or anything like that, I don't even think I'm using it's crystal
+at this point.
+So out of the programmer you have VCC and ground, you have MOSI so input, MOSO output, there's
+one pin that's not used on this header, you got a reset and an SCK, I think that refers
+to how fast you want to communicate, you change the frequency.
+And this particular board has 3.3 volts and a 5 volt jumper.
+If you're getting a board you might as well look for one with a jumper because I think
+if you're going to use this for other products it's going to be 3.3 volts like an RPAI.
+But the Arduino is 5 volts so I got this in 5 volts.
+You take all of those pin outs, the ground, the VCC, the SCK, the input output and the
+reset and you jumper them over onto the, I did onto the Arduino, there is a programmer
+header, a 6 pin programmer header, I'll take a picture of this, you can see it's female
+female jumpers until I ran out of jumpers and then I used a alligator clip for the reset.
+After that you plug in your board, let me just stick it in there and do an L, and don't
+still tee everywhere, all righty, do an L, S, U, S, B, so mine pops up on bus 1, the
+vice 48, and it gives an ID, the vendor ID, and oh geez, I wonder if this is maybe Swedish
+or Dutch, Van Oengin, I can't pronounce any of these, oh maybe it's German, that looks
+like, anyways, there's my device, it's showing up, it's on bus 1, it's on bus 48, what you're
+going to find is you can't communicate to this device because you don't have right or
+read access to that bus, so what you can do there is a Soudu, Jamad, plus 777, and do it
+on dev bus, USB, and then in my case it's 001, 048, password, did anyone just figure out
+my password length by counting those clicks? All right, so there, okay, so I changed the
+permissions, now I can write to this programmer which in turn should be able to write to the
+chip, so here's the next step, the AVR dude, you've got to make sure that the programmer
+can see the chip, and that the chip is ready to accept the construction, so that is AVR
+dude, oh I think I have to sue do that, or do I, maybe not, AV, then a minus C, and then
+you need to choose your programmer here, in my case it's the USB, AVR, no, USB, ASP, then
+a minus P, now you're going to tell them, tell AVR dude, if I spell it right and stick
+in the end of there, what chip you're trying to program, in my case it's the Atmel 328P,
+so that's, if you do a C with nothing after it, or you do a P with nothing after it, it's
+going to give you a list of chips, and it's going to give you a list of programmers,
+so you can just, you go through, you find your programmer, so once again, it minus, AVR
+dude, minus C, USB, ASP, minus P, M, 328P, then if you hit enter there, it's going to
+go out, it's going to check the board, it's saying yes, I can see the board, the device
+of signature is this, it's, the fuse is okay, it's, you're basically ready to use this
+setup, to push your hex and your e-prom too, so you go to, you go to the location where
+you have your hex file and your EEP, certain places I went, it was like a GitHub thing,
+and I'd pull in like the whole repository, and I'd have to do a make file, other spots
+on the net, I found someone already pre-compiled the hex and the EEP, I don't know how trustworthy
+that is, anyways, you follow in the PDF where it's going to send you off, in my case it
+was the, M, I can look that up, M, if you get this same exact board, this might help if
+I tell you which, which set of firmware I used, I'll load, is the M, 328 underscore
+color, underscore kit, well you're going to download transistor tester, M, 328 underscore
+color, underscore kit, kit dot tar dot GC, and when you extract that, sets up a folder,
+and in that folder was the hex file and the EEP file, so the next thing you do, or the
+next thing I did, for like hours yesterday, and hours this morning, I pull the chip out
+of the tester, well I went to get, if anybody's going to do this, and you're going to order
+a board already, and you don't have one of these, sorry I'm talking while I'm still cleaning
+up tea that I just spilled everywhere, get a chip lifter, a chip lifter is a little, it's
+a little screwdriver looking thing, but the end of it is hooked, and it looks like a, like
+the back of a claw hammer, so that can just get under the chip, and you can slowly lift
+it up, because if you try and pull, a socketed chip out of your fingers, you might get it
+done once out of ten times, but the other nine times you're going to bend the pins all
+the hell, so I find a chip lifter, that's handy tool to put in your kit, anyways I pull
+the chip out of the tester, I put it in the board, plug in the board, find the board, set
+my permissions right, get everything ready to burn, then I'd go back to Averdude, and
+it's the same as before, the UC with the put your board, and then the UP, you put your chip,
+and then you do a dash, capital P, now you're going to tell it what port to use, so in my
+case it was dev bus USB 1, and then what were we on, I forget it was 48 or something, this
+increments every time you plug the thing in and out, then you got to tell it which file
+to flash, so you're going to do a capital, dash capital U, flash, colon W, colon, and in my
+case transistor tester dot hex, colon I, and then you don't have to do this, but I like
+to do a slash V, just so I can get the verbose read out in case there's any errors, when
+you're flashing this, flash the hex first, because if you flash the e-prom, and then you
+flash the hex, the hex just got to write right over the e-prom, so make sure you do this,
+so we do that one, and then the next thing is put the e-prom, it looks almost exactly the
+time, Averdude, you put your board, you put your chip, you put the bus location, then
+you do flash, colon W, colon, and in my case transistor tester dot EEP, don't do the
+trailing colon I at this time, and then I did verbose again, and I did this like, must
+have been 20 times, it looks like it goes through, it verifies, everything's clean, I put
+the chip out, put it back in the tester, plug my battery in, press the button, and it's
+the same as it was, just the screen just lights up and nothing happens, this is where another
+program came in handy, I started reading about Averdude S, Averdude S is a GUI front end for Averdude,
+and I downloaded it and installed it just to see if it would, maybe it would give me some more
+information that I wasn't seeing just with the Averdude, and it turns out that was the case.
+This is a Windows program, if you're running Windows, you can pull it in, run it, no problem,
+if you're running Linux, you got to run it with mono, which, you know, you have to add the
+repository for mono and go get mono complete, but, and then you know, that's, that could be an
+episode in itself, but you'll get Averdude S running, and here I have it in front of me,
+so here, to flash your chip with Averdude S, Dudes, top left, you pick your programmer, and I can
+scroll here, there is a list of, there's got to be 40 programmers, so there's my programmer near
+the bottom of the list, I select that, and then that just kind of, uh, sets up the speed that the
+programmer's going to want to use, if you want to put your port in here, you can, but we actually
+took care of that earlier, to the right of that you pick your chip, which in this case is the
+at mega, there it is, nope, that's not it, I wish they put them in order of the, the numbers coming
+up, they jump all over the place, that mega there it is 3 to 8 p, below on the left, the next line
+below is where you're going to select your flash, this looks very windows-y to me, I haven't seen
+this all this light blue in a long time, but you just go through your folder structure, find your
+hex file, click on that, below that you go, same thing, select your e-prom, so we go to find that
+.eep, and then I hit program, and below is a window, and you can see AverDude running, just like it
+did before, and it spits out, and it verifies, and it's complete, and I pulled the chip out, and I put
+it back in the tester, and I'm right back where I was, nothing, I pressed the button, and it's just
+a white screen, so I'm starting to like lose it at this point, then I notice AverDudeus has
+radio buttons in the flash and the e-prom section that say verify, so I stick the chip back in,
+and I go up, I click the radio button to verify, I click go, and there it spits out the error,
+the error is, geez, I wish I took a picture of that, because I don't remember exactly what it was,
+but in my case, the error was the fuses and lock bits, we're not set correctly,
+so there maybe there's a way to do that in AverDude on the command line, but I'm brand new to all
+this, and I don't know all the flags and switches yet, so the GUI did help me in this case,
+what I needed to do was go underneath where you select the chip in AverDudeus, you'll see fuses and
+lock bits, you can click a button to read them, and then the problem I was having was with e,
+the lock bit, I don't know if it's a fuser lock bit, in my case it's an OXFD, that's the setting
+that's in there, what it needs to be is OX04, and what AverDudeus just allowed me to easily do is go
+up to that field right next to it, and just change it to OX04, I go back to flash and e-prom,
+set them to right, I hit program, and the thing programs, I hit verify, and they both verify,
+ah, that was an exciting moment, pull the chip back out, put it in the tester, press the button
+down, I see that white screen, I feel a little dejected again, but then all of a sudden the screen
+turns blue, and I see the boot up happening, so we're making progress there, I can see a screen,
+I'm familiar with another tester that I have, the problem I ran into then was as soon as I
+left up on the button on the rotary encoder, everything goes away, the board is not latching,
+what's supposed to happen is you press the button, pin six on the chip is going to go high,
+to five volts, power the board, and then in programming, is you know how long the board's
+going to stay on 30 seconds or 40 seconds, I don't know what they have that set to, but then that pin
+pin six will go low and shut the board off, so every time you use this you just you press the
+rotary encoder in, it turns it on, you do your test, and then it'll just auto shut off, I wasn't
+latching, so I thought it was going to be like down the rabbit hole again, and let's go online,
+and scratch our heads for another three days trying to figure this out, and this one only took five
+minutes because it was a pep cack, and it was my fault, I had the LED at the top of this tester in
+backwards of all things, once I pulled that out with the solder sucker I got it right, and I press
+the rotary encoder, I'll do it right now, boom, LED light comes on, it's going through its boot
+sequence, it's going to look for a component to test, so we have a working board now, finally,
+this has been a long journey, like what, 12, 14 months with this thing, the next thing if you
+get any of these boards, and whether they work right on the box or work right after the build,
+or you need to go through this flashing process like I did, the next step is a calibration,
+it should explain that with the instructions that come with it, or it's in that PDF,
+you'll get a big capacitor that's sticking here, and go to a calibration setting, and it checks
+that capacitance, as like a reference, and then you build a jumper wire, which actually two
+jumper wires to make like the shape of an M, there are three pads in here, there's like an A-pad, B-pad,
+C-pad, if you're going to test the resistor, or a capacitor, you can do it like on A to B-pad,
+or B to C-pad, or A to C-pad, it doesn't matter, it's a two-prong thing, a capacitor or a resistor,
+you just stick it in and test it, if you're going to test a transistor, that's a three-prong,
+that's got three leads, you need to have one lead in the A-pad, one lead in the B and one in the C,
+so you make this jumper to go in A, B, C, just basically short them out, so it's going to calibrate
+and get a shorted value, after that simple calibration, these things are ready to use, and I carry one
+around with me in the blue bag, I have it here, I'll take a picture of these, the one on the right
+is one that I bought after buying this initial kit, I got this kit, I built it up, it didn't work,
+I couldn't figure out why way back when, and then I noticed there was another kit that came in a case,
+well it comes with a case, and it looked like it would be a little more robust for putting in my
+blue hacker bag and carrying around instead of just a bare board, like this other one is,
+I had plans to get one of my buddies to help me 3D print a case for this, the kit that wasn't
+working, but I never got around to it because I never got it to work, maybe that can be another
+episode, I'll 3D print a case for this, anyways, I took a picture and the one on the right is the
+tester that I carry around with me in my bag, they both do the same exact thing, this one just comes
+with it, like a heavy duty kind of a professional looking case, this was the one that I took to the
+and my buddy Pico said, oh wow, that looks really cool, and he goes, will you sell it to me?
+And I said, well sure, yeah, how much do you want to buy it for? He goes, well how much do you pay for
+it? And I said, well the kit was 1999, he goes, here's a 20, so that was the joke that went on in
+the lug there that, oh, you know, for my labor of soldering the kit up, I made a penny, and then
+the joke got worse later in the lug because he looks up to me and he goes, hang on, did this come
+with a battery? So then basically I put a battery in it, so I lost money on that deal, anyways,
+I was happy to give it to him, I was happy to get another kit, like I said, this is that second kit
+that I built up, I keep this in my blue bag, now I have this other kit, the one without a case,
+and I have it working now, maybe I'll put it in a case, maybe somebody at the lug can use it, or
+like I've said before, nieces or nephews growing up, I've got lots of little tools they can use and
+figure things out without burning up expensive equipment. So there you have it, if you get one of
+these boards, I hope it works for you, if it doesn't work for you, that's going to be even better
+because that's where you're going to learn more, if you need to flash the firmware, I know I just
+like whizzed through what I did, but it's all new to me and I'm kind of doing this episode while
+it's all fresh in my mind, so if you get into trouble, like trying to flash it, like send me an email
+and I'll try and point you in a direction or give you direct help so that you don't have to go waste
+like three hours out on the internet trying to find these answers that took me forever to find.
+So my email is nybill at GunMonkeyNet.net, and I'm on the mastodon thingy still, and you can,
+if you want, make a comment in the show notes and we'll have a conversation there. All right,
+until next time, guys.
+Nekka Public Radio was founded by the digital dog pound and the infonomicon computer club,
+and it's part of the binary revolution at binrev.com. If you have comments on today's show,
+please email the host directly, leave a comment on the website or record a follow-up episode yourself,
+unless otherwise stated, today's show is released on the creative comments,
+attribution, share a light, 3.0 license.

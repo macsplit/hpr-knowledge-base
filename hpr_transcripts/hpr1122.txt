@@ -1,0 +1,249 @@
+Episode: 1122
+Title: HPR1122: LiTS 018: ln
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1122/hpr1122.mp3
+Transcribed: 2025-10-17 19:23:03
+
+---
+
+Welcome to Linux in the Shell episode 18, the link command.
+My name is Dan Washco, I'm going to be your host today.
+We're going to talk about the link or LN command, but before I do so I want to encourage
+you to listen to other shows on HackerPublic Radio and or consider contributing to HackerPublic
+Radio.
+It's a fantastic community, always looking for contributors and always an entertaining
+and informative show, so HackerPublic Radio support them, listening, we're contributing
+either way and I want to thank them for supporting this show and hosting the website and
+the audio, HackerPublicRadio.org.
+Today we're going to talk about the link command, LN for short.
+The link command essentially creates a link from a file or directory to in a different
+location.
+Some operating systems call these shortcuts, but in Linux and BSD they're called links and
+they're created just by using the LN command.
+LN command at its heart takes one parameter at its heart, well actually two parameters.
+I recommend always two parameters to the link command, but you could actually get away
+with only one parameter, get ahead of myself a little bit.
+What the link command takes is LN and then it takes the target directory or file and then
+the link you want created or where you want to create it.
+Let's say you wanted to create a link to your file named test in your home directory and
+you wanted to link that into your home directory in a subfolder called download.
+All you would have to do is type LN slash home slash Dan, that's what we're going to use
+as a home directory slash test and then the target and the destination will be slash home
+slash Dan slash download slash test and it will create a link in download that points
+to the file test in your home directory.
+But that's a high level of the way that's working.
+I said that it only takes really one parameter.
+If I would have just said LN space slash home slash Dan slash test and I was in the download
+directory and hit enter, it would create the link to the test file as if I didn't specify
+the file name.
+It would just create a link called test which would point back to the test in home Dan.
+Now that's in a nutshell, we're going to build off of that syntax but before I continue
+on the different options, you have to realize that there are two types of link files.
+So a hard link which is created by default and a simlink, symbolic link which you would
+have to specify the dash s and what the differences between these two really hinges around the
+concept of an I node.
+Now the Linux file systems, except for most Linux file systems, except for RISER FS that
+uses what's called an I node and an I node is a data structure, a data structure object.
+So for a file to exist in the Linux file system, you kind of have three different components.
+You have the I node, you have the directory listing the file name and you have the actual
+data of the file.
+So what the I node is, an I node contains all the metadata for the file but it doesn't
+contain the data and it doesn't contain the file name.
+It contains stuff like permissions where the file is in the file system, the access time,
+it contains all that metadata information but not the actual data for the file or the
+file name itself.
+So every file or directory in the Linux file system has an I node associated to it.
+Now what a hard link is, a hard link creates a special kind of file, a link that essentially
+has the same I node as a hard file.
+So the hard link shares the same I node as a target file and that I node points to the
+data for the file but it has a different file name because the file name is stored
+in this directory.
+So hard links have the same I node.
+Now symbolic link does not share the same I node.
+It has a separate I node but it is a special file that points to the file data and file
+name in a different location.
+So a symbolic link is a more of a pointer that points to the data for that file.
+It has its own I node and its own file name and the directory structure but a hard link
+shares an I node and has a different file name and different points to the same data structure.
+So that's the two, that's the differences between a hard link and a symbolic link.
+Now there are some restrictions here.
+One of the restrictions is that a hard link cannot span file systems or partitions.
+So a hard link has to exist in the same file system as its target and on the same partition
+as its target.
+A symbolic link is not restricted by that.
+You can create a symbolic link that spans file systems and different partitions.
+Also you generally cannot hard link to a directory.
+Some special circumstances as the super user you can but most of the time if you try to hard
+link to a directory even as a super user you will it will bark at you and tell you you
+can't do it.
+So if you want to create a link to a directory it has to be a symbolic link.
+Alright, now let's cover some stuff here on links.
+So just remember link two types of links, hard links symbolic links all based on I nodes.
+I node contains a meta data information for a file does not contain the file name it does
+not contain the data hard link creates a link that has the same I node as the target
+but is in a different data directory structure and points to the same data.
+Symbolic link is a different I node and points to the different directory you know file system
+name of the directory structure and points to the same data the data for the file.
+And you can tell you can look at I nodes if you want to with the dash I option to the
+LS command.
+So if you do a dash LS dash L I it will tell you the I nodes of the file in question.
+So you can actually look at a link and see if it shares the same I node as its target.
+Very simple.
+Okay, so I had said that at its heart the LN command only needs one parameter to target.
+If you are using the LN command which is the target it's going to create the link in
+the current directory with the same name as a target.
+So long as no other file or directory exists in that directory with the same name and
+the target is not in the same directory that you're working with otherwise you would have
+to specify the link name.
+So I always recommend specifying the link name just to be on the safe side.
+So again in the example I used before if we wanted to create a link to that test directory
+in the download directory I had said LN space slash home slash day and slash test space
+slash home slash day and slash download slash test and that creates the link.
+Now default is creating hard links.
+If you want to create a symbolic link you have to use the dash S command option.
+So if I wanted to create a, for instance, let's say I had a WWW directory and my home
+directory with stuff I wanted to use this website files but I didn't necessarily want
+to create a whole directory structure.
+I didn't want to move that into the website and I just wanted to do a temporary.
+This is a bad example but bear with me.
+So my website, my Apache server hosts my website files, my document root is VAR slash
+VAR slash WW slash and that's my document root and in my home directory I have a WW directory.
+What I could do like if I wanted to just temporarily share that out there's a whole lot of
+ways of doing it but we're just going to do a symbolic link.
+I can do an LN space dash S slash home slash day and slash WW and then do slash VAR slash
+WW slash day and what that does is it creates a symbolic link from the home of my WWW directory
+in the VAR WW directory called day and so if you went to VAR WW day and it would take
+you right into the WWW directory in my home directory.
+Now some things would be aware of how that all works.
+One of the issues that you need to realize with links is permissions.
+When you do a hard link to a file essentially because it's the same I node it's they have
+the same permissions that those files have the same permissions and they'll always have
+the permissions of the file that you have created.
+So if you change the permissions on the hard link itself you are actually going to change
+permissions on the target file or directory well target file you can't really create links
+to the director's.
+Whereas on a symbolic link when a symbolic link is created the permissions on a symbolic
+link are 777 the world readable writeable everything that's the way they work.
+If you try to change permissions on the symbolic link you are actually going to change permissions
+on the target file so just be aware of that it passes it through to the target file
+or directory that's the way it works.
+Let's cover some other options here.
+So we talked about the dash s is for symbolic creating symbolic link and you can create
+symbolic links across file systems and you can create a symbolic link to a directory.
+One of the options that you have available to you is the ability when you're doing it
+and option is the let's talk about backups.
+By default if you try to create a link to a file and link already like your target your
+link already exists in a location it's going to complain that the file or target already
+exists.
+So it's not going to let you create that link of that name.
+You can change that with the dash f or dash dash force option which will erase any
+link that's there and overwrite any link or file that's there.
+To help out with that you can use a dash b or dash dash backup and that will back up
+any file that exists.
+Now dash dash backup also takes with it an additional options.
+So it's dash dash backup equals and the type of backup that you're going to do.
+There are four parameters that you can put in here.
+None are off which means never make a backup so even if the dash dash backup is given so
+it's kind of like equals none or off either one of those and it will make a backup.
+Then there's equals numbered or t which makes a number backup and what you'll end up with
+is the file is already there it's going to rename the file the new file it's going to
+be the same name but it's going to attack on the end of it dot tilde a number dot tilde
+dot tilde a number tilde.
+So every time that you create a link and it needs to back it up it's going to increment
+that number so to be dot tilde one tilde dot tilde two tilde and so on.
+Then there's existing while I'll cover existing next then then simple is just a the file
+with us tilde after this is simple backup now the way that it operates is the final option
+was existing or no what that does is if it's a if it's a simple backup that already exists
+in place it's going to use that if it's a number backup that already exists in place it'll
+continue to number otherwise it's just going to go simple by default is the way to operate.
+So the dash B command works just like dash dash backup but it doesn't accept an argument
+it kind of goes with existing so if there's a number backup already it'll continue with
+a number backup structure otherwise it's going to default to simple so that's that's
+what those there is and dash I or dash dash interactive which will prompt you if the destination
+or the the link already exists or file that name exists it will prompt you whether or not
+you want to remove the destination so that's a dash I option right there you can change the
+suffix for backups with the dash capital S or dash dash at suffix equals and in a suffix name
+so instead of getting like tilde or tilde number tilde it would just create that suffix name that
+you're going to use and if it was numbered it would create a number after it so that's the dash
+S capital S or dash dash suffix equals and then the suffix you want to use.
+There's a verbose option to Ellen which is dash V or dash dash for both and that will echo
+out exactly what it's going to do so if you did Ellen dash S for creating symbolic link
+home dan www to var www dan it would spit out that it created a link to home dan or created a link
+from home from www slash var slash dan to home dan www it's verbose it kind of makes sense right there
+you can create a relative symbolic link now a relative symbolic link generally when you
+when you create a symbolic link you pass the full you know the full parameters to them it'll
+use the full parameters whereas if you create a relative symbolic link it will create that link
+relative to the target so if you were to pass like I was saying before the full paths
+creating a symbolic link from slash from slash dan slash www to slash var slash
+www slash dan when you go to look at that the relative link that it would create in the
+var www dan would be instead of showing the path to to dan in the home directory it would be
+dot dot slash dot dot slash home slash dan slash www so that that's kind of what it does is
+creates a relative path from the location of the link to the target so that that works like that
+with the dash R now we are going to talk about some some kind of little more complex aspects of
+the L and command and one of those is the dash P or capital P the dash capital P makes hard links
+to symbolic links okay which is kind of odd you're like well why would you want to do that I have
+no idea why you want to do it but you can if you were to do like if you were to have a say you had
+a symbolic link and you did let's go let's go with the back to the original example where we had
+a hard or a hard link to test in the home directory to test in the download directory we had a
+symbolic link to test in the download directory to test in the home directory and I tried to create
+a hard link against test in the download essentially what it would do is it would create a hard
+link to its target so by doing the dash capital P that creates a hard link to the symbolic link
+so now you have a hard link to the symbolic link as opposed directly to the target of the symbolic
+link why you would want to do that I really do not know but you can let me let me correct something
+there because I'm a little off on that we were afraid something if you attempt to create a hard link
+to a existing symbolic link by default what it will do is create a symbolic link to the target
+of the existing symbolic link so in the case if I just did Ellen
+Ellen test and new in the download directory new would be a symbolic link to the target of test
+which is test in my own directory whereas with the dash P creates a symbolic link
+creates a hard link to the symbolic link now there's another option dash L which will tell
+it to create in that case a hard link to the target of the symbolic link so the three ways
+this works trying to create a hard link to a symbolic link by default will create a symbolic link
+to the target of the symbolic link where if you pass the dash capital P is going to create
+a hard link to the symbolic link and a dash capital L or logical maybe it is dash dash logical
+dash dash logical will create a hard link to the target file instead of creating a symbolic link
+so I cleared that up understand that there are two other options that I want to talk about these
+are a little more complex and special in certain very limited circumstances it's the dash T
+or dash dash target dash directory equals in the dash capital T dash dash no target no
+dash target dash directory these are a little more complex and have very specialized usages
+and generally speaking you probably will never need to use any of these unless you're actually
+programming trying to talk about these these difference these more complex ones and I'm going
+to throw the dash and in there also because it operates like dash T but it's a little weaker than
+dash T they're really a little bit hard to talk about because they they operate on the differences
+between linking to trying to link to a directory or what the target is whether a directory or a
+link and they're the rather to speak of them is is getting into a bit of a wordplay and might not
+be able to convey the full understanding in the audio I recommend that you go to the website
+and look at the examples for these commands with the dash and it depends on what what the target is
+if the target of the ln command is a symbolic link to a directory instead of treating it
+as a symbolic link it treats it as like a normal file all right and if you're using it it's kind
+of a weaker version of the dash dash capital T or dash dash no dash target dash directory which
+essentially is kind of like the same thing it would force the ln command to treat any
+director or symbolic link to a directory as a regular file and again these are used in special
+conditions it's generally you want to be careful about not creating hard links to
+directories but you know creating symbolic links to directories works fine but if you're trying to
+if you're trying to create a link to a directory you got to be aware of how these things behave
+generally speaking if your target your link name is is a directory itself you create symbolic links
+to that directory but if you can you can change how the behavior is with the dash and or the
+dash capital T to look at that symbolic link to a directory as if it were a regular file
+the dash T and the dash dash T direct dash directory equals takes a directory after it and it
+tells the ln command to use directory that you specified as the specified directory option
+generally you would use this in conjunction with another command but you were actually passing
+information to like x-ards would be a great example if you are listing out or using fine
+defined files of a specific type in the directory you can pass that to x-ards and then pass
+the to the x-ards command the output of that fine command to x-ards to pass to ln to say okay using
+the dash T the specified directory name pass the directory to use that as a directory and then
+create all these links in that directory go to the website check that out it has links to
+some further explanations particularly the man page and the info page and there's another page
+that I referenced in there for with the dash T and the dash capital T mean but chances are you will
+never use the dash and dash T dash capital T in your life so the very outlying cases right there
+but I've covered all the basics of the ln command if you want to see it in action head on over to
+the website linuxinachial.org look up this episode and watch the video which I'll be posting up there
+also I encourage you to do that anyhow to read the full write-up of the ln command get a better
+understanding my name is Dan is Dan waschko and I thank you for joining me on linuxinachial
+episode 18 with the link command and thank hack and public radio you have a great day
+you have been listening to hack or public radio at hack or public radio does our we are a community
+podcast network the releases shows every weekday Monday through Friday today's show like all our
+shows was contributed by a hbr listener like yourself if you ever considered recording a podcast
+then visit our website to find out how easy it really is hack or public radio was founded by the
+digital dot pound and the infonomicum computer club hbr is funded by the binary revolution
+at binref.com all binref projects are crowd sponsored by luna pages from shared hosting to
+custom private clouds go to luna pages.com for all your hosting needs unless otherwise stasis
+today's show is released under a creative commons attribution share a line

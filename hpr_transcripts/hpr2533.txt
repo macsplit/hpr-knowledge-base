@@ -1,0 +1,354 @@
+Episode: 2533
+Title: HPR2533: Burp Suite / ABCMouse Game
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2533/hpr2533.mp3
+Transcribed: 2025-10-19 04:58:40
+
+---
+
+This in HPR episode 2,533 entitled Burp Sweet Sash abc mouse game, it is hosted by Opera
+Tiro R and in about 25 minutes long and carrying a clean flag.
+The summary is, I got over my approach for most mobile Sash Web App interesting.
+This episode of HPR is brought to you by an honesthost.com, get 15% discount on all shared
+hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's honest and fair at an honesthost.com.
+Hello and welcome to another episode of Hacker Public Radio.
+This is your host operator, today I'm going to be going over a short video on kind of the
+approach that I use for general web application testing, there'll be a video in the show notes
+if you guys want to go over it, but I'll try to be as verbose as I can again when going
+through this video.
+So the pieces for this setup, this is using a Android emulator to enumerate and attack
+and discover how a Android application works in hopes to get a benefit or something that
+is generally time consuming or maybe a paid currency to something like that.
+So we're going to look at a children's program called ABC Mouse today, generally speaking
+any Android application that's new, apologize for the grandfather clock that I just took
+apart that was perfectly working, took it apart, oiled it up and put it back together.
+But anyways, the general idea is that if it's a new Android application and looks kind
+of clunky, it probably is.
+Now if it's a paid-of-play game that's been out for three years and you know it's one
+of your big ones like, for example, Clash of Clans, you're not going to be able to do
+much with that and even if you do, they're going to snapshot your account back to the way
+it was or straight up ban you.
+Same thing can be said for if you push everyone's accounts on the database, if you affect
+everyone, then they'll just restore from a couple days ago and say, you know, you lost
+a day's worth of work for everyone in the whole server.
+The idea there is that all these mobile games don't really take up a whole lot of data.
+So they can do daily snapshots, nightly snapshots for the data and if something does happen
+at a compromised level or something happens to all the accounts, they can just restore
+back to what everything was yesterday, right?
+Anyways, we're going to look at this ABC mouse game.
+We're going to use a emulator called N-O-X Knox player and inside of, once you install
+a Knox player, you'll get there's a configuration in there that says to give yourself root.
+Once you give yourself root and I'll provide some other links to other videos how to do
+this.
+You'll install ProxyDroid, FSCertInstaller and I think that's all you really need for
+now.
+So ProxyDroid will be the part to force all your traffic on the Android device when you
+have root enabled.
+It will force all that traffic through with the proxy.
+FSCertInstaller is actually for installing certificates when you need to.
+This kind of helps in some instances where you're not picking up that HTTPS traffic.
+You figure out where that HTTPS traffic is going and you create a Burp Suite certificate
+for that specific server.
+Now I won't go into how to do this for multiple servers but the idea being that the meat and
+potatoes of any application or game are always going to go over the same server or services.
+So the thing with that is that you don't necessarily need to man in the middle of everything.
+All the servers that the game is talking to, you just need to man in the middle of the
+main game, meat and potatoes part of it where you're picking up a chest or whatever.
+It's going to pick that up.
+So the idea is identifying what certificates you need to generate for that specific game.
+And then there's also the question of SSL pinning which we won't get into here.
+There's some exposed modules for to bypass SSL pinning that you need to have like an X86
+doesn't work for for an OX but you can use a regular standard Android device and it uses
+some shenanigans to get around the SSL pinning in some of these games which I've had little
+to no success with.
+But in general, you can issue SSL certificate for that specific host and get everything
+you need.
+In this case, I didn't need to do any of that.
+There was no SSL checking.
+It went straight over to the standard stuff.
+So the second piece you'll need is Burpsweet of course to intercept that communication
+between the application on the phone and the internet right.
+And you know you're kind of in the right eye area when you actually launch the application
+and you can click intruder and end up getting some traffic.
+So we've launched the application.
+We have it connected the way I configure ProxyDroid.
+You can actually run commands called, I think it's called Net, IF something or CFGIF.
+There's a command that you can use with a terminal client inside of Android to figure
+out what your default gateway is.
+I think it's Net Control.
+Let's see.
+If I can remember STO or I, it's called, let me get it, what it actually is and I'll
+put it in there.
+Oh, okay, so there's, the easiest way to do it is IP space, route space show in any Android
+simulator.
+You don't need admin to do that.
+Our default route here is 172, 171,00.2 inside of NOx and depending on your version of NOx
+or whatever you might, you might have your results may vary.
+So with that said, we've configured the ProxyDroid to aim at 172.17.100.2 which is our
+default gateway which is the host machine.
+This is essentially a virtual machine, this NOx player and its default route is the
+host machine which is the main computer that the virtual machine is imaging.
+So we've set up our traffic to route through the actual host box and that way if something
+moves around or the IP changes of my system no matter what, it's going to go to the default
+route which is, and theory should be the same system, same IP.
+So we started it up.
+I've logged in, as you can see I've already got like 98916 tickets here.
+The goal here is to get a lot of tickets and I will tell you, I spent a fair amount
+of time trying to get this to work and then later realizing that it's actually something
+very simple.
+So we'll go through the basics here.
+The idea is that you play this game and you do a function.
+So we'll go into the classroom here and we'll click some, maybe not some reading, reading
+takes a while to do.
+We'll do a quick puzzle here, puzzles and we'll pick a four piece puzzle here.
+And the idea is to look at this proxy and turn the intercept on and off while you're
+doing things so you can see the traffic things sent to the server.
+And sometimes you have to capture the traffic being sent, being replied to.
+So sometimes you can manipulate the traffic coming from the server.
+And then based on that, the application will pick up that traffic.
+And then on the next time it sinks, it release that, release that back to the server and
+says, oh, the server told me I got a token.
+I told the application on the Android device that I got 999 tokens.
+And then next time it goes to do a per function, the actual application tells the server, hey,
+I'm updating my, I played a game and I got 999 tokens, go ahead and sneak it.
+And sometimes there's some encryption involved or encoding or whatever.
+So here's our completed game.
+There's lots of parameters in here.
+They're not straightforward.
+So if you look at a birth suite in the video here, you'll have two parameters in the actual
+birth suite.
+Now, this is Jason Salinas, there's all kinds of, it looks like Jason in here and some
+other bits of stuff.
+This almost looks like a file attachment, the way these are set up.
+This kind of looks like file attachments that are being kind of sort of mangled and uploaded.
+So this is kind of like a custom web-based, like a web-based protocol thing.
+So we have all these values in here and these are actual values.
+So we can take this and do a send it to repeater.
+So we've completed the course, we've gotten, well, we'll go ahead and let this run through.
+We'll turn Interceptor off and let our, we did the puzzle and we're going to let our traffic
+run through.
+Oh.
+Oh.
+Oh.
+Oh.
+So I've already seen to take it for doing this activity five times today, which doesn't make
+any sense because I haven't done this activity today.
+Maybe it's a delay thing or something like that.
+So first thing you try to do in any of these types of scenarios is do a replay attack.
+That's the easiest thing to do.
+So we sent that request that we, that gave us, in theory, should have given us a ticket
+and it sends us off to, to repeater and we will repeat this request as it is, no mangling
+or anything.
+And we get back from the server success, which is kind of weird.
+It says success, colon, faults, which means success was faults, which is kind of weird.
+What I found out after looking at this, you'll notice that this number, when you go to play
+a game, you get this number as a, as a unique value.
+This changes over time.
+So you say, I want to play this game idea of 7014 and the server says, cool, here's your
+unique ID to play this game.
+And when you submit your information, I want you to supply this ID with it.
+Now the general approach that I take is there is a lot of code in here.
+I don't know how many bytes this is.
+Well, there's 612 characters, more or less of code.
+Now what I found out through trimming and what you can do is you can essentially start
+pulling out some of these parameters, right?
+So for example, we have a device name, Samsung, ABC, mouse, unity.
+This is user agent crap.
+That's the first thing you want to take out.
+So what you can do is look at the parameters, how it's set up and sending them.
+And you can pull out stuff like this user agent tag.
+So here, after the comma, the user agent tag comes in, and we're going to go all the
+way down to where the user agent tag stops.
+And then look, there's another standard user agent.
+So let's just take all of this out.
+And then the theory is, is that you would try this in a man in the middle when you turn
+your repeater, when you turn your intruder on, you'll keep trying to take out parameters
+within this to see which ones are affected and which ones are not.
+So you go through this process, you don't necessarily have to do this, but it helps identify
+what are the parameters that the thing has to have for it to be a success equals true.
+And what are the parameters that we could just fall off and not send off to the server?
+Now, after a bit of poking and prodding, what I realized is that the only parameters
+it really needs is in this curl command, which you can right click, apparently in Firefox
+and Firebug and even Chrome, you can actually, in their developer mode, you can right click
+some of the stuff, the requests, and actually pull that into, it'll copy the clipboard,
+the curl request for that.
+Same thing for Burpsmeat, if you right click a request, it can create a curl script for
+that, a specific request.
+So we've got our parameters here that I know for a fact that that's the only ones it needs.
+And I'll probably run this through the proxy just to give you an idea of what it would
+look like.
+So we've got a SIG went up here, and I apologize for the clicky keys.
+The lower case X switch tells you to use a proxy.
+So what I like to do is when I've got everything all set and done and beautiful, I will take
+the parameter and copy to curl command and keep it for my notes.
+So when I do need to replay it, I can kind of reverse engineer how I got it.
+So we'll do curl, we'll actually paste this command in, and then we'll go back in here,
+which actually we'll do a, we'll add it into this part X, local hosts, 80, 80.
+So now when this comes through, we can turn our interceptor on.
+And we're forcing the same request, but we're forcing it through burpsweet so we can look
+at what it looks like on the front end through through burpsweet.
+So we're going to paste this request in.
+And now we've got our minimum requirements for our, for our request.
+Now the cool thing about this is notice how small this request is, notice how large this
+request is.
+There's a lot of parameters in here.
+You got all this junk up in here, you don't need user agent, we're essentially passing
+user agent string like four times in the standard, in the standard request header, which is
+really weird.
+Why would you tell, why would you give a user agent by design in the browser and then send
+another user agent and then send some other user, it doesn't make any sense.
+Anyways, a lot of these are built on like, built on top of platforms that are built on
+top of platforms and they don't actually realize that they're getting the information
+they need.
+They don't need to put that inside of the app.
+But since they're back in, there's like, here's the code for user agent, use this.
+They end up getting duplicate efforts around, around pulling that information when the,
+all you need to do is pull user agent from your log.
+You don't have to pull user agent from your stupid application.
+So anyways, actually added curl in here because I used curl and curl.
+And I guess unless you specify a user agent of null or nothing, it will actually pass
+the user agent's curl.
+So this is what the in-game request looks like.
+What I was trying to do was create a script at the beginning to automatically send me
+a list of all the, I had a list of all the game IDs, right, and there's a bunch of them.
+So I got a list of all those and I was using those to ask the server to say, hey, give
+me an ID for this particular game that I want to play.
+And once you get that unique ID for that particular game, at any time within it seemed like
+two or three hours, you could play that game and get credit for that game through the
+curl request or through the virtual request.
+So as long as you had that key and it wasn't used to say that you completed another game,
+you could use that key almost at any time or maybe there was some kind of dropout period
+or whatever.
+So at the beginning, I tried to create a script that would automatically roll through
+every single application.
+Have it give me a key or three because you can play some of the games three times, three
+different keys for each application.
+So if there's 1500 applications, I would get three times that many keys and have it
+roll through and play the game.
+So I was working through that, working through how to escape curl characters and try to
+input variables inside of double escaped quotes and all that silly stuff.
+And I said, let's take a step back and just approach this again from a different side.
+And what I should have done from the beginning, right?
+I looked at this request and I noticed that there's these parameters in here when you
+send off a, when you send off after you've completed the game.
+And we'll show you that back here, for example, find one that has a, an ID in it, token,
+argument, token, argument, token, and I'll spare you the, the, the, the whatever of that.
+Actually, we'll go through the knocks and say, like, play again, see what happens.
+We're not going to get any points for it, but I think we'll send this to repeaters in
+case we lost it.
+So I'll show you and kind of talk to you about what, what the parameterization looks like.
+And then it gave me a ticket.
+So it looks like it's a certain amount of time goes by and you don't actually pick up
+your ticket.
+It says you already got as many tickets as you can for this game, which just gives it
+it's interesting or interesting little side thing there.
+Alright, so what I did find out later, which after screwing around with it for like three hours,
+you get this.
+This is our submit.
+This is a valid, because we got a response back that says success, true, is what you're
+looking for.
+Now, what I first started manipulating was the server side response to say, give me points,
+you know, 999 and total points, 99999, and all that stuff and going on with the application.
+But the problem with that is that what I ended up back with is when I submitted back to
+the server, I would still only have my however many tokens I really had.
+So the client appeared to have as many tokens as I wanted, but then when I went and talked
+back to the server, I never had the tokens that the client had.
+So I fooled the client, but I did not fool the server.
+So I took a step back and said, you know what, let's do the basic stuff.
+Let's strip out all the parameters we know we don't need, which was part of this repeater
+effort.
+Strip out all the parameters we don't need and just only sit on what we absolutely have
+to have.
+This is actually missing the first part of the parameter here.
+So like we'll take this, it's going to look a little bit more like these are really
+different for whatever reason.
+But we'll use this as an example, say this closes out or wherever.
+What I found out is that this has to be valid, of course, the unique ID for the application.
+When I replay or I add one or whatever that this value sort of is unique, it looks like
+it's maybe time-based because once you capture and there's there's scripts for person that
+will let you repeat a specific request over and over again to figure out the entropy
+of a token or unique parameter.
+And there's not a lot of entropy in this.
+It sticks around the same few values.
+So it might be time-based with maybe a sort of an ID and then like, you know, something
+of the time of the time, and I'm not sure how it's affected, but it does change, I think
+time-based.
+Anyways, we have our ID for what we're going to pass to the server.
+Then we also have these weird numbers here, zero, negative one, zero, zero, zero.
+What I found out is I think, I don't remember which one it is, and I don't have it in
+the notes here.
+But the whole idea is that one of these values is the actual amount of tokens you receive,
+which I think it's this one parameter here.
+So as an example, I'll show you guys, we'll turn intruder off for now, proxy, we'll turn
+interceptor off, we'll go back, we'll open up a different game just to make sure we get
+credit, even then actually I don't even think we even need to worry about credit because
+the client actually decides whether or not what tickets you send to the server.
+So we're doing this puzzle for the last time, hopefully.
+I think our tickets are around power very many.
+So we're going to put the last piece of this puzzle in, we get a negative zero, a negative
+one as the score, which I think that's what means that you don't, meaning you don't
+get anything for that particular piece.
+So what we're going to do is change that negative one, which means you don't get anything
+to 999, let's see what happens, and I'm pretty sure we're going to get what we want.
+Yeah, see, we got 999 tickets, and the important thing about this is that those 999 tickets
+got sent to its counting.
+Those 999 tickets actually got sent off to the server, and the server said, yep, okay,
+that's good, looks like you got 999 tickets for this playing this game, which means
+there's no server side checking of the client side vulnerabilities that it sends out.
+So you'll see this a lot in little crappy little games, or little little local games you
+can usually manipulate local games or cheap games when you start getting to pay premium
+services, you might be able to do replay attacks.
+For example, the videos I was putting the show notes for games like Star Wars, the Star
+Wars game that I was playing, would let you do replay attacks.
+But everything else was kind of encoded and encrypted, so the payloads were kind of encrypted,
+which didn't really matter for a replay attack, because if it's an encrypted payload and
+there's no uniqueness to it, you can replay that same payload, even though it's encrypted,
+you can replay that same payload, and apparently the server doesn't care.
+So if it's one of those things, you can roll the dice three times a day, you can just
+replay it, as long as your session is still good, and your session token is still good,
+you can replay that session, and still not have to worry about actually interactively
+doing that thing.
+But other than that, I couldn't really find a whole lot to the Star Wars stuff other
+than replay attacks.
+You get a random user or a random player to join your team when you do some of the fighting,
+and I tried to specify a different player to join that team, and it didn't appear to
+affect that I also tried to modify the stats and level of my own teammates, but it was
+just basically a labeler.
+It didn't actually mean that they had a level 27 whatever.
+If I said that it was a level 27 whatever, it still had the same power as my actual
+character.
+So it was almost like a labeling thing, it didn't actually mean.
+So each individual user on this Star Wars server had its own kind of hive for each player,
+and each player had their own hive and unique ID, so you could use any player you wanted
+to use, but it seemed like that even if I picked a player that I knew to join my team
+for this random event thing, it would still dumb down that player, and it would still
+be kind of a role of the dice on its stats, and it was kind of weird.
+So anyways, that's a brief kind of approach of how I do web application and mobile application
+testing.
+It's, you know, figure out how the application works, try to understand some of the parameters
+if you can't, then start removing some of the parameters out of your requests and figure
+out what is really needed to send information to the server to get us to get started, and
+then you can start messing with client side variables, you can mess with client side variables
+and server side.
+So a lot of your training, your employee training, all that stuff, I guarantee you it's 99%
+client side, and you tell the server that you passed or you tell the server that you failed.
+And a lot of these, for my previous employers, had these types of trainings, and you just
+look at the code a little bit, you know, it's been three or four hours looking at the
+code, understand how it sends its things out, and then say, okay, well, instead of complete
+incomplete, I'm going to say passed, and then you hit refresh and you get the passing
+grader, whatever.
+Anyways, if anybody wants any more details or any more information on how to get to stuff
+going, please let me know, and please do a show if you have any questions or content.
+Thanks.
+Bye.
+You've been listening to Hecker Public Radio at Hecker Public Radio dot org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out
+how easy it really is.
+Hecker Public Radio was founded by the digital dog pound and the infonomicon computer club,
+and is part of the binary revolution at binwreff.com.
+If you have comments on today's show, please email the host directly, leave a comment on
+the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released on the Creative Commons' Attribution
+ShareLive 3.0 license.

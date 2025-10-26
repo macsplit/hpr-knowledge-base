@@ -1,0 +1,187 @@
+Episode: 3338
+Title: HPR3338: Using openssl s_client like telnet
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3338/hpr3338.mp3
+Transcribed: 2025-10-24 21:03:01
+
+---
+
+This is Hacker Public Radio Episode 3338 for Wednesday, the 19th of May 2021.
+Today's show is entitled, Using Open Slash underscore client, like Talnet and his part
+of the series networking it is hosted by Clot 2, and is about 20 minutes long, and carries a clean
+flag. The summary is, Open Slash underscore client, is the new Talnet. Here is how to use it.
+This episode of HPR is brought to you by Ananasthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15. That's HPR15.
+Better web hosting that's honest and fair at Ananasthost.com.
+Hey everybody, you're listening to Hacker Public Radio. My name is Clot 2. Do you remember
+Talnet? Talnet was such a useful tool back in its day. It really was, and actually long after,
+because if you think about when Talnet was developed initially, it was just sort of a general
+purpose tool. You would remote into a computer via Talnet and log in and run commands, I guess.
+Open a shell. I don't know, I've never used it like that. Actually, I think I did use it like
+that once, but it was a controlled shell, and so it didn't really feel like a shell. But once
+it became clear that Open Unfettered Talnet access to computers was not a good idea,
+and SSH took over. Talnet still kind of persisted, I think a lot longer than maybe one might expect.
+People used Talnet to check out ports of computers, of computer targets. So for instance,
+if you do like a Talnet example.com space 80, then you can reach the port 80 of the domain example.com.
+We don't know what's there right now, but you can, you can issue commands like you could type in
+get, space, H, no, space slash, space, HTTP slash 1.1, and then I could do host, colon, space,
+example.com. So we're talking to port 80. We're asking, we're sending a get signal to a host on
+that server, and the host is example.com. We can see what we get. I'll hit return, and it seems
+to sort of freeze up. So I'll hit return again, and suddenly I get the HTML page of example.com slash
+index.html in my terminal. So yeah, this is still a useful tool. You can still check, you know,
+if you're not sure, oh, why isn't this host talking to me or whatever, then you can maybe talk to it
+through other means, like with Talnet. The problem with Talnet though is that it is a little
+bit simple. I mean, I don't there's probably more that you can do with Talnet. I've only used it
+really seriously. I've only used it for, yeah, looking at port 80 of a web server that may or may
+not be responding the way that I expect and an email server, which again, same, same scenario,
+is it set up correctly? Does it respond to, to commands? And if so, do those commands make it do
+the thing that I expect it to do. So Talnet is useful. It has been useful for a long time, but in
+today's world, of course, things are a lot more complex than just looking at port 80. So if I go to
+Talnet, if I do Talnet, spaceexample.com, space443, which ought to be the SSL port, and then do all
+those commands. So get a space slash space, HTTP slash 1.1, just closes that. It doesn't even want to
+hear about that. That's not a valid, that's not something that that an encrypted web server
+port or a secure socket, I guess, wants to hear about. It just disconnects after that kind of command.
+So Talnet isn't as useful in the encrypted world as I guess it used to be where things were
+just kind of listening, and the only, well, there was no encryption. It wasn't that there isn't
+an encryption layer there. It is simply waiting for a known set of commands, which is fair. That's
+fine, but we might need, especially if you're in the industry. You might need something a little
+bit more advanced than something that doesn't know how to deal with encryption. It turns out,
+I've discovered that open SSL, the open SSL suite includes a command in it, or a sub command,
+called s underscore client. And s underscore client is a generic SSL or TLS client that can
+establish a transparent connection to a remote server that is also running SSL or TLS. It's
+intended for testing purposes only and provides only rudimentary interface functionality.
+And there are other things within open SSL like there's s underscore server and a bunch of other
+stuff that I'm not even going to bother mentioning because I can't think of their use cases for
+myself. So s client though, s underscore client has been really, really useful for me when testing out
+various components on a network. And I wanted to kind of talk about it because I don't think it's
+widely known. I mean, I'm sure it's widely known among, you know, some people, I guess the people
+who use it. But to this day, like when you're when you're looking around on the internet for like,
+oh, how do I troubleshoot this or that? The time's town that comes up in 2021 is a little bit
+shocking. And I'm just kind of curious, I'm not, I'm not convinced that the internet knows that
+it's running on SSL now and that you can't just pop into a port and get information that you
+might want. So open SSL s underscore client is your ticket to testing your encrypted ports. And I
+guess I'll back up a little bit and just kind of do a quick overview of of what that means and why
+we would want to do it. And so I think if you've been playing around on networks for any length of
+time, then a lot of this will seem pretty familiar and basic. But if you haven't been, then here's
+some information for you. So for instance, if you just want to see if you can connect to a
+computer host, like you just want to see that computer host. If it's if it's apparently online
+at all, if it's a member of that network, then you might, you know, the the the super rudimentary
+easy thing to do would just ping it PI and G. And that's just, you know, I might do like a ping-c for
+account one. And then I could do for instance, example.com. And I get a response back from it,
+0% packet loss. So that means example.com, I guess, must be in a pretty healthy state. It responded
+to me. It's online. Everything appears to be normal with example.com. That's cool. But that's a very,
+I mean, like that's the most basic information. I think that you could possibly get from a host
+on your network. It's just yes, it's alive. And yes, it's responding. But it doesn't really tell
+you a whole lot about any of the services that may be running on that computer. Now you may not know
+what services are running on that computer either. And for that, there are tools like in-map that
+can scan that computer and basically go knocking on every single port. And see if it gets a response
+and then it'll report back to you that, hey, this set of ports, these numbers are running services.
+And that kind of used to confuse me a long time ago because, I mean, the word port, you think of
+kind of maybe ships and boats pulling into port maybe, or maybe you think of an audio jack,
+you put it into a audio port, something like that. And I understood that these ports weren't
+physical things on a computer that they're just, they're software devices that we can imagine
+exist. But I kind of, I think I always thought that they all did exist. Like there was a set number
+of them and they all existed. It was just whether software was running behind that port or not.
+And that's not quite true either. I mean, your computer creates a port when a service demands
+the port. You don't start up Linux or Unix and suddenly you have an array of ports that you can start
+services behind as needed. You boot Linux and then you start a service and then that port is registered
+with the system. And if it's registered, then a thing can see if it gets a response from that port.
+So it's kind of a blind test going to a server to try to figure out whether it has a certain port.
+And then what that port is doing is completely up to that computer as well. All of that's important
+to know because just because your scan of a computer sends back information about port 80 being
+available, it doesn't really mean that port 80 is doing what you think it would be doing. It may
+just mean that port 80 has been stood up by some service, but you don't know that that service is
+behaving properly as it as it would be expected to or even that that service is the service that you
+think it is. Now, if you're setting up say a web server for your company or for a department
+within your company and they open their web server web browser rather and try to get to that website
+that you've set up and they can't reach it, then you can probably sense you're the person who
+set it up. You can probably feel relatively confident that port 80 that you may detect is
+indeed running the web server that you've started, but is that web server doing the things that
+you expect it to do? That's the that's a question that yes, you can hit it as much as you want with
+a web browser, but you can only discover so much from whatever message your browser gives you when
+it can't find a web page. And that's where traditionally telnet has come into play. Now again,
+the problem with telnet these days is that quite possibly your web site your web server is
+serving pages on port 443. You're forwarding port 80 or any request coming into port 82, port 443.
+Maybe maybe you're not, but let's say you are. And so in other words, when someone requests web
+information makes HTTP requests to port 84 and onto 443, you're you're getting encrypted data.
+And you're getting asked about the client or that not the client, the certificate of that page.
+And that is squarely open SSL domain. So if we do open SSL S underscore client, like I said,
+that's kind of the sub command. And then we just need to tell it what to connect to. In this case,
+we want to connect dash, dash connect example.com space 80 and that didn't work. Not space 80.
+colon 80 space 80 is telling it. Okay, so colon 80 and it looks like it has connected tells me it's
+connected and it tells me that there's no peer certificate available, no client certificate CA name
+sent SSL handshake has read seven bytes and written 305 bytes and there's no cipher,
+there's no security negotiation, support, compression none, and a bunch of stuff that says no,
+no, no, no. And that's fine. I mean, like if I do that to example.com colon, I don't know,
+let's do 99, then it sort of has timed out or not timed out, but it's doing something. It's
+thinking about it, but it's going to eventually time out and tell me a different message than
+than what I got here. So that is telling me that, you know, it's it's quite likely that that there's
+a service running behind 80 and and and if I am feeling sure that it is a web server, then I can
+feel pretty certain that that's what that would be. But so I mean that that that could be useful,
+but but not necessarily what I really want to do probably is go straight to I'm going to cancel
+that out and try to waiting for it to cancel out. So what I really want to do is open SSL S
+underscore client dash connect space dash connect example.com colon 443 and then I'm going to
+add one more argument here, which is show certs. So that's dash show certs as in show certificates
+and that gives me a screen full couple of screen fulls really. If you're used to looking at keys,
+then this looks like one of them really. So it tells me that it has connected the depth is two,
+the domain, the certification is for example.org, the certificate chain. It's a good three or four
+screen fulls of text giving me all the certificate information I get ever want from that server.
+Because I've been talking so much, it has also timed out. So I'm going to I'm going to do that again.
+I'll endure the three or four screen fulls of text that it shows me and now I'm it reaches the end
+of that and then it just kind of pauses and this is kind of this is the prompt, which isn't a
+great prompt, but that is actually a prompt. So I can now type in things like get space slash
+space HTTP slash one dot one hit return and then my host of course, I want to look at example.com
+again and then return return and now I see the example.com slash index dot HTML as it is served
+over SSL. Now again, if I didn't care about the SSL component and if this weren't example.com,
+which is serving pages that are accessible over port 80, then I wouldn't, you know, this is a
+useful for for SSL and that's significant. If you want to troubleshoot the non SSL HTTP stuff,
+then you can do that with telnet. Like I say, there's still use cases for telnet, but if your site
+is only serving stuff through SSL or over SSL, then open SSL the command s underscore client sub command
+is really what you want to use or else you will not get the information that you're looking for.
+You'll get information. It just won't be all of the information that you would expect. Same goes
+for email. If you're testing your email server, then all your telnet knowledge is still applicable.
+It's just you're going to have to kind of transition it over a little bit to open SSL s underscore client
+and that involves first and foremost getting the base 64 version of your username and password.
+I don't exactly know why I've never actually looked into it, but it's there's a super easy one
+minor to do this and it's purl dash m m i m e colon colon base 64 capital B there dash e and then
+print in code underscore base 64 parentheses quote and then you know whatever your username is. So
+you know bogus close quote close parentheses semicolon close quote close single quote and that gives
+you a string of text that looks like gibberish, but it's actually really useful. You'll want to
+copy that and you want to do the same thing for your password. So you've got your username and your
+password both encoded as strings of base 64 and then you can use open SSL s client to connect to
+your mail server. So that would be open SSL s underscore client to dash start TLS or yeah start TLS
+and then smtp is the protocol we're going to use here and then we'll do again dash connect to
+let's just pretend like it's mail.example.com. I'm going to assume that that doesn't exist
+and then colon 587 because that's or whatever port you're serving your your email over but 587 is
+a pretty common one and then you hit return and presumably it would connect to that port and then
+you do that weird tone that login thing where you do hello except it's EHLO EHLO example.com
+auth login and then you paste in your username as as base 64 and then you paste in your password
+as base 64 and then you're in you're connected you're you're you've authenticated you are now
+talking directly to your email server and you can do a normal telnet style test which would be
+and you could find these kind of tests all over the place online that with like I say you can almost
+not avoid them there they're they're just still out there in such in such number but a a simple
+test like this would be mail space from colon space no reply at example.com next line rcpt space 2
+like receipt to rcpt 2 space 2 to no sorry rcpt space to colon and then say admin at example.com or
+whatever you you can get an email from or get email delivered to next line data next line subject
+colon test 123 and then you can write some text like this is my test email to myself as long as
+you end your text with a on a on a with a dot on an otherwise empty line it knows that you're finished
+sending your email and then you can quit you can get out of out of that mode because now you've
+sent a test email directly from just talking to that email service go check your email on your
+admin at example.com or whatever I said and you'll hopefully ideally see an email from no reply
+at example.com and and you've done it and if you've done that with any email server ever with
+tell net then you know exactly that incantation is very very common the only differences that you
+needed something to get past that authentication block which of course is provided to you via open
+SSL s underscore client without that you're not going to be able to get through that authentication
+process with with tell net at least not as far as I know so anyway I just wanted to talk a little
+bit about yeah open SSL s client because I have found it very very useful in the modern encrypted
+world I hope that's useful to you and if you have tips about this sort of thing feel free to record
+your own episode of hacker public radio it's worth it and it helps lots of people thank you very
+much for listening talk to you next time
+you've been listening to hacker public radio at hackerpublicradio.org
+we are a community podcast network that releases shows every weekday Monday through Friday
+today's show like all our shows was contributed by an hbr listener like yourself
+if you ever thought of recording a podcast then click on our contribute link to find out how
+easy it really is hacker public radio was founded by the digital dog pound and the infonomicum
+computer club and it's part of the binary revolution at binrev.com if you have comments on today's
+show please email the host directly leave a comment on the website or record a follow-up episode
+yourself unless otherwise status today's show is released on the creative comments
+attribution share a light 3.0 license

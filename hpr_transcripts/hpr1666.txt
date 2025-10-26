@@ -1,0 +1,394 @@
+Episode: 1666
+Title: HPR1666: Bare Metal Programming on the Raspberry Pi (Part 3)
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1666/hpr1666.mp3
+Transcribed: 2025-10-18 06:41:37
+
+---
+
+Its Monday 22nd of December 2014, this is HPR Episode 1666 entitled Bear Metal Programming
+on the Raspberry Pi Part III and is part of the series Programming 101.
+It is hosted by Gabriel Evenfire and is about 69 minutes long.
+Feedback can be sent to Evenfire at SDF.org or by leaving a comment on this episode.
+The summary is, this episode embedded programming, arm co-processors and the arm memory management
+unit.
+This episode of HPR is brought to you by An Honesthost.com, get 15% discount on all shared
+hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's Honest and Fair at An Honesthost.com.
+Hello, welcome to Hacker Public Radio.
+This is Gabriel Evenfire.
+This will be the third episode in our continuing series on Bear Metal Programming in the Raspberry
+Pi.
+In the first two episodes, I talked about how to get basic build environment up and running,
+how to be able to communicate with the software you load in this Bear Metal environment using
+a very basic serial driver and then how to create a loader to load your code more elegantly
+using the X modem protocol and the aforementioned serial driver.
+One along the way we delved into topics like interrupts and interrupt management and
+various other things.
+So in this episode, I'm going to start by discussing my experience porting some of my favorite
+sea libraries to the Bear Metal environment.
+And then the next part of my discussion in this episode will center around how to configure
+the memory management unit and the cache in the Raspberry Pi.
+Because it turns out as I found by going through this exercise, the performance of this process
+are really sucks if you don't use the cache.
+This isn't surprising, but it's always interesting to see how it actually pans out like that
+when you put real software on this chip.
+In the way, we'll also have to cover then how to use co-processors in the ARM architecture.
+This turns out to be necessary because configuring the memory management unit and the caches
+requires interfacing with the system co-processor.
+Alright, so let's talk a little bit about the gotchas of programming in embedded environments
+or what we're calling in this series Bear Metal programming.
+If you've written C code before, you'll find that a lot of the functions that you just
+come to take for granted are simply not there in an embedded environment.
+There is no dynamic memory management.
+So there is no malloc or free, or if you're a C++ programmer, new and delete, not unless
+you write it yourself.
+There are no files.
+In fact, there is no I-O at all except for what you wrote and certainly no networking.
+Now again, in our examples, we have some basic I-O going over the serial comms that's useful.
+But certainly there's no file system and there's no such thing as a console yet.
+There's no way that printf as embodied in the GNU standard library is just going to
+magically run over our serial connection.
+So your C programs, if they're written against those standard C functions, simply are not
+going to compile or work.
+In an embedded environment, you generally have no floating point by default.
+On some platforms, you'll find that a multiply instruction can be a little bit expensive,
+although the ARM architecture doesn't seem to be one of those.
+Writing functions that take variable numbers of arguments, for example like printf, can
+actually be very troublesome because the calling convention is a little bit awkward to say
+the least.
+You have to be very careful and learn about how your compiler stores the variable length
+arguments and allows you access to them.
+There are no native functions for getting the current time.
+There's no way to let your process or your code just go to sleep and be woken up later
+when something happens.
+These are all functions that an operating system generally performs.
+One of the trickiest things to get used to in many embedded environments is that there
+is often no divide operation or mod operation.
+Now as programmers, we use these quite frequently when we just take for granted that they're
+there.
+But generally, many processors, especially embedded ones, don't take up the space to support
+those operations.
+They require some software to do a software division algorithm, which of course will be
+much slower.
+Now why would they do this?
+I mean, divide is such a fundamental and important operation.
+Why would a chip designer omit it?
+Well, as I said, it could actually be fairly expensive in terms of the amount of transistors
+in the chip itself.
+This is space that you really don't want to take up unless you have to.
+You can also emulate division for certain values quite easily, in particular, to divide
+by powers of two.
+All you have to do is shift bits in a binary number.
+So embedded programmers quickly learn to multiply and divide by using bit shifts and to
+always multiply and divide by powers of two to make it easier on themselves.
+Similarly, a modulus operation that is a remainder can be computed by ending with the divisor
+minus one when the divisor is a power of two.
+This turns out to be a mask of all of the bits that precede the divisor because, of course,
+a power of two in binary is just one bit set.
+So taking the remainder is essentially the equivalent of handing with a mask of all
+ones for all the digits that are in a lower bit position than the divisor.
+Now it turns out that there are other ways to handle division for divisors that are
+non-powers of two.
+One way to handle division when you are dividing by a constant, and that constant is known
+ahead of time, is by using a computer's multiply operation, and essentially what you are
+doing in this kind of scenario is you are multiplying by one divided by the divisor.
+You use a double precision multiply operation, and then you discard the fractional remainder.
+So for example, if you were trying to divide a 32-bit number by a 32-bit number, you use
+a multiply operation that multiplies the two 32-bit numbers and produces a 64-bit result.
+What you multiply by is again the binary representation for one divided by the divisor, and then
+you take the 64-bit result of that multiply and you discard the lower 32-bits.
+Because essentially what you have done is you have turned those 32-bit multiplication
+into a fixed point multiplication where the decimal point is at bit 32, and within the
+resulting 64-bit number, everything from bit 32 on, that is the high 32-bits, are the
+whole number part of the result.
+It's not even quite as simple as that, because you have to be very careful with the divisors,
+you select the inverse, you select because it may turn out for certain corner cases that
+you are off by a bit or two, you multiply, you have to select your multiple can very carefully
+there, and you may not want to do a full 32 by 32 multiply, you may want to have your
+fixed point for the fraction, not a full 32-bit wide, and you may need to do some shifting
+in addition.
+Overall, this process can be rather tricky because one really must be careful, however
+when using this technique, because it is possible if you don't select the correct multiply
+can in place of your divisor, you may end up with inaccurate results for certain dividends.
+So, I refer the interested listener to a wonderful book on all sorts of techniques for
+the mathematics of low-level programming, called Hacker's Delight by Henry S. Warren Jr.
+The first edition was published in 2002.
+The second edition came out two years ago, 2012, it is a just marvelous, marvelous book,
+that I highly recommend to anybody who is interested in programming, in programming puzzles,
+and how some of the simplest things in math can actually contain deep concepts within them.
+And if you ever want to learn about low-level programming tips and tricks for low-level programming,
+it is a must, absolutely a must.
+Okay, so plug over for that.
+Now, getting back to embedded programming.
+So, you can't, again, often rely on your division operation being there.
+And so, you want generally to avoid it, at least in any high performance code.
+So, getting back to the main point.
+So, there are ways to emulate division if you know in advance what you're dividing by.
+It happens if you don't know what the divisor is until the very last minute.
+Well, then you are stuck, right?
+If you don't know for your software, then what your divisor is going to be ahead of time.
+Then if you're on a chip that doesn't have a division set of hardware, which is often the case,
+then you will have to use software to emulate the division.
+And then instead of what would normally be a few cycles for some sort of a mathematical operation,
+or maybe even 20 cycles for a division operation, now you're looking at hundreds and hundreds of cycles.
+So, not something that you then perform lightly when you are dealing with performance intensive code.
+Okay, so, I've talked about what sorts of gotchas you must be aware of when moving your code to a bare metal embedded platform.
+I'll talk a little bit about what I ended up doing to move my library to the Raspberry Pi.
+My library is called Catlib.
+It is an accumulation of implementations of various data structures and algorithms that I have created over the years.
+I intended it always to be used both for embedded systems programming as well as application programming.
+And to that end, I made certain choices about how the library was designed.
+The data structures do not perform automatic memory allocation by default.
+They rely on the user to perform the memory allocation, which means that there's no assumption of whether malice or freeze available or usable.
+For certain data structures and algorithms, I couldn't get away from some dynamic memory allocation.
+So, for those, I had a controlled interface that one would use for allocating and freeing memory.
+And the user is required to fill in that interface to say how one gets more memory for the data structure.
+So, again, it can be tailored to the environment of the application.
+Most of the abstract data types do not contain any sorts of pointers to the data that they contain.
+It's usually the responsibility of the application developer to embed these data structures within other data structures in order to provide the appropriate encapsulation.
+Although it's a very simple exercise to then take these, we'll say, baribones data structures and extend them by creating simple container versions of them.
+And indeed, for application use, I do precisely that.
+I have the basic data structures and then wrapped around those I have further interfaces to make it more friendly for application development.
+In this library, I also did not want to assume that the standard library was available for use.
+So, I re-implemented large chunks of the C standard library for operations that I just considered fundamental enough that I wanted to make sure that they were always there.
+I didn't want to re-implement them with new interfaces when existing interfaces are perfectly serviceable.
+I just wanted to make sure they were always there.
+So, I have two different dynamic memory allocation routines that are then wrapped around by Malican Free.
+I have various string operations, certain standard input output operations, and so forth, all implemented within Catlib.
+I made sure that this library avoided the types of operators that I mentioned, floating point operations, division operations, and so forth.
+And I also wanted this to be very portable, so I tried to steer clear of those parts of the C language, which are compiler-dependent.
+For example, aspects of bit field definitions or structure sizes, you have to be very careful about making sure bit fields are almost completely non-portable.
+And you have to be very careful when using C types to be aware of exactly what sizes are required that the C compiler support, which may not be what you would normally expect.
+I have used this library on old computers, low-power machines before, and it runs just fine, but porting this to the Raspberry Pi has really been my first real test of this library in a bare-metal environment.
+The code in this library falls into two categories. One block of code is general purpose and portable, and this is what I wanted porting the Raspberry Pi.
+This includes linked list-balanced binary trees, bit sets, bit manipulation operations, delta lists, graphs, heaps, hash tables, lexical analyzers, string matching, byte packing and unpacking, sorting operations, IO interfaces, heap management, CSV file management, those sorts of things.
+Then there are the bodies of code that really depend on a Unix-like operating system and Unix system calls.
+And so there are libraries in there for event dispatch, networking, command line parsing, SOX 5 proxy protocol, process spawning, control, and various, as I said before, higher level interfaces to those lower level data structure implementations.
+At these things, this later block of code, I would never intend to run in an embedded environment, and so in this porting exercise I just have those compiled out, they don't actually make it into the Raspberry Pi version.
+So what happened when I decided to try to actually port this to the Raspberry Pi?
+I found there were a few more division operations in the library than I remembered.
+In particular, printf and the malloc and the caloc operation, printf used one for calculating in interesting bases for printf, you can print numbers in base 8 or base 10 or base 16, but you can also print in base 13 and 35.
+And so I think I'd end up using division for that.
+The caloc operation is used to allocate memory in blocks, and you give it a size of an individual block, and then you say the number of blocks that you want together.
+Well, I used a division in there in order to properly bounce check the operation.
+So when I first went and tried to work out how I was going to get around these, I just decided, well, I'll just limit the divisions to powers of two and do some rounding and round safe in the case of caloc, and that sort of thing.
+And that worked fine, and I just compiled out the use of the division there.
+But eventually, what I ended up doing was instead writing my own version of the division algorithm in software, and then I enabled it via pound defined.
+So now the library itself has a software division algorithm in there, and then by pound defined, you can either have it use the C languages division operation or the software division operation.
+And since it only shows up in a couple places, it's not too much of a problem.
+Then while I was at it, I used the same software division operation to basically allow the compiler to now correctly work with division, at least for unsigned integers.
+Because you see what happens is when GCC compiles the code and encounters the division operation, and it can't use one of the aforementioned tricks to try to change that division operation into something simpler like shifts or multiplies.
+Then it instead calls a software routine called underscore underscore AEABI underscore UI div mod, and that's just a function that it expects to be there and comes as part of GCC.
+But I'm not linking against any of GCC's libraries. I only want the code to be running to be the code that I've written. So in other words, what I did was I supplied two GCC, my own version of AEABI underscore you div mod.
+In porting catlib, I also found that there were some floating point operations, and those were pretty much all in my print effort team they were used for producing the printouts of floating point numbers.
+And so those I ended up compiling out of the catlib conditionally, and then I guess overall those were the major things I had to fix. I did improve, I will say, my support for non-posix build systems, but otherwise I was fairly happy.
+The port was fairly straightforward. Those couple things done, it seemed to compile correctly. So then I took it and I decided to run my first test to see if it really actually worked.
+And to do that, I ran a benchmark test, and I ported it over to the Raspberry Pi, that runs a lot of insertions and deletions into a balanced binary tree called a red black tree. So it's a fairly sophisticated data structure, and this test used dynamic memory allocation, and it used printfs to print the results, and there were all sorts of other dependencies in there. So it used a fair amount of the code that I wanted in this library.
+So I ran it, and what do you know? It worked. The Raspberry Pi accepted my code and ran the test, and the code in the library was successful. It would have been a normally an applications program in a unique environment.
+I was fairly gratifying to know that I had taken the proper steps in planning and thinking out how I wanted this library to work.
+Okay, so now the next topic that I want to talk about in this series, in this podcast, is virtual memory management and caching.
+And the reason I am following the previous discussion, this discussion is because after writing this software and getting, or porting my software and getting it to run, you know, I got a benchmark now of how fast this was supposed to go, and it really didn't look very good overall.
+And it very quickly became apparent that one of the reasons for this, the main reason for this was because the arm's cache is not enabled, and it just tells you how dependent our modern processor architectures are on good memory caching.
+So I wanted to enable the cache on the arm and see just how much of a difference that made. But before I could do that, I had to turn on the cache.
+But it turns out that the cache only caches memory on the basis of virtual memory addresses as opposed to physical memory addresses.
+So just to explain for those of you who may not be familiar, a virtual memory address is the address that your program sees.
+So when it refers to a piece of memory, it thinks that the address, that that data lives at this address, but in reality your program sees a fake view of the world.
+In fact, all the programs that are running see a very similar view of the world, like it seems to them that they have all of memory available to them.
+But this isn't true, and what really happens under the hood is that hardware dynamically translates that virtual address that it provides to the program into an actual physical address where the data actually resides.
+And this allows for interesting operating system tricks like offering the program, the illusion that it has more memory than is actually in the system.
+And then when the program wants to access more memory than actually is in the system, copying out parts that aren't being used to say something like disk and then copying in the data that they need and so forth and so on.
+This is all part of operating systems, 101 you could say. So that's virtual memory in a nutshell.
+The important part here is that the cache, when determining whether it has a piece of memory or not, it doesn't look at where that memory physically resides within the memory bank.
+It looks at where the process thinks it resides with the virtual memory address.
+So in order to turn on the cache, I have to turn on the virtual memory subsystem, which is an interesting exercise.
+But now there's still another step that has to happen before that.
+Before I can start playing with the virtual memory subsystem, I actually have to start understanding co-processors in the ARM architecture because you see co-processors are what are responsible for managing virtual memory and cache in the ARM.
+So that's the motivation for talking about co-processors. So let's talk about what they are and how they work.
+So a co-processor is, you could say, it's silicon that lives on the ARM chip but it's not a standard part of the ARM architecture and it could theoretically be ripped out and replaced.
+But it is tightly coupled to the ARM chip and the ARM can access it within one cycle by executing a special instruction.
+So think of it as an extension to the ARM.
+Now, of course, as we've talked about before in our Raspberry Pi on the Raspberry Pi chip, there's the ARM chip but there are also peripheral functionality peripherals on it such as the serial driver, for example, the serial device or the timers or whatnot.
+And those do not use the co-processor interface even though those are on the same die, the same chip.
+So co-processors, what I can say is co-processors in the ARM world are used for functionality that has to be even closer than those sort of peripheral devices.
+The way that the ARM processor interfaces with these co-processors is it has two special instructions.
+And one is MRC in the others, MCR. And MRC stands for move from ARM to the co-processor and MCR stands for move from the co-processor to the ARM.
+So essentially, the two operations that the ARM is able to perform when dealing with co-processors is to move data from its registers into the co-processors registers or move data from the co-processors registers into the ARM's registers.
+That's it. That's all that these two devices can do. And yet, in the midst of that simple model, you get a vast amount of expressive power.
+There's a little more than just moving the data in and out of the co-processor. Also, when moving the data in and out of the co-processor, the ARM specifies to the co-processor two three-bit op codes.
+So they get, you could say, six bits, which amounts to, you know, 64 operations that occurred as part of the move.
+So the instruction is really specifying six different pieces of data within the instruction.
+The two three-bit op codes up to two ARM registers that you could be pulling data or pushing, pulling data from or pushing data to, and up to two co-processor registers that you can be pulling data from or pushing data to.
+And these are 32-bit registers, by the way.
+So now, just two example co-processors that happen to exist in the Raspberry Pi or co-processors 15 and 14.
+Co-processor 15 is the system co-processor, and it manages system resources like memory, memory permissions, the cache, the memory management unit, and so forth.
+So that's the one that I want to use to turn on the cache. Co-processor 14 is a floating-point co-processor.
+So the ARM instructions that has may not have floating-point instructions, but the co-processor 14 does.
+And so a vendor using the ARM architecture can feel free to omit floating-point if they don't need it or include it if they do, and the way that the ARM then can perform those floating-point operations is through this floating-point co-processor.
+As an example, use of a co-processor.
+Let's say we want to disable the cache in the Raspberry Pi's ARM.
+So this requires, specifically, clearing bits 0, 1 and 2, that is the 3-lease significant bits, as well as bit 12, in co-processor register c1.c0 using the opcodes 0 and 0.
+So in other words, you have to read co-processor register c1.c0.
+So that means you specify register 1, co-processor register 1 for the first co-processor register, and co-processor register 0 for the second.
+And it's really still just a 32-bit value that you're pulling out.
+And you read that value that's there, that 32-bit value using opcodes 0 and 0 for the two opcodes for opcode 1 and 2.
+And then you have to, that 32-bit value clear out bits, that is you 0 bits, 0, 1, 2, and 12, and then you have to write back to that same co-processor register the new value, and that disables the cache.
+So that's just an example of how one interfaces with co-processors to achieve results.
+Now, we'll talk a little bit about how I decided I wanted to architect my software for managing co-processors in my Raspberry Pi libraries.
+Now, you may have noticed that I said the interfacing of this co-processor requires these special assembly instructions.
+And the problem with those assembly instructions is generally there what the assembly instructions are fixed when by the compiler or the assembler.
+You tell them exactly which opcodes you want to execute and exactly which registers you want to use, and that's it.
+And so that's what the compiler or the assembler then puts into memory to execute.
+So this means that if I wanted to execute code to configure the system co-processor for all of the special operations I'm going to be performing that involve the co-processor, I have to write these custom assembly instructions.
+And I just didn't want to be doing that. I wanted something that was a little more flexible. I just decided that I wanted to do it and see if possible.
+I mean, I'm not afraid of assembly. I wrote plenty of it and I do it every day, but I just didn't feel that was necessary to do in this case.
+So the solution that I came up with then was to actually write self-modifying software.
+Now in the file core.s which is a file that I have directed you to in previous podcasts contains all of the assembly for these libraries.
+You'll find that there is one co-processor instruction called CPOP for co-processor operation.
+And it takes two parameters to unsigned ints and it returns a 132 bit value as its return value.
+In that function there is a single instruction that is at a known location from the start of the function.
+That instruction is the instruction that I want to be able to modify to be the ARM MRC or MCR instruction that I want to execute.
+So in other words, I will have a C code that will build up really assemble the MRC or MCR instruction that I want to execute,
+putting in all the parameters which co-processor I want to access, which registers I want to access within it, what I'll code to use, whether to use MRC or MCR.
+And build that up as a 32 bit word and then I will write it over the instruction in that function.
+And then I'll execute the function and that will carry out the instruction.
+Self-modifying code. You have code now that is modifying its actual own source code.
+In this case I'm only modifying one particular instruction.
+But this is one of these things that most computer teachers and computer science these days, most instructors in programming will tell you never to do.
+So it felt fairly satisfying to find a good use for it.
+But there are some little gotchas with this approach.
+If you understand a modern processor architecture, you understand that the processor, in this case the ARM, executes instructions in stages in a pipeline.
+And in the first stage it might read the instruction in and the second stage it may decode it to figure out what it's actually going to be executing.
+In the third stage it may be selecting from several processing units to carry out the operation because it actually may have several that it can use in parallel.
+It may be trying to predict whether control as a result of this instruction is going to jump to another part of the code.
+And then finally somewhere around stage 4 or 6 or something like that, it will actually at stage 4 it will be fetching the actual operands of the instruction and then finally somewhere around 5 or so it will generally execute the instruction and 6 it will write it back.
+Pipelines can be 3 usually are somewhere between 3 and 7 stages but certain Intel architectures have had up to 30 stage pipelines which are just ridiculous in many ways.
+But that was what they wanted to do. That was what they needed to do in their hardware designs to be able to maintain the clock speeds that they were trying to achieve.
+The ARM pipeline is much much smaller being risk architecture. Again I think somewhere in the 4 or 5 stage maybe 6 stage range but I'd have to go look it up.
+Okay but the upshot of why this is important is if I modify an instruction in memory and then try to execute that instruction.
+Well if the instruction that I'm modifying has already been loaded into the pipeline and even though it's changed in memory what actually comes through the pipeline will be what was in memory before I modified it.
+So we have to make sure that the pipeline drains before reading the actual instruction.
+Okay so that's one little bit of subtlety. Another is the ARM architecture itself is what's known as a Harvard architecture where they call it a Harvard architecture.
+It's not quite a Harvard architecture. In a Harvard architecture program code lives in one memory and program data lives in different memory.
+Now in the ARM it's still all in the same it's still all one block of main memory which would be a traditional von Neumann architecture. However the ARM actually has separate caches for the instructions that are going to be executed and the data that is being used as program data.
+And so because of that you could say it's like a Harvard architecture for a computer.
+Anyways the upshot is if I write a piece of memory with a new instruction the ARM will by default assume that that's I'm modifying something in the data cache.
+But if the instruction is loaded in the instruction cache it won't be changed over there. So in order to carry out this self modifying approach I have to invalidate the instruction cache after I modify the instruction.
+There's also another subtlety if you have multiple processors that are all accessing the same memory multiple ARM processors which is not the case in the Raspberry Pi. This is just something to be aware of with self modifying code in the ARM architecture in general or maybe in any architecture in general.
+If you have multiple processors that might be accessing this memory at the same time and you want your memory to be coherent then when you go and modify a piece of data you want to make sure that all the other processors in the system also see the most up to date piece of data.
+So you have to make sure that you tread carefully so that the system always behaves in a coherent way.
+Usually this is accomplished through the use of memory barriers which are special pseudo instructions which force synchronization of the buses and so forth.
+Again not necessarily on the Raspberry Pi which only has a single ARM processor but just something to mention.
+One more subtlety is I wanted this approach to co processing to co process or management to avoid using the program stack because it's most likely the case that my software will be running with the stack but I wanted the same approach to work even if the stack was unavailable.
+So the trick there is that if I can't use the stack then I can't have my code save any of the registers that it might want to use on the stack.
+But it turns out that I need at least one register as sort of scratch data in order to in my assembly code that contains this CPOP function within the CPOP function that has this instruction that I'm going to modify.
+I am going to need to modify at least one of my registers so that I can perform the operations needed to clear the instruction pipeline, clear the instruction cache and so forth.
+So I was a little stuck with that until I realized well what I can do is I can take as an argument to this function an extra parameter and tell the caller to always put zero in that parameter because that's the number that I want to put in that register essentially.
+And what I'm doing there is essentially forcing the compiler to do the job of saving that register before calling me rather than relying on me to call it.
+So in other words the compiler sees that this function takes two arguments it decides it always has to use registers zero and one for the first two arguments.
+So it will always make sure that if it has anything important stored in those registers that it saves them off somewhere else before calling the function.
+So now happily my coprocessor operation doesn't have to rely on there being a stack or saving any data off it knows that the caller has already done that before the call of the function itself.
+Okay. So as I said this will coprocessor operation does existing core dot s and then I have a c version of the function that essentially wraps around that and then I have various functions built up around those functions that modify the instruction in the assembly file.
+And then invoke the cpop function to carry out this custom assembly instruction as you might guess from my previous discussion I built up a in particular a small suite of routines around this foundation to manipulate the system coprocessor to make it easier to manipulate the memory management unit.
+So again the idea is that you have a foundation that is this idea of a self modifying a function that you're actually going to modify and software and then around and you have to build that carefully so that self modifying code actually works.
+And then we build up around that libraries of functions that build coprocessor operations and use and load that into this self modifying code and execute it.
+And then around that we build even higher level functions that actually do the operations that we care about like clearing the cache by calling these lower level functions.
+So I'm really happy with this approach. It worked. It took a lot of debugging. It's not right now in its current form as general as it could be because it doesn't handle the possibility of 64 bit operands.
+It only handles 32 bit transfers to or from the system coprocessor and 64 bit is definitely allowed and I just haven't had the need to do that.
+So I didn't implement a 64 bit version but I suspect I will in the future.
+The one thing that was very difficult to do when debugging this is that when I was doing it wrong it would just lock up the Raspberry Pi entirely and I would never see what went wrong.
+There was no way to debug it. So I had to use creative tests and print out states before the system, before I would get to what I suspected was a problematic operation and then try to infer by based on whether it did lock up or didn't lock up what might be going wrong.
+And I found that for some reason the ARM architecture seemed to require me to invalidate the instruction cache before executing these modified instructions even when the instruction cache was disabled which made no sense.
+I would think of the instruction cache was disabled. There's no need to invalidate it but apparently you still have to anyways.
+So anyways after much hacking and carefully bugging it works and now I can build any coprocessor call from plain ccode and I have a corpus of system coprocessor calls that now work from ccode.
+I guess it was satisfying because I thought the solution was a fairly elegant one for making it easy to create more of these coprocessor calls without requiring lots and lots of custom assembly.
+By the way this approach would never work if there was a real operating system present because most real operating systems won't let you go and really really modify any piece of code, not without either special permissions or without the appropriate system calls.
+Like sometimes you can remap regions of memory using the mmap call and make them executable but they aren't set that way originally.
+So in other words you can take what was previously just data that you could read and write and now you can make it executable as well so it can be run like code or alternatively you can take a region of memory that was marked as executable but not writable and then make it writable as well so you can modify the code.
+But again sort of practices generally frowned on in most environments and it's mainly because it's hard to reason about if you use it too much along the other hand it's extremely powerful and with great power comes great responsibility.
+So in a more secure environment this kind of approach wouldn't work but hey this is bare metal programming there is no operating system and I haven't built up a security model for this code yet so that there's nothing to prevent me from doing it so it's rather fun.
+Now that we've talked about how coprocessor's work in the system let's put this information to use.
+Going to configure the memory management unit and enable the cache.
+Now before I can actually configure the memory management unit I actually have to talk about how one builds tables for the ARM processor and the Raspberry Pi.
+To find this information you need to consult sections 611 and 612 of the ARM technical reference manual.
+Actually all of section 6 and parts of section 3 are useful but 611 and 612 in particular go into page table configuration.
+What you need to remember is that in a page table every 4 byte entry refers to a single page of memory and the ARM architecture pages can come in three different sizes.
+You can have 4k pages, 1 megabyte sections or 16 megabyte super sections.
+Now it turns out that the 16 megabyte super sections are actually just composed of 16 consecutive 1 megabyte sections.
+What makes them special is that those 16 consecutive 1 meg sections will always have exactly the same attributes and so they can correspondingly take up only a single entry in the translation look aside.
+Which is a cache of the page table entries that the processor automatically keeps in order so that it doesn't have to keep walking page tables every time it needs translations.
+So super sections are a way to save space in the cache.
+For my purposes just because it is the simplest I think I ended up using just a page table consisting of all 1 meg sections.
+Now since it is a 32 bit machine there are a total of 4 gigabytes of address space so that means there are going to be 4,096 entries each one of those entries referring to 1 megabyte of the address space.
+4,096 entries times 4 entries per byte means that the whole page table itself will be 16 kilobytes long.
+Because of the format of the page table entry and the page table itself and how it is accessed.
+The ARM hardware essentially requires that that page table be aligned naturally.
+What I mean by that is that the address of that page table must be a multiple of its size.
+So this in this case this 16 kilobytes page table must be on an address that is aligned to 16 kilobytes.
+In the ARM you can actually split up the page table translation into two separate regions by using two separate registers in the ARM to point to two different tables.
+These are called translation table base registers.
+The idea in the ARM architecture is that you can use one of these registers to keep a common page table for address space mappings that are used across all processes like for example a map of the kernel address space.
+And then another one that is unique to the process.
+This saves having to create mappings every time one creates a process for that common address space layout.
+I'm not going to use that particular feature. I'm just going to not split the memory at all.
+I'm going to put it all into translation table base zero creating the page table entries is a little bit tricky.
+But what I'm going to do is I'm going to have three types of page tables in my default configuration.
+I'm sorry three types of page table entries.
+The first type of entry will map regular RAM that is regular memory all pages in this region will be readable and writable and executable.
+They will be bufferable they will be cashable and basically I'm going to have an entry for every page in the first 512 megabytes of the address space.
+Then the second type of page table entry I'm going to have is going to be for memory for address space that refers to peripherals and device memory.
+Our memory map diode that we have been using in this series all along to communicate with say for example the serial driver or the GPIO pins or any other peripherals in the system.
+We don't want this memory to be preferable or cashable because we want our reads and rights to happen exactly when we issue the read and write operations.
+We don't want them to be optimized away by the hardware under the hood.
+So I use the second type of page table mapping to ensure that we're not doing any interesting memory management for accesses to memory in that region and that comprises by the way the second 512 megabytes of the address space.
+And then finally for the remainder of the address space that memory shouldn't be accessed at all for the most part or at least not currently because I'm not playing around with any of the graphics processing.
+And so for that address space I will have the page table entries market as inaccessible.
+All of the code to build a nice page table according to the specification I just provided can be found in the file source slash RPI RPI dot C in my Git repository in the function RPI underscore MMU underscore simple underscore PHY MAP.
+So RPI memory management unit simple physical map.
+So this is a function just takes one parameter which should be a pointer to a block of memory that 16 kilobytes long and is aligned at a 16 kilobytes address boundary as I mentioned above.
+So call that function and it generates your complete map of the arm address space ready to be used by the memory management unit.
+Okay, so now let's talk about how one passes this in and sets up the memory management unit and configures it.
+For this information you need to be reading section 6.4 in the arm technical reference manual.
+Unfortunately that section is a little bit vague it gives you instructions like step one program all the relevant co-process or 15 registers for the corresponding world.
+And then it proceeds not to tell you what those registers are.
+So I had to do quite a bit of digging and reading throughout the entire section to figure out which co-processors I actually cared about.
+But it gave me at least a starting point.
+Here are the steps for enabling the memory management unit as I've distilled them.
+First one should disable interrupts of course it would be very very bad to be interrupted in the middle of playing with the memory management unit.
+Next one should disable the instruction cache, the data cache, the memory management unit itself just to be sure.
+I mean it should already be disabled when you start up but you know just to make sure you're in a clean state.
+This requires clearing bits 0, 1, 2 and 12 from co-processor 15's primary register 1 with opcode 1 being 0.
+And the secondary or sub register of register 1 being set to 0 and opcode 2 being set to 0.
+So in other words when you build your instruction to read and write to the co-processor the primary register is 1, opcode 1 is 0, secondary register is 0 and opcode 2 is 0.
+So in order to I say clear those bits of course what one must do is first read what is there in that register and then 0 it out in an arm register and then write that arm register back to the co-processor.
+So once we have disabled the instruction and data cache and memory management unit then the next step to setup the memory management unit is to invalidate both the instruction and the data cache.
+We do this by writing to co-processor 15's primary register 7 using opcode 1 being 0 and secondary co-processor register being 7 and opcode 2 being 0 again.
+And you can write anything, any sort of write at all to that register with those opcodes will invalidate the caches.
+Now you also next need to invalidate the translation look aside buffer which as I said above is a cache of page table entries in the memory management unit.
+For that you write to co-processor 15's primary register 8, opcode 1 is 0, secondary register is 7, opcode 2 is 0 again writing anything will clear the TLB.
+Next one needs to enable the correct permissions for the memory domains that the page table entries specify that they belong to.
+Memory domain is a memory management unit concept specific to the arm. I just did a very brute force here and I just enabled full permissions on all of the memory domains in the system even though I set all of the page table entries just to be in memory domain 0.
+But anyways, so how does one enable all of the permissions for all the memory domains? Well you write a value of all ones to co-processor 15's primary register of 3, opcode 1 is 0, secondary register is 0 and opcode 2 is 0.
+The next step is to configure the registers mentioned above called the translation table base registers and those registers basically contain the pointers to the start of the page table.
+Now again, I'm not really using the TTB register 1, I only use TTB register 0 in practice. To that TTB register 0, I need to write the address of the page table to co-processor 15's primary register 2.
+2, opcode 1 is 0, secondary register is 0, opcode 2 is 0.
+And one also needs to write to the TTB configuration register to tell us how big that page table is and for that operation what one must do is write a 0 value to co-processor 15's primary register of 2, opcode 1 is 0.
+So secondary register of 0, opcode 2 is 2 and again you write a 0 to that register if you want to say okay I'm going to use a 16 kilobyte page table and there isn't going to be a split between the page tables.
+So having done all of that the page table registers are all configured so now we can turn on the memory management unit and then we can turn on the instruction cache and decache but actually in practice we can turn all of those on at once by one register right.
+Now what we do is we once again read co-processor 1, opcode 0, secondary register 0, opcode 2 is 0 and now this time we set bits 0, 2 and 12 in set them to 1 in the value that we just read.
+And then we write that new value back again to co-processor 15's primary register 1, opcode 1 of 0, secondary register 0, opcode 2 of 0.
+And at that point we will have turned on the memory management unit and the cache and then after that the last step in this process would be to re-enable interrupts because you recall I disabled them at the beginning.
+All of these steps are encoded in the RPI.C file in RPI underscore MMU underscore enable that function just takes a single parameter which is the address of the page table.
+So that's it you do those steps and now you should have a functioning cache.
+The page tables actually worked and the cache worked pretty much the first time.
+So what's the value of all of this? Well I then you may recall I had a test program that I used to test my red black tree implementation and that I had gotten that working on the arm.
+And so I instrumented that program to say okay how many ticks of the arms clock will it will elapse when running this test and I have the before and the after results essentially.
+So when I was running without the cache enabled 32,768 operations ended up taking roughly 2,100,000 ticks to perform.
+When I enabled the cache they took a mere 190,000 ticks to perform the same operations.
+When I bumped the test to add 1024 elements to the tree at a time and remove them meaning that the total number of operations went up to 128.
+K operations the ratio was the same. It took about 11 million ticks to run without the cache enabled and it took about 1 million ticks to run with the cache enabled.
+So this tells you just how important again caches are in modern processing architectures. It's a tenfold speed difference in your code and your execution have that cache on.
+Okay so that should do it for this episode. If you'd like to get in contact with me you can leave some comments on the hpur website or you can email me directly at evenfireatstf.org.
+As always if you would like to take a look at the code that I'm talking about in this series you can check it out on www.gatorius.org slash catrpi.
+And I will of course have links to all of that information plus the manuals that I mentioned in this episode in the show notes.
+Until next time this is Gabriel even fire signing out.
+you

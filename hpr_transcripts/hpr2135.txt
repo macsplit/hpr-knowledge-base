@@ -1,0 +1,378 @@
+Episode: 2135
+Title: HPR2135: Audio speedup script
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2135/hpr2135.mp3
+Transcribed: 2025-10-18 14:46:47
+
+---
+
+This is an HBR episode 2,135 entitled, audio speed up, script, and in part on the series
+Bash Cripting.
+It is hosted by Dave Morris and in about 28 minutes long.
+The summary is, I want to speed up some of my podcasts and truncate silence in M2,
+so I wrote a script to do it.
+This episode of HBR is brought to you by an honesthost.com.
+At 15% discount on all shared hosting with the offer code HBR15, that's HBR15.
+Better web hosting that's honest and fair at An Honesthost.com.
+Howdy folks, this is 5150.
+If you're going to attend the Ohio Linux Fest this weekend, October 7th through 8th,
+be sure to seek out the Linux podcasters booth.
+It is a collaboration between hacker public radio, the pod nuts network,
+cronopanic augcast, Linux logcast, and your other favorite shows.
+Joe Hatt of the new single board computer and virtual private server show is graciously
+providing swag in the form of mugs, stickers, and t-shirts.
+And I am bringing an unwarranted t-shirt from Kansas Linux Fest 2015, an auguro year.
+That's going to be first come, first serve, under the desk, so you're going to have to
+ask for ends of stickers.
+We'd love to be to our fans in Columbus.
+See you there.
+Hello everyone, this is Dave Morris.
+I've got a bash script for you today.
+I've called this episode audio speed up script, and I'm going to be talking about script
+I wrote in May 2015.
+It was based on something that Ken Fallon did in show 1,766, when he talked about how to
+use the SOX program, SOX, to tronkate silence in audio and to speed it up.
+So I was inspired by this, but the SOX command was really complicated and quite hard to tweak
+for different settings and stuff.
+So I wrote a bash script to make it a bit easier to use.
+So I thought I'd share this script with you today.
+I called it speed up, even though it doesn't only do speeding up, it also does silence tronkating
+in a few other things.
+So it's a bash script, as I said, you invoke it as speed up followed by options followed
+by a file name.
+I wrote it in the notes, and there are long notes for this, as they usually are with my
+shows, because I like writing, obviously.
+If you put the script in your bin directory, this is a convention you create a directory
+called home, in your home directory, called bin, b-i-n, and you put scripts in it, and
+you make sure in your .bash-r-c that you have added the bin directory to your path
+very a p-a-t-h, capitals, capitals, p-a-t-h.
+And if you do that, I think some bash-r-c's do that for you, actually, can't remember.
+But if you do that, then you don't need to put a path on the front of the script.
+So conventionally you put .slash for a script that's in the current directory, but if you
+put it in bin, you don't need to bother with that.
+Anyway, that's a bit of a waffle thing, there's nowhere in particular.
+But the example I've cited doesn't use any .slash or anything.
+So let's go through what it does.
+Takes a file name, which is pretty obviously, is the audio file that needs to be worked
+on.
+You need to give it a full path.
+What happens is the script will rename that file and replace it with the modified version,
+so it doesn't modify in situ, but it creates, the modified file has the same name as the
+original.
+I did that for my own benefit, really, because I'm using this on podcasts, and my podcasts
+are pointed to in a database.
+So it is database to manage everything to do with podcasts, playing them, deleting them
+and so forth.
+So I didn't want the name of the file to change.
+The original file is kept with an underscore after the name and before the extension.
+So xyz.oGG turns an xyz underscore.oGG.
+If you use an option to speed up minus lowercase c, then that file will be deleted.
+My podcast workflow system deletes them anyway.
+So it's not a problem for me, but to turn it off this to the world.
+Anyway, let's whizz through the options.
+Minus s is the option that causes the audio to be sped up.
+You can apply different speeds, and you do that by repeating the minus s, so you can have
+a number of these.
+There's also minus t, which causes silence to be truncated, and you can repeat that
+one, minus t, minus t, which will increase the sensitivity of the truncation process.
+Now this was covered in Ken's episode, and particularly in the article that he cited
+in that episode.
+I also added a minus lowercase m, which is mixed down a stereo audio track to mono.
+And as I mentioned before, minus lowercase c will delete the renamed original file once
+it's finished.
+There's also a minus lowercase d, which switches on dry run mode, which you can run this,
+to see what the script will actually do without it doing it.
+There's a minus uppcase d, which is really for me, or if you want to hack on this script
+you, it switches it into debug mode, which just reports what some of the internal parameters
+are, internal arguments and stuff.
+Internal variables is what I'm trying to say.
+And there's also finally a minus lowercase h, which gives you a help report thing.
+As I said already, you can repeat the minus s, or the minus t, and what it actually does
+is the script counts up how many of them you've provided, and it uses that number to index
+a list of speeds or truncation settings.
+And I'm going to talk about that in a minute when I dig into the script itself.
+One of the things about Unix and the way arguments options I should say are processed in bash
+is that you can concatenate them.
+So I've given an example where you type speed up, minus s, space, minus s, space, minus
+t, and then the name of a file.
+And that's the same as speed up, minus s, s, s, t, space, and then the name of the file
+again.
+They both mean the same thing.
+I prefer to use the compressed version personally.
+So there's a script which I've included as part of this show.
+You can download it from the HBR site.
+I haven't done so yet, but I'll probably put it up on Git Hub or Git Lab.
+Not sure which one.
+I should have done this before I set off to record this.
+Anyway, I'll amend the notes appropriately once I've done it.
+Now what I'm going to do is to go through the script in chunks and just explain what
+it does.
+So if you're not widely thrilled at the prospect of listening to how a script works,
+then I suppose now is the time to stop listening.
+So if you're still with me then, thank you very much.
+Just had to stop because I got a spam phone call, so it's coming back to where I left
+off.
+Yeah, the mechanism I used to generate these notes was, seemed to be buggy, and it didn't
+like me starting and stopping with incrementing numbers.
+So I haven't numbered this one, which I apologize for.
+So it's harder to talk about bits, but I didn't want to just dump you the whole script
+and then number it and then talk about it referring all over the place.
+So I thought if you came to read this, it would be really hard to read.
+So I've gone for the chunk mode.
+So the first chunk consists of, the usual comment I put at the beginning of shell scripts
+followed by declaration of a script variable, which I tend to like to do, it comes from
+the dollar zero argument, and it's useful to use throughout the script at various points.
+I also declare a version number, I keep my scripts a version, so I know which is which
+and stuff.
+Then there's a function called underscore usage, and all that is is something that you
+call and it comes back to you with a bunch of help text.
+It's just a function so it can be called at different points.
+It's got a cat statement in it, which uses a here document, which contains the actual
+text.
+I've used the format of the here document, which allows you to substitute variables in it.
+One day I shall do a show on this aspect of bash, just to help if people are not clear
+as to how this works, I tend to always do these things backwards, tell you about it first
+and then explain it later.
+Sorry about that.
+Anyway, the thing takes one argument, which is the number it will exit with, because it
+exits the whole script and it exits with the number.
+And the point of that is, if you're running a script from the command line, then the value
+that it exits with is pretty relevant.
+But if you're embedding a call to a script inside another script, you might want to be
+able to do things like run this script and if it works to do this and if it didn't work,
+do that.
+So it's a good convention for a given script to come back with a value, usually one, to
+say I didn't work, it broke, and then the calling script can do something about it.
+So that's what I'm doing here.
+And the reason the function exits is because once you've seen the help, you don't really
+want to go on to use it because you might not have used it right and you want to find
+out how to, or it might be scolding you that you failed to provide the correct arguments
+or something.
+So the next chunk is definition of a bunch of variables, and these are variables that
+you're going to be using to hold the result of processing the options.
+Then there's a while loop which goes through all the options and deals with them.
+I'm not going to explain this in great detail, but inside the while loop is a case statement
+which on having chosen an option looks it up and does something appropriate to what it
+is.
+And the particular one to concentrate on, I guess, is S, the S option, low case S. If
+we encounter that, then the variable speed up is incremented.
+So that's how the minus S, minus S, minus S thing works to record the number of S's that
+you provided.
+There's a couple of points where usage is called and the script exits.
+The end of this chunk, there's a shift statement, shift is a statement within bash which,
+you're running within a script which will remove a bunch of arguments.
+So the dollar, one dollar, two business.
+So the value given to this is the number of options which we've processed in the loop.
+I'm not going to detail this, but this could do with the whole show on its own to talk
+about this, how this works.
+But basically, once all the options have been processed, they are deleted, so we don't
+need to deal with them anymore.
+And the result of that is that the filename argument, assuming there is one, will be the
+only remaining argument.
+So the next chunk is just a little bit where it checks to see that there is a filename argument
+and if not, then usage is called to say, look, you called this wrong, here's what you
+should have given it.
+The other test is assuming you have a filename, does it exist?
+So it's using the minus e option to the test, so there's an if statement which tests to
+see whether a file in dollar one exists.
+If it doesn't, then says file not found and exits.
+The next little chunk should really have been stuck on the other one, I should know.
+It takes to see whether the dry run variable, which is set, depending on whether the minus
+lowercase d option was present, contains the value of one.
+And if it does, a message is output saying, you're in dry run mode, we're not going to
+actually change anything.
+The next chunk is the business of working out what speed we want.
+So we've counted up the number of s options and it's in a variable called speed up, there's
+a test done to say is it zero and if it is zero, then we don't want any speed up.
+So we actually store the result of the speed up stuff in a variable called tempo and that's
+in order to be fed to the socks command a bit later on.
+So in this case, we just set tempo to nothing, it's an empty variable.
+If speed up was not zero, it's greater than zero, then we need to do some further stuff.
+But before I talk about that, I'll just mention the first bit, which there's a variable
+called speeds, s, p, w, d, s and capitals, which contains, which isn't array, it contains
+a list of speeds.
+So in my particular case, I've used 1.05, 1.1, 1.2, etc, up to 1.7.
+These are speeds that I wanted to be able to apply.
+Your mileage may vary.
+I can't really handle fast speeds in audio.
+I've tried turning up to 1.7 and I cannot follow it.
+My brain is now unable to do with stuff at that speed.
+So you could, if you wanted to use the script, hack around with that list, take some stuff
+out, add some stuff in and it might then suit your needs better.
+But this is tailored to me.
+So it's an array of the elements that you'll see if you look at the notes.
+There's a test here that says if the variable speed up is greater than the number of elements
+in the array, then set it to the number of elements in the array.
+So if you put umpteen s options in there and it's more than the else in the array, then
+it will just index the last element of the array.
+Then the script decrements the speed up variable because we then want to use it to index the
+array and arrays in bash and many other languages are indexed from zero.
+So we've got one of them.
+We want to actually to indicate the zero element, which is the first one.
+But it's indexed by zero.
+So we set a lowercase speed variable to the element from the array speeds indexed by speed
+up after it's been fiddled about with, then we set variable tempo in uppercase to equal
+the string tempo space and then the numeric speed, which you've got at the array.
+And the reason for that is tempo space number 1.5 or something is one of the parameters
+we'll need to be giving to the socks command a bit later on.
+Next chunk is similar stuff, but it relates to silence truncation.
+Now this one's more complicated in that the array consists of only two elements and each
+element is a string in double quotes, which consists of a list of values.
+So the first one is 1, followed by 0.1, followed by 1%, minus 1, 0.5, 1%.
+Go and check out that previous episode, 1766, and the reference that I've actually included
+in the comments of the script to find out what the hell these things mean because I'm
+not...
+But it's about detecting silences which are not too short so that you don't want to
+chop out the silences that result from people breathing, but because otherwise it sounds
+terrible.
+I think anyway, you want to be detecting silences which are a bit longer than that and so on
+and so forth.
+This is one of the errors I found difficult to fully get my head around, so this is why
+I've made a script too, so I don't have to think about it anymore.
+And I haven't thought about it for over a year, so you can tell.
+Anyway, the bit of code in this chunk uses that array and it does the same sort of logic.
+There's a variable called truncate, which may be 0, because there was no minus t option
+at all, in which case we set a variable called silence to nothing.
+But if there was a value, then we make sure it's not longer than the array, which is only
+two elements, not greater than the number of elements in the array, that's what I mean.
+We need to recommend it to make it the correct index starting at 0, then we pull out the
+value or the string that is relevant, and we then build this variable silence to contain
+the word silence space and then that list of numbers and percents and stuff.
+So by the time we've got to the end of this lot, we've got a couple of the arguments
+for the SOX program prepared, and there's one more in the next chunk, which is the mix
+down business, so there was a minus lowercase m option, and if that was 0, it wasn't used,
+then there's a variable called remix, which is set to empty, otherwise remix is set
+to the string remix space hyphen.
+Then the next bit is an if statement, which checks to see if the debug option is on, and
+if it is, then all of the variables that I've been talking about are all dumped out, they've
+values are dumped out, so that if you're hacking on the script, you can work out what the hell
+you did wrong, and I did do some things wrong, and I was writing this, I have to say.
+I've got a little bit mind bending, so the next test is my, maybe a little bit controversial
+actually, didn't realise it until I was preparing this.
+It checks to see if tempo, which was the speed up thing, and silence, which is the silence
+truncation thing, if both of them are empty, then it says, well, there's nothing to do,
+and exits, that actually is not true, because I think I must have created this, the point
+at which I, before I'd added the mix down thing, so you might want to do, next version
+I might add in something a bit more sophisticated at that point, but basically it's looking
+to see if you've created a bunch of options, which is not really worth following, because
+there's nothing worth doing, and if so, it exits with the message.
+Okay, next chunk, we are dealing with the file name, because we want to create a version
+of it, with the underscore that I mentioned at the start, we need to do various things
+to the file name, the first thing is to save the original name, and to do that I've used
+the real path command, which is one of the GNU commands, I think John Culp mentioned
+it first, I don't know about it, until fairly recently, but basically it goes to a path
+name that you give it, and removes rationalises, canonicalises, all of the weird bits.
+So if you've got slash dot dot slash dot dot blah blah blah, in a path, then it means
+go there, then go up, then go up again, then go down there, and so forth.
+Well, you don't really want all that nonsense in a path, because there is a clearer path,
+which is the result of doing all these traversals of the directory tree.
+So real path resolves that, plus also a symbolic links and things like that, it resolves.
+So it does path resolution anyway.
+Then the path names is all chopped up into the directory portion, the name portion and
+the extent after the name, and a new variable, a variable called new, is created containing
+that directory, that name with the underscore taken off the end, added to the end, as I say,
+followed by the extension.
+So that's the bit that creates the name with an underscore before the extension bit.
+Then the script reports what file it's processing, that's the resolved one.
+It then checks to see if the new variable, which is a file name we're going to create,
+if it already exists, because if it does, then there's a good chance we already processed
+this file.
+So it, if it finds it says, oops, looks like this file's already been sped up and exits.
+Then the next stage is that the original file gets renamed to that new name, though if
+the dry run option is on, it doesn't actually do the renaming, it says, I would rename
+this, this file to that file.
+The next chunk is, as I've expressed here, the meat of the script, and it's where the
+SOX program is given the various parameters that we've created.
+If dry run mode is on, then we don't actually do it.
+We simply construct the string of what would be done and display it.
+But if dry run is switched off, then we're going to run SOX.
+Now I chose a, again, this, I guess this could be parameterized so that you might want
+to make it a less verbose.
+I said, I wanted a progress display.
+So SOX will, if you run the script, SOX will actually display what it's doing.
+I also requested a volume change, comments here say volume, volume change by a factor
+of two.
+I guess it's because I'm getting deaf, I always find quite a lot of, a lot of podcasts are
+not as clear as I would like them to be.
+What's actually happening here, then, is SOX has been called with minus capital S minus
+V2, located V2.
+Then it's given the name of the new file, the one with the underscore in it, and the original
+file.
+So it's going to take the underscored one and write it to the original name.
+Remember, we've renamed it something else.
+We're going to write back to what was the original name.
+Then it's followed by these variables, tempo, remix and silence, which have all got parameters
+in them, or not, actually, but might have parameters in them, which are relevant to
+SOX.
+I was in a side, I left the comments in that I've got in my original, and there's a comment
+that says, shall check, disable equals SC2086.
+What this is all about, you might have been interested in this, is I do my editing VIM,
+and within VIM I have a plugin called Cintastic, which is a thing that applies a syntax check
+to the source file I'm editing, depending on what it is.
+And when you save the edits, the checker runs through and produces errors at any errors.
+It reports any errors, which you can then navigate and fix and so forth.
+The checker for bash is called shell check, which you can run on the command line, actually,
+I've never done it, but not for a long time.
+One of the things it really gets upset about is if you in bash use a variable in a context
+like this, and you don't put it in double quotes, it gets very worried about it, because
+it's working on the principle that this could be a file name, and file names can contain
+spaces.
+And if you don't quote them, you end up with the space becoming a parameter separator
+and things going wrong.
+So it nags you about this, but in this particular case, tempo, remix, and silence will contain
+spaces, and I want them to contain spaces, and I don't want to quote, so I've switched
+off the check for that stuff, and it just applies to the next line, so that's what that's
+all about.
+I think it's basically a nice thing to have, but it sometimes needs to be told to shut
+up and go away.
+So the script will be running socks, it will take some time, depending on the size of
+the file, and you'll get a longish report.
+Definitely next version should have a be quiet mode, I think.
+Final bit of the script is if the variable cleanup contains value one, that's because the
+minus low case c option has been provided, then we want to do something about deleting
+the file with the underscore in it.
+As checksie of dry run is on, and if it is, it simply says, I would be deleting this
+file, but I ain't going to, I don't say that, but you know what I'm talking about.
+If dry runs not on, then it will just delete it.
+I just mentioned in the notes here that the last line of this junk is a VIM, so called
+VIM mode line, and that's a way in which you can provide standard parameters to VIM, if
+VIM is editing the file, I'm not going to go into that here.
+So that's the script described, I hope it wasn't too tedious, you thought it was going
+to be, you probably switched off already, so I used this script as part of my podcast
+download workflow.
+In particular, I process the Linux link textual thus because they tend to have quite long
+pauses in there, and it does well to be sped up a bit, so I've just given you a command
+line that I use quite often.
+I have a tool called DB list episode, my podcast information is held in the database, and
+I tell it to go and list out all the episodes for Linux, the Linux link text show, and the
+ones that I currently have online, that is, and to feed their names to XArgs, XArgs is
+a bash program, it's a program actually, but anyway, which I'm calling from a bash command
+line here, and I'm telling it for each of the files that it gets handed, to run speed
+up with the arguments, the options, minus SSSD, so it will do three levels of speed up,
+and also a troncation, to, it does reduce the length of TLLTS, it shows quite considerably.
+Nothing against them, of course, just is able to have long pauses, it's said I can usually
+cut them out from my shows, and I'm not knowing what to say next.
+I've used this script regularly since I wrote it, and it does it, pretty much all I want
+it to do, apart from some of the things that I've mentioned, as I've been going along
+there, there are, there's logic errors, I think, in that business of checking to see whether
+there's an S and a T in the option list, and then aborting if not, that's probably a
+mistake.
+I'd also quite like to control over amplification, because for some reason, BBC podcasts are
+very, very low in terms of sound compared to others.
+I turn my player up to listen to the BBC ones, and then another one comes on, from a, from
+a different source, and my ears are blasted by the, by the sound.
+Why they are so low, I have no idea.
+Anyway, it's probably going to get another iteration, which is why I should really put it
+up on GitHub or wherever.
+Anyway, I hope you found that useful, I hope you grab the script and also find it useful.
+If you have any comments about it, or corrections or improvements, or anything of that nature,
+then please let me know, and that's it, I hope you enjoyed it, okay, bye.
+You've been listening to HECCA Public Radio at HECCA Public Radio dot org.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HBR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out
+how easy it really is.
+HECCA Public Radio was founded by the digital dog pound and the Infonomicon Computer Club,
+and is part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment on
+the website, or record a follow-up episode yourself, unless otherwise stated, today's show
+is released on the Creative Commons Attribution ShareLive 3.0 license.

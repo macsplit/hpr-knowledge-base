@@ -1,0 +1,197 @@
+Episode: 4378
+Title: HPR4378: SQL to get the next_free_slot
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4378/hpr4378.mp3
+Transcribed: 2025-10-25 23:59:32
+
+---
+
+This is Hacker Public Radio Episode 4378 for Wednesday 14 May 2025.
+Today's show is entitled, Ask UL to get the next free slot.
+It is hosted by NURST, and is about 28 minutes long.
+It carries a clean flag.
+The summary is NURST talks about Ask UL to find the next available HBR slot.
+I probably know HBR is a lot of code and some issues you can open on there.
+It's get to the instance, so I was looking over the issues and one of the issues is
+needing updated SQL query to find the next free slot.
+So I probably know HBR is made of episode, each episode has a number.
+I probably won't surprise you that there is a database table that has information for all the episodes in it.
+One of the fields in that table is an episode number.
+So if you only consider the episodes, the easiest way to find the free slot is just find all your episodes and then look for a gap.
+So the first gap you see is that's where the next free slot is.
+So the next opportunity for someone to upload an HBR episode.
+And HBR janitors, they have this working map where it used to do this.
+The problem is, there is a separate table in the database for
+episode reservations.
+You can, it is possible to reserve an episode, but let's talk about how to do that here.
+But there are episode reservations.
+So what the point of the issue that was opened on the gett page was that need a new SQL query
+that can take the information from the episode table and also the information from the reservations table.
+And use those piece of information together and figure out what would be the next available freeze.
+So let's just real quick, give a quick overview of what the plan is.
+How do we get this SQL query?
+So what we need to do is we need to create a list of all the episodes from both the episode table and the reservation table.
+And we need to squash them together into a single list.
+And we can do that using the mass SQL union.
+So SQL union just takes two pieces of data, squish them into a single piece.
+So let's say we have the trivial example of one table that's got something simple like one, two, three.
+And the second table has something like two, three, four.
+Then if we squish those together with a union, we'll get a single list, just one, two, three, four.
+So that's step one.
+We make a union with all of the episode ideas from both tables.
+Step two is we create a copy of that list.
+But when we create the copy, we will have, we add one to whatever the value is.
+So now we've got the original union list of one, two, three, four.
+And then we've got the union list plus one, which will be two, three, four, five.
+So then what we do is we look, we say we create a warehouse that says we're looking for out of these two unions,
+out of these two columns, one is the union, one is the union plus one.
+What's the first example where there's something in the plus one column and not anything in the original column?
+And that will give us the next available ID.
+So that's what we're going to do.
+We'll talk through it a little bit.
+We'll go in the plenty of examples, but that's where we're headed.
+So to make it a little easier to develop the query, we can create a couple of new database tables that have a similar naming convention to what's an actual HPR database.
+I haven't probably should have said this before, but the HPR database is publicly available.
+It runs on MariaDB and then there's a periodically throughout the day.
+The database is dumped into a file and you can download that file.
+If I remember to, I don't think I have a link in the current version of the show, but I'll try and post that link.
+So anyway, back to the test data.
+Like I said, we're going to create for the testing purposes, we're going to create a couple of new tables in a separate database, not an HPR database or anything like that.
+So create some new tables with the same table names and the same column names, but we don't have to duplicate every column.
+We really only need to duplicate the columns that we're interested in querying.
+So we're going to do that. We're going to make our own test data.
+We're going to use some smaller numbers so that it's easier to spot the patterns and set up the test cases.
+And then we'll do all that with stored in a separate database and that'll make it easy to run through the test squares.
+So the first little bit of SQL that we need and all the SQL is going to be in the show notes.
+The first little bit is we need two SQL statements to create columns, so the first one are to create the tables.
+The first one we're going to create a table called EPS, that's the episode table.
+And it will for our test data, it only needs one column called ID.
+And then we will create a second table named reservations with a single column called named EP underscore number and then once we get this done,
+we can insert some test values.
+So again in the show notes, all the SQL will do this, but what we're going to do is we're going to insert into the EPS table some IDs.
+So this is the main episode table.
+And we'll start at 1,001, so we'll go 1,001, 2,3, and 4 and then we'll skip a few and then we'll do 11, 21, 31, and 41.
+And this is just to give us kind of a good representation of what the episode table might look like.
+We have some current episodes and then we've got some gaps that might represent upcoming days, things have already been uploaded.
+Pretty similar to how the episode table looks today.
+Then we're going to have the reservations table, we're going to do some inserts into the reservations table.
+And then for the purpose of the testing, we'll add a reservation to 1,004, 1,05, 1,010, 1,016.
+So one of those, the 1,004, that's going to be in both tables.
+But then there's going to be some unique values in the reservations table, including 1,005.
+That's really kind of the key test case here.
+This is the 1,005.
+So if we kind of in our head, if we made the union right now, we're going to have 1,001 through 1,004 from the episodes table.
+1,004, 1,005 from the reservations table and there's nothing in 1,006.
+So our goal is to get a query that we'll figure out that 1,006 is really the next available slot, the next free slot.
+Okay, the next section of the show notes, we've got two select statements, two separate select statements.
+So 1 is just select, selecting from the episodes table and the other is selecting from the reservations table.
+But what I did is I wanted to rename and SQL, whenever you do some selects, you can rename what you're selecting.
+So you can see in the example, when I do this selects, I sort of on the fly I rename the episodes tables, it's just a letter E.
+So it's easier to work with.
+So what we're going to do is we're going to select E.ID from the episodes table and we'll select R.ep number,
+underscore num from the reservations table.
+And again, I know just listening to me talk about it, my dynamic sense, but I got it all in the show notes, including what the output would look like if you were able to run it.
+Okay, so we're going to be talking about SQL joins, how to join data from two different sources in SQL.
+And these can be a little confusing, I have to look these up every time I need them or I need to use them.
+I have to really stop and think about what I'm going to do.
+And then usually what happens is I'll try and realize it's wrong and I'll try something else.
+So just kind of understand, it's a little bit of a complex topic.
+It's okay if it doesn't make sense.
+Again, like a lot of things, easiest way to understand it is just try it out and bang on it eventually you'll get it working.
+But the different types of joins that we're going to talk about today, when we've talked about it a little bit already, that's a union, that just that takes the result of two queries and just combines it into one.
+So you have two columns of data, you select from a union of those two and it spits out a single column.
+The next type of join is called an inner join, so there's inner joins and outer joins.
+Whenever you join two tables together with an inner join, you select data from two different tables using an inner join, you will only get results that match in both tables.
+So we'll run through some examples in a second, but remember in the test data, we had 1,000 for in both columns.
+So if I select the IDs from both columns using an inner join, the only result I'll get is 1,000 for because it's the only result that's in both tables.
+So that's an inner join, only, only both tables.
+The other type is an outer join and there is, this is where it gets a little more confusing, there's left outer joins and right outer joins.
+The way I kind of remember it is if you can picture kind of like a spreadsheet with two columns of data, one column is going to be on the left and one column is going to be on the right.
+And when you do an outer join, it will show you all the results in one column and the matching results in the other column.
+So again, if we picture our spreadsheet with a row of data on the left and a row of data on the right, if we do a left outer join, it will show everything in the left column and the matching results in the right column.
+Then in the opposite applause, so if you do a right outer join, in the left column it will only show the ones that match and in the right column it will show everything.
+And we'll run through a few more examples.
+And again, a couple of quick examples.
+Let's say we do a select of episode ID and reservation episode numbers.
+And when we do that select, it's going to print out the results in the order that you have them listed in the select statement.
+So if we did select episode ID comma reservation number, we would see one column with IDs and one column with episode IDs in the left and the right column with the episode numbers from the reservation column.
+So if we do that with an inner join, like I said earlier, it will return just a single row with 1,004 because that's the only ID that's in both tables.
+So then let's move on, let's do a different kind of join.
+If we keep the data in the same order, so we'll select the episode IDs, then the reservation ID numbers.
+And we'll do that as a right join, remember right join show all the results in the right and only the matching numbers in the left.
+So in this case, the only episode that's in the ID column is again, 1,004 because it's the only one that's in both.
+But we'll get a list of when we do the right join in the ID column, it will show 1,004 and then a bunch of empty nulls in you LL that's SQL for, I don't have a result.
+So when we do the right join, the output will be a table with two columns in the left column, which is the ID, you will get the, anywhere there's a match, it will print the number, anywhere there's not a match, it will print null.
+And it prints everything in the right column. Then if we do the same join that reverse it instead of a right join, we do a left join.
+Again, it will print everything in the left column. So in this case, it will print all of the episode IDs and it will print for the reserved IDs.
+It will print, where there is a match, it will print the match and everywhere else it will print null.
+So now that we kind of know, we can use these queries in a minute, we're going to set the query up.
+So we're looking for some specific matches and we'll need the null because we need to know, we'll need to know somewhere where we have a resulting one column, but not a result in the other column.
+Okay, so now let's start building out the query that we need.
+And anytime I'm building a SQL query that's a little bit complex, I try to do it in small steps, a little bit at a time.
+I like to see some success early. So I want to do something small that's going to work right off the bat.
+So the first thing we'll do is we will create a list of all the IDs we know about.
+So remember that is the union. So if you take a union of the episode IDs and the reserved IDs, we get a single column of data that's got all the numbers in it.
+So the SQL to do that is in the show notes.
+One thing we'll do is the select statement reads select ID as all IDs and then from from episodes union that with episode number from reservations.
+What that does is it gives you a brand new column named all all ALL underscore ID so it's all all the IDs from both lists and it's in a single column.
+So now we've got a list of all the IDs and a single column and we can start referring to that by name and using it again as we build out our SQL statement.
+Okay, so now that we have a list of all the IDs, we want to output a table that contains all the IDs in one column, the episode IDs and the next column and the reserved IDs and the third column.
+So now in reality, we're only working with two columns of data, but we've taken it to we've combined them into all IDs.
+So now we have basically three sets of data. We've got all IDs, episode IDs and reserved IDs.
+And so what we'll do is we will select all those together at the same time, the SQL is getting a little complex. I'm not, I'm not going to read it out, but just kind of what we're doing is we're selecting all three.
+All IDs is going to be the first one we select. So it's going to be on the left.
+So whenever we left join all IDs with episode IDs, what that will do, it will print all of the all IDs and then we'll print the episode IDs, but anywhere there's not a match in the episode IDs column.
+It's going to print out a null and the same thing for the reserved IDs.
+So we're going to have all IDs, episode IDs, except where there's not a match that's going to be null and then we're going to have reserved IDs, except where there's not a match. It's going to say a null.
+So just as a quick example, you know, the first episode we have is one thousand and one through one thousand and three.
+Those show in all IDs column and episode IDs column, but they show null in the reserved IDs column because that's not reserved.
+But remember, one thousand four, that's the one in both. So we got one thousand four all the way across.
+And you'll see examples again in the show notes. And I have the query and I'll have the output from the running the query on the test data.
+Okay, so the last example we had a three column output. Now we want to add a fourth column. The fourth column is going to be the all IDs column plus one.
+So get the SQL SQL will be in there. You can see how to do it. Remember the all IDs when we selected it, when we created it with the union, we named it all IDs.
+We can just using the SQL duplicate it into a new column, call it all IDs plus. And if you look at the output, what we're going to do is instead of joining the episode ID,
+the episode IDs and the reserved IDs to the all IDs column, we're going to join it to the all IDs plus column. So the first thing we see in the example output with the column plus one, the first one in the plus one column, the first ID is one thousand two.
+So in the episode ID, it has a one thousand two and it prints it.
+A reserve ID doesn't have it. Same with one thousand three, one thousand four. Remember, that's the one that's got it both.
+And then we get to the next one in the all IDs plus is one thousand five. That shows null in the episode IDs because there's not one there, but there is one in the reserve IDs. So that prints.
+And then the next one in the all IDs plus is one thousand six that shows null in the episode IDs shows one thousand six in the reserve IDs.
+Is this reserved? Then the next one is one thousand seven. That one is null in both episode IDs and reserve IDs.
+So I just realized I made a mistake when I was talking through the sample data and the queries. I wrote these show notes a while ago.
+And at some point, I must have changed the data a little bit. Some of it between right now the show notes and talking about it and writing the inserts at the top and the example data at the bottom.
+I said that one thousand seven was the number we were looking for and I said that because I was looking at the inserts and I didn't see inserts one thousand six.
+But apparently whenever I was writing through the show notes one thousand six had been inserted. So the number we're trying to get to.
+It's going to be the next available slot is one thousand seven. And so whatever you're looking through the sonar show notes, the examples will make more a lot more sense with if you're not actually looking for one thousand six if you're looking for one thousand seven.
+So in the previous query we put together the all IDs the all IDs plus one episode IDs and the reserve IDs.
+And we saw that for the plus one anywhere there's not a match.
+We'll print null and episode IDs and the reserve IDs. So if we add a select statement to the previous query.
+Then we can see all of the IDs plus one where there's not a matching episode ID or reserve ID.
+And ideally take the lowest number in this list that will give us our next free slot.
+So the last thing we need to do to finish up the query is remember we've got a list of four columns.
+We need the lowest number in the all numbers plus one the union plus one. We need the lowest number in there.
+And there was like there was like six in the previous query output. We only need one.
+So to get the lowest number what we're going to do is we're going to explicitly order the results.
+They were in order before but we want to make sure it's explicit. So we'll add a order by and then we'll add a limit.
+So order by does exactly what it sounds like it puts the queries in order and you tell it what fields you want it to order by.
+And then the way you limit SQL result is by the limit statement. So if you only want one result you say limit one.
+And by default it gives you the top one on the list. So if we order by the next the union plus one.
+And we limit it to the first one that will give us the episode ID we've been looking for one thousand seven.
+So in the example query you know when you do a SQL query you can always rename the output.
+So here I'm kind of renaming in the example in the show notes I'm kind of renaming the output to available ID.
+So this will be the next available ID but what it really is is it's the table of four columns the union the union plus one episode ID and reservation ID.
+And we are limiting that to where there is a we want something where there is a plus one but there's not a reservation and there's not an existing episode.
+And then we take the smallest one out of that list.
+And ultimately we end up with this real well it's not simple it's complicated took us while I get there but it works pretty consistently.
+And because we set up the test data to match the actual hpr data we could run this today copy the hpr database.
+And it would work if it gives us the next available ID I even tested it before I wrote the show notes on test it.
+Okay and that's it took us a little bit but we got there.
+Just remember with SQL it's not always obvious how to get somewhere you need to go but the typically the best way is to just start with something simple.
+So you got all this data and you need to filter it out and get something really specific out of it.
+Just start with something simple can you can you join the two things together can you sort it can you can you spot you know in output can you spot what you're looking for.
+And then there's always little tricks and is it is it probably the least obvious part is a little trick.
+You know for example here where we take the all IDs and then we add one and we compare all IDs plus one to everything else that's really kind of the key to getting the next one but anyway.
+That's it I'm not a SQL guru I know just a little bit that I figured it out and I'm sure someone out there who's thinking about people and trying to do select statements and stuff you can do it too.
+That's it that's all I got for you guys I'll see you next time.
+You have been listening to Hacker Public Radio at Hacker Public Radio does work today show was contributed by a HPR listener like yourself.
+If you ever thought of recording podcast you click on our contribute link to find out how easy it really is.
+Hosting for HPR has been kindly provided by an honest host.com the internet archive and our sync.net.
+On this advice status today's show is released under Creative Commons Attribution 4.0 International License.

@@ -1,0 +1,134 @@
+Episode: 2619
+Title: HPR2619: A Gentle Introduction to Quilt
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2619/hpr2619.mp3
+Transcribed: 2025-10-19 06:39:31
+
+---
+
+This is HPR Episode 2619 entitled, A Mental Introduction to Quilt.
+It is hosted by HIV and is about 20 minutes long and carries a clean flag.
+The summary is, Quilt, a patch manager, introduction and tutorial.
+This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+Support universal access to all knowledge and tutorial.
+Support universal access to all knowledge and tutorial.
+Support universal access to all knowledge and tutorial.
+Support universal access to all knowledge and tutorial.
+Support universal access to all knowledge and tutorial.
+Support universal access to all knowledge and tutorial.
+Support universal access to all knowledge and tutorial.
+Support universal access to all knowledge and tutorial.
+Support universal access to all knowledge and tutorial.
+Support universal access to all knowledge and tutorial.
+Support universal access to all knowledge and tutorial.
+Support universal access to all knowledge and tutorial.
+A gentle introduction to Quilt or patch management for software.
+Hi, I'm BJB.
+I've been programming in C on Unixi operating systems for about 25 years.
+People collaborating on a project must edit the same set of source files.
+When one person commits some changes, then the other people must rebase their changes on the new version of the shared files before they can push their own changes.
+One might want to find two in one's changes before submitting them.
+A minor fix for some old typo should not be in the same patch as a new feature.
+A comment correction should also be in its own patch.
+Especially, two new features and some bug fixes should not be all smushed together in one patch.
+Each feature should be in its own patch or patch series, and each bug fix should also be in its own patch.
+This allows others to be able to review the code easily, and even lets others pick and choose which patches they want to apply.
+It becomes a chore to manage all these patches.
+That's where Quilt comes in.
+Sadly, I hadn't learned Quilt till this weekend.
+Well, one way to ensure I learn it fairly well is to write a HPR episode about it.
+Here goes.
+I have written this episode to be understandable by anyone.
+You do not have to be a coder.
+You could use this tool to keep track of any plain text files, recipes to do lists, HTML, HPR show notes, poetry, what have you.
+First, let's describe what a patch is.
+No, first let's describe what source code looks like.
+Source code is a plain text file full of computer instructions.
+It is a plain text file as opposed to a word processing file.
+Plain text files do not have any formatting codes or styles, such as which font should be used or what color, etc. in them.
+They just contain the characters that make up words of the content.
+A key feature of these source code files is that a new section of the file starts on a new line.
+The source code is almost never reflowed like prose might be.
+It is sort of like poetry, the more formal poetry, not prose poetry.
+There are a lot of really small sections in source code files called statements and expressions.
+Most of these sections fit on one line.
+This is useful for the tools we are going to discuss because when one line changes, it does not affect the following lines as it might when text is reflowed after a change.
+People have been coding with plain text files in various languages for decades, thus a large set of tooling has grown around this format.
+One of those tools is called diff, and another one is called patch.
+Diff is a way to compare two text files.
+Typically, it would be used to compare the before and after of a source code file undergoing changes, so you could find out what was done to the source code file by running diff on the before and after versions of that file.
+A diff file is a series of excerpts from the original and changed files.
+There are various kinds of diffs. Some of them show only the changed lines.
+Some of them show a few lines before and after the changed lines in addition to the changed lines themselves.
+That second kind is called a context diff and helps the automated machinery, and humans too, find the correct part of the file to which the change must be applied.
+By default, there are three lines of context before and after the changed lines.
+The changed part is represented by encoding the old and new code.
+In order to distinguish which lines are old and which are the replacements, all the lines, context lines, remove lines that added lines, are shifted over to the right by one character.
+The context lines start with a space in the extra leftmost character.
+The original removed lines have a minus sign in the leftmost character, and the added new lines have a plus sign.
+Thus, if any character on a line in the source file has changed, been added or removed, then the whole line will be replaced with a new line in the new file.
+The diff will show both the removed line and the new one.
+The patch utility takes the diff output and applies it to the original file to produce the later version of that file.
+You can apply it in reverse mode to the later version to get the original version.
+So patch is also a really useful program, and these two tools, diff and patch, are the basis of most of the version control systems out there.
+It is the existence of these text-based diff and patch tools that makes revision control systems work really well on plain text files that are naturally structured in a line by line format.
+A note about terminology. The diff program produces a diff. The diff is also called a patch.
+The patch program takes the diff, also known as a patch, and applies it to the original file to produce the changed file.
+So if you have a timeline of adding a few features and making a few fixes on a code base, it can be fully described by the original file plus a set of patches that had been produced with diff.
+You can get the final source code by taking the original file, applying the patches one by one, and voila, the final version of the file has been recreated.
+Now we know enough to give a concise description of quilt. Quilt lets you work with patches, creating them, applying them, unapplying them, and moving some things from one patch to another with a minimum of effort.
+Now a tutorial on how to get started using quilt.
+This tutorial will start with a buggy program, create a few bad patches, and fix them up into good patches. I make no claims as to the quality of the final code though.
+The reason for starting with bad code and patches is to illustrate how to use quilt.
+To start using quilt, create a directory called patches at the top of your code or just above.
+With the command, make deer patches. If you don't do this, quilt will create it for you. However, first it will look for a directory called patches in the current working directory, its parent, and all the way up.
+If it finds one, it will use it. If not, it will create one in the current directory. So to keep it from finding some unrelated directory with the name patches, just create a patches directory yourself in the right place.
+Quilt, first patch, including a new file. You must first tell quilt before you make any changes to your source code. Then it can store the original versions of the files that will change, so it can produce the diffs that will become that patch once you change the files.
+Create a directory called example, and create a file in it like this, called hello.c. If you see any errors, don't fix them.
+hash include double quote standard IO dot H double quote int main open parent int arc C comma car asterisk arc V open square bracket closed square bracket comma car asterisk ENV open square bracket closed
+square bracket closed parent next line open curly brace next line print open parent double quote hello comma world exclamation mark backslash in double quote closed
+parent next line return zero semicolon next line close curly brace. Now create a new patch that is give it a name before you change any code. This will create or find a couple of directories patches and dot PC and populate them with some files to start.
+give the command quilt new fix dash typo and now you can fix the typo and generate the patch first start by telling quilt that you want hello dot C to be in the patch quilt saves a copy of it aside for comparing with the later versions quilt add hello dot C.
+Now you can get quilt to tell you what files it knows about quilt files edit the file add a semicolon at the end of the print line and change the double quotes on the hash include line to angle brackets.
+And I have a sample of exactly what I want in the show notes save the file and exit the editor next generate the patch quilt refresh.
+The oddly named refresh command creates the patch itself it is called refresh because it can also be used to update the patch.
+Now you can see the current set of patches by giving the command quilt series the single patch is called fix typo and its name in the list is colored brownish that is because it is the current patch and it is the one that will be updated if you quilt refresh again with more changes.
+One thing I did not find in the quilt documentation is how to add a new file when adding a new file there is no existing file that you can name in the quilt add command of course the very first patch I wanted to manage with quilt I had introduced a new file.
+It turns out that the quilt edit command can be used to add a file to the patch even if the file does not yet exist quilt edit header dot h.
+Add content to header dot h and I will save the content in a moment using the plain text editor that quilt has started up for you save the file.
+The file contains hash if and deaf h e a d e r underscore h h underscore underscore.
+Next line hash define h e a d e r underscore h h underscore underscore underscore new line new line hash defined name double quote bjb double quote new line new line hash end if.
+Then regenerate the patch with the new changes quilt refresh now you can list the patch series again with quilt series so far there is one patch you can see what the patch consists of with the quilt diff command and in the show notes I have that output.
+Now it is time to make a second patch first we tell quilt we are moving to a new patch quilt new prototype quilt edit header dot h edit this file again add a function prototype.
+int do underscore output open pern const car asterisk name close pern semicolon create the patch and look at the list of patches quilt refresh quilt series now when we give the quilt series command we see two patches the first one is green meaning it has been applied and the second one is brown meaning this is the one that quilt refresh will change if you call it.
+Again you can see what the latest diff looks like by giving the quilt diff command quilt diff now let's unapply the latest diff quilt pop and quilt series we see that the list of patches has the same patches in it but now the second patch is white meaning unapplied and the first patch is brown meaning it is the one that would change if we edited a file and typed quilt refresh quilt files that first patch has two files in it.
+Hello dot c and header dot h now unapply the first diff quilt pop quilt series both patches are listed and both are shown as white we can see what files quilt knows about before any patches are applied quilt files no files are listed apply all the patches at once quilt push minus a quilt series
+and look at what files quilt knows about quilt files now quilt reports on only one file while in the first patch it knew about two files you must be careful to add each file to each patch or it will not put the changes in those files into the patch
+luckily quilt edit will put the files in the patch for you so if you always start your editor with quilt edit file name then you will have your changed files added to your patches without having to take any other action but if you are adding an existing file to the patch you can edit without having to open your editor with the quilt add command quilt add file name.
+In order to avoid forgetting to add a file in a patch as I was editing I just added all the files in the directory each time I created a new patch whether I edited them or not split a patch in two parts we're going to split the first patch in two parts we had fixed a typo and added a new file in one patch they should be in two separate patches first make the first patch current quilt pop
+then make a copy of that patch quilt fork this makes a copy of the first patch called fix typo to but it removes the first patch fix typo and puts fix typo to in the series we need to put the first patch back and then edit each of the two fix typo patches so each one contains one part of the original patch
+so once we're done editing the file it should contain fix typo fix typo to and prototype now edit the first patch using a plain text editor it is in fix sorry it's in patches slash fix dash typo remove the part about the new file header dot h and I have an example in the show notes of how it should look
+save that file now edit the second patch patches slash fix dash typo dash to using a plain text editor remove the part about the file hello dot c and again I show you what that should look like in the show notes
+if you give a quilt series command now you will see that fix typo to is the current patch and quilt thinks fix typo has been applied
+we have to fix up quilts idea of reality pop the current patch things have changed under quilts feet so we have to force this with the minus f option quilt pop minus f now because quilt thought the original state of fix typo to is the unchanged while quilt shows the series as being completely unapplied
+and if we look at the quilt series we see patches fix typo patches fix typo to and patches prototype now we can push all the patches with the quilt push minus a command
+renaming a patch here we rename a patch from fix typo to add header the quilt rename command acts on the current patch so make fix typo to current first quilt pop fix typo to quilt rename add header quilt series and quilt push minus a
+the next lesson will be reordering the patch series we will make a new patch then move it earlier in the series first make the new patch quilt new print f quilt edit hello dot c then change the print statement to print f open per end double quote hello world
+backslash end double quote close per end semicolon save the patch quilt refresh now to demonstrate the reordering unapply all the patches edit the patch series file patches slash series so the patches are in the order you like and then reapply the patches if you're lucky they will reapply with no conflicts
+quilt pop minus a vi patches slash series move print f between fix typo and add header now all the bug fixes are at the beginning of the series quilt push minus a
+the next lesson is merge two patches into one make another patch quilt new output function quilt edit hello dot c change the see file to put the print f statement in a separate function and again I have an example of exactly what I want in the show notes
+and then give the command quilt refresh now to merge two patches into one quilt pop prototype quilt fold less than sign patches slash output function we have merged the prototype and output function patches because they described a related change save the patch quilt refresh
+and the next lesson will be throw away a patch now we no longer need the last patch output function as it has been included into the prototype patch but we might want to rename the prototype patch quilt delete output function
+and now we have to clean up a bit for quilt or the rename won't work so RM patches slash output function quilt rename output function deleting will not work on a patch that has been applied before the current patch
+you are ready to contribute your patches go forth and code we have seen that quilt can help you manage your contributions to any project that is written in plain text files it can generate patch files usually needed for contributions to open source projects and can help you manage and update them as the tip of the development branch moves forward with other people's contributions
+to use quilt successfully you need to remember to add files to each patch with quilt add or quilt edit before editing and to generate the patch with quilt refresh once all the editing of each patch is done the rest is easy
+a summary of commands that edit the patches quilt new patch name quilt add F name quilt edit F name quilt refresh quilt pop and you can also have the minus a option quilt push can also take the minus a option quilt rename with a minus capital P old name and new name quilt delete
+minus capital P patch name so you can specify which patch to delete quilt fold less than patch to merge commands that view the state of the patches quilt series quilt files quilt deaf
+optionally with minus capital P patch name quilt graph optionally with the minus minus all quilt patches F name quilt annotate F name quilt applied and quilt unapplied
+you have been listening to hacker public radio anyone can make a show if I can do it so can you
+you've been listening to hacker public radio at hackerpublicradio.org we are a community podcast network that releases shows every weekday Monday through Friday
+today's show like all our shows was contributed by an HBR listener like yourself if you ever thought of recording a podcast then click on our contributing to find out how easy it really is
+hacker public radio was founded by the digital dog pound and the infonomican computer club and it's part of the binary revolution at binrev.com
+if you have comments on today's show please email the host directly leave a comment on the website or record a follow-up episode yourself
+unless otherwise status today's show is released on the creative comments, attribution, share a light 3.0 license
+you

@@ -1,0 +1,141 @@
+Episode: 1167
+Title: HPR1167: Kernels in the Boot, or What to Do When Your /boot folder Fills Up
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1167/hpr1167.mp3
+Transcribed: 2025-10-17 20:52:50
+
+---
+
+Howdy folks, this is 5150 for Hacker Public Radio.
+I thought you might find it instructive for this episode if I hold you about a problem
+I had with my home server a week or so back and what I did to solve it.
+You may have heard me mention that I purchased a used rack server a couple years ago to help
+teach myself Linux server administration.
+It's an old HP DL-38G3 with dual single core z-ons and 12 giga RAM, in other words it's
+a P4 ear system.
+It came with 275 gigs of Guzzi drives in Rade 1, which I dedicated to the OS.
+It's a seller wanted more for additional internal Guzzi drives and those old server drives
+are limited to only 120 gigabyte anyway.
+I plugged in a PCIX SATA adapter and connected a 750 gig drive externally and mounted it
+as my slash home.
+I moved the 2 gigabyte USB drive that it had on my Chumby or to the server as opposed
+to transferring the files or I don't think I had enough room on the 750 gig drive anyway
+and it shows up under slash media slash USB 0.
+I installed Linux server 10.04 recently updated 12.04 and you may wonder why I'd used
+Ubuntu server but I found out CINOS which I wanted to install didn't support the Rade
+controller out of the box.
+You could install the right packages and make it work but I just took the easy way out
+and I'd been frustrated at that time by DeFi and Lini on lack of support for up to date
+packages on the desktop and I really didn't want to repeat that with my server.
+So with 75 gigabytes dedicated to just the OS and application packages you can imagine
+my surprise when after an update and upgrade I had a report that my slash boot was full.
+It was until I looked at the output from FDES that I remembered that the Ubuntu installer
+created a separate partition for slash boot.
+At the risk of oversimplifying the purpose of slash boot it is where your current and
+past kernel files are stored as well as configuration for grip.
+Unless the system removes older kernels as most desktop systems seem to the storage
+required slash boot will increase with every kernel upgrade and if you're following
+along on the show notes I've included my output in the DF file before calling the kernel
+and the one you're looking at is third one from the bottom.
+That's slash dev slash CCISS slash C0D0P1 so that's the first partition on the hardware
+rate array and you see that's dedicated to slash boot or mounted on slash boot and I
+have 100% full zero free space available and then below that in the show notes I've included
+directory listing of files that are in slash boot and if you just read down through
+the numbers you can see I've got every kernel in there from 2.6.32-24 clear up to 3.2.0-31.
+And I ran across some articles that suggested I could just use uname-r to identify my current
+running kernel and that like I said that was 3.2.0-31.
+There's some files in there for dash 32 but if you look they're not complete and I think
+that's what work came off the rails it was trying to do a kernel I'll take ran out
+of room but I found the article suggested I just delete files that don't match that number.
+That really didn't seem prudent I did a little further research and fortunately I found
+what seems to be a more elegant solution on upboot 2.com and links in the show notes
+but it's www.utter up Ubuntu not up Ubuntu we just correct that my show note the dynamic
+process as we go along doing the podcast www.upubuntu.com slash 2011 slash 11 slash how dash
+2 dash remove dash unused dash old dash kernels dash on dot html apparently the html
+the name of html file was based on the title of the well the title to gave the file inside
+the document and it must be truncated okay first step from the articles verify you're
+running kernel we already talked about that do you name dash are and like I said Linux
+often keep older kernels so you can boot into an older version of grub and I mean this
+is a fail safe you've probably seen that when you boot in your desktop there is a safe
+version sometimes would be older kernel versions on your grub and that's self there's
+a grub update and also nothing works you can't get in you can maybe try going back to
+previous kernel and see if that'll let you in let you try to fix that it's fact for
+iFF door has environment variable environment setting to let the OS or to tell the OS just
+how many old kernels you want to maintain and that's a line install only underscore limit
+and it's located in slash atc slash yum dot com and if anybody knows of now analog for
+devian you boot to please please add it to the comments for this episode because I would
+really like to know I look for couldn't find anything the reason for that is I would like
+so I don't have to do this all time I would like to limit the server to two or three old
+kernel versions and have it do its own cleanup I know about the I know about the install
+only limit excuse me thanks for bearing with me still my cold still with me where was
+I okay Linux will keep older kernels can be so you can both in emergency and both boot
+into an older version of grub your from grub older kernel version from grub and I said
+I found out if a door has environment setting to you can set just how many old kernels
+you want to keep and oh mission to you on this I'm I'm wearing door 15 still I haven't had
+time to to do the in place upgrade and my laptop here the one I'm actually working on right now
+has brought home wireless and I tried to compile the driver for for the wireless card didn't have
+much success and then all of a sudden boom got a kernel updated work this is right after I got
+the machine so great you know the wireless work went on for a couple months like that boom
+next kernel update and everyone since then wireless doesn't work so I've it's not not recommended
+folks I tell you that I understand that but I've been booting into an older version the kernel
+or the wireless work so I had to extend that variable to a ridiculous amount to avoid having
+that kernel that I can actually use wiped out as the new ones come in uh okay so we've
+views you name dot art to know what our current kernel is and then next step is list the
+kernels currently installed on your system and you can do that with the package space dash dash
+list space pipe space graph base Linux dash image so in other words you're looking for packages
+that include Linux dash image those are your kernels or one of the files associated one of the
+files associated with kernels and when I looked at that that put in that it was essentially all
+those kernels that are in slash boot they were still installed and in use so the next step is
+to call all the kernels but to kernel and please please this command that I'm about to give you
+don't type it in by listing this podcast find the show notes on hacker public radio dot or
+copy them for bames this worked for me uh doing that this way but it would be very very easy to
+really mess up your system uh doing the wrong way or by making a mistake in the in this command
+now but I'm not very good at reading regular expressions but I could see what was trying to do
+there it what it's doing is again it's it's using the Linux image as a string to the core
+and then right behind that of course is the kernel number what's doing is a comparison of the kernel
+number to the same number it's returned by you name dash r and so it's returning all of those
+limit links image files that do not match the current kernel version number and it's running that
+through pseudu aptitude purge and so the command is pseudu space aptitude space dash capital p
+space purge space tilde i Linux dash image dash backslash opening square bracket zero dash nine
+backslash closing square back backslash opening parentheses backslash
+bang character or explanation point whichever you want to call it backtick and that is the one
+that's on the same key as the tilde the lower case generally a lot of keyboards you name space
+dash r backtick backslash closing parentheses and in that whole thing from the end of herge and
+there's a space and there's no other spaces in the whole rest of it except in the you name dash
+r between the you name and the dash r of course so it's you know it's tilde i and then Linux
+right there it's not there's no space there and my my particular contribution to this command
+is the dash capital p after after aptitude because that will prompt you to confirm to take those
+actions so if you if you look at what says it's going to purge and your current kernel version is
+in there don't don't let it do it obviously finally the last step is make sure grub refresher changes
+so the next man would be pseudu space update dash grub too and that just make sure that what's
+in the grub configuration files hernal system there matches what you actually have now on your
+system and really as it was going through the previous command as it was going through and eliminating
+one kernel the time i i could see it updating grub at the end of each of those steps so i think
+this is just to make really really sure everything everything is update so wouldn't eliminate this
+last step but i think i think it's probably already all done for you this point now this is this
+more than a week ago and it's worth noting i still don't have that s32 kernel update so it may have
+told it well let's try to put in the third the dash 32 don't try it again that that may be a
+consequence i'm i i'm going to take a wait and see attitude and if it never if it doesn't ever
+seem to do a kernel update again i'm going to have to do something to kickstart it and get it
+updating kernels and uh if i find out i need to do that and find out what i have to do make it do
+that i'll add it to another podcast later but uh now last few last thing at the uh at the
+in the show notes uh i did a df again and saved it and my slash boot is now 14%
+the 100% and then below that i have the output of a directory listing on my slash boot and the
+only kernel files that you see in there are associated with three dot two dot zero dash three one
+okay like i said this is this worked for me work seem to work really well i am not usually a fan
+of running command with a whole bunch of regular expressions without understanding exactly what
+it was it was going to do the system but i thought with the dash p i was fairly safe turns turns
+out it was so if you've got a devian or you boom to server because i don't think i'm running into this
+on a desktop unless you've created a set slash boot so you may want to look in there it may be
+maybe filling up with a bunch of kernels um worked for work for me uh your your mileage may
+vary and buyer beware and all that so this been 5150 for hacker public radio have a great day
+you can contact me at 5150 at linuxbasement.com you can uh find my other contact information
+at the big red switch dot jubal garden dot com and stay happy to always see each other next time
+you have been listening to hacker public radio at hacker public radio does our
+we are a community podcast network that releases shows every week day on day through friday
+today's show like all our shows was contributed by a hbr listener like yourself
+if you ever consider recording a podcast then visit our website to find out how easy it really is
+hacker public radio was founded by the digital dot pound and the infonomicum computer cloud
+hbr is funded by the binary revolution at binref dot com all binref projects are crowd
+disponsored by linear pages from shared hosting to custom private clouds go to lunar pages dot com
+for all your hosting needs unless otherwise stasis today's show is released under a creative
+commons attribution share a live digital license

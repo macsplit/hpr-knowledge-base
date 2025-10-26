@@ -1,0 +1,242 @@
+Episode: 3551
+Title: HPR3551: Bash snippet - some possibly helpful hints
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3551/hpr3551.mp3
+Transcribed: 2025-10-25 01:18:53
+
+---
+
+This is Hacker Public Radio Episode 3551 for Monday the 14th of March 2022.
+Today's show is entitled, Bash snippet, some possibly helpful hint and is part of the series
+Bash scripting.
+It is hosted by Dave Morris and is about 25 minutes long and carries an explicit flag.
+The server is using the file, map file and then environment variables.
+Hello everybody, this is Dave Morris for Hacker Public Radio.
+I'm going to do a show today within the series Bash scripting.
+This is one I've called some possibly helpful hints, just a bunch of things that I've been
+doing in scripts lately and I thought I'd share just in case it reviews to anybody else.
+So I write a moderate number of Bash scripts these days.
+I know the Bash isn't a programming language but it's pretty powerful in what it can do
+all by itself actually and with other tools.
+It's like said an organ that type of thing, it's really, really capable.
+I've actually been writing the sorts of command script I suppose you'd call them for a long
+time since the 1970s on a whole variety of hardware and operating systems.
+Maybe we should talk about them someday.
+I remember them that is, Bash is my favourite because it's pretty flexible and also Linux
+itself, it's very flexible.
+Anyway, forget the history for now.
+I just want to talk about three things I tend to do in Bash scripts that assist some
+of the things I need to undertake some of the tasks I find I need to get a solution to.
+So the first one is to generate Bash variables from a text file.
+So you've got a text file which has got stuff like a keyword and a string or a number
+or something and you want to turn that into Bash variables.
+Second one is to fill Bash arrays with data from a file or a program or that type of thing.
+And the third one is to use environment variables or just general shell variables within the
+environment of the script to control the Bash script execution.
+So I'll expand on these.
+So first of all, generating a Bash variables.
+There's a Bash command, eval, eval, that can be used to evaluate the string as a command
+or series of commands if you want to put new lines or semicolon to between them.
+And the evaluation takes place in the current shell.
+So anything returned and in my particular example I'm using Bash variables is available
+to the current script.
+So this type of thing is available in a lot of programming languages, scripting languages
+where you might want to invoke a command within a script and the command is something
+you have generated in real time, I guess you'd say.
+If you were to set variables in a sub-shell which in fact is something like issuing some
+commands in parentheses or when you invoke a script or a function or something, then
+the variables are local to the sub-shell and they disappear when that particular process
+finishes.
+So the eval command, we haven't looked at it in detail but I've mentioned it in other
+contexts along this series.
+The eval command takes a list of arguments of any number I think which are just concatenated
+into a string and that string is taken to be the command to be evaluated.
+I should say that the eval command is seen as potentially dangerous then it will execute
+any command it's given.
+So if by some means rather you've ended up with a command string that says RM tilde slash
+star or something then it could go and delete all your files.
+How would that come about?
+Well, you might have made the mistake of allowing people to feed commands to the script
+that's doing it where that would be one of them.
+So you need to bear that in mind whenever you're doing this type of thing.
+Don't write a script that just executes whatever it's given to it.
+It needs to be vetted or you need to know exactly where that commands are come from before
+you invoke them.
+Now one of the particular cases where I use eval is for setting variables from a text
+file as I mentioned.
+I've got a file which is generated from the HPR show upload process and I want to grab
+the title of the show, the summary in relating to show and the host name of the person submitting.
+So I can generate an index file for any supplementary files which have come in with the show.
+I don't need to do this all the time but there are occasions when people send in example
+scripts or pictures and what that sort of thing.
+So I just wanted to be able to get these things and turn them into a bit of text in an HTML
+file.
+So in my script that does this, I won't go into details about it because it's quite complex
+but it uses eval with a, actually use a quoted string which in which is a command substitution
+which invokes said and said is looking for the keywords that the layer of this particular
+file, the keywords begin in column one and they are title or summary or host underscore name.
+So any line that matches one of those is picked up by said and is manipulated such that
+the end result is that keyword, which is all one word, an equal sign and then in single quotes,
+the string that follows it.
+So I show an example of how the said command would actually work all by itself and there's
+a reference to a very book called raw file here which is where I would have put the path
+to the file in the script.
+So just take that as a given and it's reporting back the host name, this is one of my shows
+is Dave Morris and blah, blah, blah, title and summary of them.
+So that's pretty basic said stuff and if you listen to my said series you should be able
+to decode that pretty easily and see what it's doing.
+So what Eval does is it runs the command substitution with the said command in it and the result
+of all that is a string which is actually separated by new lines but the way that command
+substitution works is that the new lines are turn to spaces.
+So these will be fed to Eval and Eval's quite happy to receive three variable definitions
+on the same line separated by a space, each one or space is.
+So what that does is to set a variable called host underscore name to one string, one
+called title to another string, one called summary to a third string and these are then
+available in the script that's called Eval.
+Now the way I've done this is not foolproof as I say in the notes because I'm wrapping
+the text in single quotes, if there was a single quote within one of these strings then
+it would break cause I haven't taken any particular action to avoid such a thing but it's
+working for now and I'm happy with that but I do need to work a little bit more on it
+to make it less fragile.
+Okay second one is filling bash array.
+So this is another thing I need to do in the context of writing scripts for HPR, janitorial
+things.
+I've got an index array and I want there to be sorted file names in that array and then
+I want to be able to process the contents of that array and I'm doing it because I've
+got a show that's come in which includes bunch of pictures so I want to be able to do
+some automation with the way I handle the pictures.
+Well how do I find the pictures?
+Well first of all there's a path which points to the directory in question which is called
+shoulder, all in capitals, SHOWWDIR.
+I use the find command against this path with a max depth option of one that means don't
+go down to lower directories and then it uses a regular expression thing.
+In find you have to say what type of regular expression you're using there's a hyphen
+reject type eGrep which I use so that causes the eGrep engine to be used in the regular
+expression.
+And the regular expression simply says dot asterisk backslash dot, yes so it's looking for
+any old text and including a backslash space, a backslash dot I should say, followed
+by either JPEG or PNG in upper or lower case.
+So that's how it finds pictures if you send in a picture that has some other form
+it won't work.
+Anyway it'll do that, does that quite well but that hasn't solved the problem yet but
+it's a component.
+So I've got an example here where you could define the array so I've got declare hyphen
+and a PIXPIX for pictures then I do PIX equals open parenthesis and then a command substitution
+with the find in it that I just mentioned it's all listed out in the notes here.
+The find is actually followed by a vertical bar to pipeline and it sends its output to
+sort.
+If you did that then the find and the thought will return a number of new lines separated
+lines containing filenames you know in alphabetical order but again as I said before the command
+substitution replaces new lines by spaces so what bash will see in this in the parenthesized
+list is a bunch of words or strings which are then fed into the array and that's great
+that works but it's relying on the fact that the file name delimitar is a space but
+it's permitted to have spaces and filenames it's not a good thing to do but it happens.
+So how would you make this better to avoid that one?
+I use the command map file I talked about map file in episode 2739 and you can also find
+information about it by typing help map file in a terminal so there's a little snippet here which
+is a declaration of the array again then we use map file then hyphen t which means remove the
+default delimitar the default delimitar is a new line then the name of the array picks
+then less than and I've split this into two lines with the backslash new line in it then we've
+got a process substitution which hopefully you'll remember from other shows in this series which
+is a less than sign immediately followed by an open parenthesis then you would put commands in
+there and close the parenthesis and the commands are defined as before exactly the same find
+and a sort in a pipeline you could have other delimitar here we'll talk about that in a second
+but the map file chops up what it sees on its standard input which is coming from this process
+substitution thing and it puts them one at a time into array elements if the array exists it will
+just overwrite it so that that's great you could change the other delimitar as I said and there are
+providing there are no files with new lines in them then you're good because a new line is valid
+in a file name it's a it's a thing I have never used not really encountered much but it's possible
+to do it I've done it by mistake I guess long ago in the next days well I didn't know what I was
+doing what I said here is that to be 100% safe and be protected from potential new lines in file name
+you can make find produces output using the hyphen print zero option which prints out every line
+or if you file in the case where it's reporting files with a null character at the end of it
+instead of a new line so map file can be told to use a null as the delimitar by simply giving it
+hyphen D and then a null string so open quote close quote so here's an example which shows
+the find with hyphen print zero the sort still works on that which is good I wasn't sure
+it would but it does and it sorts them correctly and you are then not prone to any any of the potential
+problems of funny characters and new lines and spaces or whatever I have to tell you
+coming to you that I discovered this information and messed around with it and tested it while
+preparing for this show so I'm going to go and update my script to use it once I've finished
+so the last hint or tip or snippet or whatever you want to call it is talking about turning
+debugging on in a script so I tend to use debugging statements in the script which get a little
+bit more complex than than others and I tend to write simple function which I've listed here
+which I call underscore debug in capitals for some reason I can't remember I did that the
+underscore just sort of makes it stand out a little bit perfectly valid character is part of a
+naming and can be the first character of the name so in there I test to see whether a global
+variable debug is zero and if it is then just return so effectively do nothing but if the debug
+is not zero then there's a loop which loops through the variable which is actually an array
+dollar at dollar at is a list of all the arguments to to a script or to a function so it's going
+to all the arguments that function and for each one it uses the print f command to print out
+its contents with a new line on the end and a d greater than space in front of it so when you look
+at it you can see well that's debug output the variable that I'm using to hold these these arguments
+is msg so I use that as the argument to print f it's very simple and that works pretty well it does
+pretty much what I want it to do so I what I just do I do is to plant a bunch of calls to this
+function throughout my script whenever I want to check that things I have read or calculated or
+whatever I want to check that they contain what I expect them to contain and you be surprised
+the number of times they don't and that's what debugging is all about but the thing is how do you turn
+debugging on and off you want something relatively simple but listed three possible ways you could
+do this the first one is is really clunky you could edit the script to set the debug variable to
+one when you want to turn debug on or zero when you don't but that means you got to keep editing
+the script which is the pain second one is you could set the debug level through an external
+variable which the script can see and the third one is to add option processing to the script
+so you recall the script with a minus with a hyphen capital D perhaps to mean turn on debugging
+and you would you would enable or disable it at that point I tend to use option three
+the option processing thing when I'm already scanning for and and dealing with options in my script
+but if I'm not doing that then I use choice two that is the external variable and that's
+I'm going to explain now so bit preambo I use vim as my editor and in vim I use a plugin called
+bash the port which I can set up boilerplate text within which is to be added to script or can
+be given as a default framework for a new script and I've got various definitions and declarations
+and comments and stuff that go in by default one of the lines that's particularly important is one
+which defines the variable script in capitals equals and then I've got dollar open curly brace
+zero hash hash asterisk slash close curly brace so that takes the default variable
+dollar zero which contains the name of the script as it was invoked so if you put the full path name
+and invoked the script from somewhere other than where the script lives then that will contain
+the entire path if you're in the directory where it lives and you put dot slash script name
+then it will just contain the dot slash and the script name whatever happens there
+that expression trims off stuff from the front of that string the dollar zero string
+and it specifies it's to keep doing that until it hits a slash and in other words it it will
+do this repeatedly until it takes out everything up to the last slash so just leave the name of the
+name of the script I did talk about this stuff way back in the early days of doing bash scripting
+now I've started adding two lines relating to debugging the first one is to define a variable
+called debug var or in capitals d-e-b-u-g-v-a-r set that to put this in in quotes dollar open curly
+bracket script close curly bracket underscore debug so that means debug var will contain the name
+of the script which had just chopped down to its last component well that's the base name isn't it
+yeah if you use the base name command instead followed by underscore debug in capitals then the
+next line is debug equals that's the variable that I want to use to control whether you see debug
+output or not then in double quotes dollar open curly bracket exclamation mark debug var colon
+hyphen zero close curly bracket close double quotes what that says is the variable debug var
+with an exclamation mark on the front of it it is to is an indirection to the variable whose name
+is in that variable so it's doing one level of indirection so it's using the contents
+and it's saying whatever that variable contains it if it if it exists it does contain something use it
+if it doesn't the colon hyphen business contain if you can't find it it doesn't exist then set debug
+to zero what that means it's a little involved that but it's um once as I say it's a bit of boiler
+plates I'm going to slap that in scripts by default and uh it's useful just to put it in
+without really thinking about it anymore but what it achieves is it it allows the script to be called
+with a variable definition before it on the same command line so if you had a script which is called
+test script and you'd call this variable test script underscore capital debug and I'm in this
+example I'm setting it to one then space dot slash test script folks test script and it will cause
+the internal debug variable to be set to one which will switch on all the debug stuff variables set
+on the command line are visible to scripts in fact variables set in the environment are visible
+to to a script whether they be exported ones which I talked about a few episodes back or just
+all new ones the one set on the command line only last while the script or indeed command is
+executing you could set an exported variable so one example here export space test script underscore
+debug equals one then on the next line dot slash test script but that variables can hang around after
+the script is run and you'd need to go and un-set it to make it go away so if you want to turn
+debugging off you would need to use the un-set command to delete that variable the thing that
+think about the putting it on the same line mean is that if you just run test script without that
+setting a variable preamble then it will run without debug so that's that's fine I definitely
+don't like to do the export business so when I give these more complex names to my debug variables
+that I've just been talking about test script underscore debug so there's less chance of them
+affecting other scripts than the one I'm trying just currently debugging if I just use the name debug
+then that might cause anything I run to go into debug mode that seems to be about ideas so I'm
+using sort of namespaces to keep things separate so in conclusion these are just the three things
+I found myself using in recent bash script which I hope might be useful to you if you have hints like
+this which you could share please make an HBR show about them we're always in need of shows
+I'm sure you know at the time of writing which is the 26th of February we are particularly in need
+and there's a lot of empty slots stretching out into the into the near future so from the near future
+forever okay then bye
+you've been listening to Hecker Public Radio at HeckerPublicRadio.org
+today's show was contributed by an HBR listener like yourself if you ever thought of recording a
+podcast then click on our contribute link to find out how easy it really is hosting for HBR
+is kindly provided by an honesthost.com the internet archive and our sync.net unless otherwise
+stated today's show is released under a creative commons,
+Attribution ShareLikeThoi.org license

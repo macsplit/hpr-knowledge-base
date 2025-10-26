@@ -1,0 +1,286 @@
+Episode: 3985
+Title: HPR3985: Bash snippet - be careful when feeding data to loops
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3985/hpr3985.mp3
+Transcribed: 2025-10-25 18:19:37
+
+---
+
+This is Hacker Public Radio Episode 3,985 for Friday the 10th of November 2023.
+Today's show is entitled, Bash Snippet Be Careful, When Feeding Data To Loops.
+It is part of the series, Bash Scripting.
+It is hosted by Dave Morris, and is about 27 minutes long.
+It carries an explicit flag.
+The summary is, a loop in a pipeline runs in a sub-show.
+Hello, welcome to Hacker Public Radio.
+My name is David Morris.
+I'm going to talk today about a Bash subject.
+I haven't done many Bash shows of light, but this one suddenly struck me as worth doing.
+It's about when you're using loops connected to pipelines in Bash.
+And what prompted it was a show that Ken Fallon did, number 3962,
+which he used a Bash pipeline of some quite funky commands to feed their output into a wild loop.
+In the loop, he processed the lines produced by the pipeline
+and used what he found to download audio files belonging to a series using WGET.
+This was in response to a previous show where a technique for doing this was discussed.
+It was a really great show and had some good advice, excellent advice.
+But one of the things in it reminded me of the gotcha I warned about
+a my own show 2699 some years ago.
+This was where you create a pipeline of commands which feed into a loop.
+I thought it was worth revisiting this.
+So the actual issue is to do with pipelines and how they work.
+So I've done various shows on Bash, but I haven't covered pipelines.
+The intention was I would be doing sort of fairly regular shows, but somehow my energy has dwindled over the years.
+Anyway, what's the pipeline?
+Pipelines, they're pretty amazing things which come from the Unix world
+and are available in all manner of shells, such as Bash.
+And that's what I'm talking about here, obviously.
+The general format is that you, on the command line, you, or indeed in a script,
+you type a command.
+That command is expected to generate some output and use a pipe symbol, which is the vertical bar.
+And then you have a second command, which gets the output from the first command.
+So it's important to know though that each command runs in a sub-shell.
+That is, it creates another sub-process, which runs the bash shell and runs in that.
+But the input and output are connected together with other things in the pipeline.
+So the output of command one goes to the input of command two.
+That's a fantastic way of grabbing some data from something, maybe querying a database or that type of thing.
+And maybe grabbing a subset of that data, reformating it, doing all sorts of things of that nature.
+In Ken's example, he is feeding XML data into tools that can manage the XML,
+which is not an easy thing to do.
+And he has a lot of expertise in that area.
+So I've got a simple example of a pipeline in the notes here.
+It's just a printf, the printf command will print a string.
+But you can include, or manner of things in the strings, a bit more complicated than echo.
+So it's printing in single quotes world, backslash n, hello backslash n.
+So it print two lines world and hello.
+Then the pipe symbol, then sort, command sort.
+So the two lines sent by printf are received by sort, which has sought some into alphabetical order.
+So it comes out as hello world, separate lines.
+So the commands in a pipeline can be more complex than this.
+We'll look at some of them, some more of the complexities.
+And obviously the commands that you run can be extremely complex with lots and lots of options and things to twitle.
+But one of the things that you often see in loops in pipelines is loop, such as a while loop.
+So my next example has the same printf of world and hello, separate by new lines.
+Fed into a sort, and then the output of sort is fed into a while loop.
+Now, while loop requires that you use the word while followed by some test action,
+something that returns to a false result.
+What we've got here is read line, the read is a bash building.
+Line is the name of a variable to receive whatever's read.
+So what we're getting is individual lines of text being sent to the while loop.
+And the while loop is using read to read those lines, one at a time, each iteration of the loop.
+It then puts it using echo, but it includes the variable line inside to parentheses, and that's the end of it.
+So you get out the other end, hello world, each in parentheses, just to demonstrate going on.
+I tend to write these types of pipelines in one line, they don't have to be.
+You do need to break them.
+I can't just put a new line in an arbitrary place in between the pipe symbols or anything,
+but you can put backslash new line and wrap it that way.
+And when we come on to further script, there will be an example of that.
+So that's all fine, that's great.
+It works.
+Pipes going into a while loop while it's doing stuff with the data.
+Now what about if you want to do something more sophisticated?
+Say you want to number each of these lines.
+So here we've got the next example.
+It's all written on one line, which you can do.
+I don't know if I've ever said this, but it's possible to put a bunch of commands together on the same line,
+separating them by semicirons.
+Obviously you don't want that to be too long,
+but wherever bash normally expects a new line, you can replace that by semicolon.
+I do this quite a lot.
+I write one line as to do various crunches on files to pick out specific bits and that type of thing.
+I think you may well know this or if you don't, then it's worth maybe looking into it
+because it's a great way of getting things done, a bit of text manipulation type of thing in bash.
+Anyway, this line starts with i equals zero.
+So it's variable i, which is being set to zero, semicolon.
+Then the print that we've dealt with before, which is piped into sword, which is piped into wire.
+And the wire is doing the same thing, reading a line, and then after the semicolon do,
+there is a bracketed expression, a parenthesis expression with double parentheses,
+and it contains i plus plus.
+Now you don't have to put a dollar on the i in these cases.
+I have covered this subject in one of my earlier shows on bash.
+What it's actually doing is incrementing the variable i.
+Then the echo consists of the contents of the i, dollar i, an open parenthesis, and then dollar line.
+So what you get is the two lines printed out with one and two stuck on the front of the parenthesis.
+Now I've set variable i to zero before the pipeline.
+It didn't have to be on the same line.
+It could have been anywhere.
+I don't want to dwell on that subject too much, I'm sure you all got that.
+You might expect at the end of that loop, i's obviously been incremented to one from zero.
+There's been incremented to two, and then the loop stopguss has no more lines to read.
+So you'd expect it to be two.
+If you print it out, then you'll find that it's zero.
+The reason for that is that the i that you set up at the beginning of the multi-command,
+a multiple element command or list, is set to zero.
+But that's one that's an i in the shell that you start off in.
+Each of these elements of the pipeline runs in its own shell,
+and when a shell subshell starts up, it copies variables from the parent shell from which it's
+invoked, and runs with this copy throughout the process, the subshell.
+Incrementing what we're incrementing is another i in the subshell.
+So did I say that when it's cloned, its value is also copied.
+So when the subshell that has been incrementing i ends,
+the version of i, the variable called i in that context, is deleted.
+So when you ask for the value of i, you're asking for the value of the one in the shell above,
+and it's zero, because it's not changed.
+That's because subshells or processes cannot pass back information to variables in the calling shell or process.
+I should say actually that subshell and process are the same thing if what you're doing is
+creating another bash instance under the current one.
+So you can actually type the command bash to your command line, and you will get another subprocess
+which is running bash, and then if you do control d or exit, you exit out of that one and you back
+to the one before. So that's the sort of thing that's happening in this case.
+But changes in the subshell or the process gets lost when it closes.
+So how do you prevent this loss of changes in a loop?
+Well, the loop needs to be run in the original shell, not a subshell.
+So the pipeline, the bunch of commands, which presumably is a pipeline, need to be attached to the
+loop in a different way. So the example that I've got for you is very, very similar to what we've
+seen already. We have a variable i set to zero, but this time we're starting the while loop
+straight away. We're doing a while read line, etc, etc. We're incrementing i in there.
+We are echoing the line with the number on the front of it.
+But at the end of the loop, after the done part of it, we have a less than sign, which is the way
+in which a loop can read from a file. It's part of the subject read direction, which again I haven't
+covered yet, but it's, if I, when I get back, I say it shouldn't say if, when I get back into gear with
+the bash series, I should talk about the one that's quite high in the priority list.
+So after the less than sign, we have this strange construct, which I've talked about before in
+previous bash scripting series, which is a bunch of commands in parentheses, just a list,
+in this case it's a pipeline. The first open parenthesis is preceded by a less than sign, which
+with no intervening spaces. What that thing is called is a process substitution. So what happens
+here is a process is started up. It runs what's in the parentheses and then it returns the result.
+It's to be treated as if it's a sort of a file, even though it's a fairly dynamic entity.
+And inside these parentheses is the print app we've been seeing before and the sort. So this
+process substitution actually returns the words world and hello and then sorted, which is then
+received by the while loop and is made available displayed. It's a temporary thing, the process
+substitution thing is, is temporary, it's not stored anywhere, well, it's stored somewhere temporarily
+in memory I guess you'd say. But there's no record of it afterwards, which switches its power really.
+So redirection, I just mentioned here in the notes, the redirection feature lets you read from a file
+in the loop and the example is a generic thing while read variable do then do something with the
+variable and then done to close the loop and then less than sign in the name of a file. So we'll
+actually read line by line from a file if you wish it to. And this process substitution is doing
+the same thing as presenting lines to the to the reader as if it was a file. So the thing about
+this though is if you run this particular loop in the example and then look at the value of i at
+the end of it it will in fact be two because the i that's created with i equals zero is also the i
+that's being incremented in the loop and therefore when the loop and the finish the value has been
+incremented to two. So it's a it's a slightly odd way of doing things. I mean I always consider
+release I think I I am of the opinion that bash is not a conventional programming language
+you would never have a structure like this in a in a programming language. It's more of a
+of a command line environment which has different constraints and different needs.
+The thing that feeds data to the loop occurring after the loop as you type it seems like a
+counter intuitive way of doing things but that's the way the bash gets around that particular problem.
+There is another construct using pipelines and stuff which looks similar to this that I haven't
+to stumble upon as I was so preparing this show and that's the example again setting i to zero.
+So we call on while read line do echo line increment i and finish the loop and then a less
+than sign. In this case it's using the password file that's available on or Unix and Linux systems
+it's readable but it doesn't contain anything particularly interesting but anyway it's listing
+it's reading from that file then that such a password file name is followed by a pipe symbol
+and there's a head command head minus n5 and then an echo for the i variable. Now what that does
+is it reads all the lines from the file and prints them out while incrementing the variable.
+It's not using the variable but it's incrementing it anyway it's partly just to prove what
+it will be once it comes out the other end but all of those lines however many there might be
+it might be several hundred will then be passed through the pipeline to the head command where
+head has been told just show the first five lines and ignore the rest so it looks as if it might
+be similar to the one with the process substitution but it isn't it's a pipeline and when you examine
+i at the end of it although within the while loop it has been incremented the one available once
+the pipe is closed is the one containing zero so the wireless is running in a sub shell in other words
+i would never think to do that to be honest it took me a few looks to realize what it was doing
+so piece of advice then his mind by summarise it's a tldr really use the pipe connected to loop
+layout if you're aware of the pitfalls and don't and won't be affected by them you don't care
+about variables changed within the loop okay use the one which reads from a process substitution
+if you want your loop to be complex and read and write variables in the script i certainly do write
+scripts that do that so i tend to always use the second form in my script even if i don't need to
+i do it because later on i might come in think oh i know i'll set a flag when i encounter such
+and such a thing and then i can use it later on in the script if we don't set it up in that way
+the flag will be set and then it'll be deleted so i sort of saved myself from falling down the
+the hole repeatedly okay that's really all there is to say but i i what why should i stop now he
+as i was thinking about this looking at Ken's script and um i was thinking what
+there's loads of pipe pipes uh there's a one pipe and there's lots of sub-process or sub-shells in it
+but how do you ever get to know about this how how does this become visible to you as a as a user
+when you may not care of course in which case it's probably best just to skip the end but um
+you might just want to know what's going on so i try to explain sort of a top-down overview of this
+the process that you log into and you log into um your units or Linux box it's a thing called a
+shell or command it is it's called a shell it's quite confusing i think the use of shell
+it's not always as consistent as i think it should be anyway a shell runs a command language
+interpreter command language interpreter is bash in this case so that's called a shell
+they call bash a shell as well which i was that's what confuse me anyway this executes commands that
+are read from standard input or from a file so you type things to bash and it does stuff
+and now processes in units and Linux are quite lightweight you can create one and destroy one
+quite quickly and there's not much overhead before getting into units and Linux way back in the
+1980s i used to work with the digital equipment corporations open vms operating system which also
+has a command interface obviously and uses processes but you're discouraged from using them
+because they are expensive to create and destroy their slow and there no way near as useful
+as the unix and Linux version in bash pipeline is discussed they use subshells and the
+description on the man page for bash says each command in a multi command pipeline where pipes are
+created is executed in a sub shell which is a separate process so a pipeline is a bunch of
+commands with vertical bars between pipelines are the sort of data structures that connect one
+command to the next and the symbol says do make a pipe between these two commands so a subshell
+in this context yes i've alluded to this before is a child process of the main login process or
+some other parent process which is running bash the running bash really makes it a subshell
+you can create processes or subshells in other ways and one way is to place a collection of commands
+in parentheses and they can just be simple bash commands separated by semicolon or they can be
+pipelines if you wish so give an example here the the dreaded hello world thing in parentheses the two
+commands echo world semicolon echo hello and then close parentheses so what that process will do
+will be to generate the two lines world and hello then that's fed into a pipe through pipeline
+into sort and of course you get hello world in the right order coming out the other end
+so that is just completely similar to the original thing where i use print f it's using a process
+but it's not it's not using more processes than the other one it can be quite useful to have
+bunch of things sending output so you've got a command which just squirts out a bunch of numbers
+you might want to put a heading and a header in a footer on that you can do that by putting an
+echo for the header and calling the program itself and then putting an echo for the footer all
+put that all into parentheses then the output of that if you redirect it to a file or put it into
+a pipeline to do other work on it is an entity in itself so that's quite useful technique to be
+able to do that if you wrote it without the parentheses echo world semicolon echo hello and then
+sort then what you get would be world hello because the world text is written in the first command
+which is then then you start a pipe where the pipe echoes the first command is echo hello into sort
+sort gets one line you can't sort one line so it just returns it so you get world produced by
+the first command and then the pipe the waste of time pipeline generates hello that's my quick
+summary of pipes and processes and stuff each process has a unique numeric id it's called the
+process id or usually pid often written in capital you can see these if you use tools like ps or
+h top or various other things that let you check what's running on your system interestingly each
+process has a variable a bash variable called bash pid all in capital a simple variable which holds
+the pid the process id number so knowing all of this stuff I decided to modify Ken script from show
+3962 just to see if I could make it show the processes being created and so forth so I've
+including it here in its hacked about form if in case it's of interest so what Ken script does is
+it defines a URL from which to download the XML of an RSS feed and it also defines a download
+directory I've added to this file which is to contain pid information and it's to be slash
+tmp slash edgbr 3962.sh.ag all that pid file I set a variable count to zero then the first thing
+I do is to echo the message starting pid is then the contents of bash pid so that would be the
+pid of the process running the script you will be aware I imagine that when you run a script it gets
+run in a separate process in most cases so it won't be the same as the parent pid from the
+from the process you you invoke this from so other than that each of the steps that Ken
+put together he starts with a wget to get the the RSS feed then he puts that through XML style it
+says it's a very powerful tool for parsing out XML then he passes that to sort and then they're
+on to a while loop now for each of these commands that Ken originally used I've enclosed them
+in parentheses and put an echo command in front of them with the echo echoes a number in square
+brackets I've just numbered each of the echoes by that mean so there's what there's there's four
+of them in total so you can actually see which echo has produced what and then after the square
+bracketed number there's the contents of bash pid in the assumption that will be different other
+than that in the loop I've added stuff to echo the bash pid within the loop and I've used a counter
+to determine how many to do there could be many many iterations in this loop so I've limited it
+to to two lines being written to the pid file I didn't say that the echoes all go to the pid file
+but they do other than that the rest of the script is the same except I've commented out the
+wget that goes and gets the audio file because I didn't really want a big pile of audio files to
+demonstrate this the final additions to the script were to say what the final value of the count
+variable is and then to report that the pid file is where where the numbers are so when the script
+is run all you see on the terminal is final value of count equals and it's zero of course count
+it's being incremented in the loop so that just makes that point again then it tells you where the
+file is so if I list the files I'm not saying much but it contains the message starting pid and
+that's 80255 in this case obviously it will be different for you and different next time I run
+of them we get echo one where the the wget is triggered is 80256 2 is 573 is 58 and 4 is 59
+so you can see each one of these gets consecutive process id number that's just cross the machine I'm
+running on is not doing much so processes are not being created all the time if there were some
+other thing that was generating processes you wouldn't get those contiguous numbers the other
+interesting thing is that the process the loop runs in is the same you can see that from the two
+instances of echo four producing the same process id number so it makes the point that pipe lines
+consist of lots of processes depending on how many steps there are and processes are independent
+they can't talk to one another but the the pipe allows output of one to go to the input of the other
+command and yeah that the fact actually the fact that we've got echoes in there is interesting because
+you think couldn't that mess up the data that's coming out of the command it's in that that
+particular process and yeah it could but what I'm doing there is I'm redirecting that I put to a file
+so it doesn't interfere if you ever want to play around with this sort of stuff you'd need to
+bear that in mind you could write it on a different channel which would not get in the way but
+that's far too complicated for this which is meant to be a snippet it was about half an hour long
+so apologies for that so I just found this was interesting and quite revealing and it just
+confirmed what I I sort of knew but I wanted to see it acted out in front of my eyes you may think
+well it says so in the book so I believe it and that's the end of the story which case good for you
+okay that's the end there's some some links to various bits and pieces you might find useful
+but otherwise that's that's it okay bye
+you have been listening to Hacker Public Radio at Hacker Public Radio does work today's show was
+contributed by a HBR listener like yourself if you ever thought of recording podcast
+you click on our contribute link to find out how easy it really is hosting for HBR has been
+kindly provided by an onsthost.com the internet archive and our syncs.net on this although I
+stated today's show is released under a creative commons attribution 4.0 international license

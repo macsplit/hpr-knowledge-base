@@ -1,0 +1,131 @@
+Episode: 4133
+Title: HPR4133: Mastodon as a way to comment to HPR episodes
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4133/hpr4133.mp3
+Transcribed: 2025-10-25 20:01:48
+
+---
+
+This is Hacker Public Radio Episode 4133 for Wednesday 5 June 2024.
+Today's show is entitled, Mastadon as a Way to Comment to HP Our Episodes.
+It is hosted by Norrist, and is about 20 minutes long.
+It carries a clean flag.
+The summary is Norrist discusses commenting on the premastadon box post.
+So I wanted to talk about using Mastadon as a way to comment and talk about HP Our Episodes.
+Not necessarily to replace the comment system that HP Our has currently, but maybe as a way to add to it.
+Sort of with the intent of making it easier to comment and discuss and give feedback on HP Our Episodes.
+So this is prompted by not wise in his episode on trying to improve and maybe modernize a little bit HP Our.
+I will say I generally agree with his sentiment.
+I do think there are some things that we could improve and make it easier and more attractive to new listeners and primarily contributors.
+So one of the things that I like about doing episodes is I like to get feedback on it.
+I don't require it.
+I don't do episodes just for the comments, but it is nice to hear back about how a episode landed with the listeners.
+So in the, you know, the comment system that's currently in place on HP Our.
+It's a little difficult to use primarily because I'm not normally somewhere with the HP Our webpage open and just ready to leave a comment specifically.
+You know, if I listen to podcasts mostly on my phone when I'm out doing something walking or working out in the yard or you know, it's, I don't normally just sit on the HP Our page listening to an episode ready to make a comment.
+So a lot of times I'll be listening to an episode and I think I'll think of some small piece of feedback or something I may want to comment.
+And many times when I do that, I don't follow through and actually leave a comment just because it requires me to one, remember that I wanted to do it.
+And then to sit down at a computer with a webpage open with the intent of going back and leaving that comment.
+But, you know, if you're already on master on, I have a master on account.
+I don't post frequently, but I do keep it open most, I say keep it open.
+I'll look at it periodically, usually once or twice a day.
+And I'm always, it's on my phone, I'm always logged in.
+So it would be really easy that if I'm doing something, I have my phone with me that to, you know, while I'm listening to the episode, I could open up, master on and leave a comment right then without having to remember, remember to go back to the HP Our page and leave it using the regular comment system.
+So what I was thinking would be a good possibility is to use the HP Our bot as a way to comment on HP Our episodes.
+So if you don't know what the HP Our bot is, there's a master on bot that makes a post to master on every time there's a new episode released.
+And so what I was thinking was that if there's a show you want to make a comment on, you find the master on post announcing that show.
+And then you could just reply to that master the HP Our bots master on post and there's your show comment.
+If you weren't aware of the HP Our bot, it's on the bots in space, master on instance, and I'll have a link in the show notes to the bots.
+Now, one kind of key difference between using the HP Our comment system and just commenting on master on is that the HP Our comment system will ultimately be displayed on the HP Our page on the HP Our episode page.
+Now, obviously that's going to happen automatically if you're posting on master on.
+So, but I do think there's maybe some potential work around.
+If we wanted to include the master on posts on the episode page, it wouldn't be impossible.
+There are a few different ways we could do it.
+One way would be use just using the embed links.
+When you post something to master on, there's a little button that says embed this post on your website.
+And that works. It's not hard to do, but it's only the original post.
+It doesn't include any of the replies, which is kind of what we want.
+So, that's probably not ideal.
+Another method, and this is something that's fairly common.
+When I started looking into this, I saw several examples of it, but you can use JavaScript embedded in your web page to pull in master on comments.
+So, I'll say it's not uncommon for someone with something like a static blog site to use combination of JavaScript and master on to have a comment system.
+And really, it's just master on post, but it acts like a regular comment system like you would have on say a WordPress blog or something.
+I don't think that that's necessarily what we want to do with the HBR page, but it's an interesting idea.
+I'll have an example of a, there's a KDE developer that has a post about doing that.
+That's how he does his blog, having a static comments with master on.
+You know, neither of the methods that we talked about are ideal.
+So, let's see if we can come up with something else.
+Master on has an API that I can do a lot of things.
+If you're authenticated with an API, you can do all kinds of stuff.
+Read a comment on post and like post and boost post and write new post, but even without commenting or even without authenticating, you can use the API to pull data from master on.
+So, for example, if we used point of the API at the HBR bot, we could pull down a list of status updates.
+And then for each status updates, we could pull down all of the replies.
+So, we can do all this, pull all the master on data just using the master on API.
+So, I thought I'd put together just kind of a proof of concept, just to kind of see how it would work if it was possible.
+So, what I did was, well, let's go back a little bit, go back in time to HBR episode 3637 and 3654.
+Back in those episodes, I discussed using the data from the HPR RSS feeds to rebuild the HPR website.
+So, this was before the HPR had the static site generator and just the idea was tossed around that would it be possible to use the RSS feed to recreate a website?
+So, I thought I would just try it and see if it would work.
+So, what I did was I took that project and added to it a process similar to what I just described.
+So, with some Python, I'll discuss it in a second.
+Instead of just using the RSS feeds, I'll use the full episode feed and a comment feed.
+Instead of just using that, I'll add comments from the HPR bot.
+So, I'll talk about how it works next, but I'll have a link to the site.
+But, it's hpr.norrst.xwz. Any recent episodes should have at least one or two comments from Mastinon.
+Typically, the Mastinon bots in SpaceBot will, it'll make its initial post and usually can, will make it reply or boost it.
+So, there's typically, there's at least, there's the original post and at least one reply if I'm kin.
+But that will only be on the most recent shows. The API doesn't go very deep in the history.
+I haven't looked into collecting going all the way back as far as the status is go, but I think by default it pulls in about the last 10 responses.
+So, I'll have a link to the Python and the show notes. I won't read it line by line, but I will talk a little bit about what it's doing.
+So, the first function that I'll talk about is one named load comments from Bot.
+And what it does is it uses the API to pull a list of status updates from the HPR bot.
+And it looks for any statuses that match a regular expression.
+So, so far, every Mastinon post by the bot that's announcing a new episode contains a new episode colon space HPR and then the episode number and then a couple of colon.
+So, as long as that doesn't change, then this will keep working. But so first thing load comments from bot uses a regular expression to figure out what that it's an episode post.
+And it also uses the regular expression parentheses to capture the HPR episode number.
+The next function is called get thread comments. What it does is it looks at the statuses part of the API response when you get when you pull a status is a list of descendants.
+And in this case, the descendants are the replies.
+So, once we've got the list of descendants or replies, then there's another function called update DB that loops do lists of comments.
+It extracts using from the JSON. It extracts the author, the content, which is really puts in the post or the reply itself.
+The date and a couple other things. Then insert it to a SQLite database. And this is also where the data from the full episode feed and the comment feed.
+Those have already been inserted into the SQLite database. And then finally, there's a HTML template system that I use to grab the data out of the SQLite database.
+And a build kind of a facsimile of the HPR site.
+So, what I did was I added originally, what was there was if you look at an episode page, it will have kind of the standard HPR stuff at the top and then the show notes.
+And then underneath that, if there was any comments from the comment feed, it would be displayed there.
+So, what I did was underneath the HPR kind of regular comments added a section for a master on comments.
+So, it will display the information that it pulled from the comment API.
+So, one thing I didn't do that might be required is implement any comment moderation.
+But there's, I think there's probably a couple of different ways to do it. If it was required, one would be maintain a list of approved contributors or approved master on accounts.
+So, whenever someone comments on a post, you know, keep a list of people that accounts that you know and trust.
+And if a new post comes in and it's on that list, you know, go ahead and post it.
+And then if a new post comes in, it's not on that list, you can maybe sequester it and then review the comment.
+And if it meets the standard, add that account to the approved commenters list.
+Especially if it's someone that's a HPR is already familiar with, maybe someone comments frequently or, you know, as an HPR contributor.
+And then the other possible way to do it, and this would be considered really harder, would be to just maintain a list of approved comments.
+And someone makes a comment on, mask it on, you know, every mask it on, post has a unique identifier.
+So then what you could potentially do is just maintain a list of approved comments.
+And, you know, that would be difficult and it would almost require kind of a separate admin panel to do it.
+But it's a possibility, especially if the requirement is to approve every single comment.
+So kind of going forward, you know, I know it would be a lot of work to implement any of this for real on the HPR site.
+Mostly I was just doing it, you know, on just to see if it could be done and just kind of explore the possibility.
+But even without doing that, I do think there are some things that we as HPR contributors and listeners could do to increase the awareness of HPR on mask it on.
+So I've got a few things listed out.
+The first one is number zero, because I think this one is so easy, everyone should do it.
+And that is follow, if you're all mask it on, follow the HPR bot.
+Just that was just an extra way to get some notification that there's a new HPR episode.
+The next thing I think you could do, and I'm going to try to do, is tag yourself whenever one of your shows is posted.
+So if you contribute to HPR episode, whenever the bot announces that show, do something to say that, you know, this from your mask did not account that this was my show.
+Either, you know, make a post saying, hey, check out this show I made, or maybe just reply to the show or tag yourself.
+There's several different ways to do it, favorite, post it, leave a little emoji, whatever.
+But, you know, somehow acknowledge that you have made an HPR episode.
+Next on the list is to add your mask and on account to your HPR profile or to your show notes.
+This is something I need to do, I think, but if you have a mask and on account, just make sure the HPR listeners know about it.
+And then finally, leave comments on the HPR bot's method on post.
+If you're like me, and you have something to say, and you probably won't remember to go back and post it on as a HPR comment, at least post it on mastodon that you heard it, and you liked it or didn't like it or whatever comment you have.
+Just sort of, I think, I think mastodon is a great place to promote HPR.
+I think it's pretty, there's a lot of technology related content on mastodon already, and I think it's a good audience to kind of spread the word about HPR.
+I think that's it, that's all I got for you guys. I will see you next time.
+You have been listening to Hacker Public Radio at Hacker Public Radio.
+Today's show was contributed by a HPR listener like yourself.
+If you ever thought of recording a podcast, you click on our contribute link to find out how easy it leads.
+Posting for HPR has been kindly provided by an honesthost.com, the internet archive, and our things.net.
+On the Sadois status, today's show is released under Creative Commons, Attribution, 4.0 International License.

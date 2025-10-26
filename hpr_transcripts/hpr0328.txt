@@ -1,0 +1,554 @@
+Episode: 328
+Title: HPR0328: Puppet, Systems Building Systems
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0328/hpr0328.mp3
+Transcribed: 2025-10-07 16:31:49
+
+---
+
+.
+The Utah Open Source Foundation brings the Utah Logs home.
+The
+following presentation, practical puppet systems building systems, was given on March 14, 2009
+by Andrew Schaefer at the Ubuntu Utah user group.
+Visit their site at utah.abuntu-us.org.
+My name is Andrew Schaefer. I work on Puppet, which is a automation framework. It's GPLD.
+It's all written in Ruby. It's an external DSL. Most of the admins who use it start to like it, so you've been warned.
+This is how we're going to start. We're going to talk about testing all the F and time.
+Some other place I'd probably swear more, but I'm going to swear less.
+I'm going to talk about code. I'm going to talk about tribes. I'm going to talk about the dawn of time.
+I'm going to talk about clouds. I'm going to talk about evolution. I'm going to talk about opportunity and triumph.
+Not necessarily in that order.
+Andrew Schaefer. I'm the proud father of two beautiful boys. I like mathematics. I work for reductive labs.
+I work on a project called Puppet, which as I said before, is an automation framework.
+Let's start at the beginning.
+So a long time ago, there wasn't computer science. There was people that wanted to compute, and they had math and physics problems they wanted to solve.
+For a short period of time, the people that ran the computers and understood the systems were the same people that programmed them.
+Right now, I'm talking to CIS admins, but earlier, I gave this exact same talk to developers, and at some point, they separated.
+That period, that first period, will probably last about 10 minutes, and then we had the separation, and the internet became used for porn and now we're here.
+So we're going to look at code. This is Puppet code. I just showed you guys the same code before. If you're hearing this, you can't see it. Hopefully the slides will be available.
+This is the definition for installing Ruby on Rails. This is all code I wrote in the last two or three days, and we're going to walk through it. Hopefully it will make sense by the end.
+So this is saying Rails site. The name, this being passed in, is the next big thing, and the server name, which is going to end up being set up as a virtual server in Apache Conf, which we'll see by the end, is tnbt.com, the next big thing.com.
+I don't even know if that resolves, I didn't even check. And we have to install Rails version 2.2, because our app that we want to install wants to run that. If you're installing Rails, you know what a pain it is to try to deal with the version version issues.
+So it's all right in Ruby, but it's not Ruby. It's an external DSL. And if you're a Ruby, that probably hurts you, but deal with it.
+We just won an award. This is the person who wrote Ruby. I don't know if you know much. This was originally format for Ruby conference, and this is the primary author of Ruby Maximoto Yukihiro. He is an artist, seriously. Ruby is a work of art, and it makes a lot of people happy. It makes me personally happy.
+And if you don't know Ruby, you should get acquainted with it, because it is very beautiful. And he was the judge for this award that was in Japan, and he awarded puppet and a rating of excellent, which that was the second award.
+And they gave us a check for, I think, 10,000 yen or something, and a little statue with like a Ruby and like a little $10,000.
+No, I'm sorry, it's like a thousand. The main prize was $10,000, and that went to, which I think might have been a million, I'm not bothered. And I'm tired, not to make excuses, but the winning prize was a framework for modeling climate from some group in Korea, which sounds like an awesome project, so I don't feel too bad getting the second place.
+That's a tribute to Matt and to Ruby, and we love Ruby, and we're big in Japan.
+So back to this code, we're going to install Rails site, we already looked at that, so let's see what that expands through. This is puppet language again, this is the definition of the Rails site.
+So since you guys are not rubious and you haven't been installing Rails, I'll walk through this with a little more detail to make it all make sense, but if you've installed Rails, like this is what you do all the time, you have to deal with it, what are you going to do?
+So it's going to install Ruby, it's going to install Gems, which is an alternative package management thing that Ruby does, Apache, everyone, not everyone, but a lot of people run Apache as their web server.
+The password passenger is, you can think of that as mod Rails, like if you do mod, anything else, mod PHP, then my SQL is going to be used as the database, in this case, you could use Postgres or SQLite or some other crazy database, but my SQL is easy, so we'll do that, and then we're going to install Rails, the Rails setup and Rails install.
+So we're going to walk through all this code, we're going to expand it and look at it, and we're going to keep coming back to this just to get our reference. So moving on, first we're going to look at installing Ruby.
+So class Ruby, when you say include in a math test, it's going to look for that class, and then it's going to instantiate it, and what puppet tries to do is be declarative.
+So it has this resource model, which is based on nouns. As opposed to, if you're scripting things in bash, or Ruby, or an imperative language, then you tend to think imperatively, what puppets trying to get you to do is think declarative.
+So you're not thinking about how do I do this, you're thinking about what should it be like, what state should it be in. So you're saying, here I want to install these packages. I want Ruby 1A, I want the dev, the RDOC, which is a documentation for Ruby, RII, which is interactive and open SSL for Ruby, and you're going to say, ensure that they're installed.
+Like we saw before, that's going to expand to appget on this particular system. At the bottom of puppet is this abstraction layer. So if you run this exact same code on red hat, it's going to expand to yum.
+That makes sense. So we're back here. The next thing we do is install gems. Now this, this gems pack class is not going to install gem packages. It's actually going to install a package manager.
+So it's going to go through these are, these are declarative. It breaks down a little bit when you get to execs. So there's certain times when you're going to essentially shell out. So an exec is say run this command on the shell. So you're sort of breaking a little bit out of the declarative paradigm, but sometimes you just got to do it. So here we're going to W get something from Ruby Ford, which is a tarball with the gems.
+And I think it's interesting. We'll use the word interesting. That Ruby forge is a PHP application. What are you going to do? And here's another note. And I don't know if you guys are thinking about automation too much in your jobs right now, but Ruby forge to get this gem. I have to know this magic number.
+4, 5, 9, 0, 5 to get the Ruby gems 1, 3, 1. Why? I don't know, but I think you're exposing some part of your implementation through that interface that you don't need to. And it makes it difficult for me to automate. So one thing that would be nice is if I could say restfully, I want version 1, 3, 1 and get it back without knowing this magic number.
+So if you look at the site and look at all the gems for Ruby gems or not the gems with the tarballs, then you have to know this magic number. And I don't know what you guys work on or exactly what you set up, but think about that kind of stuff.
+If you're exposing implementation in a way that doesn't need to be, it's going to make either your life or someone else's life potentially harder later, like you're showing off your underwear.
+And then this next line creates is important for something I'm about to spring on you because you're going to set this item.
+So that's something that the other models do for you, but with exec you have to do that essentially manually. So what that's telling this particular instance of exec is that this command will create this file.
+That makes sense. And then after you get it, you're going to untar it. It's basically the same thing. And then you're setting up an explicit relationship. So you're saying, I can't untar it until I get it.
+So that's what it requires going to do. And this is actually going to build a directive graph and there's some creative stuff that could happen there, but we're not going to get too much into that right now.
+And then the gems set up, it's going to make sure that it also has Ruby. So the setup is going to depend on untarring the gems, but it's also going to depend on Ruby.
+So you have to set up that dependency. And then at the end, I'm going to set up a simlink. And I can't set up the simlink until I've run setup.
+Does that make sense? So let's talk about item potents. Who knows what item potents means?
+So item potents is a mathematical or computer science concept, which means an item potent. It means that an operation can be performed multiple times, and it will only put things into a certain state.
+And it won't change that state after subsequent operations. So something like adding one, the operation adding one is not an item potent operation.
+If I add one to the number, it's now bigger. And another one is bigger. And another one is bigger. In math, a simple item potent operation would be multiplying by zero.
+So if I multiply any number by zero, I get a number, that number is zero, and I can multiply it as many times I want by zero, and it will stay zero. Does that make sense?
+So what you're doing when you set up these creates is you're saying, perform this operation, but if this runs again, it's not going to do it.
+Because in this case, it wouldn't really matter. It would just make that file again, but there are certainly scripts. I'm sure you guys have experienced this. If you run the same script script twice, it's potentially destructive.
+And so you set up these conditions that protect you from that based on your understanding of the system.
+So we'll go back here. We're going to install Apache. This is pretty simple. I have a class of Apache, and the class is going to require these packages. I'm sure you guys have run AFK install Apache before.
+And I'm also going to set up a service. So this is another one of the resources in the model. This is going to say that make sure Apache is running, and it has restart is some services.
+If they're using init, they can restart some services on some platforms. You basically do a stop and a start. So this is like some parameterization to manage the differences between systems.
+And then this is another defined. We're going to look at a second that is going to get rid of the default site that comes with the patching, which might be why disappeared.
+And so this define, I just describe to you, is going to take essentially one parameter, and then it's going to do a case statement. If that parameter is present, then it's going to run an exec.
+Because if you guys are managing Ubuntu, I'm pretty sure you've seen this stuff before. It's going to enable the site based on or disable the site when we get to the absent. And it's only going to run. This is back to the item points stuff.
+If that is not found in grepping or doing it LS of the directory and grepping the results for that pattern. Does that make sense?
+And then this enables essentially the opposite. It's going to disable the site if it can find it. I think the semantics are easy to understand.
+It's an idiom that Apache 2 uses on devian distributions to manage virtual host.
+So what you do is you create a virtual host description in sites available. And then when you run, when you run this command, it simulates it to sites enabled.
+And it's a much better system than putting all this stuff in Apache Conf. Because then you can match them as items instead of this monolithic file.
+Back here, the next thing we're going to install is my SQL. I'm sorry, I skipped something. Pass here. Pass here enable.
+So, Pass here is an interesting project that is essentially mod rails. Let's you run your Ruby on rails in Apache through Apache.
+And it's available as a gem. But it's kind of weird because gems is a package that distributes Ruby code. But in this case, it's going to distribute code that gets compiled.
+So, is it a source package or a binary package? It gets a little weird. What I would recommend you do if you wanted to install Pass here and you have any control over your infrastructure, you would not do it this way.
+What you do is you would build at once and package it with your favorite package manager app or D package. And then through your own private repos, you just serve that out.
+So, in this case, what we're going to do is we're going to run the passenger load which got installed with the gem that we just installed. And that's going to build a bunch of stuff.
+And at the end of that, it's going to have this .so file, which I'm sure if you've managed any modules in Apache you're familiar with. And then that's a directive to load that module that you would put in Apache.conf.
+And there's also, if you're familiar with this, but there's a similar idiom to managing the modules on Apache on Ubuntu as there is to managing the sites.
+So, there's a modules available directory. You put all the modules available. Then you run the exec here which is enabled as mod. And then it's going to put a simlink that is going to be in the modules enabled.
+Makes sense, right? And then you also need to have another little comp file which here is going to be templated.
+I didn't show this template. I'm going to show some other templates later, but it's a simple two liner that tells Apache where the Ruby executable lives and where the Rails executable lives.
+So, Apache can do its magic and get those. So, that's the conf. And that's just, if you go learn how Apache's managed on Debian, how make perfect sense.
+All this available on my GitHub, does anyone use Git?
+So, on GitHub, little idea, all this code's available so you can look at it. It's also available on the EC2 instance which I'll tell you about it.
+We saw it earlier, but I'll explain it for the streaming in a minute. So, you can go poke around all these modules and run them and play with them.
+And then Passer install is another define. It's pre-straight forward what it's going to do is run the, I think it's something out of order.
+I know I did it. It's the first thing here to define. And then Passer install, in this case, that's where it's going to grab the gem.
+And then this is another thing, this is like where things break down. And this goes, this is about the tribes thing, right?
+In a lot of organizations, you probably don't experience this if you're doing academics as much, but if you're working in an organization that has both developers and sys admins, there's often this tension.
+Unlike this, like, they are.
+They're not the same tribe as I'm saying, right? So, in this case, these developers, and they're great developers, they made mod rails and they put it in gems.
+And then when you build this thing, you have to interact with it. But what you need to do to interact with that is hit enter twice with, like, no other data.
+And it's just like, hi, I'm this little ASCII screen and I have, like, this blue thing. And then, do you really want to do this? Really? Well, I'm not even going to ask you. Just hit enter. And then when it's done, it's like you have to enter again.
+I don't know why maybe someone made a user story. I don't know if you guys are familiar with that idiom, but I don't want to get too off the tracks right now.
+So then, this is back to the item phones. It's going to create the file that we already saw being moved into the directory.
+Now we're going to install my SQL pre-stray for packages, blah, blah, blah. My SQL client, my SQL server, live my SQL dev install them. Then we're going to set up databases.
+This is for rails to operate. It needs to have three databases, a dev test and production database. And that's just how rails and tunnels work. This is a way to do that with this database define.
+I'm going to define all three of those later with parameters. So it's pre-stray for it to understand. It's going to run the command create database unless that database exists.
+And I can also drop databases. It's going to run drop database if, unless that database doesn't exist. Using that same idiom of ensure present or ensure absent.
+Ruby MySQL is a gem that Ruby needs. It's basically the bindings for Ruby to talk to my SQL.
+And now we're going to get to the bottom of this. Rails set up. We're going to actually get rails. In this case, we're going to parameterize the Rails gem that we install with the version that we need to match for application.
+So that's pretty straightforward substitution. In the idiom for packages, ensure absent will get rid of a package. Ensure present will install the latest package. And install a version will pin it to that package.
+So with gems in particular, you can have more than one version of gems installed. So you can actually install both of them.
+So if you're installing system packages and you ensure it's a certain version, then it's going to, using whatever the native package manager supports and that mileage may vary on different systems, it's going to try to pin it to that package.
+It's going to tell that native package manager make it be this package through whatever mechanism that that's abstracted at the bottom. And if that package manager supports it or it's been implemented right, which sometimes break down, but it's pretty, I think it's going to be pretty solid on Ubuntu, it's going to try to make it that version.
+So then Rails install is the last define. This is all Rails items. If you've never installed Rails, you might not have seen this, but if you have, then you've done it a million times. It's going to make a directory. I choose our Rails just because I don't know why it seems like a good place. And it's going to put that with the user that Apache runs as.
+And then it's going to run this command that's going to install Rails with the name of the application. And then it's going to configure that with the database. So you have to tell the Rails application where your databases live and how to connect to them.
+And then it's going to set up the virtual host with the name for that site, the Apache needs. And then it's going to enable that virtual host with the define that we already saw in the Apache class.
+These are the templates. So this is a template that is going to use to configure the Rails app. This is YAML. I don't know if you're familiar with that data format. It's essentially going to say, here's how you log in. These are the databases. You'll notice that I use the super secure default password for the user rocket.
+And then it's going to set up the virtual host. This is another template. This is ERB. If you're doing Ruby stuff, you've seen this many times. But you guys probably haven't. And it's pretty simple substitution. So here it's going to substitute in the server name that we put in as a virtual host. And the name of the application. So it's going to be var Rails, the name of our application in public. And that's going to, that's where Apache is going to mount it.
+And then your server's ready. And if you guys go look on that URL, I think you should see that the Rails stack should be running. It's up. Okay. There you go. Server's ready.
+Now, the reason this is interesting and important is, and particularly when you start thinking about virtualization in EC2, is I can make API calls and get servers.
+And even internally, if you start to set up, and this transition is happening, if you start to set up VMware and some of these more complicated systems, like a lot of people are virtualizing their internally infrastructure. This is much.
+So you can bring up new images with whatever you want, and then build them to be whatever you want. Now, if you're sysadmin, I didn't really go through this, but we'll talk about this more than.
+There's this way to try to do this with images and managing versions of images. And that's a path to hell, I assure you. And we'll talk about that by the end of it.
+Well, the nice thing about a virtual machine is you can't tell that it's a virtual machine, right? So if you're just running, so some people have set up things to manage those hypervisors with puppet, but then underneath those virtual machine, you can configure them just like their normal machines, right?
+So this goes back to, I said the first, this is something you guys probably aren't as familiar with, but TAT, FT, pronounced taft, because the T is silent, stands for testing all the F and time.
+And that's an ADM that Ruby guys have embraced. But it kind of breaks down when you start to talk about things like servers, because the time scales are different, right?
+Like if you install some packets, if you build a package, then it might take minutes, where if you're doing test-driven development, you want to be able to run hundreds of tests, at least 10 tests in fraction of a second.
+So you're working on this code, and your cycle, your feedback cycles, much shorter, and you start to build servers, it just breaks down.
+Furthermore, because the puppet language is declarative, then you're trying to make, if you're doing really good test sort of methodology, your test should be declarative, but now you have code that's declarative and tester declarative, it doesn't even make sense.
+You're basically saying one equals one, and it doesn't tell you anything, and it's not even ground truth, right?
+So you need to install, make sure it works. And so like the whole thing breaks down, you guys aren't as familiar with this ADM, so you probably look at me like what the hell is this guy talking about.
+But if you're moving from more of a development environment, like developing Ruby, developing Rails, and you're running our spec, and running hundreds of tests every couple of minutes to make sure your development's moving in the direction it should be, then you move to doing puppet.
+You're basically kind of forced back to this code and fixed paradigm, which is how most software is written from the beginning of time, but it's actually not as awesome as test driven development.
+But I just want to point that out.
+When I showed this slide at the Ruby conference, I was basically begging people to give me, if you can figure out some slick way to test the code versus the infrastructure, I'd love to hear them, but I think the fact is it just breaks down, and your test cycles are going to be however long it takes to run that that was puppet manifest, and then make sure that stuff's set up.
+So one of the things people have done is set up continuous integration. Are you guys familiar with continuous integration type stuff?
+So you basically run a server that every time there's changes, it's going to run all the puppet manifest, and then it's going to check the spec, the specification you can use our spec.
+Instead of running code and mock objects, it's going to actually shell out to the machine and make sure, these are my web servers, I want my web servers to be running XYZ, and it's going to look on the systems themselves and say that's running, and then if you break it, you'll know, because the continuous integration will tell you.
+It matters if you're running infrastructure, if you're running web servers, and you want to change something in the system over here, you check that into the puppet code before it gets to production, because going back to infrastructure is code, now hopefully, everyone probably breaks this rule every once in a while, but you don't really want to move from whatever you just did on your laptop to production environment, if you're running an application.
+If you want your infrastructure to code, you probably don't want whatever you just committed to get deployed directly to your environment.
+The way people run puppet, which we'll talk about a little later, probably after the slides are done, the cycle is automated so that when you commit to the central repository for a production environment, it gets propagated, and that could be potentially hundreds or thousands of machines.
+It's like one little mistake, and you can bring down a lot of your infrastructure. Now you have to think about your infrastructure as an application, and that requires some sort of discipline and hygiene, and setting up some sort of development, test, stage, workflow to move those changes into your production environment.
+But puppet is a very cis-admini tool, this way in Ruby, so you have to have this domain and this mindset of both sides.
+On my blog, I have a couple, because I'm basically a developer by circumstance, we'll say, if you read my blog, I might make more sense.
+And then there's my partners who were more from the cis-admin, although Luke's probably on the edge between both worlds now, but there's sort of this collision where you could have confusion and contention, but there's also a great synergy when you start talking about things are code, and so in a lot of places, I don't know what you guys do or what you guys use, but a lot of cis-admin organizations, they don't use version control.
+They only use a lot of the things that developers take for granted, but there's an opportunity to instead of thinking, that's not my tribe, that's not what I do, to say there's a good reason to do that, and learn the lessons.
+So the developers can learn lessons from the cis-admin, the cis-admin's can learn lessons from developers. It's actually, particularly when you start talking about web infrastructure, is particularly important, because the systems that you're running, that's not the male server that can go down.
+That's the business value, that's the value chain about organization. And if you have an application that does something important and provides value, and the developers don't understand the infrastructure and the implications of what they do on the infrastructure, particularly when you start talking about data and all this other stuff, then you can literally crush your servers with things that developers work great on their desk.
+And because of the logic and the usage pattern, when you put that on the production environment, it's going to bring everything down. And I don't know if you guys have seen this, but I have done it.
+Yeah, it works on my machine.
+Why don't we just run everybody over here to shoot the money?
+Yeah, yeah, yeah. I'll show you a joke at the end. It's a video online that's pretty funny. If you're listening to this, then you should Google Giles, Boquette, Ruby, and Lightbulb, and watch the video, because it is great.
+And that's a little plug for Giles. So we have this collision. So I was just saying how the developers have to understand the infrastructure. But conversely, the SIS admins also have to understand the application when you get into the situation.
+So the way that you set up your stuff, the way that you analyze the spikes in load, that has implications for the application. And getting developers and SIS admins to solve those problems together is win-win.
+And trying to keep everything walled in siloed is epic fail. So there's sort of this evolution. I think I love this picture.
+I think there's certain things that are happening with both the puppet project itself and web infrastructure, and a lot of interesting things that sort of involve all four of these categories.
+And we could kind of philosophize about that. But there's basically things are changing. The way that you build infrastructure today is going to be different tomorrow.
+And what you can do today, you couldn't do five years ago. Right now, anyone with a credit card can bring up 20 servers on EC2 in five minutes. That's how long it takes to boot.
+I mean, that's that probably. But you can have 20 servers doing whatever you want. That's power. That's the ability to do experiments. That's the ability to deliver value that you probably didn't have five years ago. Right?
+So that's the clouds. And that's the change is coming. That's the opportunity that's there. And the reason you asked earlier why you wanted Amazon to run your infrastructure.
+So you don't have to do it. So you don't have to plug in cables. And now you want to do.
+So George Castro, he sent a tweet to Luke a long time ago that said, people have finally seen, they're starting to figure out the puppet gets you to the pub by four. Note that I have been at this pub since two.
+So it's really what you're talking about is figuring out that if you're doing things declaratively puppet and you're using virtualization and some of these things are happening, then you're not pulling cables.
+Obviously, somewhere someone probably has to plug some stuff in. But at the end of the day, it gives you the ability to think about things at a high level and manipulate this stuff in ways that you never could do before. Right?
+And then this is, this is another ruby as I mean, this is particularly a mountain less Ruby conference idiom. And it's probably going to make no sense to you guys at all, but it is what it is.
+It's Darth Vader and it's sombrero. And yeah, it would take too long to explain, but if you ever go to mountain less Ruby conference and you're doing a talk, I want to see Darth Vader and sombreros in subliminal messages. Mark my words.
+And that's the presentation I gave for mountain less Ruby conference yesterday and that brings me to the questions portion of the presentation.
+When you talk about specifically some of the, well, some of the things that comes up currently, my job is that I have testers who go on to test and talk about testing on the other time.
+And I'm more interested in developing to do the job testing. In the sense of what a puppet can do, can it help with regard to forcing people to understand where their tests are going wrong in that sense?
+So this is a big topic and this is something I'm interested in my other kind of role in thinking about this stuff is process and methodology and testing and skills, right? So unit testing is a skill.
+Testing all the effentime is actually a skill and a discipline. And I'll swear if you guys are, if you meet me on the street, but I'm in Salt Lake City and I'm streaming.
+So I'm doing the best I can here. The question you're asking, I think that's sort of, I mean, there's certain things puppet can do. It can provide stability for those because a lot of times you have in some organizations, you have a huge discrepancy between what's in production and what's in the test in development environments.
+And that can lead to a lot of nightmares because what works in one doesn't work in the other and that can cause you problem. So you can provide that sort of stability. As far as teaching testers how to test, that's its own problem, right? And puppet's not going to solve that for you.
+What allows you to do?
+And I think the answer is yes, because you can, you know, to whatever degree, the thing that's hardest to do and puppet's not going to help you do this is simulate the usage patterns in the load on so we have application.
+It should do a great job of providing the consistency across because of what happens in a lot of places, particularly when we were just talking about before where you have the application is treated separately from the infrastructure.
+So the application might go through this testing process, but then the configuration on the production servers, those are often just done.
+And they're not the same often, they're different machines, right? There's a lot more RAM, there's a lot more CPUs, so there's, right, exactly.
+So being able to provide that consistency is a big win. When you start talking about virtualization, which we mentioned earlier, one of the things that we're doing some projects for people where we're actually providing mechanisms.
+So it's one thing to have like this test environment and this dev environment, but often some of the tests that people do change the environment, right?
+So it's nice to get, if you're doing unit tests and you're running those applications and there, you know, you could clear the memory and bring it back up, but there's this test instance that just sits there forever and whatever stuff got done to it might affect how the application runs later.
+So you can use tools like Puppet to rebuild from clean images so that you're testing from a known state. So that's also a pretty big win.
+Does that answer your question?
+Yeah, I mean, so you're still talking about, I mean, still a problem with that problem.
+That's a human engineering problem, more than a technology problem.
+There's built-in support for a notion of environments.
+So you can use environments, but you can also just set them up as separate Puppet Masters.
+There's pros and cons to both approaches, and I know people do it in both ways.
+You look like you're going to ask question.
+I mean, we're in the infrastructure and code. Are you really seeing a great synergy between the developers and the actual people who have been interested in sites?
+And then really, I can see it making...
+Okay, so the answer is sort of, and it kind of depends from organization to organization.
+So there's a lot of, and this goes across, I mean, it's really a human engineering problem just like Clint was talking about.
+So you have places where there's 10,000 boxes, and there's 200 people that have brewed, and there's, you know, 20 dev teams, and it's a total whatever bad word you want to use.
+That describes a mess, right?
+And so there's all these politics, and there's all these pathological issues with process and methodology.
+And so what happens in most of those sort of enterprise organizations that can't really get that together is they implement these draconian change management processes.
+So things just happen really, really, really slowly.
+So the flip side of that is we have a client that runs, and I can't say their name, I would say, I couldn't, hopefully that will get fixed eventually, but they run, they have 10,000 machines.
+It's all puppetized. They basically have a system where the developers writing the applications as part of the application delivery, right, the puppet code to manage and configure that application.
+So now you have a boundary object. You have a shared object that both the operations and systems guys look at and understand, and the developers understand.
+And so you get, it facilitates this communication between both groups that you don't necessarily have when, when developers are just throwing things over the wall.
+Does that make sense?
+And if the application doesn't get in this particular organization, which I think is like the shining example of how it should be, if the developers don't manage that application properly, then it's a bug.
+They open a bug against the application until that puppet code works.
+They actually test it now because the development boxes make sure that they put it in the puppet at that point.
+And then when you push it to the test server, then it's just administrative.
+We're not really doing the time protocol.
+So they have a workflow where everything's vetted at the dev level, and it's vetted at the test level, then maybe staging.
+Yes, the plug.
+Well, yeah, it's a human engineering problem. You can't even get your testers to test. What are you talking about?
+Hey, don't talk bad about testers.
+I got love for testing and testers. I'll come over there. I'll come over there.
+They get no love and everything's their fault.
+No, it's actually the PhD.
+Other experience.
+Right.
+I'm on the other extreme. I'm a little small company.
+It's made to developers all opposite together. It works really well. The thing that I'm interested in, yes, is we run three DST and virtual machines.
+We don't have a physical box. Everything we do is already in virtual machines.
+And I have a demo box where the sales guy goes out and does a demo with data.
+And I need to reset the data after he's done a demo and picked up a database and made a bunch of changes showing.
+And it looks like this, like I said, brought it very easily.
+Just rolling it back instantly to fixing the box after he's shown a customer.
+It should be allowed here. It should be able to automate it pretty straight forward.
+You look skeptical.
+So this I have a couple other presentations I've done before.
+And the public master server, in this particular case, I'm just showing the code.
+Because the project itself, so there's other things I didn't tell you guys.
+So this was all about code.
+But then there's there's puppet infrastructure.
+So you have a puppet client, a puppet master. There's a puppet executable.
+And they all kind of do stuff and they're all kind of flexible and you can choose different ways to use them.
+So with the instance of your easy-dutable, you read just the puppet executable and say, run the following.
+Just run this.
+You didn't have a puppet master meeting to it.
+This is the configuration you wanted.
+Go right there.
+Cobbler was written to integrate with puppet out of the box.
+So you had everything to scale up.
+Whether or not, I'm not bad at it.
+When the intention was to talk about how a puppet probably works.
+When you spend a lot of three minutes on Cobbler, it really doesn't agree well.
+What happened?
+I didn't see this talk, but I want to say that I know Michael the mom quite well.
+And his product, Cobbler, and I use it at work and I love it.
+And I've used it for a personal thing.
+I'm under the, like just, how could it still kind of bring child for me?
+Like I'm still trying to understand it.
+But when I understand you have to kind of use it or you actually get it, that makes sense.
+I think there's some truth to that in almost anything, though.
+Well, the thing is, I understand the concept.
+But what I can do with it is so random, I guess it's a way to put it.
+I can think of so many things that I can do with puppet that it doesn't really have to be,
+I don't have to have a problem with it.
+I don't have to have these things.
+And it's kind of like Ruby's old, it's Play-Doh type of method I was going to talk about.
+It's just this big mess of things.
+And I can do it whenever I want with it.
+I can hold it in the form that I want.
+So you want less choices, is what you're saying?
+Right.
+But then choices.
+You do have to start thinking.
+Can I just get a what for start thinking?
+Can we get people to start thinking?
+Because I think that'll fix a lot of problems.
+I don't know.
+I don't know.
+It's dangerous.
+So the thing I think about is like, okay.
+Currently, I'm...
+Oh, I know.
+You know, the whole deployment of production versus data versus data,
+getting that to be in place is probably going to be really interesting.
+One of the things that I've seen a fair amount of couple of projects that I work on are
+to be actually installed applications.
+You can put it down, I'm not sure if it's using a puppet master or not.
+I think they are.
+But it isn't just send it puppet now.
+How does that actually work?
+Like, so they just say, go install this.
+And it's just a brand-new package that they just built.
+It's actually used in the package.
+So I can only speculate.
+But let's say you had a package for your application.
+Sure.
+Right.
+Which you...
+Like, that's this admin love is to have, like, needed package managers.
+Right.
+versus, like, Rails deployments or...
+So if that package has a name and you just have puppets set to install the latest version,
+and you move that into your private repo that you control and have that pointed at,
+the next time Puppet Runs, it's going to re-synchronize.
+It's going to see there's a new version and it will install it.
+Okay.
+So...
+As I said, it's a bit of a run.
+It's part of the front.
+You could set up very 30 minutes.
+So the default...
+The default is not to run it as cron.
+People run it as cron sometimes for other reasons.
+The default is every 30 minutes it will re-synchronize.
+And so that's where the item potency comes in.
+So it's basically going to re-validate all of the settings that you set up.
+And if a package is changed and there's now a new version, it will roll to that.
+It has a name and a client.
+So that's the Puppet Deam.
+Yeah.
+But you can...
+People run it in cron or people run...
+People just run the executable.
+So they...
+They, like, do their own for whatever reason.
+And it's back to the Play-Doh thing.
+So they'll set up...
+Instead of having Puppet Master, they'll just r-sync the manifest
+and then run from the Puppet executable, just like they did on the demo.
+Does that make sense?
+Yes, Play-Doh.
+But I have...
+I have a...
+Probably the ability to sell it for...
+So...
+Hold on.
+Let me bring...
+Not getting any marketing.
+So this is just...
+Just to kind of give you a little more idea about some of it.
+This isn't necessarily up to date.
+There's a lot more people.
+But...
+This is the...
+This is the presentation that we did for the...
+Review-Worth.
+So, like, Google Manages...
+They're infrastructure.
+They're workstations.
+The Mac infrastructure.
+With Puppet.
+Red Hat uses Puppet.
+Like we said, Cobbler is a great tool.
+James Turnbull, who's...
+Who's the community manager or slash release manager for the project.
+He's like a huge Cobbler fan now.
+He keeps raving about Cobbler.
+So you can go from basically...
+Whether you...
+Whether you're going to have virtualized instances or...
+Or something like Cobbler.
+You can basically go from bare metal to running services...
+In like...
+Automated way.
+The next thing that I'm interested in is that...
+About Cobbler is in support.
+Everything from...
+All the money distribution that they're working on...
+And they're actually having them build a plan for centuries.
+And they're looking at like...
+All the BSDs, all the slurs, you know...
+All the other things that you think of.
+You can automate it in any form.
+They pump out some equipment.
+And adding Puppet on to it...
+That's totally like...
+You think...
+You don't tend to...
+But you can have Cobbler in the unit.
+So...
+You can pump it.
+I said...
+I've got the future.
+You can pump it.
+So...
+So Puppet's open source, free software, right?
+So at least...
+Once a month, someone comes on the mailing list.
+And they're like...
+Is it work on Windows?
+We're like, no.
+Oh, I really like it if it worked on Windows.
+Well, do you have...
+Any money?
+No, I don't want it.
+That bad.
+You know, so...
+It's just a matter of time and work to do it.
+Yeah.
+If you know Windows and you understand the models and the framework,
+you can go do that.
+And...
+You know...
+You've got the bizarre model and the computer model and how software is built.
+And...
+You've got...
+We've been doing software developers.
+You probably make like...
+Like 3% of the development population.
+And you've got everything else.
+And then you've got enhanced people.
+These guys are not up to help.
+But they sure do want this.
+And...
+I think that's the only way...
+If it's about...
+I think someone who understood both the model, you know, the framework model and then what you want to accomplish on Windows.
+And there's some...
+I don't manage Windows.
+I don't know Windows personally.
+I'm sure I could learn it if someone gave me a minute.
+I used to basically...
+I'm going to be honest.
+And this is a Ubuntu group.
+But I used to think that anyone who did anything on Windows or .NET, I just kind of wrote them off.
+But through other parts of my life, I have learned that there are some smart people that do .NET and do C-sharp and all this kind of stuff.
+And I respect them a lot.
+And I've learned to love and open my heart to tell you the truth.
+And so, you know, we're going to have a little testimonial.
+But the end of the day, you essentially have people doing what they have to do.
+And there's a ton of people running Windows.
+And there's a ton of people running that stuff.
+So more power to them.
+That's just not what I do.
+And if someone wants to make it work on Windows, then we have a guy right now that he has his job.
+If we were able to give him a little bit of money, it's probably like a two-month project.
+And then we'll work on Windows.
+There's a lot of money to be made, maybe, because of the kind of the philosophy.
+Like, knowing on Windows, like everyone on Windows pays for stuff.
+But there's also more, there's also more, there's also more competition.
+There's a lot of GUI tools to manage Windows.
+And so you kind of need someone who's at the corner, like, that is on that border,
+that has to manage these heterogeneous networks where they have both systems.
+They see the value of a framework like Puppet.
+And they have to manage all these Windows systems, perhaps reluctantly.
+And they're trying to figure out a good way to do that.
+Do you know this kind of discipline?
+Well, this question is actually from the IRC.
+You can either slide it on, slide it on.
+Well, that's a slide share.
+I can post PDFs. I actually have a PDF.
+I'll give it, I'll just send you the file right as soon as I finish, and you can put it up.
+The slides are, yeah, they're PDFed.
+Now West Ruby Conference.
+Represent.
+It was at the library, about 230, 250 rubies.
+No, we had the big theater auditorium thing.
+It seats, you know, maybe 200 something, maybe 300 maybe.
+And there's people from all over the Mountain West.
+So people, as far as I know, I know one guy's from Pennsylvania.
+And then there's speakers from all over.
+It's probably one of the, not to, to the Mountain West horn, but it's an excellent Ruby conference.
+So, you're on the channel, I just wanted to talk about the page over the bar.
+What channel you guys on?
+The Boo to Dash Utah.
+Okay.
+If you join that, it'll actually, it's not really the name, that's going to read it.
+Gotcha.
+So that's Puppet.
+You can reach me on Twitter, little idea, GitHub, little idea, has all this code.
+I do, little idea on Identica, but I don't use it too much.
+I just use pink, sorry, but not all of them.
+But then it's annoying, because everyone sees the same thing if they're following you on both.
+I don't know.
+I only follow one, but I use pink, I don't have to pick them up.
+They're an image that they don't need to see.
+So if you go to Pound Puppet right now, there's probably 200 people.
+And a lot of those guys are Europeans and Australians, so you can have conversations at two in the morning.
+There's usually 30 to 50 mail, the average is about 30, so if you count the weekends,
+sometimes there'll be 40, 50 emails on the user list today.
+And the dev list is getting more and more active as well.
+I think last week there is, on average, two, three patches a day for the community.
+And then there's a lot of interest, there's a lot of ideas.
+So the main developer that wrote all this framework is his brainchild,
+and his label is Luke.
+If you go to reductivelabs.com, that's our website.
+Luke's blog is madstop.com, and he talks about the history of Puppet and CF Engine.
+I don't know if anyone's familiar with CF Engine, but he used to be, you know,
+really into CF Engine and automation, and then he got to the point where he was kind of frustrated
+with what CF Engine could do, and that was sort of the birthplace of Puppet.
+And now, the whole concept of infrastructure's code is becoming more prevalent.
+There's more ideas.
+I think eventually you're going to, right now this is Puppet Language.
+There's a project that we're doing that someone wants that will expose a pure Ruby internal DSL
+to write resources, like the resource I showed you and add them to the catalog.
+And I think it's not too far away, and I don't know if it'll be this year,
+but it'll be pretty soon, that you should be able to add resources to the Puppet catalog with archery logic.
+Because if you look at, if you remember the code we just looked at, it's a lot of its data.
+So there's some logic, obviously, some conditionals and that kind of stuff, but it's mostly data.
+And so if you could just represent that as your favorite data format, JSON or whatever,
+then add through whatever logic, if you like to program in Python or you like to program in whatever,
+then you could just pass this data into that framework and then have other logic that's built up.
+And so you could have things come in from other places and go in other places,
+and it just becomes like this central nexus to manipulate your infrastructure.
+Because one of the things we didn't, it's hard to see here, this is configuring one instance, right?
+So, but what you really want to be able to do is orchestrate clusters.
+You want to be able, and so then you start to have not just the intra-host configurations,
+but inter-host configurations that you need to manage.
+So you need to be able to say, these hundred servers connect to this database.
+This load balancer is load balancing these servers.
+And so you have to be able to coordinate that with Python.
+And you can do most of that right now.
+There's a few places where it could be better, but it's definitely progressing.
+And I think you're going to see a lot of movement in that direction.
+Wherever I'm standing, no, I'm just kidding.
+Technically, it's Luke's house on the, you know, all the stationery or whatever.
+Which is a Nashville, Tennessee.
+And I don't know the future holds for sure, but there's a good chance that we'll try to get the headquarters in Portland.
+That's where, that's where I met Luke a long time ago.
+There's three of us.
+The reductive labs is three musketeers right now.
+And that's Luke Teo and myself.
+And then there's also some people from the community that we are probably going to bring on to the team.
+And as a circumstances permit.
+And you'll see, I think you'll see the team double in size in probably three, four months.
+And then, you know, by the end of the year, who knows?
+What would contribute that you could actually make a goal?
+So I worked full time on this project for a year.
+And I paid my mortgage.
+And, you know, God willing, I could pay my mortgage this year.
+And we'll see where it goes.
+I worked for two startups.
+One of them still kicking.
+One of them went from 80 people to about 15 people in nine months.
+And, you know, two, three years before that, they'd burned through $26 million.
+And they had essentially nothing to show for it then.
+And some of the other, I mean, we're getting into totally different area now.
+But there's other circumstances that make some of this particularly difficult.
+But honestly, for us right now, because of what puppet provides and the value that provides.
+And the other circumstances of economics, it's almost counter cyclical.
+So we're getting more interest than we were.
+I mean, at part of the normal growth curve.
+But I think that in some cases, it's easier.
+So if you look at the commercial space, the obvious, there's other projects that can do some of this sort of policy-based automation.
+Blade logic and off-sware kind of jump to the front of that pack.
+But there's other tools as well.
+And those guys to get those tools installed is quite expensive.
+And if you've had those tools installed, then you're paying these yearly support or licenses on.
+Or licenses on that software.
+And you're like, hmm, how can I save myself some money?
+Oh, wait, there's some things that I can use that doesn't cost quarter of a million or, you know, half a million.
+Total cost of ownership.
+Yeah, cost of employing a guy that can make a licensing.
+Well, I think the price.
+The price of open sources expertise.
+Sure.
+Right, but you have to have an expert person.
+Or you can pay me and I will train you.
+It'll be awesome.
+Well, thanks for having me.
+I'm a little tired, so hopefully that was intelligible.
+Thank you for listening to Half the Public Radio.
+HPR is sponsored by Carol.net.
+So head on over to C-A-R-O dot-E-N-C for all of those things.

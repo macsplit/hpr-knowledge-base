@@ -1,0 +1,128 @@
+Episode: 3755
+Title: HPR3755: Synergy over ssh
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3755/hpr3755.mp3
+Transcribed: 2025-10-25 04:58:41
+
+---
+
+This is Hacker Public Radio Episode 3755 for Friday the 23rd of December 2022.
+Today's show is entitled Synergy over SSH.
+It is hosted by Ken Fallon and is about 25 minutes long.
+It carries a clean flag.
+The summary is, control your other PC securely using Synergy over SSH.
+Hi everybody, my name is Ken Fallon and you are listening to another episode of Hacker Public Radio.
+In today's show, we're going to talk about installing Synergy so that you can control the keyboard and mouse of another computer securely over SSH.
+Now this makes sense when you have keyboards next to each other so that you can at least see the screen on the remote computer.
+So to install Synergy on both computers you need to do so as root.
+Depending on your package manager, it might be DNF Space and Stole Space Synergy or on Debian-based systems.
+Apped Space and Stole Space Synergy and I'll leave it up to you to figure out how to install that on the other platforms.
+It also works on Windows and OSX.
+So my setup, the main PC, is going to be called PC underscore middle and this is the one with the keyboard and mouse that we intend to use to control all the other computers.
+So my setup, I only have one other PC but you can have PCs on the right, left, above, below in this virtual grid.
+So in my case, I've got one computer here and one computer there.
+So the only other PC for me is the one on the right and I'm going to call that as imaginatively PC underscore right.
+And during these instructions, I will be clearly specifying which computer I'm doing what action on.
+So you kind of need to keep that in mind, apologies for the verbose descriptions.
+So on the PC underscore middle, I'm creating a configuration file and I put that into my home directory.
+And I call a subject called ETC slash synergy dashwork.conf that just happens to be the configuration file I use you can use whatever you like.
+And there's a sort of I and I type configuration file that you need to follow.
+First thing you need to do is have a section call on space screens and then underneath that you need to specify the names of the computers that you're going to be controlling.
+So I have PC underscore middle colon and underneath that PC underscore right colon and underneath that I have an end to end that section.
+And then the next section I have is section colon space links and underneath that I have PC underscore middle colon and underneath that I have right equals PC underscore right.
+And then from PC rights point of view, the next line PC underscore right colon left equals PC underscore middle and it was that end section.
+And what that links section does that tells you from the point of view of this PC middle on my right is the PC whose name is PC right.
+And then from the computer called PC right on its left is the computer called PC middle and you can see how you can build this to be top bottom left right and a whole matrix.
+So still on the PC middle, I save that file and I'm going to add an entry to my SSH config file on my home directory in my dot SSH config file.
+If you don't have one, you can create one and the entry is going to do two things.
+It's going to specify what the IP address is of the other computer and then it's going to do our remote forward so I can create a virtual connection between the two computers.
+So the three lines that you need to enter into your dot SSH slash config file are host space PC right then new line host name space on the IP address 1921680.150 is my example.
+And then underneath that remote forward space 127.0.0.1 colon 24800 space 127.0.0.1 colon 24800.
+And still on the PC underscore middle we're going to run synergy server, but we're going to do it in the foreground with debug enabled.
+So the command is synergy s all one word space dash dash debug space and that's in lowercase and then in uppercase debug.
+Then everything else is in lowercase space dash dash no dash demon space dash dash server space dash dash address space 127.0.0.1.
+And dash dash config space tilde for such ETC for such synergy dash work.conf, which is the link to my config file.
+And then dash dash name space PC underscore middle and then dash dash log space slash temp slash synergy work.conf.log.
+And what that command does is synergy server calls the server that debug sets the amount of information that you were going to display in this case a loss because it's debug information.
+We're going to go no demon, which means it's going to continue running in the foreground and not disappear into the background.
+We're going to start it as a server. So not a client and the address that the server is going to be listening on is 127.0.0.1.
+So it's sitting there waiting listening on that on the local host and the configuration file that's going to use is the one that we've just edited the one that says the PC in the middle is on the is to the right of the other PC right and then PC right sees the PC middle on its left.
+And then when we run that will see stuff like opening configuration configuration reads successfully X open display blah blah blah blah starting server.
+Thank you is ready and then screen PC middle shape changed and then it stops because at that point it's now waiting for connection to come in.
+So we can double check that it's running on that PC middle computer by typing netstas space dash a np and we pipe that to grip to for a zero zero.
+And if you run that as normal user you'll get an armrest which you can ignore, but you'll see that it's listening on 127.0.0.1.
+127.0.0.1 and port number 24 is zero zero and it's accepting it's going to reply back to wherever 0.0.0 which is which means in this term I'm going to reply back to wherever it comes from.
+So on the PC in the middle we're going to connect to the PC on the right and we're going to do that and we type SSH space PC underscore right.
+And that will tell the SSH command to connect to that machine now it doesn't know about that so it'll go and look in its configuration file which we've changed earlier.
+It knows the host IP address so it'll connect to that and then it'll do the special thing that it will listen on the far side for commands and pipe them back through the pipe we'll talk more about that later.
+So on the PC on the right so we can either do this via the SSH connection that we opened or better yes by going over and typing on its keyboard.
+So if it's a laptop you're typing on the laptop keyboard of the second one the one that's on the right you type synergy C which is the command for to start the client.
+We're going to go space dash dash debug space uppercase INFO and space dash dash no dash demon space dash dash name space PC underscore right space 127.0.0.0.1.
+What that's happening here is you're starting synergy in the client mode.
+We're going to enable some debugging and in this case we're just going to try and show info level debugging information because there's a lot of people around full debugging.
+Again we're not we're going to run it as a no Damon so it's running the foreground and we now need to tell it OK in this whole setup what name am I and we've already configured it as PC on the right.
+And we tell it to send its commands over to 127.0.0.1 which is listening on the SSH tunnel and then you'll see debug information like connecting to 127.0.0.1 and if all goes well you see something like connected to server.
+And then if you go back to PC middle you should see the log that is connected opening new socket for a blah accepted client connection received client PC rights and the shape is this and the client PC rights has connected so perfect.
+So just want to make a little note if you try to run the client synergy see over the SSH connection so you're on your middle computer and you've connected to the other computer in order to start the tunnel up over SSH you might try running the commands there if you do that you'll see the connection correctly but when you move your mouse on from one screen with the hope that little jump to the other one.
+It won't do that will come back into the center and the reason for that is to do an exprimations so that command.
+We need to run the command to start the synergy client it has to be on the keyboard of the session that you're on so if you want to control a particular session.
+You need to run the command from that session now there's a way to get around that but I found the easiest thing is you just go up in the morning you log in to that other computer you start the client and then you go back to your main computer and for the rest of the day you don't have.
+To touch this other computer so where are we we now have it so that when on the middle PC when you move the keyboard when you move the mouse over to the other side.
+It will highlight programs on the other side just as if you're using them you can use the menu to start a no pad application for example case if you're running kitty or some other mouse pad or whatever.
+You can start typing on your middle keyboard and everything that you type will appear on the other one so that is basically what we want to do.
+And if you look at the logs on the PC middle as you're doing that you'll see all sorts of stuff like switching from PC middle to PC right leaving the screen moving over the keyboard updating the screen to this that the next thing and sending X screens paper commands etc.
+So we now know it works because you're on this on your PC middle and you can control PC right so we can go over to the PC right on that keyboard we can hold down control and press C which is the generic cancel in Unix word world.
+You'll often see written as CTRL L plus C and what that means as you hold down the control key keeping it all held you press the C does matter if it's over case or more case.
+And that will terminate command now back that will terminate the client and then back on the middle PC which is still running the server you'll see.
+A debug information client PC right has disconnected closing socket that they had opened earlier and we're now basically finished with that as well so you can hold on the PC middle you can hold down new control and see.
+To terminate the server as well.
+So now that everything is working correctly we can make it easier to start and it just does a by the by the note here there is a way within synergy to set up TLS or crypt that your traffic is encrypted.
+I'm not doing that here because it's running over SSH there's already an encryption there so if you want to do that they command that you'll need to enable is dash dash enable dash crypto and it is quite complicated to do.
+Due to the fact that the people who developed this went closed open core blah blah blah on us so this is a reason to do SSH connections and the SSH can totally is actually nicer.
+Because if if you're on different networks even you can still connect to the other computer using SSH via maybe a bastion or something in that case you connect remotely to another computer and then you port forward via that then to your client so if both computers can't talk to each other what you do is you have the middle PC connect to central server via SSH and then you have the other PC on the other.
+PC on the right connect to that remote server the same remote server and then you can forward your packets through that but that's outside the scope of this exercise.
+So as we saw before the client needs to be run on the same physical accession that you need on the second computer so what we want to do now is make things a little bit easier by making a bash script to bash scripts actually want to run the time to want to run the server so we'll start on the PC on the right.
+You can create a bin directory if you don't have it in your home directory and make your bin and then you can edit the file using nano or something nano space till the forward slash bin forward slash start dash synergy client dot bash and then in that command in that.
+Empty file you type octet or which is the hash symbol or the pound symbol if you're in US tic tac toe you know the two lines vertical two lines horizontal okay you type hash exclamation mark forward slash bin forward slash bash new line kill all space synergy see new line sleep space to new line synergy see space dash dash name space PC
+write space one two seven dot zero dot zero dot one enter exit zero so what that does the first line tells us it's a bash file the second line checks to see if there are other versions of synergy client running and kills them all.
+It then waits for two seconds to give error the system a chance to settle down then it starts another synergy client with the name of PC right and one two seven dot zero dot zero dot one and then it goes into that will go into the background and then it exits with a zero which is correct.
+So still on that computer on the PC right we allow the file to be executable by typing change mod c h m o d sorry space plus x space till the bin start dash synergy dash client dot bash which is the name of the file that we used earlier if you use something different that's entirely up to you.
+So while we're over there we can we can basically run the file start dash synergy dash client that bash and it'll run and I usually I have encrypted hardest so first thing in the morning I need to type in a password anyway so I turn on both computers type my password on PC underscore right and then when the session comes up I run the command and then I basically leave that alone.
+For the rest of the day but if you want to do an automatically start a thing there's a link in the show notes learn dot it afro dot com synergy dash on dash rush raspberry dash pi for such setup dash synergy dash client dash auto start easy for me to say and that'll tell you how to do it on one on raspberry pi.
+But your system may be different so you're going to need to figure out how to do it on your own system and again if you're logging in anyway having the type your password all then you should you know it's as easy just type it now we're back to the middle PC again and we're going to create a new file.
+Nano space till the Forsage bin Forsage bash start dash synergy dash server dot bash and in there we're going to paste the following stuff hash exclamation mark Forsage bin Forsage bash new line server name equals synergy s now the reason I'm doing that is.
+Because synergy server can be different but let's let's out let's forget about that so again I do a kill all synergy s for the server name and then I run synergy s space dash dash server space dash dash address space one two seven dots your dots your dot one space dash dash config space for tilde Forsage EDC Forsage synergy dash work dot config space dash dash name.
+Space PC underscore middle space dash dash log space for slash temp for slash synergy dash work dot config dot log and I do some stuff to set the control keys and turn off the caps locks and that's the last thing I have SSH PC underscore right.
+So again I can do change more than that file and then once I log in first I log in on PC on the right and then I log in on PC on the middle and I run that command start synergy server class bash and it opens the shell to the PC on the right which is fine because sometimes I need to do SSH stuff over there and it's easier locally.
+But from there on I can also move my mouse over to the right and little control keyboard over there which is sometimes handy and the reason I'm using this is if you're in a case where you need to have two separate connections one for the lab and one for production and you don't want to mess with anything.
+Then you have two separate systems there's no way does it can migrate from one to the other and that's kind of a useful way of doing it then the production stuff is over on the production machine and your lab stuff is on your local machine.
+And you could also use it just for the loans for control and somebody else's keyboard and mouse when they're I think they're gone.
+So I want to just have a side note here about that special address 127.0.0.1 and talk to you about how this actually works we kind of alluded to it but I want to go into more little bit more detail.
+That address is also referred to as a loop back address or home or local host and it's usually defined in slash ETC slash host.
+So if you ever saw somebody with a t-shirt at a conference that says there's no place like 127.0.0.1 that's what they actually mean.
+And the purpose of it is it's used by programs running on a given computer to talk to each other.
+So you can isolate say you can have your own web server running on your local computer and you can connect via browser on your local computer to that web server.
+So if you set up your server only to be listening locally on port 127.0.0.1 on port 80 then you can open up a browser on your computer and type in 127.0.0.1 by default the port 80 is at us.
+It'll go to the web server on your local machine. Now if your friend Bob's next year on the same network tries to go to 127.0.0.1 port 80 it's not going to go to your web server it's going to try and go to the web server on its machine.
+That's referred to on local host and it's an IP for network standard and it reserves the entire block of 127.0.0.0.4.8 that's more than 16 million addresses for your loopback purposes.
+So anything beginning with 127 is a local address so you can have 127.123.456.127.1.1.5 is also a loopback address equally 127.127.127 is also a loopback address.
+But you want to be a bit careful with that because your server still needs to be listening to the address that you're going to.
+It's not a wild card that any particular address is there. You can have one version of Apache listening on 127.0.0.1 and another one listening on 127.0.0.2 for instance.
+Now if you find that a little bit confusing just think of it like if you're talking to your boss and the boss says I'm going home now you should also go home.
+So what does that mean you're never going to get confused by that because you know that what they're actually saying is I'm going to my home now and you should go to your home now.
+So when you're talking about home, it's context. The one exception to that of course is if you're talking to Irish people and they say are you going home for Christmas.
+They don't actually mean your home. They mean are you going back to Ireland. So there you go.
+That's that's just something Irish people have to suffer and we we know about that. So moving on.
+So what's happening here is that the address 127.0.0.1 when we configure anything on the PC middle is only available on the PC middle and equally when we configure something on the configuration files on the PC on the right and we talk about 127.0.0.1 we're only talking about the PC on the right.
+So there's a bit of something missing to connecting the two and that's because the server.
+So the server is listening on the loop back address on 127.0.0.1 and PC middle while the client is sending to the loop back address on 127.0.0.1 and is which is PC on the right.
+So the trick is the remote forward configuration line in when we SSH from the PC on the middle to the PC on the right and that command is remote forward space 127.0.0.1 colon and the port number for
+synergy which uses 248.00 and 127.0.0.1 248.00. So go through that in more details that tells the remote in this case that's PC on the right to listen on port one sorry 248.00.
+So listen on port 248.00 on its loop back address and that's going to be where the client is going to be talking to.
+Then the SSH connection will forward any packets to back to the remote from the remote to the PC in the middle and it will pop those out on port 248.00 on its loop back address.
+And that's the address of the server. So the client is sending down to its local address. SSH has taken the packets and moved them over to the other side and pop them out on the local address of the server computer and into the port where it's listening very very cool actually when you think about it.
+So that's all I have to say about that if you have questions or comments or you feel you can improve this episode feel free to do so and also considering recording you show yourself.
+So that's it I'll round up by saying tune in tomorrow for another exciting episode of hacker public radio.
+You have been listening to hacker public radio at hacker public radio does work today show was contributed by a HBR listener like yourself.
+If you ever thought of recording podcast and click on our contribute link to find out how easy it really is.
+Hosting for HBR has been kindly provided by an honest host.com, the internet archive and our syncs.net.
+On this otherwise stated today's show is released under Creative Commons Attribution 4.0 International License.

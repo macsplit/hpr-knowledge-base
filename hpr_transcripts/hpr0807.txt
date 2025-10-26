@@ -1,0 +1,146 @@
+Episode: 807
+Title: HPR0807: MaraDNS
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0807/hpr0807.mp3
+Transcribed: 2025-10-08 02:51:59
+
+---
+
+Hi, this is Hacker Public Radio. My name is Clark 2. This is Networking Basics Part 6.
+In this episode, we're going to set up a DNS server recursive.
+So, last episode, if you'll recall, we set up a gateway server to the internet.
+We made sure that our default IP tables were turned on at the very least.
+And we also turned on a DHCP server so that we could distribute IP addresses to our local network.
+If you'll recall, it was actually a lot easier than you might have imagined it would be.
+I hope. Today we're going to be doing DNS, and there's not just one DNS server out there,
+like so much, so many other types of servers out there.
+You have Apache Web Server, you have Ingenx Web Server, you've got Lighty, what is it?
+LightyPD or whatever Web Server. So, lots of different servers that essentially serve the same thing.
+Well, such as the case with DNS as well. The big famous one is bind, B-I-N-D,
+which on the server you'll see running is at least on Red Hat called name-D.
+That's the Damon that runs that particular service.
+Now, me, myself, I don't want to mess with bind, I don't know how to do that.
+So, I use Mara DNS, M-A-R-A-D-N-S.
+And Mara DNS is a lightweight, and apparently very secure DNS server that you can run on Red Hat or WN or anything really.
+And it's actually really easy to configure if there is such a thing as a DNS server that is easy to configure.
+So, we're going to go through this, and you're going to keep in mind that I am not Dan Kaminsky.
+I do not know everything about DNS, and we'll just kind of go through it with that in mind.
+So, I've got a couple of these running, actually, and they are quite, they're fairly simple.
+Honestly, they're pretty neat, but you do have to know a little bit about DNS.
+You have to know where you want your traffic to go, and all that other interesting kind of information.
+You also need to be aware that there are currently about two different versions of Mara DNS that seem to be kind of out in the wild,
+and they're just different enough to confuse you if you blindly do an app to get install Mara DNS or a blind young install Mara DNS,
+because they might be giving you two different versions, and if you don't look at whether you're running a 1.X series or a 2.X series,
+there's a certain thing that's completely different.
+The kind of DNS that we're setting up is called Recursive DNS, meaning that you're not going to be a big authoritative,
+the only DNS server in town kind of server.
+You are something where you're intercepting DNS traffic on your network.
+You're passing it through your own zone file, and then if the information isn't in that zone file,
+then you're sending it back out into the, or over to the internet DNS, and it gets resolved there.
+That's the only kind of DNS I've set up.
+It's a very useful kind of DNS to set up, because you can define, well, you can have your own zone files, right?
+You can say, well, I want this box over here to intercept all requests or to receive all requests for slacker media.local.
+I want this box to get all of the requests for straight edge Linux.local.
+If it's neither of those two, then go ahead and go out to open DNS out there in the World Wide Web and resolve it for me.
+That's the power of Recursive DNS, and that's the kind that I have set up, so that's the kind we are going to set up together.
+So, Mara DNS comes prepackaged for a couple of different distributions.
+It did not come prepackaged in the Red Hat network, so I had to just build an RPM for that from the spec file that was included with Mara DNS.
+So, it's a really easy compile and build and everything.
+I believe, if I'm remembering correctly, I believe that it is in Fedora repositories, although I could be wrong.
+I know for sure that it's in Debian, but, of course, it's a little bit of an older version.
+I don't know if that has any security implications. I'm going to guess that Debian security is probably on top of that, so I'm going to guess that that's not an issue, but, like I say, there are two different versions.
+So, if you're running the one that you get straight out of Debian stable, then be aware that it's going to run one way, and the newer version, the 2.X series has a completely different damage.
+It's going to be different, Damon, that's going to be running for the recursive DNS stuff.
+That said, we'll do the older one, because that is the one that I've got installed currently on the system that I have closest at hand.
+I will mention the difference for 2.0, though.
+So, Mara DNS installs itself in two primary places. There's obviously the Damon itself, which is an user bin, or wherever it is. I don't really know. Hold on.
+User S bin, sorry, my bad. User S bin slash Mara DNS, but then there's the configuration files, which obviously go into slash Etsy.
+One file is called Mara.rc, and then there's a folder called Mara DNS. Inside of Mara DNS, there's more stuff, which we'll get to in a minute.
+So, Mara RC is the configuration file that Mara DNS is going to look at when you start that Damon.
+It can be ridiculously simple. I think they pitch that it can be all of three lines to actually function.
+To me, it's not very useful at a three line configuration, but depending on your needs, I guess, that might be useful for someone.
+But the configuration is pretty simple. So, the first line that we need to establish in Mara RC is upstream underscore servers equal curly bracket, curly bracket.
+So, we're establishing that we have upstream servers. Then we establish what those are. So, we say upstream underscore servers, square bracket, double quote, dot, double quote, closed square bracket equals, quote,
+208 dot 67 dot 222 dot 222 comma 208 dot 67 dot 220 dot 220 double quote.
+That's kind of the thing that gives us the recursive power, because that's the thing that gives us DNS resolution properly when our recursive DNS resolution does not function.
+So, we're telling it just like it sounds upstream server, meaning if you don't find the information you're looking for in my little DNS server cache, then please go ahead and go out to these bigger servers out there in the world.
+That's what that does. If you don't have those lines set properly, or if you don't have those lines at all, then your DNS is going to stop in that box.
+And if you don't have a Google dot com assigned to some IP address, then people aren't going to be able to get very far, which I mean might be great if all you want is a local network or something, but, but probably that's not what you want.
+Hide underscore disclaimer, I say yes, because I don't want to be bothered by the Mara DNS disclaimer every time I start the Damon or whatever.
+No underscore fingerprint, I set as one. So again, that's sort of a positive negation, which I remember talking about recently, but no underscore fingerprint equals one, meaning don't send out any fingerprint to anyone asking what kind of DNS server I'm running.
+Vergo's underscore level, I have it set to three right now. I should probably check on that and make sure that I'm not getting way too much information in my logs.
+Recursive underscore ACL equals double quote 192.168.8.0 slash 24 comma 127.0.0.1. So what we've said there is that we have a recursive DNS server running.
+We want everyone on this network on the 192.168.8.0 slash 24 everyone in that subnet should have permission to use our recursive information or our own files and everything like that.
+And so should one two seven dot zero dot zero dot one, which you may have seen before on your own computer.
+That's because one two seven dot zero dot zero dot one, of course, is your loot back device.
+Okay, so the next line is IPV for underscore bind underscore addresses equals quote 192.168.8.8 comma or actually eight dot one.
+Sorry, I forgot that we're not in the real world. So on your server that we set up last week, it would be one night or last episode would be 192.168.8.1.
+And then comma space one two seven dot zero dot zero dot one close quote.
+And that simply is telling this server where to listen for incoming requests.
+That's all it's saying. So if you set up, if this was a separate box, which in my case, it actually is a separate box, then it might have its own IP address, right?
+So you wouldn't have it on 192.168.8.1. You'd have it on some other IP address.
+But in this case, it's actually it's it's it's the same physical server. So that's that's where you want any request for 192.168.8.1 should also be listening for DNS requests.
+And again, so should one two seven dot zero dot zero dot one. Okay. So then the charute directory. And this is probably where they come up with all that secure stuff.
+Yes, they charute the zone files. So it's charute underscore D I R. Just in case you don't know what I'm saying is C H R O T underscore D I R.
+And then equals quote slash Etsy slash Mara DNS slash quote. So we're saying don't let any DNS related activity get out of my Mara DNS directory in the slash Etsy folder.
+I'm sure that could be modified. You could probably put that anywhere you want, but that's a good place to put it. It's got sane permissions and stuff like that.
+And then CS V2 equals curly bracket curly bracket and then CSV to square bracket quote slacker media dot local period close quote close bracket equals quote DB dot slacker media dot local close quote.
+And that's the that's the configuration file for for your DNS server. It's if you've ever looked into running a larger more complex DNS server.
+This is a lot more simple. It's it's a lot more manageable if you're not a complete and total networking wizard. And yet it gets your feet wet into DNS. And so you really get to know, you know, all the typical points of failure and stuff like that.
+So this is kind of nice. The next thing that you need to create then is a zone file. And the zone file is kind of the thing in the DNS that defines your different hosts and what servers they're assigned to and what kind of mail servers you've got running and all these different things.
+If you have a domain through any really any, you know, web hosting company, then you've probably you've probably done this before, even if it's a little bit.
+I mean, I hadn't really played around with DNS a whole lot, but even I had had done a little something with DNS just with the little sites that I've got going on. So you're probably vaguely familiar with this.
+And once you start creating your zone file, there will probably be a lot of trial and error, but more or less it's it's I hate I don't want to say it straight forward because it doesn't feel straight forward.
+But it is fairly straightforward to some degree. Anyway, slash Etsy slash Mara DNS slash DB dot slacker media dot local that's our zone file. And it's going to be rooted into this configuration directory.
+And the first line in it needs to be the start of authority or the SOA and you can read all about the SOA and and why it exists and what it all means and stuff like that.
+There's a lot of great information on this stuff online. It's it's actually an engrossing read. I'm not going to try to get into it right now because I don't even understand it all. So slacker media dot local and then remember the dot after that. This is DNS you place dots after the domain names.
+You can tab over something SOA. This is the start of authority tab over again slacker media dot local dot and then some kind of contact information.
+You know, clatu at slacker media dot local dot. And then there's a series of numbers that you're really supposed to have in the start of authority. Mara DNS will actually fill this in for you if you do not have those values included.
+And their values like a serial number. That helps sort of it's almost a version control for DNS so that when our zone transfers and things like that, it kind of knows which one is the the primary in the secondary zone files and stuff like that.
+There's a refresh period. There's a retry to refresh this often an expiration period a time to what is it minimum time to live. So lots of different numbers that you can fill in. I don't know the best settings for you, especially if this was going to be something outside of an intranet. I'm going to assume that you're doing what I'm doing. It's just serving the your internal network and nothing more.
+So I have pretty simple values in there that I just ripped off of some website and copied, but you can read all about it and figure that out. And then you should end that entry with a tilde.
+Next line would be slacker media dot local dot a tab over in s. Of course, that stands for as you can probably get the name server. So then tab over in s one dot slacker media dot local dot into that line with a tilde.
+And then the second line, you do the same thing except instead of in s one, you make that in s two. And all we're saying really is that the name server associated with slacker media dot local is this server.
+So we've just defined that the name servers are in s one dot slacker media dot local and in s two dot slacker media dot local dot.
+So where do those point to? Well, this is where it gets cool because now you can point you can take like domains and you can make an authoritative record for them that points it to a certain server, a certain IP address.
+So in s one dot slacker media dot local dot tab a that's this isn't a record. I know you've seen this in your your online web configuration screens and then tab over 192.168.8.1 in this case in that line and a tilde.
+And then in s two, you could point it to the same box one 192.168.8.1 or if you have another name server going somewhere, you know, you can you can have a backup going.
+slacker media dot local dot tab mx tab 10 tab male dot slacker media dot local dot that would be a male server. If you're going to be running one, I'm I'm not I went ahead and put the record in there just so I could see it in my in s look up or dig or host, but you don't have to mail dot slacker media dot local dot.
+I've got an a record for that domain name going to 192.168.8.1 again, again, just in case I decide I want to set up I highly doubt I will. But if I ever do, that's where male dot slacker media dot local would go to.
+I configured a WWW dot slacker media dot local dot a record for 192.168.8.1 and IT dot slacker media dot local dot a record 192.168.8.1. So you're just defining where when someone types into their browser, a certain name, where is it going to be sent to once it gets intercepted by your DNS server, what server, what IP address is it going to go to.
+You set that here and it runs off and sends things all over the place and and it's like magic, but it's really just your hard work and redoing this zone file until it works for you. And then finally, of course, you want to do a, well, there's a shorthand in my DNS and there's a percent sign and that means that this domain just slacker media dot local dot will have a record of 192.168.8.1 and in that line and until the all the lines end and until the all.
+All the domain names in a dot and the shorthand is that you can actually anytime you see slacker media dot local dot, you can actually just substitute with the percent symbol.
+When I was setting this up, you know, it was my first time. I was a little bit nervous. I wanted to hard code everything. I wanted everything to be explicit. It's probably worse to do that because the opportunity for typos is worse, but I just, I don't know, freaked me out that I could substitute the percent sign for something I couldn't, couldn't handled it.
+So I didn't do that. But on the other DNS server that I set up, I did do that and it works just fine. So guess what? DNS is ready. Always to do is start the service.
+So if we're on red hat, then we would just say at C slash or C dot D slash. Oh, no, we wouldn't on red hat. We were, we would say service space, Mara DNS restart or start rather because it hasn't started yet.
+So you'd start that and that would start Mara DNS on Debian. It would be at C slash and it D slash Mara DNS start and on Slackware.
+There is no Mara DNS script to start on Slackware. I've never run Mara DNS on Slackware. And I'm going to get to what they have that you can also use them other systems. It's a cool, it's a cool alternative. But anyway, so you get the idea. You're launching the Damon.
+The issue of Mara DNS 1.x versus 2.x is that the two series, the 2.0 series, they branched out. They made the recursive part of Mara DNS have its own little demon and it's called dead wood. I don't know. I don't know why they called it that, but that's what it's called. And so if you start up Mara DNS on a 2.0 Mara DNS install, it won't work.
+And you will spend a day, trust me, trying to figure out what's wrong. And then you'll finally read the fine manual and it will say on the 2.0 series, you should start dead wood for your recursive DNS server.
+You'll say what's dead wood and you'll read up about it and finally you'll figure out that dead wood is the Mara DNS Damon for the recursive thing.
+So you would have done, instead, if this was 2.0, you'd do a service dead wood start. And then that would start that. Or of course, if it was a devian box, it would be at cn.d, dead wood start.
+So there you go. That's how that works. Now you should be able to ping the domain name, slackermedia.local, and you should see it going straight to that IP address that you assigned.
+Now in this case, the IP address is the same as everything else, so that might be a little bit difficult to see if we're actually getting that right.
+But there are, of course, a lot of other tools that we can use to reverse engineer this. One of them is the dig command. So if you do dig slackermedia.local, you should see all of the records listed very clearly right there.
+So cool to see this stuff, because you're like, I entered that information, I did that, and it tells you everything. It tells you the, you know, it's got that answer section, and it says, siremedia.local.dot.
+In A is 192.168.8.1, and it says the name server is right there, and it's right there, it works, it's working.
+And you can also, of course, do in this look up, although I've heard people lately talk down about that command, like it's not cool anymore, so I feel bad about mentioning it now.
+But yes, you can do an in this look up, you can do a Mara ask as well. There's a Mara ask tool, and I don't really use it to be honest, but apparently it's asked Mara, sorry.
+But apparently it's good for kind of troubleshooting. I think I did use it when I was setting it up the first time, because it kind of, it directly asks Mara what, what kind of results it's getting back and stuff like that.
+So I guess it's useful, but I honestly, I just don't know a whole lot about it.
+With those kinds of settings, you should now have a local DNS server running. It will, like I say, intercept all of your traffic on the way out to the gateway server, which is also your router, you know, so that that's where it's going to be routed.
+It will intercept that DNS traffic, and it will look up the addresses and assign names, or rather we'll look at the names and assign IP addresses to it and send the packets to the appropriate place.
+The place where this gets really cool is when you start doing things like setting up internal web servers and stuff, because you can now, well, I mean it's actually still cool, because now you could SSH, you know, you could do like an SSH to simply type in slacker media.local, and suddenly there I am if I'm using SSH keys, which of course one should will be logged into the machine, just like that.
+And you're probably thinking, well, that's kind of cool, but couldn't I have just done that in Etsy hosts? Well, of course you can do it in Etsy host. Absolutely, you can do that, but the problem is that if you're on a network, a big network, you know, college or something, or an office or whatever, you're not going to go around to every computer and update the host files every time something changes or copy the host files over to every single machine.
+And I wouldn't even know how to do that on like a phone, you know, people now bring in their little phones and maybe they'd want to go to the site on their phone or whatever via Wi-Fi.
+So I mean, it's just not practical. So the DNS server centralizes it, it makes it something that you can change once and it propagates everywhere. So that's really slick. And it's complete name resolution. So, you know, it doesn't matter what you're doing, it doesn't matter if it's SSH, it's FTP, HTTP, whatever you're doing, that name on that network gets resolved.
+To a certain box on the network. Very, very powerful, very, very cool stuff. But even so you make a good point because Etsy host does have a record of domain names and IP addresses, right? I mean, that's kind of what it is. Well, it turns out that there's a cool little tool called DNS mask. And if I'm not mistaken, that is DNS mask with a queue at the end. And I've never used it.
+But I have heard about it from people and I've also read about it in terms of setting up DNS on Slackware. And it's actually included on Slackware. It's one of the startup scripts that you can activate. So if you do an LS on slash Etsy slash RC dot D, RC dot asterisk, you know, you'll see, I don't know why you definitely do that. But yeah, anyway, Etsy slash RC dot D, you'd see an RC dot.
+There it is DNS mask. Yeah, with a queue. And all that does. It's a very cool sounding thing. Like I said, I haven't actually haven't actually used it yet. But what it does is it uses, it sets up a little DNS server that uses that boxes slash Etsy hosts file as I guess sort of as it's domain as it's a zone file almost.
+So that's that's pretty slick. I mean, that's actually really, really smart. But I wanted a little bit of experience with DNS beyond just DNS mask. But I'll probably play around DNS mask at some point. But if you are having a hard time with Mara DNS and maybe your goal really is just to get the DNS thing up and running, you may want to try DNS mask. I've heard that it's really effective and very, very easy to set up.
+If you can set up an Etsy hosts file, then you can set up DNS mask from what I've understood. So play around with that play around with DNS. It'll amaze you. It's just so cool. It's so handy to have on your network. And next time we'll go ahead and do the cool step of making an internal website.
+We'll start running a web server on our gateway slash DHCP slash DNS server. And that way we can get people to go to our little internal site or internal wiki or something like that. You know, those are really cool to have. And they don't have to go to 192.168.8.1 all the time. They can just type in slacker media.local or my great home network.local whatever you want. So that'll be very, very cool. And we'll do that next time. Join me, won't you?
+You have been listening to Hacker Public Radio where Hacker Public Radio does our. We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by a HPR listener like yourself. If you ever consider recording a podcast, then visit our website to find out how easy it really is.
+Hacker Public Radio was founded by the digital dark pound and the economical and computer cloud. HPR is funded by the binary revolution at binref.com. All binref projects are crowd-responsive by linear pages.
+From shared hosting to custom private clouds, go to lunarpages.com for all your hosting needs.
+Unless otherwise stasis, today's show is released under a creative comments, attribution, share a like, read our own license.

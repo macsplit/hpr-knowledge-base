@@ -1,0 +1,233 @@
+Episode: 1838
+Title: HPR1838: Waking up with Windigo
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1838/hpr1838.mp3
+Transcribed: 2025-10-18 09:57:32
+
+---
+
+This is HPR Episode 1838 entitled Waking Up with Windigo and is part of the series Bash
+Cripting.
+It is hosted by Windigo and is about 15 minutes long.
+The summer is an overview of a terrible hacky method of waking up.
+This episode of HPR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15 that's HPR15.
+Better web hosting that's honest and fair at An Honesthost.com.
+Today, I would like to discuss waking up in particular a method of waking up that I
+have employed.
+So first of all, I should probably explain that if I was any less of a morning person,
+I would sleep in a coffin.
+To instigate me getting up every morning, I've crafted my own personal alarm clock
+system that is hugely complicated and highly prone to errors.
+So first of all, let's get into what hardware is involved in this system.
+So my preferred hardware platform is Adele Mini 9.
+Your should be too.
+It's my travel computer, a bedroom movie player, SSH terminal, alarm clock, and Chilean
+fry maker with optional beverage jiller.
+It's just the best little computer I've ever used.
+The keyboard layout's a little bit funky, but as long as I am used to typing on it, it's
+a fantastic little machine.
+I can't recommend it highly enough.
+Batteries are $35 to replace and it gives you 7 hours of use.
+Just love it, love it, love it.
+It's a fantastic little machine.
+So that covers what hardware I use.
+But this is mostly a software operation.
+It's not like I don't have a Adele Mini 9 swinging from a wire dropping on me or anything.
+There's some software, there's some intelligence to this.
+So my alarm clock software wise is an embarrassing combination of bash grips and audacious my favorite
+media player.
+Eventually, I would like to replace the audacious portion of this whole operation with a console
+based audio player for reasons that I'll discuss later on.
+So now down to the meat and potatoes, how it all works, how it's glued together, how
+wind to go wakes up.
+So there are currently two bash grips in my crappy alarm.
+One of them is called wake up, all one word, no hyphens, no nothing, just W-A-K-E-U-P.
+And the other one is called wake up hyphen, at.
+So the previous script, a hyphen, and then A-T.
+So the wake up script is really at its heart just a wrapper that adds some air handling
+and some intelligence around launching the audacious media player.
+So it starts off by launching audacious if it can't find an instance already running.
+Then it proceeds to wait for five seconds for audacious to load from the disk to get
+itself into memory, launch itself, render its UI, all of that fun stuff.
+Most you likely doesn't take five seconds, but it's good to be safe if you can.
+So it waits five seconds for everything to click into place and then it sends the play
+command to audacious.
+It's actually toggle playback, so it's a play slash pause, but that is the best way to
+get it playing music in my experience.
+It also doesn't work very well, so it doesn't really exactly do the launching of audacious
+part.
+I have to start the audio player or else the music player never opens and I never wake
+up, which is a failure.
+You're going to hear a lot of that through this podcast.
+There's a lot of failures in this system, so that's a pretty big one.
+If I execute the wake up script and audacious is not already running, it just takes a nose
+dive and nobody's happy.
+Another failure of this script is that it does not mention which song audacious should
+play or which playlist for that matter.
+It just says, whatever you're doing audacious, start doing it.
+Get, you know, toggle your playback, so some things coming out of the speakers.
+The problem being is that if I have not set up a proper playlist in audacious or I was
+listening to music on a SSH FS mount that's no longer mounted, audacious has a big old playlist
+full of nothing, spins around through its non-existent entries and throws up a big
+error message which also does not wake me up, which is fantastic.
+That's another glaring failure of this whole system.
+You'll also notice that the wake up script doesn't actually do any timing or triggering.
+There's no timing involved.
+If you want to use it as an alarm clock, you get to kind of make up your own timing around
+it.
+The way I do this is with the Bash Sleep command and this isn't a failure exactly, this
+is more by design.
+So for example, if I wanted to sleep for eight hours and wake up, you literally just
+type in sleep, space, eight H ages for hours.
+It also accepts M for minutes, S for seconds and probably some other stuff that I don't
+care about.
+I would want to sleep for a couple days, so there might be a days in there.
+So sleep, space, eight H would say sleep for eight hours, a semicolon to stop that command
+and start a new one after it's completed executing and then wake up, the wake up script.
+I just put that after the semicolon.
+So you don't have to type all this out.
+This is all going to be in the show notes because nobody likes command line, commands being
+read out.
+That's the basic function of this wake up script that I've created, not too complex.
+However, there is a problem with this methodology in that I have to calculate things when I want
+to wake up.
+It's very prone to errors in that aspect because I'm very prone to errors.
+I am not the best at math.
+So if I'm going to sleep at 10.46 pm and 33 seconds, let's say, and I need to wake up
+at 7 am and zero seconds, I need to chain sleep commands together for each unit, each individual
+chunk of time that can be represented for sleep.
+So I have to say sleep for seven hours, semicolon, sleep for 14 minutes, semicolon, and just
+for the sake of argument, sleep for 27 seconds, semicolon, wake up.
+Which works fine, that's great.
+It does what it says.
+But if I get any of the math wrong, I will wake up at the wrong time.
+Depending on where in that chain I mess up my math, I could wake up a minute early, I
+could wake up an hour early, or I could wake up late.
+Either way, not ideal and a pretty large failure of this whole system.
+But on top of that, that I am a very groggy person sometimes when I am programming this
+hack-together alarm clock script stuff so that I am not only going to be worse at math,
+but I am going to be worse at typing and entering in these commands.
+And since this is one giant daisy-chained operation, if I misspell a word on the end, like
+if I misspell wake up or misspell one of the sleep commands, the mini-nine will wait
+for the first sleep command to execute and then try and execute the second command and
+then try and execute the third command.
+So if I say sleep for seven hours and then it does, it will only then try and do the
+next command.
+So if I spell cheap, cheap for 14 minutes, it's not going to understand and it's going
+to throw its hands up.
+Which could be bad.
+In theory, it would only skip that 14-minute segment and it would just wake me up early.
+However, if I misspelled wake up or a more important aspect of that combination, then it
+would just output an error to standard out and not wake me up.
+Which is once again a failure.
+So those are an awful lot of failures.
+To mitigate some of these problems, I wrote the second wrapper.
+The wake up at command is essentially a wrapper on wake up, which is a wrapper around launching
+audacious.
+So wake up dash at is a wrapper around a wrapper that uses the at utility at to schedule
+the wake up script.
+So instead of manually hacking together sleep commands every night, it accepts whatever
+time formats at will, at side note, please don't make your command a very, very common
+word because it makes me sound like a fool when I'm trying to do a podcast.
+So any format that works with the at utility can be sent to this wrapper script that I made.
+So for instance, you can use the command wake up at 7am and that's 7 colon 00 space
+capital A capital M, just natural human language times.
+You could also do wake up at 6am on February 2nd, 2018.
+And that would be 6 colon 00 AM space 2018-02-02.
+It's all pretty straightforward and that's, well, that'd be a silly thing to do.
+If you wanted to wake up on Groundhog's Day at 2018 at 6am, there you go.
+That's your command.
+You can even send specific keywords into at, like for instance, you could wake up at
+T time, or midnight, or noon if you're a real slacker, and those are all recognized somehow
+with at.
+At's a pretty magical utility.
+It accepts a lot of the random stuff that I've thrown at, it's very handy.
+And it has a pretty good documentation by the different formats you can send it.
+Mostly I just use times because that's what I need to wake up.
+This wrapper also has the benefit of immediately failing.
+If you make a syntax error, at tells you about it as soon as you hit enter.
+It just, it'll crash if you don't do the time format right, if you misspell wake up
+at.
+Many of those will just output an error on the terminal you're entering it in on.
+So you know it happens right away, and that's, that's much more foolproof than the original
+wake up script.
+Although, because it uses the original wake up script, a lot of the previous failures
+are still failures.
+They still carry on with this new fancier system.
+Speaking of failings, Audacious has a particular failing for an alarm clock.
+It is very, very easy to use, and because of that, it is very easy to stop or pause.
+That is a bad thing.
+If you hit the space bar, it pauses playback and audacious.
+And Sleepy Windigo has discovered how to do this without my help.
+The only defense that I have come up with for my unconscious self pausing the music and
+going back to sleep is to make sure, A, I'm not sleepy, so that the alarm clock wakes
+me up at a normally natural-ish time, or I have to move the netbook far enough away
+that I need to actually move myself to disable it.
+I'm pretty sure, I do sleepwalk occasionally, but I'm pretty sure this has been mostly foolproof.
+Where if I wake up enough to move my body somewhere, I will be awake enough not to
+put myself back to sleep without conscious intervention from my conscious brain.
+However, the fact that I have to do those two ridiculous steps is an enormous failure
+because I don't live in a very big bedroom.
+And there's not really any place I can put the netbook where it's far away enough and
+still close enough to an outlet so that I can plug it in.
+So that's a biggie, that's a big problem.
+So all of this leads to a pretty logical conclusion.
+How do I plan to fix this horrible, terrible alarm system that I've made up for myself?
+And the answer is probably not gonna.
+The status quo is okay for right now.
+Maybe I just have absurdly low standards, but this works just well enough to keep it
+itself in existence.
+I can live with that, I can live with mediocrity, why not?
+I mentioned that I was planning on removing Audacious as the media player, and that's it
+so far.
+The wake up at script works pretty good.
+I think I'm gonna keep that.
+But Audacious is far too convenient and user friendly, which I imagine a lot of software
+projects don't get as feedback, like this is too easy to use.
+What's wrong with you guys?
+So as a replacement, I'm looking for console based media players.
+So a little bit like MPD, but I'm probably not gonna go with MPD because I don't know.
+I just, I don't, I feel like it's too much of a setup for a media player.
+I've got a couple that I've pulled down from the Debian repos, and I have not really given
+any of them a test because when my alarm clock is an issue, I am ready to go to bed, which
+really cuts down on development time.
+It's very poor timing.
+Also, when its failings are most glaring, I have to immediately rush around because I've
+woken up late.
+So less time for triaging bugs, more time for jumping in showers.
+So that's, that's the next step.
+I'm going to be looking at various console based or terminal based media players.
+See what's out there.
+See if any are particularly good at being a media player without being particularly good
+at being interacted with by me while asleep.
+I'm hoping if I could start something in the background, I would need a terminal and
+some commands to bring it back up, which will be a little bit irritating for my partner,
+I'd imagine, when I'm trying to shut off the alarm clock.
+And I need to remember a teamux command or something along those lines, but alarm clocks
+aren't supposed to be friendly.
+They're supposed to wake you up and irritate you until you do something about it.
+So until I learn how to operate a terminal while completely asleep, I think that will
+be more successful than my current setup.
+And that, in a nutshell, is what I do every morning.
+That's how I wake up, or, or I don't wake up, depending on the situation.
+So please let me know about your overcomplicated or simplified solution to your daily tedium
+that you've implemented.
+I would be very interested to see what other hackers are doing with, oh, I don't know,
+maybe automating your postal mail or pest control.
+There's got to be some robotics pest control out there.
+So anyways, until then, this has been Windigo.
+You can contact me in all sorts of ways.
+I'm on, you can use social at micro.fragdepth.com or just fragdepth.com or anything like that.
+You can email me at podcastatfragdepth.com and you can give me a phone call if you find my
+phone number.
+You've been listening to HackerPublic Radio at HackerPublicRadio.org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out
+how easy it really is.
+HackerPublic Radio was founded by the digital dog pound and the infonomicum computer club
+and is part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment on
+the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released on the Creative Commons' Attribution
+ShareLife 3.0 license.

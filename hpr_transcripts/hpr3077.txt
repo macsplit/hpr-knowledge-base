@@ -1,0 +1,116 @@
+Episode: 3077
+Title: HPR3077: Video conference Push to Talk
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3077/hpr3077.mp3
+Transcribed: 2025-10-24 16:16:01
+
+---
+
+This is Hacker Public Radio Episode 3,077 for Tuesday, 19 May 2020.
+Today's show is entitled Video Conference Push to Talk
+and is part of the series, Hobby Electronics. It is hosted by Dan Nixon,
+and is about eight minutes long
+and carries an explicit flag. The summary is
+building the push to talk but in missing from many video conference tools.
+This episode of HPR is brought to you by An Honesthost.com
+Get 15% discount on all shared hosting with the offer code
+HPR15 that's HPR15.
+Better web hosting that's Honest and Fair at An Honesthost.com
+Hello HPR, Dan here again.
+Today I want to talk about a quick project I did last week.
+So for a bit of background, we're the world in the current state.
+I'm now working from home and find myself on a considerable amount of conference calls.
+And one of the biggest issues I have with this is per audio quality.
+This often manifests itself as echo, ambient noise, noise from laptop fans
+if people are using the integrated microphones or other general unwanted sounds.
+And often this can make it a bit difficult to focus on the person who's actually speaking
+or in particularly bad cases can make it near impossible to actually hear them in the first place.
+One solution to this would be adopting the push to talk scene,
+whereby a participant is required to push and hold a button to enable transmission of their audio.
+And fortunately none of the video conference systems are used on a day-to-day basis
+implement this feature.
+My solution to this was a physical push to talk button that operates on the audio input
+rather than at the level of the specific video conference software.
+Controlling the audio inputs was simple.
+I use pulsario and all of my machines and found that there was a simple Python library,
+Pulse CDL, that provides simple access to its functionality.
+For those not familiar, pulsario is a sound server commonly found installed by default
+on Linux distributors.
+It sits between applications that use audio, in this case the video conference software
+and the low-level audio drivers.
+Using Pulse CDL, I'm able to query the status and toggle the mute state of a given source,
+source being the name given to devices that provide audio into Pulse Audio.
+For the physical aspect, I had a rummage through my spare part bin
+and found some spare cherry key mode switches.
+I believe these were from one of the samples that you can buy,
+where they have one of every different switch type,
+and you can use this to inform your decision when you're buying a mechanical keyboard.
+So I found a spare key from one of those.
+I'm not sure what type of switch it is.
+The switch itself is black, so I don't know whether MX black is a type.
+These are just the spare ones.
+So I wanted an indicator outside of just looking at my status bar or software mixer.
+For this I chose a Neopixel or a WS2812 if you want the actual part number.
+This is an addressable RGB LED.
+They're quite common in the sort of, I guess, the maker community.
+They're a very easy, very cheap RGB LED and they're very easy to drive with.
+So there's a lot of Arduino libraries out there for driving these.
+And of course with this I would need some sort of a development bar to drive these,
+to drive the LED and to read the steps of the button.
+So I use the teensy 3.2 for this.
+This is definitely overkill.
+This is quite a powerful 32-bit onboard.
+You could get away with something like Arduino.
+It's just what I had.
+The advantage of the teensy is that it's a very small PCB
+and it has a USB part.
+So once I decided on these parts, I wrote some simple firmware for the teensy
+and then accompanying Python script that gave me the behaviour I wanted.
+The teensy I programmed, so I programmed it using the Arduino framework with the platform I owe.
+I guess two chains probably the best.
+I built system, platform I owe build system.
+So this is quite a nice, quite a neat way of writing code for all the various development boards
+and IoT devices and so on that we have nowadays.
+It's a bit of a tangent to this, but I encourage you to go and check it out if you're interested in Arduino XR.
+ESP8266, any of that various development for any of those various platforms.
+So yes, back to the points.
+In the normal states, the source is muted and the Neopixel Glow's dim green.
+When the button is pushed, the source is unmuted and the Neopixel Glow's bright red.
+Once released again, the source returns to be muted and the Neopixel Glow's dim green once again.
+So the communication between the teensy and the Python script is done with a simple sending and receiving simple serial messages.
+On the Python side, this is done with the Pi serial library.
+So when the button is pushed or released, a message is sent from the teensy to the PC.
+The message is either the single character uppercase U for unmute or M for mute.
+It's not the best protocol. It was quick and it was the job.
+So when the PC receives one of these messages, either mute or unmute the source depending on which message it received.
+The Python script is also listening the background for any changes to pulsarial sources.
+When one is detected, it will query the state of the microphone source
+and sends a message to the teensy in the same format as the teensy sends to the PC.
+When the teensy receives this message, it updates the Neopixel to match the mute state of the source.
+The reason why there's this two-way communication is that the Neopixel will then also keep up to date with any changes I make to the source outside of pressing the button.
+So if I unmute the source in pulsarial, it will also reflect up the button.
+So once the software and electronics are done, I designed a 3D printed case.
+I'll put some photos of this in the show notes, but I'll make an effort to try and describe it as well as possible.
+So the case, once assembled, it's a small rectangular case. It's a bit smaller than palm size.
+One side of it has the cherry switch. The other side of it has the Neopixel just slightly sticking up from the surface.
+There's a blob of hot glue on top of the Neopixel as well, just to add a bit more strength and hold it in place.
+And be it access a diffuser because the Neopixel can be quite glaring at high intensity, and this makes it a bit easier on the eyes.
+The case is printed in two halves. It's screwed together with one screw in each corner.
+And on the side it has the Neopixel on. There's the USB part accessible on the side.
+I'm quite happy with the final project, although I'm a bit annoyed at myself that I didn't make an effort to clean, or clean A, the 3D printer bed, and B, the parts once they came off the printer.
+So there's some marks on the top and the bottom of the case from filament that was left on the bed from previous job.
+And there's a bit of leftover plastic on there as well, which I tend to use as my means of ensuring bed adhesion.
+But yeah, it does require you to clean the parts a bit more after you've finished, and I think I was in a bit of a rush to finish this, because I kind of had this idea in the afternoon.
+I want you to get it done in the evening, ready for my conference calls the following day.
+Nonetheless, I find this a very useful tool.
+I do like the fact that it will just work with whatever conferencing software I'm using.
+It's not tied to a specific platform. Of course, one disadvantage of this is that because the software itself doesn't know anything about whether the source is muted or unmuted, the indicator in the software to say whether I'm muted or unmuted, obviously, doesn't work.
+So anybody else can't tell that I'm muted. I've been using it for a few days now. This hasn't really been an issue.
+Yeah, so I think that's all I will have to say on the project. So I'll add a link to the software, CAD files and so on, as well as any relevant libraries or all the software I may have mentioned in the show notes.
+Thanks for listening and have a great day.
+You've been listening to Heka Public Radio at HekaPublicRadio.org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast and click on our contributing to find out how easy it really is.
+Heka Public Radio was founded by the digital dog pound and the Infonomicon Computer Club and is part of the binary revolution at binwreff.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released on the creative comments, attribution, share a life, 3.0 license.

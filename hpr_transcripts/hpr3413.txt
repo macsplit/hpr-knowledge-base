@@ -1,0 +1,397 @@
+Episode: 3413
+Title: HPR3413: Bash snippet - using coproc with SQLite
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3413/hpr3413.mp3
+Transcribed: 2025-10-24 22:58:27
+
+---
+
+This is Hacker Public Radio Episode 3413 for Wenzee, the first of September 2021.
+Tid's show is entitled, Bash Snippet, using Coprock with Sklyte and is part of the series Bash,
+scripting it is the 130th show of Dave Morris and is about 46 minutes long and carries an explicit flag.
+The summary is, sending multiple queries to a running instance of Sklyte 3.
+This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+Hello everybody, this is Dave Morris, welcome to Hacker Public Radio.
+Today I'm talking about a Bash thing and it's one of the group shows I call Bash Snippets.
+I'm talking about Coprock, the Command Coprock CoPROC and using it with the SQ Lite database thing.
+I tell you where I'm coming from. I mean the process of rewriting some scripts that I use to
+manage my collection of magnitude albums. Now I'm a lifetime magnitude member and I've talked
+about this before and so I have access to the whole magnitude music collection which is a range
+of music of various sorts but under magnitude as a sort of record label. I wrote a script for
+downloading albums and putting them into my music directory way back. I talked about it in
+2013 show 1204. Now the original scripts are available on GitLab still and in the lifetime
+I've known one other person to make use of them. So I've been using them myself for quite a bit but
+since 2013 I've written a few other support scripts. For example I wanted to be able to manage
+a queue of albums that I wanted to buy and download and another one which summarizes the state
+of this queue and it's this show queue script I'm currently updating. I included it in the resources
+for the show calling it show underscore queue underscore orage or IG. The original version of this
+script took magnitude album URLs from a file and this was my attempt at a queue. I've got some
+things which take the top album off the queue and then edit it with said to just drop that off
+and actually store that the way somewhere other as things that I've bought and in order to do this
+to do the purchasing I needed to parse out but I can just use the URLs it stands for in order to
+give me some sort of report. I need to parse out the last element of the URL which I fed through
+GREP to get some pre-prepared summary information out of another file and the GitLab repository
+shows this so I won't go into details here. Basically it's an XML database that
+magnitude needs to produce and when I receive it I scan it and turn it into a file summer of
+album summaries. We'll see this in a bit later on. There's not making any sense. Anyway,
+my attitudes moved away from this XML file. XML's a difficult thing to manage and our
+clutches recently done a show on XML. XML is great but people tend to use it as a sort of data store
+as a database almost so people have used XML and found that it's incredibly easy to break the database
+because XML is so fussy about the contents so you can't put less than and greater than in the actual
+text. You can't put ampersands in. You have to jump through hoops a bit like HTML. You have to
+jump through hoops in order to allow these through. Anyway magnitude moved from this XML file to an
+SQL like database a few years ago now. I want to move my stuff toward to that. They're still
+running the XML but it's not really supported so everything goes wrong with it then
+I'm on my own so I want to move to their SQLite stuff and so for each URL that I find I want to
+look it up in the database to find out its details. So the first version of this new script wasn't very
+difficult to write what I had to do was to extract the search data from the URL so I'm reading
+the URLs one at a time out of a file and parsing out the bit that's interesting and then using that
+to do query on the database and just do that in in a loop and I've included my first attempt at this
+as a file called show underscore q underscore db underscore one and it's one of the resources for
+this episode so you can have a look at it if you want to. I felt bad about writing it this way because
+the loop okay the loop is not going to iterate much at the moment it's got 26 things in the queue
+because I'm not not downloading anything for a while so it's a moderately expensive process for
+the loop to be calling SQLite every time around with a query with variable bits in it so I wasn't
+happy about doing it that way and wanted to look for a better way. So in April of 2019 Clacker did a show
+which is number 2793 and he talked about the bash coprock command so to summarize pretty much
+what he said this command creates a subshell running a command or group of commands which is connected
+to the calling or I tend to call it parent process I think it's not a invalid way of expressing it
+the calling process through two file descriptors which I tend to call fd's in the notes here
+it's possible for the calling shell to write to the input descriptor and read from the output one
+and that's the way that you communicate with whatever is running in the subshell I was vaguely
+aware of coprock at the time of Clacker's show but hadn't looked into it found the show fascinating
+but I didn't have a use for the feature at the time so sort of went to the back of my mind really
+so to solve my need to show my magnitude Q of future purchases it looked as if an SQLite
+instance running in the subshell could be given queries one after another and return the answers
+I needed so this was the sort of my journey to a bash script using coprock so let's go into some
+details so the pending Q it just contains URLs and I've given an example of one it ends in a string
+text this element is the so-called SKU which is I'd never come across this term until I saw
+magnitude using but it's used all over the place it stands for stockkeeping units it's just a
+a sort of index a unique ID for a thing you have in your stock collection in a warehouse or whatever
+and that's the key to the album in the database or one of the keys anyway in the original XML
+base system I when I run it I see the following example information when I run the current script
+and the following stuff is a list of the artist the album the genres and the code the code being
+the SKU so I get that for each item I'm going to show one here obviously so the original show Q
+script just reads this this Q file and then it looks up the SKU in a file of reformatted XML
+information as I've already said and I've also said that there's a copy of this script
+available if you want to have a look at it you haven't included any of the files with it but just
+to get the general principle of what's going on so talk a bit more about codeproc
+like his show 2793 he talked about it about this command and how it behaves I looked at the
+bash reference manual and there's a link at the end of the notes which documents it in a pretty
+terse way I find this it's one of these things where you need I need to read it several times
+for I start to get any idea of what it's talking about there's there's a lot more information in
+there than a quick scan through will reveal I find so codeproc runs command as a subshell
+which is generally called a code process and that's a generic term you see it quite a lot in the
+the documentation and it's got this two-way pipe connected to it so you can talk to the
+the codeproccess and the syntax which I think is a bit strange is the command codeproc
+COPROC followed by an optional name followed by a command and then some redirections optional
+the use of the name depends on the type of command if it's a simple command then no name can be
+provided which I found confusing and I kept kept trying to give single commands a name in that
+second sense you get the default the name is is allocated by the codeproc command itself and
+it's just codeproc in capitals but because if that's the case you can only run one code process
+out of time in your shell the alternatives are simple command as a command group as a complex
+command group enclosed in braces or parentheses we've seen this in various bash things that we've
+done I don't think I've actually concentrated much on what a compound command is but I've used them
+so you probably if you've been following that you should understand what I'm talking about
+now the user if you've sublime name under those circumstances with the compound command then
+the you can't provide a name or not if you provide it then it's used obviously otherwise
+COPROC in capitals is used so what's the name for well it's used to create variables relating
+to the code process so the calling shell needs to have things to get in touch with the
+the code process and what it does well first of all there is a variable created called
+made from the name and then underscore pid in capitals that holds the process id number of the
+sub shell of the code process and it also creates an array called the same as the name that you
+provide the relevance of the array is that it contains the file descriptors for input and output
+and element zero of your array contains the standard output from the code process and element one
+has got the file descriptor for standard input now I know here in the in the the show notes that
+I haven't really talked about file descriptors in the bash scripting shows that I've done but I'd
+plan to do so before long talk about redirection as well that's really one of the next things
+on the to-do list and yes okay COVID stopped me doing all this things and get messed up a lot of
+people but my plan is to get back into doing some of these things because I found them quite fascinating
+so don't mind digging around to learn more about them and it's also benefits me because I end up
+knowing more with the consequence so here's an example of some simple usage and I've given
+an example co-proc or where the command is the the bash date command there's not much point in
+doing this the same the notes but just to get the idea of how it works so you would type at the
+command line co-proc space date semicolon now don't don't hit return yet because you want to
+see what comes back and the way that you do that is when the way that I'm doing it in this
+example there are other ways is to use the cat command and then get till cat get its data from
+and here's a redirection expression which which gets it from the element zero of the the array
+that I was mentioning so you need to type less than which is a redirect set saying get the data
+from here to cat and ampersand then in quotes double quotes dollar open brace co-proc in capitals
+open square bracket zero close square bracket close brace close double quotes so what's that doing
+it's the the dollar and then embraces name with an index you will remember that from when we
+talked at length about arrays that's getting the contents of the array co-proc which is the default
+because we're using that form of the command and it's the zero element and we're using that in a
+redirect it actually just a number I don't know how these are allocated but it's usually 60 or
+something like that then what else is grabbing file descriptor numbers on your system so you get
+back from that a line which begins with square brackets and a number in my case it was one
+the space and then a number 402 06 in my case that's the process ID number of the process that's
+now being created for running the thing that you're running the next thing you get back is the date
+the time that the co-processor ran which is 29th of july in this case and that's the result of what cat
+did using that file descriptor and then you get another square bracketed one with a plus after it
+and it's followed by the words done and then co-proc capital co-proc date so that's saying that the
+process that you started is closed has been terminated and the reason that co-proc date and
+the cat were both on the same line is because the co-proc the co-process created by co-proc will
+fire up quickly do its stuff and then stop of course there's nothing to keep it going so if you
+hit return at that point and then type the cat expression you'd be very lucky if you got the output
+because the process would have gone doing it on the same line means that it's processed very
+very quickly by the bash parser so you get the answer back I mean there's much easier ways of
+finding out what the date is but it does give you some sort of idea of what this co-proc thing
+can do I added a note to say if not in this particular case but if you are playing around
+this and you found that your co-process doesn't stop well there it actually uses the the jobs
+feature of bash which you haven't covered in the shows I've done you can type the jobs command
+which shows any jobs that happen to be running using this mechanism it's usually things that have
+been put into the background by various commands and if you did that in this particular case if you
+could do that immediately after you'd fired off the co-proc then you would get back that there
+was a job number one running that's why you get one in square brackets if you ever did end up
+the hanging co-process you can issue the command kill space scared of l space and then percent one
+that means kill job number one it uses these numbers as a simple means of accessing stuff you
+can also kill the process number the PID process ID directly that's just in case you ever ever
+do this and wonder what else going on if you bothered by the fact that co-proc generates this
+square brackets number etc etc then you can suppress it if you're doing it on the command line
+there are options that we'll do I'm not going to talk about them but when you run this stuff in
+the script bash suppresses it anyway so mostly I don't care to be honest so let's look at the
+gory details I've put it I've been spent a couple of weeks messing with this actually to try and
+learn the intricacies of co-proc because I don't find it well documented and I don't fully
+understand everything that's going on still haven't quite got to the bottom of it but I'm
+got a lot further so using co-proc for single line stuff is pretty straightforward but there's
+to be very little point in doing it to be honest to me anyway if you've got a co-proc that you
+want to receive and send multiple lines of data then things get quite a bit more complicated
+so I've listed three points that you need to be aware of so it's your co-processor you set
+this up so you should have a good idea about whether it needs input it might I mean date didn't need
+any input for example and all it produced was output you assume it's receiving what you send
+by how it responds there's no easy way of telling whether anything you send to it gets there but
+there's a whole issue about buffering you'll find that some bits of software will hold onto the
+data that you sent them without actually actually processing it maybe because they're doing something
+else perhaps or they might not be sending back stuff straight away so the buffering is an issue
+second point when you finish sending stuff to the co-processor and you want to tell it's all done
+you must you must close the input file descriptor and you do this with this rather arcane command
+which consists of the bash command exec don't know if we've ever covered that I think we might have
+done I've actually used it in things in functions I've I've talked about anyway exec is then followed
+by in braces the name of the array that you you have created whatever that is I've just used name
+as a generic marker here square brackets one so you're talking about the array element one which
+is the input file descriptor and you follow that with a greater than sign an ampersand and a hyphen
+see what I mean about arcane now this is one of the file descriptors slash redirection things
+that bash offers and these I've literally left them till later on in the series of things I've
+done for for bash about bash I've made reference to the the bash manual the section duplicating file
+descriptors give some information about what this does doesn't really explain how you use the
+operator mentioned there with a file descriptor held in an array and it certainly doesn't show this
+odd form we're using here and explain it but I'll cover this later on in the bash tips
+series and I've got my head around it and understood it fully the other thing is you can't really tell
+how much output to read from the code process and you might be dealing with something that performs
+IO buffering so hold on to its output unexpectedly and this can cause a deadlock if you get it wrong
+and a deadlock is where a parent and a child process are both waiting for the other process
+to do something so it's really easy to to get into a situation where you you for example run
+cat against your coprop saying effectively give me what you've got and there's nothing so what do you
+do you you've typed that at the command line or in your script and nothing's coming back you don't
+then have a means of saying unless you go to another another terminal of saying um we'll just stop
+then so it's messy to be saying so I've been playing with this and I wrote a coprop example script
+which is included with the resources here called coprop underscore test dot sh and what it's
+going to do is to run bash as a copropossess and it's going to just feed it bash commands
+so my researchers came up with various things first one I declare a variable set a variable
+process which is set to the string STD buff be with space hyphen i0 hyphen o0 hyphen e0
+then a space then bash so what this does is it will run bash but with no buffering tells bash
+not to do buffering at all and I found that this was going to work get this ticket example to work
+then in the script I declare an indexed array called com whose contents are series of commands so
+there's a date command who am i id an echo a print and so forth next is to set a variable in
+to the number of elements in the array just like it add more and whatever without having to
+to change a number we could practice anyway so the next thing is I start the copropossess the command
+coprop space child i called it child and then in braces dollar process semicolon that's one of the
+things about braces if you recall you can put each of the braces on separate lines with all of
+the lines in the commands in between them on separate lines but if you don't you have to use
+semicords and you have to have a semicolon before the last brace it that's ingrained into my head
+now but there was a time when you used to really mess me up every time so we then set a variable i
+to 0 because we're going to be counting and we go into a while loop the while loop has got a test
+looking to see whether i the variable i is less than variable n so we're counting we're going to
+count through the elements of an array and n is our last point at n minus one is the last point
+so the first thing that happened in the loop is the command that we're going to get from the com
+array is displayed with a dollar on the front just to make it easy to see which ones are the
+commands and we send it to the code process when we do that by echoing it so it's echo double
+quotes dollar open brace c o m open square bracket dollar i close square bracket close brace
+close double quotes that gets you that the i th element of the array and we're redirecting that
+into the file descriptor and that's achieved by typing and we saw that this before but it's not
+quite the same greater than ampersand then we have an open double quotes dollar open brace
+child open square brackets one close square bracket close brace closed double quotes so that
+child one is the array element containing the input file descriptor so we're redirecting
+output to that particular file descriptor and so we're sending a command to the code process
+then not using cat this time because cat will just keep reading until it gets
+handed file till it's run off the end of the data what i'm using here is read the read command
+which will get just one line from whatever resource you're pointing in it whether it be a file or
+whatever so the command is read space hyphen u this introduces the file descriptor that you're
+going to read from by default you just read from standard in or whatever and we're a bit i
+won't read the exact detail but in double quotes we've got the specification of the child array
+element zero then we have hyphen r after space i do this by default because i'm told that it's
+good practice to do it but i don't actually know the complete reason why follow the r with the
+space and then the variable to receive the line and i call that results then echo that to the
+to the standard out all the results then increment the variable i so that the loop can continue
+so this will chug round sending the command to the code process receiving the output
+now i added the the next bit just as an experiment to see how this would work
+you'll have noticed i think that the the last command in that list of commands in the array is a
+print f and it's printing the string hello world but there's a new line after the hello
+another and after world so it's going to generate two lines and what we'll have seen now
+for monitoring this this script is that it has written the first line of that from that print
+but it hasn't done the second one because it was just the one read the the loop is now finished so
+this bit of code says if then in double double square brackets hyphen v which is a thing that checks
+whether a variable is exist isn't yeah i think whether it's some it's actually declared so if
+child underscore capital pid exists let's say then that means that the process hasn't died
+because we haven't told it to stop so it's still running one of the commands could have been
+exit so we might have just terminated it that way so if it if the process is still running then
+we echo two hyphons and the word end and two hyphons just to demarcate the point in the script
+then we execute the thing that the command that closes the input stream and that is exec
+open curly bracket open brace i should say child open square brackets one closed square brackets close
+brace greater than ampersand hyphen and that's that arcane thing i talked about before which says
+close this channel there's this file descriptor and then before leaving we run cat against
+the inputs file descriptor from the process so that is cat and less than sign an ampersand
+then in quotes this specification of child array element zero to get that file descriptor so
+when you run that you see the output of each of the commands the date who am i id echo bash version
+5.1.4 blah blah blah then the printf hello world produces hello then that if statement with the
+end in it triggers the end and then the cat at the end gets the word world that's still in the pipe
+waiting to be read so the loop just reads one line from the the co-process so that's what i was
+talking about earlier on is that you don't necessarily know how many lines you're going to get back
+from each iteration of the of the co-process each time you send it something you don't know how much
+you're going to get back and there's no easy way of detecting where that is what the end is because
+if you were to send a sort of end of end of file thing that would cause the file descriptor to be
+closed which means you can't then talk to it anymore think i'm right in saying that so ask a
+question in the summary of points here what would happen if a command was sent which produced no
+output so if you added in quotes a colon to the list of commands a colon is just a
+a null command in bash then the script would hang waiting for output that will never come so the
+co-process would get the colon and that means do nothing so it will return no no data whatsoever
+then the read would be triggered and it will hang their waiting for some to come back from the process
+so the whole thing is frozen we're in we're in a sort of a deadlock now my experiments showed that
+if i modified and i haven't actually demonstrated this in an in an example here if i modified the read
+to include a timeout say five seconds or something then the read would fail at that point and would
+then look carry on with the next command so that's one way of doing it but it's really clunky not
+not very nice hopefully you'll have noticed that the output didn't include any of the job control
+stuff that we saw before so there's no square bracketed ones and things so to my way of thinking
+well this is a pretty useless example in the sense of doing anything of any consequence but it does
+hopefully give some sort of indication of the way that co-process says behave and how you talk
+to some stuff now having read the stuff about co-processes in ork back in the day when we were
+doing a series on ork and deciding not to get into that one in the in the series i am nevertheless
+thought i'd have a go at putting together something using co-processes in in
+canoe ork you only works in canoe ork plain or it doesn't have this feature and so i've included
+an example i won't talk about it but it's doing the same thing of being given an array of commands
+and running bash and feeding it the commands and then reporting what comes back it's a little bit
+nicer in some respects to my mind anyway but um i've included the script as part of the show
+resources so have a look and see what you think so all of this led me to a solution to my
+show cue script sort of solution anyway it it was an interesting voyage certainly understand
+co-prog a bit better i don't think i'm going to use it but i should get a show out so i did
+produce a final script which which works it does actually work and does do i want it to do but i'm
+not sure i want to do it this way in the future it's included as part of the show as the resource
+then it's called show underscore cue underscore db underscore two there's another one using the database
+but a different way now i won't go into vast amount of detail here but it's listed in the notes
+so you can have a look at it i tend to be i build my scripts on based around sort of template
+so it tends to have a fair amount of standard preamble so there's a bunch of variables being defined
+for where where files are the directories where they live and where the files are so i create
+something that points to pending file which is the cue and another one that points to the latest
+copy of the magnitude database which is sqlite underscore normalized dot db and there's some
+sanity checks not enough actually you have to also check that the database existed check the cues
+there but anyway then there's a check to see whether anything in the cue and there's an
+appointment doing this thing going into further if the file is empty there's a regular expression
+declared which contains the preamble of the magnitude URLs and the the final bit is the SKU stock
+control thing almost that's fine that anyway that will come to that minute then i create a variable
+called sql template i create it by using cat against a here document i'll cover here documents when
+i get to redirection because it's regarded as piece of redirection it's just a way of getting
+data from the script itself and plugging it into a file or a variable or whatever so what i'm
+including here is piece of structured query language sql which is performing a select
+on the database and because the way the database is designed is got a table for artists it's got a
+table for albums it's got another one for genres another one for sub genres and it's also got
+in each album it's got this code the SKU so in order to get what i want i need to join these tables
+and do some jiggery polkery to get what i want this is not a database show so i won't go into
+that much detail but the final bit of it or the penultimate bit of it is the line having SKU
+equals and then open quote percent s closed quote that is because this whole string is a template
+for use in a print f command and i want to substitute a value into that percent s when i
+generate a version of it there's a semicolon at the end of that line because that's the end
+of that piece of sql then the next line dot print is just a command to the sql sql
+light three program there's it's got a sort of meta language which does all sorts of database
+things but you can also get it to print stuff so i'm just getting it to print a line of hyphons
+which you'll see in a minute when you see this being run so the codeproc is fired off next and i
+called it dbproc i would use this std buff thing that i mentioned earlier on so it's switch buffering
+off in the codeprocess and sql like to do buffering then sql like three gets the option
+hyphen line which tells it to print it's the stuff out not in a table form but line by line
+single line value and then dollar db is the path to the database itself so the main loop
+we use a variable called n which is set to zero and we're reading in it's a wild loop and each
+iteration we're reading a variable called url from somewhere semicolon do while read hyphen
+r space url semicolon space do if you look at the end of that loop it's got a done and after done
+is less than this redirection followed by in quotes the name q dollar q and what that does
+is it makes the wild loop read the contents of the file and each read command that you issue
+in the way that i've done gets the next line from there you see this before in other contexts
+we increment this variable n and there's a test which compares the url that's returned
+with that regular expression from earlier on so if they match it is a proper url then we should
+get back a variable called bash rematch one which contains that last element which was in parentheses
+in the regular expression we put that in a variable called sku if it doesn't match then there's a
+problem with that url it's got mangled somehow so we put an error message showing which line it's
+on that's what n is for and showing the url that's failing then last line really of the the loop
+is a print f using that sku of template a new line on the end of it and we substitute in the
+value of sku so that goes in as the percent s we saw earlier and then we pipe that to the process
+using the input file script and i won't read that whole thing out there because we've done that
+often already so the loop would just carry on sending multiple queries to the sickle light
+process running as a code process so in this particular case once the loop is done we close off
+the input stream which tells sickle light to all finished so sickle light will actually then send
+it's probably what has already been sending data as it's going i could have written it too to pick
+that up but um if i just go with with what i already had and um because i i'd learned that i could
+do that as i was as i was proceeding with this so this this thing closes the the pipe but the
+the code process output pipe will contain it will either contain all the output from sickle light
+or sickle light will currently be waiting to flush what it has to something that's really going to
+read it so we run cat to do that and we get back all of the lines that sickle light produced
+though i've included the first two chunks first 12 lines of what comes back it's it's slightly
+different from the original one because i'm getting the database to format the words
+artist and the contents of artists so it's using sickle light's line mode which has to put out the
+the title followed by an equals followed by the contents but yeah i can live with that and
+there are two lines for the genre stuff there's a primary genre for our album and then some
+supplementary genres so the first one is alt rock and it's also folk and instrumental new age
+according to this um the xml version of the database didn't go to that depth of detail
+obviously made the database a bit more detailed which is good so that's it i just wanted to sort of
+tie the loose ends together uh with a conclusion from my point of view it's been an interesting
+voyage take me a while to get what get there and uh it's been give me slight headaches
+all the way i still don't understand the syntax of that exact and then a
+ray ray element in braces with no dollar on the front i can't understand exactly what it is i
+didn't know that was even legal but it apparently is i'd like to know where it's talking about it
+hoping to find that along after this show goes out which one i'll tell you reading around lots of
+other people's experiences co-proc one of the conclusions drawn is that named pipes are better
+there is a facility in bash where you can create think called a named pipe which is a a device
+which lets you write stuff and read stuff from different processes and talk to something that's
+listening so you you can have process a sends the process b by writing through a name pipe and
+b writes back to a through that the same name pipe it's a bidirectional thing hopefully i'll be
+able to explain that better when i delve into a bit deeper in which case i'll talking about that
+in the bash tips series a number of people said don't even do this use something like expect
+expect as a program has been around since the early 90s i believe and it lets you run a sub
+process of a thing usually it's a sort of like a co-proc would be it's something which runs
+it's a command line thing that you can talk to by typing it at it from the command line
+but it lets you run it as a sub process and write a program around it which lets
+which which which runs it as if you were running it now i spent several years using expect
+and expect tk in my job because we had a series of machines running altrix and they called
+decafina on top of that where all of the the service level stuff did not have an api it just had
+command line stuff so if you had you know like 500 students that you wanted to give account on
+this system then you'd have to sit down for hours and hours and hours on end and type the stuff
+in because the commands did not have a means of receiving data in a meaningful way so i
+learnt expect expect tk more take the tk bit is the runs the tcl tk front end on top of expect
+expect is written in tcl it offers tcl interface so that was great i couldn't i was able to
+automate a lot of stuff using that i'm not used it for ten twenty years i don't know but anyway
+expect is a great answer to this type of problem and if you go and look up the Wikipedia page
+i've referred to here then you can see that expect itself is quite quite clever but there's quite
+lot of derivatives of it versions written in various languages and there's also one which runs
+as a bash command which is quite nice to to work with i'm just in the process of playing with it
+and i'm quite enjoying it the other point that was made was have a look at the stack exchange
+reference i've added here which where somebody breaks down co proc in enormous amount of detail
+which is in relation to bash and other other shells so i guess my final point is that i can write
+for this application i can write a simpler pulse script that connects the execute like database
+prepares a query with a substitution point repeats the core different values without and i can
+do that without a code process and i've added i did it just to prove that i could i probably use
+that in fact and i've included it as a resource this is an unfinished fairly rough program but
+just to give you some idea and loads of other programming solutions are available obviously
+either nor c if you want c plus plus there are many many things rust i don't know i doesn't feel
+to me as if this is a task for bash pushing up against the limits and bash not really catering
+for it all that well and i think the conclusion i drew from clack his experiences with it was
+that it's a feature looking for a use so his challenge was see if you can find a useful let me know
+i thought i had and it's sort of a use but it's not ideal if you disagree then come back and
+tell me why and that would be an interesting discussion and i preferably has a show of course
+there's a bunch of examples here for you to look at should the mood take you and that's otherwise
+everything okay i hope that wasn't too tedious and you got something out of it all right then bye bye
+you've been listening to hecka public radio at hecka public radio dot org
+we are a community podcast network that releases shows every weekday Monday through Friday
+today's show like all our shows was contributed by an hbr listener like yourself
+if you ever thought of recording a podcast then click on our contributing to find out how easy it
+really is hecka public radio was founded by the digital dog pound and the infonomican computer club
+and it's part of the binary revolution at binrev.com if you have comments on today's show
+please email the host directly leave a comment on the website or record a follow up episode
+yourself unless otherwise status today's show is released on the creative comments
+attribution share a light 3.0 license

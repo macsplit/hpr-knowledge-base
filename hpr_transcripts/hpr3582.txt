@@ -1,0 +1,350 @@
+Episode: 3582
+Title: HPR3582: Rolling a new character
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3582/hpr3582.mp3
+Transcribed: 2025-10-25 01:45:55
+
+---
+
+This is Hacker Public Radio Episode 3582 for Tuesday the 26th of April 2022.
+Today's show is entitled Rolling a New Character.
+It is part of the series' Haskell.
+It is hosted by Tuku Turo Toe and is about 30 minutes long.
+It carries a clean flag.
+The summary is Tuchitou continues writing an example Haskell game this time rolling a
+new character.
+Hello, I'm Tula Turtou and you are listening to the Hacker Public Radio.
+This time we'll continue writing our small game in Haskell and we are going to create a random
+random charakter.
+So before we go, let's have a quick peek at some places in the code.
+So we have the main.hs file that contains the main module definition that was generated
+automatically by the stack when we started this project.
+And in the end of that main function test the call to the run function, which is defined
+in the run.hs file.
+And touch the place where we can see the overflow of our programming plans.
+If you want to think that that is our main thing that our program does.
+I copied the source code into the show notes if you want to have a look.
+But basically there's a first we are using the show main menu to ask the user if they
+want to.
+It will display the main menu and ask user if they want to start a new game or quit.
+And depending on the choice, there's a case analysis, case choice of.
+And if there's a exit game, then we'll just return from the run function and then the
+whole program to end.
+Or we go to the branch where we create a new character and select the equipment and
+start playing.
+And in the end display the game over screen.
+So the another interesting module is the types that you can find how player items, monsters
+and such.
+I'm not copying it in the show notes.
+But if you want to have a look at it, it's at the GitHub, sorry, code book repository.
+There's a link in the show notes to there.
+And be mindful that you look at the 0100 tag because there's a newer code than what
+I'm talking about now.
+And that's just slightly slightly different test being some reorganization done and some
+extra things there that I may get get into the future, but at this time.
+So our run function basically as it has a bunch of log statements to tell what the program
+is currently doing.
+Those are using the real, they come from that.
+And then there's lines like player left arrow, list IO, ever run IO, role new character.
+These are what roles are new character.
+And then there's that ever run IO that's a clue to us that we are dealing with the random
+number generators.
+So it takes the global random number generator and supplies that do the role new character.
+Because in the Haskell, I will get into the random numbers bit more to the later, but
+in the Haskell state is usually immutable.
+So if you call a function and give it to a random number generator, you're always going
+to get the same result unless you give it a different random number generator.
+So that ever run IO takes the global random number generator and threads through the calls
+inside of the role new character.
+And the left IO thing is that via in a RIO, monot now, the signature of the run function
+is RIO app parenthesis, that means that it doesn't return a value.
+It has a app, has a configuration, and it uses RIO monot.
+So that allows us to access that configuration, we are not using it in this program, but
+it's there if we wanted to use it.
+And it allows us to do debugging by outputting our log statements that we are using.
+And it allows us to print on the screen, but if we are using our things that are using
+IO directly, we have to use lift IO.
+It's a little bit, I'm not probably the best, that's not probably the clearest explanation,
+but it's enough for us.
+So if you see lift IO, it means that we are using things that are designed for the IO
+monot inside of RIO monot.
+Anyway, so what our function do?
+So there's the choice left arrow, so main menu, let's choose the main menu, but every
+value it returns is placed into choice.
+Then there's a case choice of, that's a case analysis, there's two branches, start
+new game or exit game.
+And there's the player left arrow, lift IO, L run IO, roll new character, that rolls
+out new character.
+And those are dollar sign, that's there to instruct that, that haskel to evaluate that
+eva run IO roll new character first, and whatever that returns, supply that as a parameter
+to the list IO.
+If we didn't have it that day, the haskel will break this line that call lift IO function
+and supply two parameters, eva run IO and roll new character, and that's of course
+doesn't work.
+You could replace that dollar sign with the parenthesis around eva run IO roll new character.
+The end result would be the same, it's just a different way of writing it.
+This play new character, player, that just displays our freshly created character, here
+left arrow select starting gear, player, player, that creates our, that uses our equipment
+that possibly get generated in the rolling new character, we are actually not using that.
+And it displays a menu where the player can choose the equipment.
+And the result of that is placed into gear variable.
+Left arrow, lift IO, eva run IO start game player gear, this starts a new game, it
+suffers the deck and prepares things for the game to start.
+And the result of that is placed into the game variable.
+This variable now contains a type or value that represents our game, it has the deck and
+the current card and the player and the player gear and all that stuff.
+Finished game left arrow, play game game.
+So this plays the game until we are done and the end result is placed into the finished
+game.
+And this play game over finished game, this plays the game over screen.
+So we are about input and output, so one of the things that I really like about the
+Haskell is that you have ability, I mean your force basically to state which functions
+have access to the input and output, printing on the screen, doing network calls, accessing
+databases, accessing a functional disk and which functions are pure in a sense that
+they are always just data in, data out.
+It's guaranteed that when you call a function that you will always get the same parameters
+you are always going to get the same result.
+So 1 plus 1 is always 2, it doesn't execute any of the 3, 1 plus 1 also doesn't print
+on the screen, it doesn't access the hard drive or anything, it just takes those 2 values
+and produces a new value.
+So this, but that makes a, for example, testing, very pleasant because the more you have
+those pure functions, the easier it is test because you can just write examples or proper
+to paste the testing, oh, whatever you like.
+And it's always like data in, data out, you can always, you can even go through the code
+by hand and figure out that if I give these values the results will be this and then write
+your test like that.
+As soon as you start mixing in IO, things get really tricky because if you have done any,
+for example, unit testing or integration testing, what any automated testing you know that
+as soon as the database involved or files involved, the testing is a little bit tricky.
+The same thing is with the reasoning about the code, it's easy when you can just look
+at the code and you know that it's values in, values out, nothing is going to change
+somewhere outside of the function.
+Okay, showing the main menu, that show main menu function has a signature, real, real
+IO up main menu choice.
+So it doesn't take any parameters, it uses the RIO, it has the app as a configuration and
+it returns main menu choice.
+And it has a lot of those lift IO statements, they are just to make sure, they just make
+that the put SDRLN, that has been designed to work with the IO, that it works inside
+of this RIO monoc.
+So we are just using the put SDRLN to print out nice menu with two choices and then we
+are calling main menu input function.
+And that one has a signature of RIO app main menu choice, the same signature and this
+uses the getline to read a line from the user, so user can type, feel or more characters
+and hit the enter and that whatever they typed is placed into the I.
+I left a RIO getline, so we get one line and place it very descriptively named parable
+I, that is terrible name, but apparently I choose to use terrible name there.
+And then we are doing the case analysis, case I of one, return start new game, two, return
+exit game.
+So if the user and the one, we return the start new game and two, we return to exit game
+and then test the underscore write arrow, that means that whatever user inputted and didn't
+match anything previously, we handle in this branch.
+And then we first do the log debug, we tell that somebody made an incorrect menu choice
+and show what they, what they typed is this ends into the log.
+It goes into the SDR stream, usually that is directed to the screen, but when user starts
+the game, they can use the, let's see if I can remember, I think it was two greater
+than, and then file name, that directs the SDR stream into the file, so they can target
+it into the log.dxt for example.
+Then we instruct the user, please select one or two and then we call main menu input again,
+the same function we were, so we keep looping, looping, recursing in the inside this function
+until user enters one or two.
+And now you might be thinking that what about stuck, doesn't that mean that if user enters
+incorrect choice plenty of times, then they will be a stuck overflow and the game will
+crash.
+That's not the case with the Haskell, I'm not actually quite completely familiar with
+the technical implementation, but the Haskell doesn't have a stuck in the same sense than
+in other programming languages, and also the compiler is pretty good at optimizing code.
+And here the main menu input is the last call of the function, so whatever the main menu
+input returns is what this function will return.
+So the Haskell understands that the compiler understands that there's no work to be done
+with the retuned value inside of this function, so we can just return the value directly.
+We don't have to keep track how many, but value have been returned from the function and
+do some extra work.
+So it's the, it's the last call of the function, so we can just return the value directly.
+We don't have to calculate the value inside of that function return here and then return
+from here.
+We can just return directly from the code function to the whatever place called this function.
+So rolling on your character, test this, you know, run function test, this player left
+I will run IO rolling character, that rolls a new character and because test that I will
+run IO, we know that this deals with the random numbers.
+If you look at the signature of the rolling character it is a random Gen G, tick arrow,
+run G player.
+Okay, this thick arrow means that on the left side there's some constraints.
+So G, G can be, G is some type that has a type instance of the random gen.
+Random gen is a type class that defines, in their face basically, there's a set of functions
+that has to be defined for that type.
+And this function returns round G player.
+So whatever G is, we don't care, as long as it has an instance of the random gen.
+It could be the one that is in the Haskell libraries, or it could be one that you have written,
+if you have some really, really nifty implementation for the random number generation.
+So we essentially, we are returning a player, and we are returning a behind the scenes
+in such this random owner, we are returning the new state of our random number generation.
+Because remember I said that the venue called Function with the same result,
+the same parameters, you always go into get the same result unless it's the IO involved.
+Because then of course you cannot guarantee that the database has the exactly same data
+or it actually even exists there or something.
+But even with random number generators, I mean with random numbers, that is true.
+Same input, same output, even if you have a random numbers numbers.
+And this might sound a bit contradictory, but it works in the way that you,
+when you want to generate a random numbers, you can do it either in the IO monar,
+and then the results depend on the state of the universe basically,
+or you can do it in a pure function where you have to supply your random number generator.
+And that random number generator has a state.
+So given the same random number generator state, you are going to get the same result.
+And when you ask a random number from that generator, you are going to get a random number
+and you are going to get a new state for a random number generator.
+If you ask the same random number generator, new random number,
+you are going to get the same number back and it's the same state.
+But if you then ask a new random number using that new state that you get after the first call,
+you are going to get a different random number.
+So if you were to do this by hand and you need it, let's say, 10 random numbers,
+you would have to make 10 calls, give hold of those values that I returned
+and make sure that every sub-sequent call is using the latest random number generator state
+that you got from the previous call.
+It is possible to do this by hand, it's really tedious and really error prone
+because you are going to end up with the random number generator one,
+random number generator two and so on.
+So that's why we are using the run, monor here, which makes sure that when you are making those calls,
+it will rate that random number generator state behind the scenes,
+making sure that every call is going to use the latest generator state.
+So you don't have to do it by hand, you can just say that give me 10 random numbers
+and it will give those to you and the state of the generator will be moving behind the scenes
+without you having to worry about it.
+And when you are returning, like here, we are returning the run, cheap player,
+we are returning the generated player and behind the scenes,
+we are also returning that latest state of the random number generator.
+So if somebody were to use this function in a part of a bigger random computation,
+they could just call this and they would get back the random player
+and behind the scenes, they would have the random number generator
+threading through the future calls.
+This is pretty nifty thing.
+So implementation of this roll-new character isn't too complex.
+So we are doing that STR left, dice three, text, left arrow, dice three,
+mind, left arrow, dice three, max hope, left arrow, dice four.
+So we are throwing three or four six other dice and summing them together
+and putting those values in the STR, text, mind and max HP.
+So and then we are returning a player where we are setting those values.
+So the player's strength will be the STR and player's extraity will be the text
+and player's mind will be the mind and the player's HP will be the max HP
+and the player's max HP will be the max HP.
+So we are keeping, we have a separate values for the HP that is the current hit points
+that represent the player's vitality or life force.
+And then we have the max HP that represents what's the maximum of that value.
+Because during the adventure team, HP might go down or go up,
+but it will never have, it is never allowed to go to the over the next HP.
+And that dice is, of course, written by us, that has a signature random chain G,
+thick arrow, natural arrow, round G, natural.
+So it takes a, it deals with the random numbers.
+So it has that round G won't, it takes one parameter that is natural
+and it returns a natural natural is a type
+for number, natural numbers.
+So it can be 0, 1, 2, 3, 4, and so on.
+It cannot be negative.
+And Haskell cannot, well, you, I think you can write code
+that it could check that in the run in the compile time.
+But I don't know, I'm not good enough to do such things.
+But it will, it will check in the runtime
+when you create a new natural number that is 0 or more.
+If you try to create a natural number of minus 1,
+you're going to get a random exception.
+So this is the advantage that in here,
+when we are using the natural number,
+we can be sure that it is 0 or greater.
+We don't have to worry about doing checks
+that what about if it's negative, it cannot be.
+We don't have to worry about that.
+But on the other hand, when we are doing calculations
+with natural numbers, we have to be sure that we think
+that what is the possible results of this.
+If you are doing the multiplication or adding up,
+then no problems.
+But as soon as we are starting to do subtraction,
+we have to be careful that we don't subtract subtract
+bigger number from the smaller number,
+because that will get us into the negative territory
+and that will cause a runtime exception.
+So when working with the natural routes,
+we always have to check before doing subtraction
+that we are not going to subtract too much.
+And if we are going to subtract too much,
+then we have to think about in the terms of our program logic.
+Should we throw an exception?
+Or should we return 0?
+Or should we return something else?
+We have to think what it means.
+Now a program stands that we are trying to subtract too much.
+But anyway, here we are not going to do,
+we are not doing subtractions.
+We are going to generate random numbers.
+That we are going to do with these line roles.
+Left arrow get random rs16.
+OK, so this gives us a random numbers between 1 and 6,
+inclusive.
+So 1, 2, 3, 4, 5 and 6.
+And it will give us an infinite list
+of random numbers.
+Like it is really infinite.
+But because today Husker is written and how Husker operates,
+that list is when we evaluate it, it's always evaluated only as much as we need.
+So if we take the first number, then we are going to get the first number.
+And then we have something called trunk.
+In other languages, it's similar to promise.
+It's not quite the same, but it's close enough.
+So if we take the first element of that list, then we get the first element.
+And then the rest of the list is there, but it hasn't been computed.
+If we take the second element, then the second element is computed, but not the rest.
+So it's an infinite list of random numbers that is evaluated when we need it.
+So don't try to count how many numbers there are, because that will cause problems.
+So and then we do the let's roll equals some take from in the call n rolls.
+So rolls is our infinite list of random numbers.
+Take is a function that takes our two parameters.
+It takes the index and the list.
+And it takes up as many elements from the list as that parameter tells you.
+And because it uses index and not the natural, we have to use the from integral function
+to convert our natural into the integral.
+So take from integral n rolls, takes n elements from that rolls list.
+So we take n dice rolls, random dice rolls, and then sum, sums them up.
+And then we return now the roll is in the, so we have to again use that from integral
+to convert it from the integral into the natural.
+So this little thing, these three lines is going to roll dice n amount of times, sum them
+together and return the sum, sum result.
+And of course the state of the random number generator, but it's going on the behind
+the scenes.
+We don't have to worry about that at all.
+Okay, I could have used here a index as the value of the n, then we would not have to
+do those two from integral calls.
+But I wanted to use the natural because it tells to the call pretty plainly that you have
+to supply zero or greater number when you're calling this function.
+You cannot put minus one here or some or 1.5 because those don't make sense.
+You cannot take minus one elements from the list.
+You cannot throw minus five dice at least in this, this game you cannot do that.
+Okay, so now we have a basically out for our program and we have a random, random
+regenerated character.
+I want, originally I wanted to deal with the carrying up the character too at this
+episode, but it's already half an hour, I don't, I don't know how, I don't know if I
+rumbled too much or read the time code, but anyway, next time we are going to have a look
+how to, how to key up the character, this is a little bit more user, user, user
+index and required.
+Here we only have the user chooses one or two to start a new game or quit the game.
+But in the next episode, they will be a little bit more interactivity, it will be still
+in the text console because text console is a lot easier to work with than some say
+graphical user interface and it is a living to write a whole game in the as little complications
+as possible.
+I'm sure that the game that we are writing here could be written in a much more clean
+and much more elegant or much more abstracted way, but that will trigger some, somewhat
+more efforts from our end and now the goal is just to write a game and get it done.
+And may be very about making the code pretty and elegant in the later when it's done, but
+first you want to get it done.
+And like I said, the game is available at the code book, code book repositories are
+linked in the show notes and please look at the 01000 tag because in the, the new code
+in the repository I did some restructuring and some extra things there that hopefully
+we will get into the later.
+If you have any questions, comments of earpack, you can reach me by email or you can reach
+me at the fediverse, where I am to do it at the LG TV or you even better you could write
+your own, I record your own episode and post it in the HackerPublic Radio at astra.
+You have been listening to HackerPublic Radio at HackerPublicRadio.org.
+Today's show was contributed by a HBR listener like yourself.
+If you ever thought of recording a podcast and click on our contribute link to find out
+how easy it really is.
+For HBR, it has been kindly provided by an onsthost.com, the internet archive and our
+things.net.
+On the Satellite status, today's show is released under Creative Commons, Attribution 4.0 International
+License.

@@ -1,0 +1,196 @@
+Episode: 4407
+Title: HPR4407: A 're-response' Bash script
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4407/hpr4407.mp3
+Transcribed: 2025-10-26 00:20:31
+
+---
+
+This is Hacker Public Radio Episode 4407 for Tuesday the 24th of June 2025.
+Today's show is entitled, A Rear Response Bash Script.
+It is hosted by Dave Morris and is about 13 minutes long.
+It carries an explicit flight.
+The summary is, my take on Ken's response to Kevin's show 4398.
+Hello, this is Dave Morris, doing a show today entitled, A Rear Response Bash Script.
+So what happened was today, although I actually wrote this few days ago, today Ken's show
+came out 4404 and it was responding to Kevin's show 4398 and today is the 19th of June.
+Kevin's show came out on the 11th of June.
+Now, Kevin was using a bash pipeline in his show to find the latest episode in an RSS feed
+and then to download it, it did a bit more, but this was the point really.
+And he used GREP to parse the XML of the feed.
+Ken's response to this was to suggest the use of the program XML style it to parse the XML
+because such a complex structured format has XML.
+You can't really parse with anything other than a program that understands, if you like,
+the intricacies of the format structure.
+And these sorts of programs that understand HTML, XML, YAML, JSON, etc. exist.
+So using them is the wisest thing to do.
+And his show Ken presented a bash script which dealt with this problem.
+And it also dealt with the ordering of the episodes in the feed, which he wasn't quite clear
+whether Kevin's example would do to what he was expecting it to do.
+Kevin was expecting it to do an ordering stuff by date or by number or whatever.
+Anyway, Ken attempted to achieve that as well in a rather clever way.
+I did enjoy Ken's show a lot.
+Actually, it was a nice way of taking a different look at a problem which I think was really warranted
+because I made a reaction to listening to Kevin's show was just thinking,
+hmm, don't think I'd do it quite that way.
+Ken asked for any responses to his show, anybody had to find out how anybody else would write such a script.
+So I thought that was a call to action on my part.
+So I've put together an alternative script I'm talking about here.
+My script is a remodeling of Ken's.
+It's not really a completely different solution.
+It just contains a few alternative ways of doing what Ken did.
+And I'll reordering the parts of his original.
+It doesn't do things in the same order as his scripted.
+And I'll come onto that in a minute.
+So I've presented the actual script in the notes.
+It's not very long.
+Ken's number lines, but it's not much longer than Ken's.
+But I've changed it a fair bit and what I've done is I've put comments in it.
+You can run it with the comments in and check.
+They're numbered comments, so I'm just going to refer to each of them
+to explain what I did.
+So we start with comment number one.
+The format of the pipeline in the script is different.
+It starts by defining a while loop.
+But the data which the read command in the while loop receives
+comes from a process substitution.
+That's that thing where you have a less than sign, or greater than sign,
+but a less than sign in this case, with a parenthesized list of statements.
+And I did a show on this subject, which included this subject a long time ago,
+and I've made a reference to it in the notes.
+I've arranged the pipeline this way because it's bad practice to place a while loop in a pipeline.
+You can have it at the start of the pipeline, but don't put it in it,
+because it creates a separate sub-process,
+which can't communicate with the rest of the pipeline very well.
+And again, I've written a show explaining why it's the bad idea, so I've referenced that.
+I also added a hyphen R to the read, because I use shell check with VIM,
+and it always nags me that I'll get unexpected results of a dog.
+On to comment number two.
+So the lines coming from the process substitution are from running curl, as candid,
+and then, in this case, they're feeding the curl output, which is the XML feed,
+into XML style it.
+And that's then picking out the pub date field of the item,
+so that's the date relating to the item in the feed, and the URL of the enclosure.
+XML style it, thing does is to put those two fields together, separated by a semicolon.
+So I just did the same thing as Ken's did.
+And each of the lines coming from this process substitution fed into the read command in the while loop,
+and then we pick apart the elements of it.
+And this is done to get the first one, which is pub date, with the expression pub date equals,
+and then in quotes, dollar, open, curly bracket, item, colon, semicolon, star,
+close, curly bracket, close quotes.
+What that does is it's a type of parameter manipulation, which again I did a show on,
+show 1648 a long time ago, and there's a particular mode of operation,
+which is titled remove matching suffix pattern for this from a parameter.
+So what it's actually doing is it's returning the part of the string that's in item before,
+not including the semicolon.
+So we've gone to comment three, then pub date's got a date in it,
+and Ken made the point that this is the very weird date format,
+that the feed, XML feed, RSS feed specifies, which is a weird, weird format.
+And he uses the date command to convert it into an ISO 8601 date in time.
+I did this as well, but I changed the output format to a shorter form,
+which is plus percent capital F, capital T, percent T.
+So percent F means the date caution in ISO 8601, and percent T is the time format,
+and the T in the middle is what you need as part of the full date time format.
+That's just me showing it can be done, which I would do because I'm lazy.
+Command 4 refers to the bit of code that gets the URL out of the item string,
+and that uses another one of these parameter manipulation expressions,
+which is, double quote.
+So it's a good idea to quote these things,
+so you probably don't have to, but it's wise to do so.
+Double quote, double quote, dollar, open code bracket, item hash, hash sign,
+number sign, asterisk semicolon, close bracket, close quote.
+What that is doing is removing the matching prefix pattern.
+Okay, so what it's doing is it says, give me everything,
+it's removing everything up to the semicolon.
+So it returns the URL, which follows the semicolon.
+Then there's an echo, which just can kind of mix these two together,
+and returns them as the output of the while loop,
+which is then going to be fed into a pipe.
+And what this one does is, rather than using a tab character between the two elements,
+I said, just use the semicolon.
+I don't think the tab character had any significance against original,
+so I didn't use it.
+And that's then fed to sort the sort command,
+where it's sorted numerically, based on the time,
+the date stamp, really, the time and date stamp.
+So it just doesn't numeric sort.
+It doesn't care that there are two parts to the line.
+It just sorts by what it sees at the beginning.
+If you had two absolutely identical time stamps,
+then it would then sort on the URL.
+But that's pretty unlikely, incredibly unlikely.
+So it's fairly safe thing to do.
+If you want to be really fussy about it,
+you can use sorts field capability, but I didn't do that.
+And sort does the sorting and reverses it in time order.
+So the one at the top of the list, the newest one.
+Now, I followed on with what Ken had done,
+and used head iPhone 1 to get just the first one from that list.
+So that's the sort, and we throw everything away.
+But the first one, then I used cut rather than orc,
+which can use, which is a thing where you can chop things up by field.
+And the field delimiter is a semicolon,
+and I just wanted to field number two.
+In other words, the URL.
+And then I piped that to WGET.
+Now, I used a slightly different form of WGET from anybody else,
+because it's at the end of the pipe.
+And I told it that what WGET is actually getting the URL
+on its standard in, in order to make it use that
+as the input file to be searched.
+It will collect it and download it, I should say.
+So point number six is using this WGET,
+which uses the option, iPhone, iPhone input,
+iPhone file, equals.
+And then an iPhone in that context means the standard in.
+So that's what it does.
+So it's actually pretty simple.
+My changes are not massive.
+It's just they've cleaned things up a little bit,
+rather than calling several programs to manipulate bits of data.
+I use BASH's inbuilt manipulation tools,
+which I prefer, and they're likely to be a bit more efficient.
+Not significantly, this is not going to cause
+tremendous difference in the time things,
+but just because I like to do things more tidally,
+having come from a mainframe background
+where every CPU cycle counted.
+I want to show my solutions better in a significant way.
+As I said, I like to use the BASH functionality.
+The other thing I thought, as I was assembling these notes,
+was that instead of using head and cut,
+I would have attempted, if I thought more about it,
+at the time, to use said.
+And I've shown how I could use said instead of the head and cut.
+So it's a said expression, which is,
+you know, pretty much always in single quotes,
+one, then open curly bracket.
+S slash carriage, let's see, up arrow, we think,
+dot backslash plus semicolon slash slash semicolon,
+Q, close curly brackets.
+What that means is, operate only on line one,
+so that's the line we care about.
+And then when you've on line one, replace the characters that begin
+from the start of the line, that's what a carrot means,
+dot backslash plus means any other characters that happen to be,
+and we expect there to be at least one,
+so we'll use the plus, then, and the semicolon,
+and replace them by nothing.
+And then once you've done that, quit from said.
+So that does the equivalent of the head and the cut,
+and then that feeds into double-getness before.
+So yeah, I was going to make reference to my said series
+from many years ago, I thought, wow, these people will be.
+So I've fed up looking back at Dave's old shows that I won't bother.
+But I've referenced all the various things that I've mentioned
+and linked to in the notes, as a link section at the end.
+Okay, that's it, and thanks for watching listening.
+Okay, bye.
+You have been listening to Hacker Public Radio
+at Hacker Public Radio, does work.
+Today's show was contributed by a HBR listener like yourself.
+If you ever thought of recording podcasts,
+you click on our contribute link to find out how easy it really is.
+Hosting for HBR has been kindly provided by
+an honesthost.com, the internet archive, and our sings.net.
+On the Sadois status, today's show is released
+under Creative Commons, Attribution 4.0 International License.

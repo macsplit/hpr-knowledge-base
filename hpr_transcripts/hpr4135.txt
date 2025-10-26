@@ -1,0 +1,124 @@
+Episode: 4135
+Title: HPR4135: Mining the web
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4135/hpr4135.mp3
+Transcribed: 2025-10-25 20:05:00
+
+---
+
+This is Hacker Public Radio Episode 4135 for Friday the 7th of June 2024.
+Today's show is entitled Mining the Web.
+It is hosted by Cedric DeVroey and is about 15 minutes long.
+It carries an explicit flag.
+The summary is, in this episode I talk a bit about a project
+I have been working on to index the web.
+You are listening to a show from the Reserve Q.
+We are airing it now because we had free slots that were not filled.
+This is a community project that needs listeners to contribute shows in order to survive.
+Please consider recording a show for Hacker Public Radio.
+I heard that Hacker Public Radio project is struggling to find enough volunteers to provide episodes for the shows.
+So I decided to record this one.
+In this section I am going to talk about a project that I have been working on the past few months, actually.
+It is already the 4th or 5th iteration, so you might as well say that I have been working on it for a few years now.
+It is a project that a lot of hackers will recognize.
+I have been trying to build my own Sholdon-like search engine for the Internet.
+So, you know, hackers, we like to build inventories of things on the Internet, right?
+So everybody knows Sholdon, which is like the Google for Hacker.
+So basically you can look up an IP address there and Sholdon has in its database information
+about which open ports are available on that server and what not.
+So yeah, I wanted to build something like that myself, just for kicks and fun.
+And yeah, so I've been looking at how can I tackle such a problem.
+And one of the first challenges that I met was getting input data.
+So basically, if you want to build like a scraper for the Internet, there are a few possibilities, right?
+So you could do it the Google way, like just starting at a website and start to follow all the
+URLs that are on that website, that point to other websites. And you just start to follow that
+network like that. That would be one way. But it would be for my purpose, it would be very slow.
+And also I don't want to be involved yet in like really scraping websites to get data and
+such. I want to do it on a lower level. So I looked at another possibility.
+Everybody knows let's encrypt, right? So if you want an SSL certificate on your new website
+and you don't want to pay for that SSL certificate, then you can use let's encrypt, right? Now,
+not a lot of people know this, but if you register a certificate with let's encrypt and with a
+lot with a number of other SSL providers as well, your SSL registration actually ends up in a
+log, the certificate transparency logs. And these are log files that are published by Google
+and GoDaddy and all the big providers, basically they provide these logs.
+And they hold information about certificates that they provide. So there's a whole lot of
+information in those logs, but only the only part where I am interested in is basically the part
+where these certificates list the host names for which they are meant for.
+So yeah, I started building a script that could download these logs and they are really huge,
+like hundreds of millions of entries. And then I build a parser to basically extract
+host names from those logs. So that system is now working and I have now a database of
+plus 300 million domains. And yeah, I'll talk a bit about the technology because yeah,
+my first goal, of course, is to build like a big database of servers, right? So I want to,
+yeah, for example, enter hbr.com. And then I want to see a list like all of the host names that
+are known under the domain hbr.com. Because yeah, if you know DNS, you probably know that,
+yeah, this is a kind of question you cannot ask the DNS system. You cannot ask, oh, do you know
+all the host names that are under the domain hbr.com. So yeah, that's no fun for me as a hacker.
+So basically, I, one of my first scripts in the system that I was building was exactly for
+this purpose. So I had this domains coming in from the certificate transparency logs. And I was
+storing them in a in a MongoDB in a document collection called domains. And then I, this I started
+building a script to actually brute force host names under that domain using a worthless.
+So I basically created a worthless of like 2500 very common host names like WWW, FTP,
+admin, SFTP, etc. And so yeah, I built a script where, yeah, I can basically say, I have this
+domain now try to guess all the host names under it. So yeah, as you are starting to understand,
+this system got complicated very quickly. So first off, of all, I have like 300,000 domain names
+in my database. So if I wanted my script to execute this magic for like one domain at a time,
+I would never even end up at the end of my domains list because it's just too much data to
+to process. So I had to start thinking of ways to parallelize my workflow. So
+the way I was thinking about this is maybe I shouldn't say like in my host names in
+the numerations script, I shouldn't say like, oh yeah, a domain from my domains list and then
+start doing your magic. No, it would actually be a much more smarter idea to
+talkerize this host name gasser to say it to name it like that. To talkerize this host name gasser
+and to start it like, I don't know, 60 times or something in 60 different containers.
+And then instead of each of them picking up a domain from the domain stable, it's
+much smarter to have another script that is continuously querying the domain stable
+for domains that haven't been enumerated yet, to query those domains and to stuff those that
+haven't been enumerated yet, into a queue. So I added redis to my setup, which is like a
+cache database to say it like that. And redis knows this concept of queues. So it's basically a
+waiting line. So you can a waiting line, you can add things at the end or you can add things
+in the beginning and you can take things away at the end or you can take things away at the
+beginning. So what I did was I created a waiting queue where so I have this query script
+to get domains that haven't been enumerated yet. And it would stuff those domains into
+the domain enumeration queue. And then I have a condition in this script, of course, that it's not
+going to add a domain two times in the queue. So if I find the domain that isn't enumerated yet,
+but it's already in the queue, then it's not going to add it again in the queue.
+And yeah, then there's these 60 enumeration worker jobs that are just sitting idle and waiting
+for domains to end up in that queue. And then once I see those, they are going to pop one domain
+from that queue and they are going to start working with that domain. So if I have added 60
+domains in my queues, and I have I have also 60 workers, then all of those 60 jobs immediately
+start at once in parallel. So that is a system that's now working pretty well. And yeah,
+I'm not going to say how many host names I have in my database, but it's huge. The amount
+of data is really mind-boggling. And yeah, it's a continuous struggle to find ways how to handle
+this amount of data, to split up processes, to make them parallel, just to find ways to
+process this amount of data with limited researches and limited time. But it's a very fun project.
+So the base technologies that I'm working with are, of course, everything runs on Linux.
+It runs on a Ubuntu machine. My data storage is in MongoDB, and the database now is like a half
+a terabyte big. So it's not huge, but it's pretty big. And then all the scripting I have been doing
+with Python, just because that's the language that I know best. Then scheduling,
+I have built scripts myself for that in Python, so I don't use an external software for that.
+Then yeah, I already explained for the caching the queues I use Redis. And then
+yeah, the containerization of all the work, jobs, etc, is running on Docker. And I have
+configured my Docker. I have one, I have one central Docker on my server, and then I have like
+10 slave nodes or worker nodes that are connected to this central Docker in a swarm mode.
+So this all this setup allows me to run like hundreds of containers in parallel without too much
+trouble. And yeah, this is working pretty well now. So now I'm starting to think of new jobs
+that I can add to my system. Like for example, I already have jobs that when a host name actually
+results to a C name that I also try to resolve that C name to the original host name,
+to which it is pointing. And for host names, I also resolve their pointer records.
+I've also added, I'm now working on a job that basically if it has found a host name,
+then it's going to check if port 80 or 443 is open. And then it's going to mark that host as a
+web server. And then yeah, I was thinking of new jobs that I can add to this system,
+yeah, to find like specific vulnerabilities and yeah, keeping lists of those. So yeah,
+I just wanted to talk a bit about a project that I've been working on. I hope my explanation
+was not too confusing for you. Yeah, if you have anything similar going on or if you want to
+know more about it, reach out to me through the show notes on the website of HBR. And yeah,
+I'll happily answer you or provide you with information on how I do things, etc. So yeah,
+thanks for listening. To again on Dave of HBR, I would also like to ask please don't stop
+the hacker public radio project. It's such a fun project. And I know that you guys are
+struggling to find enough volunteers to provide shows, I know. But still, it's such a wonderful
+project what you are guys are doing. It would be really, really sorry if you guys had to stop this.
+Thanks anyway for all your efforts. See you soon. Bye.
+You have been listening to Hacker Public Radio at HackerPublicRadio.org. Today's show was
+contributed by a HBR listener like yourself. If you ever thought of recording podcasts,
+you click on our contribute link to find out how easy it really is. Hosting for HBR has been
+kindly provided by an honesthost.com, the internet archive, and our sings.net. On the
+Saldois status, today's show is released under Creative Commons, Attribution 4.0 International
+License.

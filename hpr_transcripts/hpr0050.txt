@@ -1,0 +1,501 @@
+Episode: 50
+Title: HPR0050: Linux Boot Process Part 2B - Grub
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0050/hpr0050.mp3
+Transcribed: 2025-10-07 10:47:46
+
+---
+
+Hello, welcome to another exciting episode of Hacker Public Radio, my name is Dan
+Washco and I'm continuing my series of Delinix startup or boot process today with
+episode 2b or actually 3 whatever you want to call my episode on grub and no
+I'm not talking about those tasty little beetle larvae that a lot of countries
+find very nutritious and supplement their protein intake with but I am
+talking or slying for food for that matter but no I am talking about the boot
+loader of the gods grub the grand unified boot loader this I'm excited to
+talk about grub because grub is it's just awesome and I hope that you find grub
+as awesome as I do because it's just it is it is fun it is exciting and it is
+just all around goodness wrapped up in a little boot loader now a lot of my
+information was called from the very informative very useful grub manual which
+can be found on the grub website which is very easy to access at www.gnu.org
+slash software slash grub that's off the GNU website and grub is a
+application under the GNU public license it is currently on version 0.97 which
+is the version that most distributions install with and you know one of the
+things that's really cool and you probably take for granted is that when you
+run your OS you're actually running two kind of systems there I mean well
+three if you you could say you got the BIOS which loads in which kicks off the
+boot process boot loader which isn't part of the operating system so to speak
+it's its own little consider operating system and no other boot loader I've
+seen other than grub really exemplifies this and we'll get to that in a few
+moments and then your boot loader in this case grub will kick off the loading of
+your operating system of choice now what's really cool about grub is not only
+do you get to set it up but you can also configure it on the fly unlike
+lilo the Linux loader which I talked about last time you install the Linux
+loader and you hope it you know you got everything right for the next time you
+try and boot grub on the other hand it is not that limited if if something's
+wrong grub has essentially three modes there's a menu mode which is
+what most people will see when they boot grub if they see grub at all which
+provides you a list of definitions OS definitions as you can boot there is the
+edit mode where when you're in the menu mode you can press the e button and
+begin edit any one of those definitions or there is the command line mode which
+allows you to just access the grub command line mode and you could do a whole
+lot more on the command line mode which we'll get into shortly now grub has
+supplanted lilo as the main Linux bootloader of choice for most
+distributions now I do believe slackware is one of the few that are left that
+uses lilo to this day as default bootloader arch Linux gives you a choice
+and so does Gentoo give you a choice when you're installing the operating
+system as to which bootloader you want to use now if if you are at all has a
+10 you know you might be familiar with lilo very very familiar with lilo
+hopefully after this you will elect to choose to install grub as your default
+bootloader for any operating system that you want to run it is that awesome
+now most people are not going to have to worry about installing grub pulling
+down the sources or building grub yourself or unless you're again running
+arch or Gentoo you probably won't even be asked what loader you want to run
+you'll be asked do you want to install it in the master boot record or in the boot
+partition of your root partition given that I'm not really going to go into the
+details of installing grub from source you can get that from the documentation
+most people will not have to do that but given that when you install when you
+install your your distribution of choice and you go through and it prepares to
+install the bootloader unlike lilo or some other bootloaders you don't really
+have to have much configured for grub when you run the grub install now there are
+a few configuration files and if you read the documentation it's of course a
+documentation tries to be operating system agnostic but we're going to be
+focusing on documentation for Linux or GNU Linux and where the majority of
+distributions install grub and this configuration files will be found in the
+slash boot slash grub directory you will also find command grub commands in the
+slash S bin or slash UUSR S bin because they're more system specific and as
+opposed to general user commands or more for administration now in the boot
+grub directory typical files that you will find in there are a menu dot list or
+mm menu dot lst which is a general configuration file and it holds the
+definitions for the operating systems that you're going to boot additionally
+what you will find in there are the stage files for grub now grub boots itself
+with at least two stage files the first stage one file is simply put in the
+master boot record or boot sector of the partition that you have installed grub
+on the purpose of stage one is to load either stage 1.5 or stage two essentially
+what stage one does is it sets itself up to encode the location of stage 1.5 or
+stage two into the master boot record so it can kick it off now stage 1.5
+files generally optional but you're going to find them on a Linux
+distribution is what grub needs to read a file system you will see an X2
+riser file system XFS file system you will see multiple different types of
+stages for being able to read a file systems type and stage 1.5 is usually
+installed right or pulled in right after the master boot record so stage one
+kicks off stage 1.5 if no stage 1.5 is available it tries to just go right for
+stage 2 which is the core grub image which will pull off the file system where
+grub was installed will pull out what it needs to set up the bootloader and
+begin to boot your operating system of choice now a few other files it might
+be in there is a default file which specifies the default image or
+definition of boot which we'll get to later also you will find in there other
+stages like a stage 2 L Torrito and that's used for creating bootable CD
+roms a no grub or I'm sorry an NB grub which is a network boot grub image and a
+PXC grub which is a network boot image for using pre-boot execution
+now we are not going to cover network booting with grub or creating a
+bootable CD in this episode today we're kind of you know don't want to make it
+too long additionally we're just more interested in regular Linux systems as
+a more advanced topic your version of grub that includes
+included with your distribution may not be have grub compiled with the network
+booting options so we're going to stick with the the basics for today the
+plain vanilla grub now as I said you're probably not going to need to
+install grub yourself but just keep it in the back of your mind you are two
+basic ways to install grub once you have the software install on your system
+of course there is the native which is using a grub boot disk
+and using a program called grub install right inside of Linux the native
+involves creating a grub boot disk and using the grub interface
+to set up an install grub now while they consider this the safer way
+to install grub the safest way it is also the most difficult way to install grub
+and we're not going to go into many details in here suffice to say that if you
+really want to find figure out how to do that read the documentation we're
+going to talk about the grub install because it's it's easier of course
+translates better to describing that and
+I've never had a problem running it so it's not that
+risky I don't think any more than any other piece of software you're
+installing on your system anyway and the grub install essentially you run grub
+install and you pass the device name either a Linux device or a grub device
+as an option so for instance you was putting grub dash install then space slash
+dev slash hda which would install grub into the masterboot record of the
+first IDE disk on your system now we're talking about Linux device naming
+here not bsd not grub device naming which I'll cover in a minute
+but Linux device naming so if you had a scusy drive in there and you want to
+install it on the masterboot record or the scusy drive it'd be grub dash install
+space slash dev slash sda for your first scusy device or whatever device you want
+now additionally if you wanted to put it in the root or boot partition you would
+specify to put partition your your root or boot partition is on so it'd be grub
+dash install slash dev slash hda one for example which would be the first
+partition on hard drive a one all right now you can
+optionally specify the grub device now an example of this would be grub dash
+install space open parenthesis hd zero closed parenthesis which would be the
+first or the masterboot record on the first hard disk
+all right now in addition to and I'm going to cover the grub device naming in
+just a second but bear with me in addition to running you know specifying the
+link the device that you want to install and you may need to specify
+where the images are stored for instance grub install
+a space dash dash root dash directory equals slash boot slash grub would say
+and then a space dash slash dev slash hda would say all right install grub into masterboot record
+the root directory for grub is going to be under the slash boot slash
+grub directory is that's where you're going to find the images that you need to kick
+off to uh to perform the rest of the install
+all right now let's get into grub device naming because it's a little different
+than what probably most people are probably used to and might throw you at
+first as you're reading through the grub documentation
+for specifying a device and grub you put the device
+inside parentheses okay and you're basically going to be using two types of devices
+hard drive hard drives or floppy drives there's also cd drives there too but we're
+we're looking at block drives and floppy drives in a sense so the standard naming
+convention for any like hard drives scuzzy cd-round drive hard drive flash drive
+any drive block device is hd okay so hd plus the number
+a comma and then another number okay the first number is the device the second
+number is the partition on a device for instance
+you have a hard drive in your computer id hard drive or scuzzy hard drive
+you want to install grub or you're going to be looking at the first drive
+okay it's going to be hd zero inside of parentheses
+if you want to look at the first partition it's hd zero comma zero inside of
+parentheses now i don't know if you caught this i said the first partition the first
+device i gave them both label is zero that's because grub's naming or
+numbering starts with zero so zero is the first
+device or partition one is the second device or partition and so on
+so think of it different than linux naming which does like
+hda a alphabetical letter a for first and then
+a number for the partition number one hda would be equivalent to hd zero
+hda one would be equivalent to hd zero comma zero all right
+in addition to that floppy drives follow the same kind of naming convention
+generally you're not going to specify a partition on a floppy drive so you're
+just looking at like fd zero for floppy drive one fd one
+so on now interestingly um there's another way that you can specify a
+device and that is using hexadecimal or
+decimal number of the bios drive or how it's
+specified in the drive for instance on my triple e pc
+they have grub setup to look at the device zero x eight zero
+and what that means is zero x eight zero is a hard disk just like hd
+it's a hard disk one zero x eight one would be hard drive two or hard disk two
+and again it does not matter whether we're talking about a flash drive
+flash device any block device zero x eight one or zero
+um flat floppy drives are just specified with a zero so floppy one is zero
+floppy two is one floppy three is two you get the idea
+so that is excuse me there that is how use grub does its device naming and it's
+important to know that because you need that in the configuration file and you
+need that for running the command line um now what's cool about grub again when
+we get talking about the command line is it has tab completion so you can
+you can use the grub command line to figure out what devices that you have in
+a system so if you were to sit down right now okay and you were to open up
+the terminal and you were going to fire up grub okay which is now more
+more than likely you uh not going to have it in your path because it is in
+it is in the uh i believe user s been
+directory user s been if you were to fire that up and type in root and hit tab
+or open up open up open parentheses hit root open parentheses and tab
+and uh it would start to auto fill in for you just like tab completion on the
+command line so root open parentheses tab will fill in the devices that are
+able to be set as a block device
+by the root command it'll show you now for instance when i do it on my
+triple e pc root open print space open parentheses tab
+it does hd 0 comma 0 same thing as 0 x 8 0
+okay that's the flash device that i'm able to boot from on here
+now if you're in grub right now uh you want to
+just you know hit enter or back space over what you just typed in
+and hit quit to get out of the command line uh grub command line okay
+now so you got grub installed and you're already to rock and roll with it
+and let's talk about the the one configuration file probably the main one
+that you might be most interested in and that's the menu.lst file
+the menu.lst file the general configuration for grub is where you
+specify your operating system definitions similar to lilo grub is set up
+with two main sections there's the general selection section at the top
+the first part of the file and then there's your
+os or your definition section which is the second part of the file
+now in the menu.lst again keeping the back of your mind when we're talking about
+it's particularly devices and just about anything grub uses 0 as the first
+device it definition or whatever one as the second that's important
+always start your numbering with 0 work from there
+now in the general settings the first section
+grub device grub device naming let's say section 0
+all right you have the default you have it with different commands you can put
+in it for instance you can put in default
+and then the default definition to use a boot remember again starts with 0
+so if you set default to 0 it looks the first definition default to 1
+looks for the second definition okay and so on
+you can put a command in there called timeout
+timeout is the number of seconds before the default
+definition is loaded now if you didn't specify a default or you look in your
+grub menu.lst file and don't see a default
+in there that just means the default is set to the first
+definition 0 definition number 0 so the timeout will show the menu the grub
+menu for the specified number of seconds
+and if nothing is done no intervention it'll just kick off the boot
+process and begin booting that first default
+device or i'm sorry definition right there
+simple enough just like lilo but it doesn't specify intent of the second
+like lilo does it specifies it in a second so keep that in mind too
+if you specify a timeout is 50 it's going to wait 50 seconds
+not 50 microseconds i believe it's what lilo uses so you
+you want to set it to five for five seconds
+some other things you can specify in there which we'll get to in a few minutes
+is called a fallback fallback definition is used
+as a safety gap in case your first definition doesn't work you can specify one
+or more fallback definitions which we'll cover in a few minutes
+you can change the color of the menu and the text and highlighting with the color
+command the color command takes two parameters
+the normal and highlight which essentially equates to
+foreground and background color now look at you know see the documentation
+for the list of colors available but be aware that only eight of the 16
+colors that are available can be used for the background
+foreground can have any of the 16 colors but the background can only consist of
+black blue green cyan red magenta brown or light gray
+you cannot have a yellow background i don't know why but you just can't
+now you can have a yellow foreground on a green
+but you can have a green background foreground on a yellow
+that's just the limitation of it but beware of your color choices here so you
+don't end up not being able to see anything or puking when you look at it
+of course you can always change those on the fly with with the grub command
+when you're booting which we'll cover in a few minutes
+after the general configuration and the menu.lst file you have the OS
+definitions this is where you specify the definitions that
+the operating systems that you want to boot
+simple enough first line in your OS definition
+title so title space equals space and the name of the OS
+be descriptive for instance slackware 2.6 0.22
+kernel you can have spaces in there
+punctuation in there stuff like that this is just an informative title for
+now i have seen in specifying in a configuration
+i have seen that it is when you specify in the menu.lst i've seen them both
+use uh equals like default equals something
+or not using an equals so it would be like root and
+specifying the root information um it seems kind of arbitrary as to whether
+or not you need to specify an equals there or not but just be aware of that
+seems you can get away without specifying the equals you might hear me say
+equals just for you know making it a little clearer that you're setting the
+value of this okay so title is the name
+for the definition after title on a new line root
+and specify the root partition to boot
+now this must conform to the device naming structure okay
+for instance root space parenthesis hd 0 comma 0
+closed parenthesis is disc 1 partition 1 um just remember that 0 is 1
+1 is 2 and so on next line would be kernel and you're going to specify the
+full path to the kernel on your root partition now for example online it would
+be kernel space slash boot slash in a kernel name now in addition to that
+you can pass any other kernel parameters that you want to at this point
+just like in lilo you can specify specific kernel parameters this is where you
+would add them to the line right after the kernel image
+following the kernel image you're probably going to want to have your in-it
+rd or your initializing ram disk image so it's in-it-rd space then the path to
+in-it-rd image example in-it-rd space slash boot slash
+in-it-rmfs-eepc.img for the in-it-rmd image
+that's simple that's all you need after that at which point
+you can boot just about any Linux system using those commands
+now there's another option that you might need in there for different operating
+systems which is the chain loader it loads a file has a
+chain loader and then she used primarily for non-multiboot operating
+systems like windows or dots or operating systems with faulty bootloaders
+like SCO's system set or SCO Unix 7 yeah crap I forget the name of it anyway
+we'll cover chain loading in a few minutes but title root kernel in-it-rd
+essentially that's all you need okay so you got your menu.list
+you got everything set up grew grubs installed and again
+I recommend installing it in a masterboot record like Lilo unless you have
+certain you know requirements or or species you know that meet your
+cases I've never had a problem installing a bootloader in a masterboot record
+contrary to how many people or how much documentation will hem and haun say
+oh it's risky risky you might not want to do this I've never had a problem
+I think it's the easiest way to go especially when you're using a bootloader
+of the God's Grub what else could you want
+I think what really makes Grub cool I discovered a lot of the other bootloaders
+I've used is when you're using it on boot when you booted up
+more than likely most systems you're going to come right into the grub menu
+is going to list your OS definitions and I'll give you some other text in there
+like you know highlighted definition using in the arrow keys
+and press e if you want to you know enter if you want a boot e if you want to
+edit or press c for the command line now as you do that
+so simple enough let's talk about
+editing an item in the list in the menu list okay so you boot up grub
+your your definitions right there your your OS
+you click the e button you are going to be presented with the syntax for that
+definition you can then proceed to edit any one of those lines by
+moving the arrow key and pressing the e button
+to edit that line you'll be given all that line
+and you can use basic batch movement on their control b
+to go to the front line control e to the end of the line and so forth you use the arrow keys to move back and forth
+you can add stuff delete stuff on that line and when you're finished you simply press enter
+and it writes back there now let's say you wanted to add an additional line
+you go through the line above the line you want to add
+where you want to add the new line and you press the okay and it's going to add another
+line after the current line that you're on so you want to delete a line
+okay you're on a line press the d and it will delete the line
+now when you're finished with all your changes you simply press the b button to boot that
+definition now say you don't want to keep your changes that's fine too hit the escape
+button and it's going to return you back to the menu and ignore all the changes that you made
+you're good to go now the next thing that you could do
+aside from editing a definition is going to the command line mode
+now command line mode is the same thing as the grub command line mode when you're in your operating
+system and typing grub you could do some really cool stuff on here you can uh
+this is where you will be taken to if you boot grub without a menu.lst file
+and you can specify all the exact commands that you find in
+ammenu.lst file on the command mode and a whole bunch more in the command mode which is entered
+by hitting c at the menu list or if you don't have a menu list defined you type c
+and it will bring you in command mode and you can type help and it'll list all the commands
+that you you want to do and what what command line mode allows you to do in there is like
+yeah allows you to in a sense you know write your own
+definition if you really wanted to undo some other stuff you can browse your file system so
+long as it can recognize the file systems that you want to browse it has a stage files for it
+for instance to browse my my root file system which is on on the first hard drive which is
+a scusy drive on my laptop because it's a say to drive sd1
+sda partition one i would type root space open parenthesis 0 comma 0 close parenthesis
+and it enter at which point then i can use the cat command can catenate or to cd to change
+directories and i can move into that file system which is really cool and then i can cat files in
+there and i can view the entire contents of the file system tech files and every text files
+and everything just by you know mounting attempting to mount these partitions and moving into them
+through grubs command line interface you might say oh my god what about security and you know
+that means anybody can look at the contents of the file and yeah but we'll talk about some of
+the things you could do to protect from that happening okay so the command line is really cool
+if you're any command line you can press escape key to return back to the menu just like you
+couldn't edit mode now what's cool about these capabilities is let's say you screw up
+and you messed up your boot process if you're using arch Linux and you're using lilo and you
+boot your system and you forgot to run lilo after you update the kernel you're kind of screwed
+all right you can end up with an unbeatable system let's say you're testing a kernel out and you
+you add another definition you want to boot that kernel and you messed up on the syntax you can
+easily correct it on the command line right there through the edit mode or through the command line
+mode and you're back up to running again in in no time it's not as limited as lilo whereas if you
+screw something up you better have a boot disk candy or a rescue CD because you're going back
+back to the end of the bus jack starting all over again anyway that's handiness
+of grub right there as a rescue situation when you screw up on that note I always recommend having
+a backup kernel whatever boot loader you use that you know will work and that is good and we're
+going to cover that in a few minutes to some other things that you could do but keep that in the
+back of your mind you know because if you upgrade somewhere messing around always have a kernel
+that you know you can boot and it works right anyway because of the power and capabilities of grub
+allowing you to access your file system you might want to save yourself how am I going to
+protect my file system or protects you know from people snooping around well grub does offer
+some password protection in there and you have two possibilities of protecting you have one is
+protection from editing or entering the command line mode on two is protection from booting you
+can prevent them from being able to boot a definition or all definitions for that matter unless it
+provides a password protecting from editing what you need to do is you need to use the password
+command in your in your menu list in the general section of the configuration you put in the password
+you put the word password and then either the password in plaintext or the MD5 hash of the
+password and in addition to that you can specify a configuration file to load as like an admin
+configuration file in addition to the standard configuration file so if they type in the correct
+password it would load a different configuration file with different options that they have in there
+anyway grub provides you an easy way to convert your password into an MD5 hash
+if you type in on your command line or in the terminal grub dash MD5 dash crypt it will ask you
+for a password you know just like using the password command you type in your password it'll ask
+you for it again it'll type it in an output an MD5 hashed version of that password
+additionally you can you can just type MD5 crypt from the grub command line to get the MD5 version
+of the password very simple um you add that to the general configuration file then when they
+when you boot the system up and if they want to edit the command line mode or
+edit mode they have to provide they have to first hit the p key and it's your prompted for the
+password enter the password and then it'll let them in if they don't enter the right password
+and no no no entry no lucky lucky they're locked out additionally you can prevent people from
+booting certain definitions are all definitions by adding the word lock to each after each title
+of the definition that's it you have to set it up like you're you're editing for the command line
+or you know you have to put the password in the general configuration but you put lock down after
+the title in each definition and if they try or an attempt to boot that definition they will be
+prompted to enter the password first okay now let's talk about some fallbacks here and stuff
+like that that you can secure yourself when you're doing some testing of kernels that you've
+compiled yourself or or or whatever you're doing um you can do a boot once only which will attempt
+to boot the system using a different definition that you specify and if it fails it will fall back
+to your default specification that's simple it's good for testing a kernel and uh what you do is
+you add this line to the general configuration section of the menu dot lst you add default space
+saved now that tells grub to read a file called default in the uh slash boot slash grub directory
+which specifies what definite definition uh to use to boot for the first time okay now you
+add your new definition after your good definition and after the good definition before the new one
+the last line that you add after uh you know everything to boot is save default all one word
+s-a-v-e-d-e-f-a-u-l-t then after the new test definition you add the line saved default s-a-v-e-e-d-e-e-f-a-u-l-t all
+one word space zero now what that does is when you boot the first definition it saves that definition
+list the zero what it is to the default file under boot slash boot slash grub default it saves zero
+because it's zero the first definition um if you boot the first definite or the uh first
+definition the test one okay what that does because this is a boot only is it attempts to boot that
+and it writes right directly after it attempts as it's tempting to boot it writes that file
+save default to default file zero so that the next time grub runs it attempts the boot
+it looks at the save default and boots the first or good definition on here okay so if
+something happens and it doesn't boot properly uh you can reboot the machine and it would just
+automatically put you back into your main one um by default again remember zero is one any other
+numbers is is one less so zero is one one is two so forth now after you're done editing your menu
+dials t file you save it then you need to run this command on the command line uh slash s bin slash
+grub dash set dash default space one now that puts a one in the uh boot grub boot slash grub slash
+default file tells that when grub goes to boot next time to try and boot the first definition
+automatically the second you know save sorry second definition not the first one definition
+number one second definition when that runs it sets the default back to zero afterwards and
+that way you can get right back in your system no problem because you have a good definition now
+you have the option of providing fallback definitions to grub fallback definitions will keep
+trying to boot the fallbacks in succession until one is successful once it finds a successful
+one it's going to save that to the default file what what definition that is so every time after
+there it will just boot the successful one until you go back and fix it so like the the um
+boot once only use you're gonna still need to put in the uh save save or i'm sorry default space
+saved in the general configuration then after that you specify the line fallback all one word
+f-a-l-l-b-a-c-k space and then each fallback definition that you want to use uh with the space
+after them so like fallback space one space two would go fallback definition two then the
+definition three if the first default definition fails uh it will try one if that succeeds it will
+it will boot uh the second definition it will then try the third definition of the second
+definition fails uh and then after each definition that you specify you provide the line you
+had the line save default space fallback so it's save default all one word space fallback all
+one word so what happens then is it will try each uh definition you have specified in the fallback
+once it finds one that will boot successfully it'll save that um that definition you know the
+fallback it'll save the next number or the next number if it wasn't successful it'll keep going
+to the next one okay uh it will system will try each fallback in succession until successful
+boot then save the successful um successful one to the default file simple enough now
+neither one of these sections is going to help solve a problem of where the concurrent
+actually does boot but fails after that like for instance you didn't
+provide it in an RD file so it can't find or read the uh partition file system partition where
+your root partition is you can't read that partition uh that's not going to help you out here okay
+you're still going to end up you know to grub is successfully booted the or kernel and that's
+all that it does um in such a case again you might need to remember you should have a fallback
+default kernel that you can boot to that works that's successful so in your list of fallbacks
+you know you might have to manually go down and specify that one backup kernel that you have
+that always works because your other kernels may fall back to a success but fail during a boot
+process understand what I'm saying Jack of course you do because you're smart if you want smart you
+wouldn't be listening I want to wrap this up by covering some additional commands that you can
+use in the menu list or command line or editing mode um when I talk about a command I'll explain
+briefly what it does I'll tell you where it can be used uh the hidden command that is specified
+in the menu you can specify in the command but you know I don't know why you really want to what
+what the hidden command does is it hides the grub menu unless the escape key is pressed during the
+timeout phase so when your system tries to start the boot day if you provide provide the command hidden
+in there it will hide the grub menu so you won't see anything even though it does exist you'd
+have to press the escape key to get to it the hide command is in the general section you would actually
+I'm sorry you would hide in the uh definition section uh you would hide a partition from booting
+from the booting OS now this is primarily only useful for DOS or Windows you would hide and then
+the device name of the partition you want to hide like for instance if you had a primary partition
+that had Linux installed and then your second primary partition had Windows installed
+you would hide the first primary partition from Windows so that it would think it's on the primary
+partition because Windows and DOS want to be on the primary partition first primary partition
+subsequently you can use the unhide command to unhide a partition that's used in the menu
+you can use them on a command line too if you're booting from command or in the edit mode
+boot is basically used for command line or editing a menu entry you would type in boot and it would
+attempt to boot everything that you have specified the cat command is primarily used in the command line
+mode which will list the contents of a file so as I said before you can browse to a file on the
+file system on a partition and type in cat for instance cat slash atc slash fstab which will
+your fstab file uh chain loader I briefly mentioned chain loader when booting other operating
+systems chain loader loads a file as a chain loader and it can use the block list notation now
+block list notation block list is a file that does not appear in the file system
+an example of this is like the windows bootloader would appear in the block the block one of the
+device not block zero which is the master boot record but might appear in block one so you
+would specify to the chain loader uh chain loader space plus one when you're trying to boot the
+operating system windows and it would try to load the file in the first block of the partition
+block number one actually not block zero but block number one and hopefully it will work it's
+used for um oh s's with a defective bootloader or for booting windows and dots which
+maybe they have a defective bootloader too I don't know fine command is uh pretty simple
+fine command will start shooting uh fine and then the name of the file you want found will search
+for the file in all the mountable partitions uh just like a regular file command and it will
+display the full path to the file that it finds halt command is using command line mode is used
+to halt the system uh again I have briefly mentioned help which will display a list of all the
+commands and if you type in help in the command name will display the list for that help file
+pause is uh used in the menu it you can provide some text after the pause and it would display that
+text and will wait for a prompt from the user to press any key to continue on you wouldn't really
+use that in command or edit mode it would make any sense uh quit is using command line mode quit will
+exit the command line or edit mode and go back to the main menu mode uh reboot is used in the command
+line mode again which will reboot the system um now the root command which I briefly mentioned
+before it will set the device to root and attempt the mount and get the information of the device
+so if you type in root space uh parenthesis hb hd 0 comma 0 it will attempt to set the root
+device to the first partition on the first drive and then you can cd into it or cat into it by
+specifying the device device and then slash in the path uh you could also use the uh no you can
+use the command root no verify all one word which will attempt the mount the root to uh it will
+set the root device but not attempt to mount it well I hope that this little introduction to grub
+has been informative so the next time you are uh booting your Linux machine because it's a laptop
+and you didn't want to waste the battery transporting it to work because you know Linux machines
+don't really need to be rebooted that much and if you're rebooting it on a regular basis
+god ask yourself why anyway so you're booting you know your system and you pop up to the grub
+menu take a minute to pause and stop and check it out and see what you can do and have fun with it
+uh unless you know you know you read these commands that we're talking about your chances are
+you're not going to break anything but you're going to have learned something new and have fun
+doing it as always remember hacker public radio is community sponsor community driven if you are
+interested in educating people on a subject that you're pretty familiar with or you want to learn
+to subject you're not familiar with and then educate people get in touch with uh the hacker public
+radio crew off the website and uh you know make an episode or two we're always looking for people
+and uh if you have any questions comments you can send your email to dan d a n n at the linuxlink.net
+or i'll check out the comment section for this episode i thank you very much i hope to have a
+next another episode out very soon uh i think the next one is going to talk about options that you
+can pass to the kernel when you're booting or who the hell knows what it will be but uh it'll be
+something to do with the linux boot up and start a process again thank you very much and you have a
+wonderful happy hacking day. Thank you for listening to hacker public radio
+hpr-sponsored by caro.net so head on over to caro.net for all your hosting needs
+you

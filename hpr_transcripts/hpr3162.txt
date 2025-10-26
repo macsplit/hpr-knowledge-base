@@ -1,0 +1,221 @@
+Episode: 3162
+Title: HPR3162: Introduction to Ansible
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3162/hpr3162.mp3
+Transcribed: 2025-10-24 18:03:45
+
+---
+
+This is Hacker Public Radio Episode 3162 for Tuesday 15 September 2020. Today's show is entitled
+Introduction to Ansible. It is hosted by Clartu
+and is about 45 minutes long, and carries a clean flag. The summary is
+Clartu demonstrates some Ansible tricks
+and how Ansible can be a better choice than scripting.
+This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+Hey everybody this is Clartu. You're listening to Hacker Public Radio. This episode is about Ansible.
+Ansible, Ansible, Hardest, Softest, whichever one you prefer doesn't matter to me.
+Point is Ansible is an automation tool that's quite popular right now among sis admins
+and developers and general users because it helps you configure a computer or more likely a set of computers
+from 200 to 2000 who cares. In such a way that you are able to define what you want that computer to end up.
+The state that you want that computer to end up in. So if you think about the difference between that statement that I've just given you,
+whereby you create a file specifically in YAML format yet another markup language YAML,
+you create this file in YAML and you describe the system with pretty strict syntax.
+You can't just type out natural language like just a description, but you describe in this configuration file how you want that computer to end up.
+Ansible goes in and makes sure that it does whatever it needs to do in order to get that computer into that state.
+Think about that versus for instance what you've probably been doing which is create a shell script that invokes all the different commands that you would run manually anyway and runs all of those commands.
+Now you do that once you do that twice whatever and eventually you realize that your shell script is being a little bit too robotic.
+It just trudges forward no matter what. So you start learning little tips and tricks like set dash e and things like that to error out when something doesn't work and you learn about the install command instead of the copy command.
+You learn about make dir dash p instead of just make dir and little things like that, but the more you do it and the more you add and the more stuff you have to go in there and change,
+the more you realize that your shell script is a very verbose way of doing things.
+There are things that you have to check on, especially if you're talking about cross platform.
+If you've got a slackware machine and a red hat machine, then you suddenly have to stop and you have to think, okay, well, I want to install, I don't know, let's say, H top.
+I want H top and E max to be installed on these machines, but on slackware, I need to do a slack package to install H top and some other process for no slack package for E max and some other package for H top.
+Actually, that might not be true, but either way. So on slackware, it's going to be one set of commands or maybe two sets of commands.
+And then on rel, it's going to be a completely different command. It's going to be DNF or something like that.
+So now you've got to check to see which of those two things are available on whatever host your shell script is dealing with.
+And you have all these fail conditions and these conditional statements and things and it becomes a complex thing to get right.
+And you know, the great thing about shell scripts is that once you get it right once, then it's good. It's good to go until, of course, it isn't sometimes a little bit of extra maintenance is required.
+And that's normal, but the more lines that you have in a script or in a program, the maintenance of that thing gets more complex.
+Even if it's just a matter of, well, now you've got more lines to check with your eyeballs and make sure that they're that they're valid right now, even if it's just the expense of looking at it, it does become more complex.
+And the more hosts, of course, that you need to target the more and more complex your script becomes. This is where Ansible comes in because ideally it can save you from all that from all that work.
+Now, if you're like me, Ansible is or a new software can be a little bit not daunting, but confounding because you know, someone hands you a new software and you think, oh, cool, this is great.
+It's new open source software. This is really exciting. I should learn how to use this for whatever reason, you know, whether you suspect it's going to improve your workflow or whether you just feel like you should get to know it because a job opportunity at some point in the future might mention.
+That software and you want to be able to honestly and confidently say that you've got experience with it, you know, whatever your motivation, you think, okay, I should learn this thing.
+But then you look at your current setup and you think, well, I don't know what I need to do with this, you know.
+So Ansible can be like that because Ansible almost in a way, like if you kind of look at it a certain way, if you squint and look at it from sort of a certain angle, almost like a programming language or even a non-interactive shell almost.
+You know, people praise certain, certain shells for delivering, for returning data objects rather than text. And in a way, that's kind of Ansible, the Ansible experience.
+It's all written in Python. And so when you do things, you get feedback, but the feedback is in Python error statements. And certainly if you programmatically interact with Ansible, then you can get data objects back rather than just text that you have to then pipe through Grap and,
+and awkward, whatever to parse it in a meaningful way. So it's, it's a little bit of a, of a platform. And if you don't have anything to run on that platform, then it becomes a little bit difficult to certainly integrate into your real life, much less to even get started with.
+So what I'm going to do is take you through a pretty common use case of Ansible, which is just installing software. This is the bare bones Ansible demo, right?
+I mean, this is not anything complex, nothing fancy. It's not really even that exciting. But by the end of it, I think you're going to see why Ansible can be exciting and what it could possibly do to change how you interact with more than one computer.
+Let's get started. So Ansible, I mean, the easy way to install it is through your package manager on Linux. If you're not on Linux, then from what I understand, there are lots of easy ways to install Ansible on other platforms as well.
+It that one of the advantages of Ansible is that it is cross platform. I've never used it on any other system other than Linux, but I have targeted other systems other than Linux.
+So I've used it on on Linux, and then I've deployed it against machines that are Linux, Mac, and Windows.
+So I've had the experience of cross platform targeting, just I haven't actually used it on anything but Linux. So I'm going to speak from the Linux perspective here.
+So you can install it from your normal package manager from some software repository. I would say that it was pretty common at this point, shouldn't be too hard to down.
+So once you've got that installed, you should probably make a project directory. That's generally a good thing to do for Ansible.
+First just because it's sort of the best practice organization, you know, for better organization, but also because eventually once you get really good at Ansible, you will discover that the layout of your file system of the directory in which you keep that the main Ansible file.
+The layout of that directory structure can actually you can use that so that Ansible kind of auto auto detects things. It is a little bit like, for instance, if you are writing in Python, and you want Python to sort of know where to look for local modules, you can put it in a specific directory.
+So Python will look there and use modules out of their kind of just automatically, or if you are running like an auto make, you know, GNU make file or an auto tools project, you have a certain directory structure that you can work around, but certainly if you make it a certain way, then auto tools just kind of will gracefully inherit that and take it on.
+We'll make a directory called package underscore installer or whatever you name it, whatever you want. And then you would want to create an empty file in that directory called site.yaml. I'm going to take a cup of coffee, take a drink of coffee while you do that. Okay, so you've done that.
+That coffee is really good. So there's site yaml and yaml if you've never written in yaml is sort of this weird kind of, well, it's it's I think Jason is a subset of yaml or where yaml is a subset of Jason.
+No, just surely Jason is a subset of yaml. It's a horrible format. It uses indentation very strictly to to to to represent inheritance. Why, why no one could come up with a language or configuration language that just acts like, for instance, organ mode, you know, organ mode uses the asterisks to to to imply or to to delineate inheritance and it's a beautiful thing.
+One one asterisk is the top level. Two asterisks is under that first one. Three asterisks is under the second one. Two asterisks is a new second secondary level bullet point and so on. You do that. It's so obvious, so clear, so easy to change, but yaml you use indentation. So it's if you like python, you're going to love yaml.
+So here is a very basic yaml configuration for Ansible and I'm going to do this in in such a way that ideally this will apply to all of your future Ansible configurations.
+So the first thing that you'll do because yaml lint will complain if you don't is you start your little yaml document with three dashes dash dash dash. That's the first line. Next line you do a dash space.
+So this is kind of your first bullet point, if you will, and it's all the way on the left. So it's dash space hosts colon local host. In this case, local host is really just right now it's it's a designation computer that you're sitting in front of the one that you're typing out right now. This is the one that you will be running your Ansible file against.
+So that's kind of that's an important line because eventually you will use that line to tell the computer which set of hosts you want to run the Ansible file on.
+And that's a powerful thing because if you you'll you would you can create a slash Etsy slash Ansible slash host file, put a bunch of hosts in there.
+And then you and you can kind of designate them into certain groups, you know, so it can be like, I don't know, the design department, the finance department, the, you know, the servers in in data center food and the servers and data server in data center bar.
+But for now, you're just telling it go for the local host. I think it will give you a warning about the local host anyway because it doesn't know what you're talking about, but that's what I do to remind myself that hey, this is just right now, this is just working on the local machine. So keep that in mind. Okay.
+Next line, you'll have to indent that so that it aligns with the age of hosts. No, no marking, just some spaces. I think it ought to be two spaces. So the line item for this is tasks.
+Tasks, T-A-S-K-S, and then colon. Now, tasks are the, this is the sort of the flow that you're going to follow quite often. It is hosts, tasks, name. If you remember that, you can remember really sort of that's your boilerplate for most Ansible playbooks. It'll be hosts, tasks, and then the name.
+You can have lots of names, but you'll have just a hosts and a tasks at the very top of the file. Hosts, tasks, name. Ansible files can get pretty squarely. They can get really, you can break them out and put them in different directories. Like I said, the folder structure of your Ansible of this directory that you would in theory be building out can, can host a bunch of little include files, sort of little snippets of YAML, and then it can kind of assemble this big playbook from all of those.
+Different YAML files. So it can get complicated and not everything will look exactly the same depending on what portion of the playbook. Forget all about that right now. If you're doing one YAML file with configurations in it, you're going to open up with hosts, you're going to give it a tasks, and then you're going to name something.
+So the next line will be space space to get under hosts and then two more spaces space space to get under tasks, and then you're going to do a dash space name colon. And then some human readable string such as install my favorite packages. And that literally it's just for you as a human. It's going to print that out when you run Ansible dash playbook later. It'll print that out so that you know what step it is processing when you look up at the screen. Easy. Okay.
+So the next two lines are going to be about permissions. And here is a place where Ansible uses its own terminology, which will confuse you at first, and it will possibly make it difficult to remember. But if you think about what it's saying and the fact that it's cross platform, it actually makes a lot of sense.
+So next line will do a space space to get under hosts space space to get under tasks and then space space again to line up with name. So this is this is an item within the dash name block of of text. So that's I think that was six spaces over.
+The key word here is become BECOME colon true. So this is telling Ansible that it is going to have to become a different user. And then the next line we're going to specify which user it needs to become.
+And so that'll be again six in six spaces over and it'll be become underscore user colon root R O O T. And that of course tells it to grab those administrative privileges before proceeding on to the task at hand.
+The way that it does that is going to depend on the system and you need the kind of have that configured in advance. Because if Ansible cannot, you know, Ansible is not a magic bullet. If it cannot escalate privileges, then it is going to fail that task.
+Now we've got a flag that we can pass on on our test system to be prompted for the password. But in real life and real usage, if you want this to be automated, you'd need to set up some some pseudo rule, at least on on Linux and on Mac on a POSIX system that that has pseudo on it.
+You'd need to set up with via pseudo or whatever some rule such that the, you know, whatever tasks you're having Ansible perform are allowed by that system or some other authentication system that maybe you you're using.
+But that know that if it needs to escalate privileges to do something, then then you need to account for that somewhere because Ansible can't just magically bypass that I would hope.
+Okay, next up in this task, which is named install my favorite packages, we need to invoke an Ansible module. Ansible modules are kind of where everything actually happens in Ansible.
+Like I said, it's kind of a platform Ansible is it's a little bit like, I don't know, like I said, a programming language or even an non-interactive shell if you could think of it that way, where in order to make any use of it, you have to know what you want to do.
+And in terms of, if you think of it like learning a new Linux command, you have to learn the command, you have to know what the command is, you have to know what options there are to that command, what arguments it requires and so on.
+So instead of commands in Ansible, well, you can run commands through Ansible, but you know, in this analogy, instead of commands, we have modules and module names.
+These are all listed on docs.ansible.com slash Ansible slash latest slash modules slash modules underscored by underscore category.html.
+If you just do a search for module index or just go to docs.ansible.com, you'll stumble across what they call the module index and they start out by breaking it into categories.
+So you've got like cloud modules and clustering modules and command modules and crypto modules and so on. So there's a lot there.
+There's also I think it's files modules. That's a pretty handy one. You can make directories and stuff on on your computer with like a make directory module. Really, it's really cool or or you can make sure that files are not there.
+You can add or remove files with Ansible. It's very, very cool. But anyway, you can also just look at all modules. There's a selection there at the top of the module index for all modules.
+In this case, though, we do have a category that we know we're looking for and that's packaging modules. And sure enough, if you click on packaging modules, you get a list of all the packaging modules available and it starts out by language, interestingly.
+So it's got things like pip and pair and npm and maven or maven underscore artifact, I guess, and so on. And then and then it gives a sort of sub category is OS and that has everything from apt to DNF to flat pack to Mac ports to open BSD underscore package to Slack package.
+What's what's the other one pack man? So there's there's a bunch. I mean, there's and I'm not going to list them all. I mean, there's a bunch of them here, you are PMI yum. Yeah, all kinds of different ones home brew for for Mac again, I guess.
+Well, and Linux, I guess technically can use home brew. But anyway, you get the idea lots and lots of different ones. I mean, heck, they have Slack package. So you know that if they've got that, they probably have what you're looking for.
+And in this case, I'm going to look for DNF because that seems like an sort of an obvious one. So here's DNF module and it tells me that it's got a little bit of a, I guess, I'd call it a man page, but it's online. It's on the docs. Ansible.com DNF manages packages with DNF package manager and it tells you all of the different parameters that you are able to pass through this module.
+Now, we're going to stick with the bare minimum just to keep in the interest of keeping this simple and and easy and quick, but there are quite a lot of parameters there that you could pass. And the module index is definitely, I mean, that's your friend when you're learning Ansible because again, otherwise, you have no idea what to do with it. So just treat it like you, you know, think back when you were learning Linux or maybe you're learning Linux now, you know, you probably have some kind of reference document or, or some.
+Or, or something somewhere, whether it's online or in a book, sort of nudging you with reminders about what is actually possible in this weird thing called a terminal. And that's the same thing with, with Ansible, you keep that module list open somewhere. If you're, if you're sitting down to do something with Ansible, because it will, it will sort of give you ideas and and remind you of what you could possibly do with Ansible. And, and in theory, you should be able to do, you know, all of the essential stuff.
+And, and a little bit more. And I think that's, I think generally you'll find that that's true. Okay. So the module name is DNF. So this is indented enough to be under that dash name category. So we're still within this task, which is named, install my favorite packages. So that means we're going to indent six times. And we're just going to name a module DNF colon. Now, if we had passed something weird like penguin, then it would, it would fail because there is no such Ansible module that I know of called just penguin. But we know that it's going to
+be called DNF. So we're invoking the module DNF. And, and that is, that is why we are allowed to just type out DNF colon. You can't do that just arbitrarily. It has to exist. And it does, but you have to look it up in the module index. So DNF colon. And now in, on the next line, we're now under the DNF section. So that means you're going to do two spaces to be under hosts, two more to be under tasks, two more to be under name, and then two more to be under DNF. So that is eight spaces over now.
+Eight colon present. And if you look at the module under the parameters, you see that there's a, an item called state. And it says that your choices for state are absent, present, installed, removed or latest. And the documentation says whether to install with either present or latest or remove with the keyword absent, a package default is none. However, in effect, the default action is present unless the auto remove option is enabled for this module.
+Then absent is inferred. So in other words, state is not a required parameter for this to work. I am using it here because number one, I wanted to demonstrate to you how you would use this module. But number two, I like the explicitness of this, just like host, local host. I like being able to, you know, when I look at the module or the, the playbook, the Ansible YAML file called a playbook, when I look at this file later, I want to see, okay, I've got the DNF module here.
+And I'm, I'm definitely installing stuff because I'm saying that the state, the state I want to leave this computer in is that these module that these packages are present. And you know, you don't have to put that in there. You can just know that the default is present. But I figure if you put it in there, then you don't have to remember that the default is present. There's the state present. And now you know, okay, the action here, the actual action item that's happening is that I'm invoking the DNF module to make sure that these packages are present.
+Okay, so next line would be name colon. And once again, if you look at the module index, and there's examples in the module listing here, so you would have, you, you would know all of these things or you would be, you'd have a hint about them. And you see that name is actually the required parameter of a type list or elements equals string. And it says a package name or package specifier with version like name dash 1.0.
+When using state equals latest, this can be asterisk, which means run DNF dash Y update. You can also pass a URL or a local path for an an RPM file to operate on several packages. This can accept a comma separated string of packages or a list of packages. And it has an alias called package PKG. We'll get back to that sort of thing in a moment.
+But it's telling you here that the name can contain either a list or a comma delimited string of packages. So for this use case, I'll use the list version just to kind of get used to that.
+But later we might switch over to something else. We'll see. So let's say that next line then under name colon would be two spaces to get under host, two spaces to get under tasked, two spaces to get under name, two spaces to get under DNF, two spaces to get under DNF.
+Two spaces to get under name. So that's 10 spaces now. And then we do because it's a list will do a dash space, H top and the next line, 10 spaces, dash space, E max or whatever two packages. I said that we were going to install with this. I think it was H top and E max. So now we've populated the name element with a list of two packages.
+The syntax here annoys me. I don't feel like this is super intuitive. But if you took to look at like why is why does name get a list, but nothing else, but name itself is not a list, but name under tasks is a list to look at it. It's not intuitive. There are reasons. It's because tasks can contain a list. So the fact that we have a dash name colon install my favorite packages is simply indicating that one of the tasks.
+The task that we want this that we want answerable to take is this one. If we wanted to add a second task later, we could do a dash space name and continue. The problem here, of course, is that name is the same literal is the same string as name used in the DNF module. And so it seems confusing. But if you look at the module index and just kind of follow its instructions or its implied instruction, then you'll kind of get used to it.
+Finally, if I'm kind of scrolling through this DNF one, I only see one thing in red, which says required. And that's right next to name. And then right under the name element, it tells me list or elements equals string. And the description explains that I can do a list or a string separated, a comma separated string.
+So I know that the two types of syntax are allowed to use there in in my ammo file are either the list, which is the dash space, whatever, or I could have just typed in H top comma enax after name colon. And that that should work as well.
+Okay, so now you can save your file and run it through YAML lint. If you don't have YAML lint installed, you may find that in your package or in your software repository. If not, I do think that there might be a Python package for it. I might be making that up. But YAML lint will scan your YAML file, your playbook, just YAML lint and then the path to site dot YAML.
+And it will make sure that you're that you've typed valid YAML and YAML is pretty strict. It'll get angry at you if you use tabs instead of spaces. It'll get angry at you if your indentation is off. It'll give you cryptic messages, error messages that will take you far too long to decode.
+But at least it warns you before you ever get near Ansible, whether or not your file is valid. So things to look out for, like I say, tabs and don't use tabs use spaces do provide a blank line at the end of the file.
+Or rather, I should say a new line character at the end of the file doesn't need to be a blank line. It needs to be terminated with a new line character and make sure that yeah indentation is right.
+And that's really, really tough sometimes to sort of into it. It can be complicated, but just kind of double check everything, try to try to think about what, what seems like it should be inheriting what and so on.
+And it means pretty much once you've done your initial name task, everything at least has to be 246 spaces over, right? Like nothing would be further back than that.
+Or else you've started a new task and that needs to start with a dash space name, okay?
+So now you can run it technically through Ansible, but there's one more check you could do, which I quite like, which is Ansible-Lint.
+And again, if that's not installed for some reason, I think you can find it as Python 3- Ansible-Lint with DNF on Fedora.
+Or if you're running Ubuntu or similar, you could do apt install Ansible-Lint in YAML-Lint for that matter.
+So Ansible-Lint is basically, I mean, it's a Linter program obviously from the name. And so it'll check your site.YAML file for compliance from Ansible's point of view.
+In other words, Ansible-Lint knows a little bit more about what to expect in an Ansible playbook.
+I have found it's not as amazing as I would like. I think what I really want is almost like an Ansible-playbook-dry-run my YAML file, and that's not what this is.
+So I do run it through Ansible-Lint just for kicks, but don't expect like miracles. You can still error out Ansible and have passed Ansible-Lint under certain conditions.
+Okay, assuming you've gotten no errors or that you have gotten lots of errors and managed to get passed them, then you can actually run this thing.
+And that would be Ansible-playbook-dash-ask-become-pass. Now that's the option that we're using in our test environment, knowing that we haven't made any special allowance yet for Ansible to escalate privileges and run something with pseudo permissions on your system.
+And then you'll point it to the file. So in the example case here, it would be tilde slash package underscore installer, or whatever I said the directory was called, and slash site.yml.
+It prompts you for your become password, type in your pseudo or whatever authentication method you use. I'm assuming it's pseudo, type that password in.
+And then you'll see some things kind of fly by, for instance, it'll acknowledge that there's a, that this is a play. That's what Ansible calls it. It's a play or a playbook.
+So this is a play running on localhost, and then it will identify that there's a task. And as part of this task, it will kind of very quickly, it will mention that it's gathering facts.
+And that's okay. We'll get back to that in a moment. That should pass no matter what. And then it'll, it'll continue down the same path, the, the same task. And it should say installing or install my favorite packages or whatever we named that task in the ammo file.
+So that's that human readable bit. So we know what it's doing. It's trying to install those packages. And this might take a while. It needs to find, needs to determine whether those packages exist within DNF and so on.
+And eventually it'll get past that ideally. And it'll do a play recap for us in which it tells us that everything's okay. Maybe something has changed, something, hopefully nothing was unreachables, hopefully nothing failed, and so on.
+Now sometimes you'll run this and it will tell you just that everything's okay. And that means that you've already had, for instance, H top and Emax installed, which in my, in my case, that would be that is true.
+But if they weren't installed, then you'd run that and it would say that zero things were okay and that two things had changed. And you would know from what is in that task, you would know that two things changed because you didn't have H top or Emax installed. And now you do.
+So it's just a little bit of a summary of what happened when this, when this, this thing ran against your computer. And that's it. That's, that's, that's Ansible. That's an Ansible playbook at work.
+Now you might, you might be thinking about what you've just written and what you've just witnessed. And you might think it's actually quite a lot of work for what amounts to running a shell script or even something like a multiplexer, you know, just launching Tmux and opening like eight different terminals on eight different systems.
+And then just typing in pseudo DNF install H top Emax and hitting return. I mean, that would be it. That's all you'd need to do and you'd be done and you wouldn't have ever had to deal with Ansible. So why are we bothering? That's a fair question.
+So you probably know that Ansible, as I said, is pretty good at cross platform performance. It can, you can deal with lots of different operating systems, lots of different distributions.
+And if you were to try to install applications across several systems, then unless you've got a completely homogenous environment, you might have to, you might have to account for that.
+Now, heck, in my own home, I don't have a homogenous environment. I'm sitting in front of a slacker machine right now. I've got a fedora laptop on my left and a rel laptop on my right. And who knows what else? Oh, I got a net BSD raspberry pi and a Debian pocket chip.
+So that's not how much is an environment by any means. So the likelihood of you having a completely homogenous environment may be rather low. It might not be. You might be in charge of just a bank of rail box and and that's all you have to deal with ever in which case, you know, a simple shell script may actually make more sense.
+But let's try something different with Ansible. Let's let's try a different tactic here. The DNF module is cool and it's good to know about modules certainly because again, modules are kind of like your commands for Ansible. Those are the, those are the things that when you think, oh, what should I do with Ansible today? Go look at the modules. That'll tell you what is possible.
+But we're going to try it from a different angle this time from a little bit more of an almost programmatic. So throw away everything you did. Well, don't throw it away. Just set it aside for now. We'll make a new directory. We'll call it cross underscore package. And again, you can create a site.yml file in cross underscore package. Open up a file and remember the boilerplate hosts tasks name, HTN.
+So also three dashes at the top. But if you don't do that, Yamolint will warn you. So dash dash dash return dash space hosts colon. Let's do all this time because actually that's what Ansible really wants to see. Now this, it won't matter. Like all doesn't actually matter to us because we don't, we haven't defined a bunch of hosts in our slash Etsy slash Ansible slash hosts file, which you could do, but we won't do that. And it will do return space space to get under host.
+And of course, next up is tasks colon and then return and then space space to get under host space space to get under tasks dash space name colon, install my favorite packages on any distro.
+We're on any OS and then return space space to get under host space space to get under tasks space space to get under name. So that's six spaces.
+We'll do again, we'll do become colon true. Next line become underscore user colon route. And then the next line. Same indentation here. Still six spaces. Action colon. Now action is a plugin of Ansible. And unfortunately, I haven't found a whole lot of documentation about sort of with a good explanation of what a plugin is in Ansible.
+And it's a little bit annoying because I'm not, I don't quite have the firm grasp on what's different between a module and a plugin. Either way, action is this fancy thing that you can cause Ansible to do. And within this action is it's a bit of a loop really. And this is recently changed as of this recording.
+So I'm kind of new to this syntax, but it is a loop. It's telling it to take an action and the action that we are are using here is or rather the thing to define what we're doing is an Ansible variable.
+And these are a little bit magical and you kind of have to dig around the docs to find them. And I don't love how sort of obscure some of this stuff is.
+However, there are commands and you can read in the docs to to get a feel for this. There are commands to divine what variables are actually getting defined. It just so happens that during that gathering facts.
+Step that we saw immediately after running Ansible dash playbook. It remember it said tasks and then it said gathering facts. And I said we'll get back to that in a minute.
+This is that moment where we're getting back to it gathering facts. This is one of the cool things about Ansible is that when it goes out to a host, a targeted host, I'm going to take another drink of coffee.
+When it does that, it scans that host and it gathers what what it calls facts about that host. And I say it weirdly like that because like it is a fact about the host.
+But that is also like the term that Ansible documents and an Ansible uses is it's a fact which can get confusing sometime because you know, it's also just a normal word.
+So you know, you're talking about facts and people think you're just talking about truths like universal truths, but you're actually just talking about a thing that you got from Ansible one time.
+So it gathers facts and it dumps those facts into variables in part. And one of those variables is Ansible underscore PKG underscore MGR. Well, that's handy because that means that we we know or what we don't have to know what the package manager is for whatever host we send our little Ansible script out to the way that you invoke that is curly brace curly brace space Ansible underscore PKG underscore MGR space curly brace curly brace.
+And then you do the options or the parameters rather that would be associated with that command and that can get tricky because you never know some package managers might have a different different way of doing things.
+But generally speaking for the simple stuff, you can you can do stuff like space name equals and then H top comma Emax space state equals present space update underscore cash equals yes.
+Those are pretty universal to most package managers shouldn't run into too much of a problem with that set of command.
+So a little bit of experimentation that you sometimes have to do, but that command generally should work. So the syntax for this again, I don't love how like vaguely non intuitive this is, but it's you've got your action item under six spaces in.
+So it's under hosts it's under tasks it's under name that's three times two spaces of six spaces action colon space greater than symbol sets it looks like it's pointing to the right and then return and then two spaces to get under host get under tasks get under name and then to get under action.
+So that is eight spaces now you're you're you're you're intended and then you do your curly brace curly brace Ansible package manager curly brace curly brace name equals H top comma transmission state equals present update underscore cash equals yes.
+And that's it. So that's just two four six eight lines of code now and you can save it and run Ansible dash playbook dash dash ask become pass path to that site.
+YAML and it'll run it'll run on well any host defined by you in slash Etsy slash Ansible slash hosts and it will install those packages with whatever package manager is on that host.
+Now once again little bit of fiddling around with it might be necessary because as we all know probably different packages on different distributions sometimes have different names and on different operating systems.
+I imagine it's even worse. So you might have to account for that somewhere and there are there are different ways to do that.
+But you know if there are decisions that have to be made based on okay which distribution is this running on or which OS is this running on right now you can get all of that from the gathering facts stage.
+And then make decisions based on that you can you can use the file structure the folder structure in the in your project directory to your advantage and make Ansible sort of assemble a larger playbook based on lots of little snippets.
+And so on I'm not going to go through that right now because I think that's a little bit more detailed and we probably need for a basic intro to Ansible but I just kind of wanted to demonstrate the logic the difference in logic of writing Ansible well I wanted to demonstrate using Ansible right so we've done that we've
+installed some packages with Ansible it was very cool but there's that difference in logic in kind of that in that sort of laundry lists recipe mindset of well I know how to do this thing and it is with the DNF command I feel comfortable with that so I'm going to reverse my knowledge I'm going to back my
+knowledge up into Ansible and kind of make that sort of fit and just read you know just re-implement my shell script or my manual interaction with my terminal in Ansible and that's fine to do to begin with absolutely not a
+problem however if you if you force yourself to think about different potential targets and start introducing problems for
+yourself it helps because then you have to start thinking a little bit more broadly you know you think about problems like oh wait a minute what if the host that I want this to run
+against doesn't have this command on it at all or how do I find out the user directory for that particular operating system or the name of this
+package is different on this one as it is on that one or whatever the problem might be you start you you come up with new
+problems and you start to see kind of how Ansible the abstraction offered by Ansible helps immensely managing all of these different
+systems because no longer do you have to come up with conditional things for every action that you want to take
+you can just kind of establish okay well what kind of computer are we on oh we're on this one okay well then run all of these
+and and maybe there's one item or two items or five items that you need to take a sledgehammer to a little bit and think okay well the way that
+that it implements this action is completely different than anything else so I'll have to hard code that specifically for that
+host but there are ways to do that but the bulk of your actions will be right once run many times with with just some clever
+variable substitution and leveraging what Ansible already knows about the host that it is about to run on and since I
+didn't mention it at the start I guess I will I will also mention here that Ansible is really nice
+because it is an agent but well is it agent list let's call it agent list yeah agent list it's agent list is an
+agent list thing it it runs without it runs on your sort of control center and it uses SSH to go out to
+the hosts that you're targeting so the hosts themselves don't need anything Ansible installed on them whatsoever
+it's it's kind of cool it you know if you've ever had to set up like a backup scheme for a bunch of
+computers or an update scheme for a bunch of computers or a reset scheme for a bunch of
+computers like in a classroom for instance the end of every class I need to go out and make and
+reset all of these computers back to their sort of default unaffected state how do I do that you'll
+know that having having something that that that all you need to do you you you install it on one
+computer on your control center once you install it once on your control center and that's it and
+suddenly you can go out to all of those hosts and manipulate and whatever way you need them to be
+manipulated and you're finished it's it's as simple as that it's just so refreshing it really is it's
+really really nice so check out Ansible install it and try to start doing some simple tasks with it even
+as I as I often say even if it feels stupid even if it feels like it's taking ten minutes or an
+hour whereas if you would just type the thing in with your keyboard it would be done in three
+seconds like set that hour aside sometime and and figure it out on Ansible just to kind of get
+your feet wet and and next thing you know you'll you'll you know if you get you get started with it you
+you may eventually find a use case for it it took me forever to get started with it like
+cobra too would tell me to get started with Ansible he would tell me all the time to just start using it
+and then sure enough two years later three years later I'm like oh actually yeah turns out
+he was right yet again I guess I will get started with Ansible
+but you do you just have to kind of get kick started with it and then you find excuses
+to continue to use it at least that's how that's my general pattern I think of usage check it out is
+my point very useful hopefully this has been good to at least introduce you to the concept
+maybe get you over any kind of trepidation thanks for listening
+you've been listening to hecka public radio at hecka public radio dot org
+we are a community podcast network that releases shows every weekday Monday through Friday
+today's show like all our shows was contributed by an HBR listener like yourself
+if you ever thought of recording a podcast and click on our contributing to find out how easy it really is
+hecka public radio was founded by the digital dog pound and the infonomicant computer club
+and it's part of the binary revolution at binrev.com
+if you have comments on today's show please email the host directly leave a comment on the website or record a follow up episode yourself
+unless otherwise stated today's show is released on the creative comments, attribution, share a like, 3.0 license
+you

@@ -1,0 +1,213 @@
+Episode: 94
+Title: HPR0094: Initrd and Initramfs
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0094/hpr0094.mp3
+Transcribed: 2025-10-07 11:25:44
+
+---
+
+In
+Hello, welcome to another exciting episode of Hacker, public radio with your host today,
+me, Dan.
+Sometimes known as the man, but typically not, Washgo.
+So I hosted a Linux link tech show of the very, very, very late logger and just all around
+in Linux enthusiasts and I am going to be continuing my ongoing series of the Linux boot process
+today with a discussion of in it or D and in it RAM FS, how they work, how you can actually
+create them, what they do.
+And in addition, talking a little bit about kernels, but before we do that, let's, let's
+rehash what we've covered in the past already.
+We did an overview of the boot process originally and talked about one of the big differences
+and distributions is a system five versus BSD style of initialization scripts, Red Hat,
+Debian, Susa, Mandriva, all being system five distributions that make use of an in it.
+.d directory, which and a number of RC number.d run level directories, which simlink to the
+scripts in the in it .d directory and are typically initial initiated by this configuration
+file at boot time after in it has run so that those processes in that specified run level
+are started or killed.
+So to speak, that is a little bit different than how the BSD style of script of initialization
+works and those are the slackware and the arch based systems in that instead of having separate
+run level directories, there's just a one RC .d directory in which you will find a number
+of files that get called depending on what run level you are on scripts.
+So it's a little more a little less contained, a little more contained, so to speak, not
+as spread out.
+In some cases, some people find it a little more difficult to manage.
+Anyway, we covered that in the first episode.
+Then we got into talking about bootloaders, Lilo versus Grub, and some of the differences
+compared to those bootloaders and we decided, I believe that Grub was the bootloader of
+the gods, if I'm not mistaken, and how awesome Grub is is actually its own little operating
+system and how the bootloader is initialized and by the BIOS kicked off and then has enough
+information to find the kernel that you want booted and typically the root file system.
+I think, oh, and then we finished last time talking about Linux boot parameters that you
+could pass to the kernel to handle some stuff like identifying the root device, passing
+certain parameters to drivers that may require initialization, turning off certain features
+like ACPI or probing of PCI devices and all sorts of different features there.
+So we discussed that in that episode.
+And now this episode, we are going to talk about the initializing RAM disk and the initializing
+RAM FS file system disk and why they're required and what they're needed.
+But before we actually discuss those two technologies, we should probably take a look at different
+kernels out there.
+The discussion between monolithic versus a modular kernel versus what's called a micro
+kernel and kind of a little overview of what those mean.
+Now Linux, BSD, DAWOS, Windows, or all considered monolithic kernels.
+That is, their kernel contains all the drivers, all of the operations and code to perform kernel
+related tasks and they're compiled into the kernel and the interactions with the kernel
+are done through system calls.
+So when we say that Linux is a monolithic kernel, initially it was designed to be a monolithic
+kernel.
+It still is.
+So don't be confused when you hear modular because what a modular kernel is in a Linux
+sense is kind of a hybrid kernel or it is a monolithic kernel that has some modularity
+built into it and we'll catch up on that in just a minute.
+But anyway, the advantages of a monolithic kernel are typically less code, so therefore
+it means less complexity.
+In addition to having less code, it means it's generally smaller in size and also with less
+code, there would be hopefully fewer bugs and security issues.
+Now some people might already be saying, well wait a minute, I thought one of the reasons
+of a modular kernel was that it was a smaller in size but we're going to get to that in
+just a second.
+So understand what we mean, talking about a monolithic kernel versus a micro kernel
+at this point.
+Some of the disadvantages of a monolithic kernel is because it contains everything in it.
+It can be difficult to patch and test.
+If you want to patch the kernel or test it, you have to actually recompile the entire
+thing and reboot your system with that kernel.
+Also if there's a bug somewhere in a kernel, because everything is interconnected in the
+kernel and the kernel controls all the communication between the different parts and it's
+not separated or spread out, it's all in kernel land.
+It can, a bug in one part of the system can infect all other parts of the system or many
+different parts of the system and cause bigger problems.
+Now on contrast, what a micro kernel is, is basically for a micro kernel, only the
+fundamental tasks and device drivers are handled by the kernel, such things as memory management,
+passing messages between processes and stuff.
+All other tasks are handled by the user space and the user space by what are called servers
+or user mode servers.
+So unlike a monolithic kernel where the user space communicates with the device drivers
+and everything which is controlled, the kernel does all that communication for you through
+system calls.
+The micro kernel only handles the fundamental tasks of the low level stuff, memory management,
+passing messages between processes through the interaction of user mode servers, making
+calls to ports on the actual micro kernel.
+Some of the advantages of a micro kernel are that it's easier to maintain and it's testing
+is easier as you can swap patches in and out of the micro kernel so you can actually unload
+parts of the kernel or swap out the actual kernel itself.
+Now the disadvantage is typically a micro kernel is a little larger than a monolithic kernel,
+has a larger running footprint.
+It's more complex to interact with, you're making port calls from user mode servers so there's
+more emphasis placed upon the user mode side of things to interact with the kernel and
+control different devices and processes and process management can be a lot more complex.
+So it differentiates, a monolithic kernel difference is different than a micro kernel is,
+you could look at it and say more of the functionality of communication between processes and devices
+is handled by a monolithic kernel as opposed to a micro kernel.
+Micro kernel makes user mode servers to communicate between the micro kernel and different applications
+to control different devices and perform different things that would be with the operating system
+with perform.
+Now on the other hand, what you have a modular kernel is taking a monolithic kernel and breaking
+out some of the functionality of the kernel into dynamically loadable or unloadable modules
+or drivers.
+What this does is it releases some of the tasks of the kernel into dynamically loaded components.
+Making it easier to manage the kernel overall, it provides for faster and easier development
+for drivers since they can now operate its modules so you can load them as needed.
+If you needed to update one, you can actually compile it outside of the kernel and load it into your
+currently running kernel since in the same thing with services.
+Now some of the disadvantages are now when you add the dynamic level of modules that can be loaded
+or unloaded, you're adding an extra layer of communication so you're going to require more interfaces
+to pass through and require more communication avenues within the kernel which opens up the
+possibility for more bugs.
+In addition to that, maintaining those modules for the kernel can be a little more difficult
+because now you're not just maintaining, so to speak, the modules within the kernel space
+but you also have to if you're maintaining modules outside the kernel source and proper,
+you need to make sure that you keep pace with the updates made to the kernel proper.
+Typically here, people say a modular kernel is a more streamlined kernel and it should have a smaller footprint.
+So why were you saying at the beginning a monolithic kernel has a smaller footprint?
+Well, what I mean a monolithic kernel has a smaller footprint than a micro kernel is that it's compared to a micro kernel.
+Not necessarily a monolithic kernel versus a modular monolithic kernel.
+Now where are the big advantages to a modular monolithic come into play are typically for embedded systems,
+systems that are lower end and where resources are premium.
+On today's quad core 64-bit systems with two to four gigs of RAM standard,
+you're really not going to probably notice a big difference between a modular and a monolithic kernel.
+Really, you're almost splitting hairs at that point.
+So to be clear, loading a module dynamically into the kernel can incur some overhead
+compared to having the module compiled into the kernel because you're requiring a little more resources to load that kernel in
+and maintain a communication between that kernel module.
+But on the other hand, this dynamically loading of the module can be offset.
+The resources consume can be offset by the overall smaller footprint of a model of the monolithic kernel
+because you don't necessarily have to have code that you're not going to use compiled in there.
+For instance, if you're developing a device that has an onboard flash device and uses EXT3 files or EXT2 filesystem,
+you don't need the XFS drivers or Rise or File system drivers compiled into the kernel.
+You probably don't need ID devices compiled into the kernel.
+You might not need sound devices compiled into the kernel or video for Linux devices compiled in.
+So you can strip all that stuff out and in fact strip just about everything out and just only have the devices that you need loaded in as you need them.
+So it provides for a smaller footprint of a kernel but I don't want to say it necessarily makes it more portable without the addition of using the initializing RAM disk or the initializing RAM file system.
+Now, when you take a modular kernel and attempt to boot the modular kernel because you've essentially stripped out as much of the device drivers and resources and services as possible out of the kernel,
+you have essentially a kernel that's really only going to kick itself into production to be able to maintain memory management and begin the boot process.
+But typically a modular kernel is not going to be able to recognize your hardware devices won't be able to find the block device that your root partition is on or be able to access the file system because those modules aren't compiled into the kernel.
+Therefore, you're going to need something like the initializing RAM disk or the initializing RAM FS. Those two technologies were created to solve the problem of loading necessary modules at boot time to initialize the system so that the root partition can be mounted and the actual true, you know, the rest of the modules and devices initialized.
+Now, in an RT initializing RAM disk is generally a file system, it's actually a compressed block image, usually compressed with gzip, that's anywhere from 1.4 to 4 megabytes in size.
+Now, because it's a compressed block image, because it is a block image, it's a fixed size, and again, typically a 4 megabytes in size.
+So therefore, when the kernel kicks off and is past the in-it-RD image parameter, which is to path to the in-it-RD image, it actually mounts the in-it-RD image as a loopback device in RAM.
+And what that does is then, it allows the kernel to load out of that RAM disk, the drivers that it needs to access the root partition to access, you know, the file system, the file system drivers in there to read the file system under like EXT3 or Ryzer or whatever your file system is.
+And thus, continue the boot process. It's got its own like little pseudo root file system, a lot of them use busy box, it has its own little in-it in there, and it initializes it, and it allows the system to continue booting, at which points, after the initializing RAM disk is finished, it will then pass off, pass control back to the kernel, which can then, you know, begin mounting the original root file system and continue with the...
+and continue with the in-it process there. Now, some of the limitations of in-it-RD is that, because it is a fixed size, the contents on the in-it-RD image may not encompass the entirety of the space allotted to the block image.
+And thus, when it gets loaded into RAM, it's going to take up four megabytes of RAM space. Unfortunately, that four megabytes of RAM space is not retrievable until the system reboots, so you lose four megs of space right there to be able to kick off the modular kernel.
+The amount of memory, again, cannot be freed until it's rebooted, unfortunately. In addition to that, because it is a file system, you have to load in the necessary module to read the file system contained on that image.
+So, if it's an EXT to file system, and you're using riser file system, you are going to incur the overhead cost of loading the EXT to module into your kernel to read the in-it-RD file system so that it can kick off the necessary loading of the riser file system to load your root partition and all the other partitions associated with your running system, even though you don't require EXT to, it's going to be loaded.
+And finally, as it is a block device, the in-it-RD image requires system administrator privileges to create as the initial creation of the device must be mounted as a loopback device.
+So, only system administrators can create these loopback devices. Now, to relieve some of the limitations of the initializing RAM disk, initializing RAM FS was developed, and unlike the in-it-RD, which the kernel loads is a block device in the memory, the in-it-RAM file system is loaded as a file into memory.
+And instead of a compressed block image, it makes use of a compressed CPIO image. And again, since there's no mounting of loopback device, when you create the in-it-RAM FS, you do not require administrator privileges to do that.
+Again, since it's not a loopback device but a file, one of the benefits of in-it-RAM FS is the file can grow dynamically or shrink dynamically to meet the needs of the data stored.
+So, if you are only going to require a Meg or so of space for your booting of the kernel, it's only going to take up a Meg of space when you load it into the RAM to be able to kick off the rest of the process, unlike the in-it-RD, which is going to require typically four Megabytes as it is a block image.
+Because it's not a file system, you don't incur the overhead of loading the file system module into to read the in-it-RD image.
+Now, on the other hand, in-it-RAM FS typically uses one of three files or storage types, which is tempFS, SHMFS or RAMFS. Now, RAMFS is the older name of this. It's an older shared memory file system, and it uses RAM space as the file system, but it does not have size limitations on it, and it cannot write out the swap.
+So, like in-it-RD, once it's in the RAM, it's going to take up that space, but it doesn't have any limiters on it. So, theoretically, you can create an in-it-RAM FS image to create a loop to consume all your RAM and cause a crash of your system.
+Now, there's some newer file system types like tempFX. Now, what tempFS is is a temporary file system. Again, it does not use disk space, but it uses memory and swap, and that grows the shrink to fit the file system in question.
+Now, what the advantages of tempFS is it has size limitations on it, and it can later be swapped out to your swap partition to free up the memory in your RAM.
+Same thing with shared memory file system, it's just like tempFS, as the contents are stored in RAM, and can later be swapped out to your swap partition, or it will parse out to your swap partition.
+One of the other benefits of the RAM in-it-RAM FS is it's starting to allow for the root device to be defined by the in-it-RAM FS, so that it can be on any storage media or encrypted.
+This is going to provide incredible flexibility, and situations where your boot loader is incapable of loading the root file system as it normally would, or your kernel.
+You know, be able to pass the information properly to your kernel.
+As it stands right now, this is more for advanced uses coming down the pike than in your typical situation state, but it's being designed in a RAM FS, was designed with the future in mind, so that there's going to be far more flexibility involved to be able to mount stuff around.
+It's just like encrypted file systems, and do other cool stuff with mounting linux, or kicking off linux.
+Now, a most linux distribution is there are utilities to create the in-it-RDRD in-it-RAM FS image, appropriately called MK in-it-RDRMK in-it-RAM FS.
+There are other ways to create these devices, and I'll leave that up to you to read the notes, because it gets pretty in-depth there, and it would make for boring radio.
+Even more boring in this episode might actually already be, but anyway, you could explore those options, but typically, if you're using a modern linux distribution, it will have the tools to create the in-it-RDRD in-it-RAM FS.
+Now, I'll briefly cover them both briefly. You can read the man pages, but typically, you know, Ubuntu, and I think Debian has now switched over to a RAM FS, I think Red Hat and Fedora have all switched over.
+So, MK in-it-RDRD is being phased out, but essentially, you call MK in-it-RDRD, you provide the image name that you want it to be named, and then your version of your kernel, and then you can find the version of your kernel by typing you name, you, the letter U, followed by name, all one word, you name, dash A.
+So, you type in your kernel version, hit enter, and it would theoretically create the in-it-RDRD image.
+This creates an in-it-RD image, which contains the modules to load ID, SCSI, RAID, block devices along with the necessary file systems, modules, and SCSI host adapter entries that are defined in Etsymodules.com.
+There are some other options that you can pass to include or emit other module types, and look in the man page for this.
+But, again, as I say, most distributions have moved on to in-it-RAMFS, so, you know, that's probably where you want to focus right here, your efforts.
+Similar to MK in-it-RDRD, MK in-it-RAMFS takes the parameter dash O, and you provide it a file name, that's for the output file name.
+And it's in the remember, it's not a block file system, so this doesn't actually require system administrator rights to create the initializing RAM file system.
+And then your kernel version, again, and then you can, well, it will actually create that information based upon the configuration that is typically found in Etsy slash in-it-RAMFS dash tools.
+Now, you can create your own configuration directory in your home directory and specify only the options you want to use, and then you would call making it RAMFS with the dash C switch and the path to your configuration directory, which would use that instead of the one found in Etsy.
+Now, be aware that in that configuration directory, there's a handful of files and directories in there, sub-directories, that are pretty important.
+First off, is the in-it-RAMFS.conf file, and this specifies the default configuration on how the in-it-RAMFS image should be built and what it should contain, what devices it might need to initialize.
+There's a modules file in there, and it's set up similar to the Etsy modules.conf file, where it contains a list of modules that should be included in the image, one module per line people.
+So, if you need to include additional modules in there, just specify them in the modules file.
+Conf.d directory contains hard-coded boot arguments, where you could set your root device in here, or the device to resume as the root device.
+Now, look at some of these files, read the man pages for this, because the next two are directories. Actually, there's a hook directory and a scripts directory.
+Now, the hook directory is a directory of optional scripts to be used to create the image, but that will not actually be included in the image itself.
+Now, these scripts, most of these can be found in slash user slash share slash in-it-RAMFS-tools slash hooks.
+You'll find a list of scripts in there, or you can put additional optional scripts in the Etsy directory, or in your Conf directory, so to speak.
+The scripts directory are also known as boot scripts, and that contains scripts that are included in the initializing RAMFS image, and that will be executed during the kernel boot before the root partition has been mounted.
+You will also find in the user share in a RAMFS-tools slash in-it directory, it will contain other stuff like the init script that will be run, and busybox configuration files I think might be in there, or files.
+Everything you need to create that in a RAMFS image is in there.
+If you ever want to add or remove files from your image RAMFS file system, you have to use the CPIO command to be able to copy in and out options in there.
+If you want to add or remove files from your init RD image, on the other hand, you have to mount it as a loopback device and perform your operations that way.
+And again, you are limited to the actual file space you initially defined for the init RD device.
+And again, that's typically between 1.4 and 4 megabytes, most of the time you are going to find a 4 megabyte file, so to speak.
+So just be aware of that.
+I hope that this has provided you with enough information to get an overall idea of the differences between a monolithic slash monolithic modular kernel and a micro kernel.
+I don't think I specified this, but some of the operating systems using a micro kernel are of course the new herd OS 10 uses the mock micro kernel.
+And QNX, I believe, uses a micro kernel, but hopefully that provided you a little overview of the differences between those.
+It wasn't meant to be all-encompassing, so if you want to find out more information, you can look up very good write-ups on those on Wikipedia.
+Also, what the purpose of the init RD and init RAM FS are with regards to the kernel.
+You can find more information about those on Wikipedia too and in a lot of distro documentation.
+And in most books on the Linux boot process, also you can look at, I'll post my show notes and in addition to that, the links that I use for those shows in the posting for this show.
+Otherwise, I have a great one, keep on listening to Hacker Public Radio, contribute, there's more and more people coming on board every day, a lot of fantastic topics, but don't cover the Linux boot process because that's mine, baby, mine.
+You hear that, Zoke? That is mine. Keep your fingers off of it.
+But keep on checking back if you have any questions, concerns, or if you think I was wrong about something, email me at danatthelinicslink.net or post them to the comments for the show.
+I'll try and check back as much as I can.
+And that's all I have for today, so have a happy. Bye-bye!
+Thank you for listening to Hacker Public Radio.
+HPR is sponsored by carro.net, so head on over to caro.net for all your hosting needs.
+Thank you very much.
+Thank you.

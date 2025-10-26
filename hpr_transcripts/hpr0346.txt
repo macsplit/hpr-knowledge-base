@@ -1,0 +1,985 @@
+Episode: 346
+Title: HPR0346: GridBackup
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0346/hpr0346.mp3
+Transcribed: 2025-10-07 16:58:24
+
+---
+
+You
+You
+The Utah Open Source Foundation brings the Utah Lugs home.
+You
+was given on March 12, 2009 by Sean Wilden at the Utah Python user group.
+Visit their site at uta python.org
+Yeah, I should probably introduce myself first.
+I do not write any Python in my day job.
+In fact, of late, I really don't write code in my day job at all,
+which is rather sad, but there it is.
+I work for IBM, have for 12 years now,
+and I did a few other things before that.
+I've worked in a lot of different environments.
+I wrote math ed software for a few years.
+I wrote point of sale systems.
+I worked on embedded systems.
+I've got a few lines in the Linux kernel.
+I've done a whole variety of different things.
+I probably would characterize myself primarily as a C++ programmer.
+Although over the years, I've probably actually written more Java
+than C++ at this point.
+But since...
+What's that?
+It's easy to write in my shell.
+It is.
+Yeah, both prime and lines of code.
+And possibly functionality as well.
+But especially since for the last year or so,
+I've moved into a role where I guess to a large degree,
+kind of a consultant to architects who are leading projects.
+So I don't actually write code anymore very much.
+It's been all my time on the phone.
+It's been a lot of time in Microsoft Word and Excel.
+So I just felt like I had to do something else.
+So I decided to start this project.
+I've been thinking about actually for many years.
+And so I finally decided to take the plunge about two months ago
+and really focus on trying to build something.
+So the problem that I want to solve,
+and I should mention by the way that there is way more content
+in these slides than we have time to talk about.
+So I'm just going to fly over most of it and rely on you guys
+to ask questions about the stuff that you're interested in.
+But first of all, the basic problem that I want to solve
+is that backups suck, right?
+Everybody here have good backups tested, you know, very reliable.
+Okay, so we got maybe, what's that?
+About 15%.
+So it's really simple.
+So I think that's probably the case too.
+Right.
+Yes.
+And this is in a room full of geeks, right?
+We live on our computers.
+Everything important to us is on our computers.
+And so we're maybe much, much more likely to worry about backups
+than the typical person.
+My sister-in-law called me two weeks ago and said,
+hey, my computer is giving me an error when I turn it on.
+It says, no system disk found.
+And I said, well, that's bad.
+Bring it to me and I'll take a look at it.
+And so I did.
+And in fact, her hard drive has completely died.
+When you apply power, it does not even spin up.
+And she has three small children that she's adopted
+over the last three and a half years.
+She got them all as infinite infants.
+And all of their photos are on that drive.
+She has a handful that she's actually printed out.
+But by and large, all of her baby pictures are in purely digital form
+and exist only on that drive.
+So I'm actually trying to help refine data recovery services
+to go and try and get that off there.
+And hopefully they can.
+I think her situation is the typical one.
+People do not have any kind of backups because it's too hard
+for lots of reasons.
+You might try to backup on CDs or DVDs.
+They're too small, they're unreliable.
+It just doesn't work.
+Trying to use an extra hard drive is probably the best option.
+But particularly if it happens to be in the machine,
+odds are really good that something that takes out your main
+hard drive is going to take out that data as well.
+And it really doesn't work very well.
+And besides being hard, you know,
+being difficult technically to accomplish,
+it's just too much effort, right?
+People don't think about it.
+They don't want to think about it.
+They don't do it.
+So my thought is that we need to find a way to make it easy.
+And the thing I noticed several years ago is that as hard drives
+keep getting bigger and bigger, most everybody has tons of unused
+storage, right?
+Maybe not us, you know.
+I'm frequently, I've got two and a half terabytes in my home
+file server now and I actually need to go buy another one terabyte
+disk and toss in there pretty soon.
+But the average person goes out and they buy a machine,
+especially a desktop machine, has 250, 300 gigs of storage
+and they use, you know, 50 or 60.
+And so there's a lot of spare storage out there.
+So if we could find a way to be able to do backups to all of our friends
+and relatives computers, that would give us automated,
+off-site, reliable backups if we could find a way to do that.
+So that's what I decided I wanted to try and do.
+So these are some of my goals.
+Let me talk a little bit about just a couple of them.
+Resiliency, I think is important.
+And by resilient, what I mean is, as it says on the slide,
+doing stupid things should not cause major disruption.
+And because I fully expect the kind of users that I'm aiming this at
+to do stupid things on a fairly regular basis, right?
+Things like, for example, deleting the entire local
+directory tree where the tool stores all of its bookkeeping
+information, right?
+So we need to be able to recover well from those.
+Cross-platform is also very important to me, at least three platforms.
+And those are Linux, OS10, and Windows.
+Because those are the three platforms that kind of touch my life.
+All my machines are Linux, my wife's got a Mac,
+and most everybody else in my family, of course, uses Windows.
+The second, the last bullet there, I should also mention, quick.
+Now this is something that I've actually put perhaps too much
+effort into is trying to make sure that I can have a time machine
+like concept of backup snapshots so that you can have a view
+of maybe daily, maybe even more frequently than daily snapshots.
+And the snapshots should be as narrow a slice of time as possible.
+Whenever you take a backup, unless you have something like a file system
+supported snapshotting mechanism or LVM or something like that,
+where you can kind of freeze the state of the system,
+what you really get is not a snapshot, but kind of a little slice
+in time of the evolution of the file system, right?
+If it takes you two hours to backup, then what you've actually got
+is some files from early in that process and some files
+from late in that process.
+So I want to narrow that time as much as possible.
+And when we're talking about backing up over the internet,
+that imposes some pretty interesting problems.
+And so I've put an awful lot of time into thinking about how to manage those.
+Some of the challenges I mentioned that I'm trying to aim the solution
+towards technically the average computer user, right?
+Not very technically adept people.
+So we have to be able to expect them to do dumb things from time to time.
+It needs to be very easy and anything that they're asked to do
+has to be very simple and very easy.
+I'm also assuming home computers.
+Now there's nothing that says this system couldn't be used in different environments,
+but this is the one that I'm aiming at.
+So some of the limitations, I guess the biggest one really is the
+high speed, quote unquote, internet connections that we all have.
+Actually lots of people have pretty good internet connections
+on the downstream side, right?
+But the upstream tends to be very, very bad.
+The third bullet there on the bottom is an interesting one.
+It wasn't so much an issue when I first started thinking about this
+and conceptualizing the solution.
+These days more and more of our machines are not desktop machines.
+And again, I'm talking about home users, but laptops, right?
+And so they may not always be connected, may not always be turned on.
+And that's a challenge that I have some ideas about how to address,
+but it's a difficult one.
+So some of the key decisions, the first one,
+which is maybe a little bit controversial, I suppose,
+this goes back to making the configuration process as easy as possible.
+The easiest thing to do in terms of defining what to back up is just get all of it, right?
+If we back up everything, then we will have whatever is important.
+If we ask the user to specify what files matter and what files they need to back up,
+they don't know where stuff is, they don't know what matters in many cases.
+However, I got to really benefit from the underlying all my data grid system,
+which I'm building on top of, and I'll talk about that.
+But it has a nice characteristic that if a file is stored in the grid once,
+then any other machine that tries to store that same content won't have to store it again.
+So puts are item potent, I guess is a way to say that.
+And so that actually, I think, really decreases the pain of doing a full backup
+because if you're storing, if you're backing up, 20 Windows XP machines,
+which is going to be the most common case, is that?
+How do you should ensure that the common data doesn't get removed from the grid?
+Let me come back to that in a minute, but that's a good question.
+And it's actually one that I would say is not fully solved.
+So there's going to be some differentiation between them,
+but a lot of the files are going to be in common.
+And so that really saves.
+Also, for dealing with the slow upstream bandwidth problem,
+I also wanted to be able to support versioning,
+and specifically incremental difference-based versioning,
+so that when files change, I only have to upload the difference between the old and the new, rather than the whole thing.
+And I wanted to be able to do that efficiently, and also to do that without keeping local copies,
+extra copies of the files, which is kind of an interesting challenge.
+Change detection, fairly obvious way to handle that.
+I guess the one other thing that's probably good to talk about here is that because uploading is inherently a slow process,
+I decided early on that I had to separate the scanning,
+the decision of what to back up from the process of doing the upload.
+So I have this scan-fast upload-slow concept,
+which also introduces a lot of challenges,
+but it has enough benefits, I think, to be worth it.
+So I'll just talk a little bit about the language choice.
+Like I said, I consider myself really a C++ programmer,
+but I decided to use this Python for this,
+partly because I wanted to learn it, but what I noticed when I started looking at,
+at least in the open source space, of the tools out there that are somewhat similar and related to what I wanted to do,
+you know, things that I can steal code from,
+I found that all of them are implemented in Python.
+So I don't know if it's just a particularly good tool for this kind of thing or what,
+but it seems to be a unanimous decision by the open source developers who are independently working on various things related to this sort of backup.
+They're all in Python.
+So Matt Harrison actually pointed me towards these guys, the All My Data,
+and they do some pretty cool stuff.
+They're a commercial backup service provider,
+but also all of their source code is open, they're entirely open source based,
+and they don't have any proprietary code in their commercial system even.
+It's just a commercial service that they provide.
+So what they provide is this, actually the cool part, actually, of grid backup.
+They provide the grid.
+They have this least authority file system on top of a distributed grid.
+So they use forward error correction, so they take every file that's being inserted into the grid,
+split it into N pieces using read Solomon coding,
+so that only M of those are required to recover the file.
+You know how they actually do this, but they do it on,
+they take the entire file and split it into the N pieces.
+They segment the file first, and then they apply the read Solomon coding to the segments.
+But is the segmenting the whole file, the segment on the whole file,
+or can you do this in a streaming mode?
+The design fundamentally does allow streaming, the current implementation doesn't,
+and there are actually some characteristics of their file format that make streaming difficult.
+One of the things they're working on, going to be working on,
+probably over the next six months or so, is some changes to their file format that allow for streaming.
+The basic issue is that they do the segmentation,
+and then when they do the forward error correction coding on each segment,
+they embed in that a hash tree of the entire file.
+So it's really good for integrity,
+but it means that you have to process the entire file before you can upload anything.
+That fact, the fact that I can't do streaming uploads really also affected significantly,
+some of my backup design decisions. Good question, Noah.
+So the other kind of important concept in Tahoe, I guess Tahoe is the design.
+I actually Tahoe 2. Apparently there was a Tahoe 1, which has been superseded.
+A Tahoe 3, which has been discarded.
+And they've implemented Tahoe 2.
+And there was a couple of versions before that.
+They were named after some other place.
+I think they were, you know, partying at Tahoe and came up with the ideas or something.
+So anyway, another idea that's important in Tahoe is the idea of capability-based access control.
+So these caps, a cap is a string, long string.
+So URL.
+And it's long because it contains not only location data, but also the access control data.
+Specifically, the keys needed to encrypt or rather to decrypt or perform various operations on the file stored in the grid.
+So they support various kinds of architectures.
+The AlmightyData.com system, actually all of the servers are operated by the commercial service.
+So it's more of a traditional, you know, client-to-server relationship.
+I'm focused more on the idea of a friendnet, right, where each machine is both a client and a storage server.
+It's pretty obvious, I think, how that's structured.
+So the other interesting thing about Tahoe is their least authority file system.
+Based on, like it says, the principle of least authority that it should be structured so that you can give users no more privileges than they absolutely need in order to accomplish the task.
+It's a common principle in security theory.
+So they built a file system on top of the grid that provides these least authority semantics.
+And it's pretty interesting.
+There's three different kinds of capabilities. Read, write, and verify.
+So I can give you a URL pointing to a directory, you know, in the Tahoe grid, that gives you read access or write access or possibly only verify access.
+Whatever, whichever URL I give you, that's the capability you have.
+And it's also transitive. So if I give you that for a root directory, you can actually, you have that same set of privileges on all, you know, sub-directories and files.
+Unless I decide to break the chain at some point. So it's pretty flexible.
+And the crypto is pretty cool. Now, I didn't mention what I do with IBM.
+It's very related to security and cryptography.
+I've been working on smart card type systems for about 10 years.
+So I do a lot of crypto in my day job and I find this stuff really, really fascinating.
+They've structured their system so these capability strings.
+Given a write string, you can calculate the read string and given the read string, you can calculate the verify string.
+And as it says in the last bullet, if you don't have the right cap, it's not just difficult but impossible to perform that operation on the file.
+Unless you can break, you know, RSA and or AES, depending on the specific type of capability.
+So I decided not to use their file system, though. I think it's very cool.
+But it didn't really add a lot of value.
+And the directory nodes within their file system are, as it says on the slide, expensive to create and modify.
+And it just didn't fit in very well with what I wanted to accomplish.
+As the slide mentions, the downside to not using the file system is that they have some nice user space.
+Some fuse modules, wind fuse, and one on the Mac, and actually three on Linux, none of which worked very well.
+Somebody needs to step up and fix that, by the way. It's probably not difficult at all to do.
+So that you can just mount a directory from a Tahoe grid and deal with it as though it's a local file system.
+So let me back up for just a moment.
+Sorry, what was your name?
+Yes, David.
+And you asked me about how do we ensure that the files don't get lost?
+Yeah, the all my data system really hasn't solved that problem yet.
+Or rather, they haven't solved the opposite problem, which is how do we know when we can get rid of stuff?
+For the commercial operation, they do a market sweep garbage collection on their distributed store.
+For the friend nets, the theory is that eventually they're going to implement an accounting system that provides a secure decentralized way for storage servers to figure out how much storage clients that are asking to store stuff with them.
+So how much storage is that client offering to others?
+If I can accurately answer that question, then the storage server can make decisions, fairness-type decisions, about whether or not to accept new leases.
+So it's a lease-based approach.
+And that way, the storage servers can ensure fairness across the whole system.
+I'm not going to store data for you unless you're storing data for other people.
+And ultimately, to have a fair system, you want to ensure that every storage server is storing as much for others as it has handed out for others to store.
+So it's based on this idea of a lease.
+A client requests to a storage server where you store this for me, and the storage server says, yes, I will for 90 days.
+And it is then up to the client to renew that lease.
+And there's also the concept of a verification server which can use these verify capabilities that I mentioned to validate that storage servers are actually honoring their lease commitments to make sure that the data is still there.
+And there's some very clever cryptographic stuff done to allow that verification to be done without having to retrieve the entire file, just do it by asking for pieces.
+And the verify cap does not give the verify server any ability to read the contents of the file.
+It's all encrypted.
+OK, make sense?
+Sure.
+If there's a one of these potential files every update has stored in there, then someone needs to figure out the key that's storing data.
+Well, first of all, remember the forward error coding?
+So the idea is obviously that that file is split into 10 pieces that are stored in 10 different places.
+And so as long as three of them are available, you can retrieve the file.
+Right.
+That's the idea anyway.
+So if you're doing a friend that does not mean that if you want one data by the data stored on the grid, then you have to offer up seven data to the school.
+It does.
+Well, not seven.
+The...
+Or certainly a significant one.
+Right.
+The...
+As this says, it expands the data by a factor of n over m.
+So three and a third if you're using the three of 10 scheme is the expansion factor.
+I think that's a little high.
+I think it's a little too pessimistic, the three of 10.
+And in fact, probably my biggest contribution to the all-my-data project so far has been a paper that I wrote on basically a statistical analysis of failure probabilities under various scenarios.
+And some work to figure out how to calculate given a target reliability probability and some assumptions about the reliability of the machines holding the data
+so that you can calculate what n and m should be.
+Actually, really the way it works is n you set to the number of peers in the grid and then you calculate what m should be.
+There's also another parameter that comes into play which is based on the repairer process.
+There's an idea of a repairer process that goes out and checks and sees if all of the pieces that were distributed still exist.
+And if not, then it reconstructs the missing pieces and re-uploads them back out to the grid to try and keep the full 10 pieces available.
+Well, it depends on your assumptions about the reliability of the individual machines and it depends on your target.
+Yeah. Yeah, that too.
+Does it do that based upon like a parity check or how does it actually build that piece back if you want to quickly mention it?
+Yeah, yeah, it's basically a worst case what it has to do in say a three of 10 scenario is download three pieces, reconstruct the file so it can regenerate all 10 pieces and then restore the missing ones.
+You can actually improve on that a little bit in many cases.
+In particular, all my data when they do the splitting pieces 0, 1 and 2 are actually just there is no calculation required to recomb, they're basically just the pieces of the file.
+Split it into three pieces so you can just concatenate them and you have your file back.
+So they try to recover from those three pieces and you don't necessarily even need to get all of those in many circumstances.
+So they try to be smart about it.
+Yeah, some three. It doesn't really matter which three.
+For a friend that or whatever bridge.
+Well, yeah, you're.
+I went too far.
+Yeah, the idea is the way you should structure your choices of N and M is and you should set to be the number of peers in the grid minus 1.
+That's by the way, I think one thing that needs to be fixed in Tahoe at least for backup purposes is that it uses the local storage server as just another peer in the network.
+So the local machine may actually get a share, right?
+Which makes a lot of sense in the kind of general storage case, but for backup, it doesn't.
+Oh, yes, I've completely forgot about that. I'll try to do that.
+I was going to mention that I know there's a similar system that's taken a variation on this.
+It's only calculated slices.
+The idea is nobody can skip the private data, nobody can sniff on the data because unless you have.
+Certain number of pieces and the key to put them together, nobody having a piece of the data actually has anything.
+The comment is that there's another system that slices the data up into pieces such that unless you have all of the pieces and the key, you cannot recover the data.
+With the all my data system without the key, which is embedded in the read cap or the right cap, again, you can't get the data.
+Basically, the way they do that is just by AES encrypting the whole thing and then doing the error coding.
+Is there any way to accommodate nodes coming and going as it puts just like a node going down because it's failing?
+Like you have to print that moves and they're just not available or you have to print that one to join in.
+The question is, does the system accommodate nodes that join and leave?
+The answer is that there is a plan in place to support a reallocation operation.
+In some of the mathematical analysis that I did, though, I decided I think that's a bad idea.
+It would take a lot of time to get into the reasons why, but I'm actually planning the next time the subject comes up on the mailing list to make the arguments that I think we should not do that.
+Rather, we should just let the repairer take care of noticing that shares have gone away and do the recovery that way.
+Any other questions about Tahoe?
+That's actually probably the more interesting stuff.
+Let me talk a little bit about the grid backup system that I'm trying to build on top of the Tahoe grid, though.
+There's three parts to my backup, the stuff that I store.
+First of all, the backup snapshots.
+Remember, I talked about wanting to get this very narrow view in time of the state of the file system to make it as consistent as possible.
+This is particularly important since over a slow link, if you're uploading tens or hundreds of gigabytes of data, your initial backup may literally take months.
+It could take years.
+I calculated, for example, if I were to backup my home file server over my home cable modem connection, it would take 1.8 years.
+That's with no new data.
+Of course, the concept of a multi-year or even a multi-day snapshot is just not meaningful.
+The next question is, probably you're not going to be backing up everything on your sister.
+That statement that you just made about 1.8 years, that could be everything you've ever owned.
+But if you did that for real in real life, you probably would only back up a third of what you really owned or something like that.
+The question is, in reality, wouldn't you pick and choose what to back up rather than backing up everything?
+For more sophisticated users, the answer is yes, and I do plan to make it configurable so that you can pick what to back up and what not to.
+For everyone else, though, I'd really want them to be able to just install it and let it run.
+The idea is that instead of making them pick and choose, I'm going to back up everything, but I'm going to prioritize.
+Try to be a little bit intelligent about the stuff I back up in what order so that hopefully I can get the most important stuff first.
+As I said, there's some debatable assumptions in there, but that's the direction I've gone.
+So backup snapshots are basically just a snapshot of the state of the file system at a point in time that's as compressed as I can make it.
+An initial backup really shouldn't take more than an hour or two to do the initial full system scan.
+The reason it takes that long is that it has to do, it has to hash every file on the system.
+So that takes a little time.
+Incremental backups after that initial one has been done should only take a few minutes.
+And in fact, on my home desktop machine, which has about 300 gigs of stuff on it, it takes just over two hours to do the initial scan,
+and it takes about seven minutes to do a re-scan to detect changes.
+Now, ideally for Windows and Mac systems, I want to implement a different version of the scanner, which uses the provided ability to monitor the file system and not have to do scans at all.
+Hopefully, actually, there's a guy working on an FS events infrastructure for Linux, and so hopefully that will get done and get adopted.
+He's gotten a little bit of pushback, though mainly because the reason that he wants this, the guy that's building the FS events stuff, is to implement virus scanners.
+And so he's gotten a lot of flack from the kernel developers who really don't want to even think about, you know, Linux maybe having viruses and would much rather focus on closing off security holes and making it impossible that way rather than making efficient virus scanning.
+But the system that's that hammer FS, and that would be another way to approach that is with snapshotting.
+But even with snapshotting, you'd still have to snapshot the system and then scan the snapshot.
+The idea with FS events is if you can get notifications of every file that changes, then you don't have to scan.
+When it comes time to make your snapshot, you just look at your little log of stuff that's changed in the last hour or two, and that's all you have to examine.
+Can you? Okay. So it will actually give you a delta. Interesting.
+So then the second item here is the content snapshots, which is the data in the files.
+So the backup snapshot contains all the metadata, the content snapshot contains the data, and then I have a link files that connect the metadata to the content.
+And a key point is all of the above is stored in the grid.
+Okay. There's also copies that will be that are kept locally to help improve performance and make things a little nicer.
+But if all of it gets deleted, that's okay, because we can just get it back from the grid and proceed to do the next backup or restore or whatever.
+All of these, that's true. Where did encryption fit into this? Are you encrypting everything?
+Everything. Everything is encrypted. Yes. Actually, I should, just as a brief aside, I should talk about one cool thing that all my data does with their encryption.
+If you're going to encrypt something, they're using AES, you know, perfectly adequate choice. But there's always the question, well, where do you get the key? Where does the key come from?
+And they have a very interesting choice for that that has a lot of nice properties.
+The encryption key is the hash of the file content.
+So, yeah, it's worth, I won't spend a lot of time on it. It's worth thinking a little bit about the properties of that particular choice.
+And it turns out to be really nice. If you already have the file, then you can get the key to decrypt it. Otherwise, you can't.
+If you delete your file, you can't. So, there needs to be a link to that somewhere. And actually, in the case of my backup system, those keys end up in the link files.
+Actually, the file hashes go into the backup snapshots. And then those are connected to the other pieces of data needed to recover the files in the link files.
+So, the question is, if you have a complete failure, where do you get the information needed to restore? And actually, this is something that I probably should have put in the slides.
+I said I don't use the Tahoe file system. That's not entirely true. I do use a top-level directory, a grid-based directory, to store all of the snapshots and these various other files that make up the backup.
+So, as long as you have the information needed to connect to the grid and to get to that directory, then you have everything needed to do the restore.
+And so, the information we're talking about ends up being about a 200-character string.
+So, my plan, and I haven't gotten anywhere near to implementing this yet, but my plan is to have the initial backup process and actually the installation process prompt the user for their email address.
+And to email them this, and I'm going to have to include some clear warnings, whatever I can do to try and make people understand.
+This thing that's being emailed to you is all your backups, it's everything. If you have this, you can restore. If you don't have this, you can't.
+If someone else has this, they can get all your data, right? So, exactly what's the best way to handle that? I don't know. I know we could just have them print it out and tell them, take the paper and put it in your safe deposit box or something.
+Am I correct then? If I have an installed operating system several common applications, and I told you to back it up, it's going to hash it. It's going to see on the server.
+Oh, they've already got all those files and it's really not going to pop in anything other than just say, oh yeah, we know that you have those files that we've already got on the server.
+Right. Right. Now, I should mention, by the way, that that's not the default mode of operation for Tahoe. By default, when...
+Oh, thank you. So, the question is, so if my system has a bunch of common applications and data, when I do a backup, is the system going to notice that those files are already in the grid and not bother backing them up again?
+And the answer is, yes, within my design, no within Tahoe's infrastructure generally. The reason no generally is they feel that that's a privacy risk and they have a point.
+Right. There's some level of risk if you look at it in the right way of someone being able to find out that you have a copy of a given file. They have to already have the file contents in order to be able to figure that out, but they can do that.
+So, by default, the all my data system introduces a... what do they call it? They call it a convergence key that is an additional bit of data that's fed into the hashing process so that my hash for a given file is different from your hash for that same file.
+And that then drives them to look like they're completely different within the system. I plan... I'm assuming a friend net environment. I'm assuming that it's acceptable to... I'll make it an option, but I'm assuming in general it's acceptable to deal with that minor privacy risk and it's worth it in exchange for the...
+Another question. As I'm working using CVS or whatever very new system, occasionally you finally say, okay, we're getting toward release and you take a snapshot of saying, okay, we're not Delta Delta Delta and we're going to take a solid snapshot of everything and call this an original file so that we're not dependent on how many filters it's so bad.
+So the question is, do we at some point stop building Delta's and have a snapshot? I guess it's not on this slide. And the answer is yes. And particularly since because everything is encrypted in the grid, there is no way to reasonably do reverse Delta's.
+If any of you are familiar with our diff backup, it's a great little tool. I use it all the time. It structures things so that within the backup copy, the current version, the most recent backup is there verbatim. All of the file contents are literally there in a directory and you can just copy them.
+All older versions are kept as Delta's going back. They actually do have periodic snaps, full snapshots just to make sure that stuff doesn't get lost. But because everything's encrypted, there's really no way to do that. So I have to do forward Delta's.
+So the original backup is a full snapshot. Everything else is just diffs from there, which as this slide says, means there's some obvious risks that if one of those Delta's somewhere back in the chain gets lost, then all newer versions of the file are no longer reconstructable. That's bad.
+And actually my reliability paper goes into that issue as well and how to calculate what the risks are there exactly.
+So, here it is, on the bottom of this slide I mentioned that I have a limit on the number of consecutive Delta's allowed. After so many Delta's, we do a full snapshot regardless, just to break that chain of risk that a file will be lost.
+And this slide just talks a little bit about the reason for using forward Delta's based on the upload and download bandwidth required for backup and recovery and the storage required.
+And really it's because of the, as it says there, given the double whanny kind of of the forward error correction encoding and the asymmetric bandwidth problem uploading is enormously expensive.
+And so that's what I'm focused on on minimizing.
+So, and what I'm using, by the way, for these Delta's is LibRSync. I'm sure everybody's familiar with the RSync tool and LibRSync provides a variation of that same protocol that is pretty slick.
+Basically, if you take a file, you know, version file of a file, apply the signature algorithm. What you get out of this is a signature that represents this file. Now that signature is about 1% of the size of the file.
+So, it's fairly small. It's fairly easy to manage. But given that small signature file, we can then take the next version and apply the Delta algorithm and get the Delta that will convert 5 to 6. We can generate that forward difference data.
+So, when we do a backup, basically, modulo some decisions about some files that are like small files we don't bother with generating signatures because it'll be cheaper just to do a full backup every time.
+So, the backup scanning process not only hashes the files, it also generates signatures for every file that's changed so that we should always have that signature around to be able to calculate a Delta next time.
+If part of signature is only 1%, why don't I do what is the signature? I don't know. I've thought for years that there must be a better way than re-downloading the whole package.
+So, there's a, that's an improvement. How do they? Cool.
+I know that the Debian world, which is, I use Debian, have for a long time, is actually I'm now using Ubuntu on my desktop machines, but still Debian.
+It has been talking about that idea for a long time and they've even, I think a few years ago, they even started using applying by default the R-sinkable option to the G-zip compression.
+So, they're kind of, I think they're all set up to be able to do it, they just haven't.
+Which I really wish they would. I set up a machine for my father-in-law a few years ago and he's on a very slow dial-up connection.
+I put Ubuntu on his system because all he needed to do was surf an email. And that way it would be very low maintenance for me.
+Trying to get patches, download updates, downloaded to that thing, though, is miserable. I ended up finally putting a cron job in there that dials in automatically at midnight every night and just sits and downloads whatever it can get for four or five hours.
+And then hangs up the font. So, it would be very nice in that context to have R-sink updates.
+Okay, so link files, I want to say too much about these there. They're necessary because basically because it would be too much calculation, too much effort during the time that I'm scanning the file system.
+I notice a file has changed, I have to hash it, I have to generate a signature, I can do those fairly quickly. But generating all of the information that's needed for a Tahoe read cap would be significantly more work that would really slow down the scan.
+And so I decided that I'm better off deferring that to the point in time when I do the actual upload, which then means that I have to have some way to link the backup snapshot that has all of the metadata information to the content.
+And I have kind of an interesting little data structure that I invented and then after I'd invented it, I went out and found a couple of papers about it.
+Yeah. Actually, the paper I found called them burst trees, tries, right? How do you want to pronounce that, TRIE?
+It is a TRIE structure and the basic idea is just that I have this directory of directories and at the bottom there is this file that actually contains the link data.
+And the directory structure just corresponds actually to a few bits at each level of the hash. So it makes it very efficient to traverse down. The tree starts out being flat, right? There's just one top level directory, start throwing stuff into the file.
+When the file reaches a defined maximum size, then I remove the file, put a directory in its place, and take all the contents of the file and put it in files inside that directory.
+So that's why they call it a burst try because they burst the node into a little subtree.
+Turns out to be very efficient and works really well. It also turns out to be very nicely balanced without any effort.
+The reason for that, of course, is that hashes have this nice property, secure hashes have this nice property that they're uniformly distributed.
+And so you kind of get a nicely very balanced tree for free.
+Some of the goals for my Radix tree, I wanted to keep the link files fairly small.
+I wanted to keep the directories of link files also fairly small because those directories are actually files in the grid, files that contain all of the entries about the files that are in them.
+And if the directory node gets to be too large, then that also becomes a performance impact.
+So the backup process works like this. There's two, I guess three components.
+The scanner and the uploader, the scanner which does the work of finding out what changed in the file system, and then the uploader generates a queue of jobs to be uploaded.
+And then the uploader processes those jobs in priority order to try and get the most important stuff uploaded first.
+And then, of course, there's the Tahoe node, which actually is the interface to the grid.
+Talk too much about the scanning algorithm.
+Other than a couple of decisions, the scanner does not cross device boundaries.
+I decided that it makes more sense to specify each device that you want to backup separately.
+I didn't want to risk, you know, recursing into a network share.
+And who knows, you know, how much you're backing up then.
+And it does handle hard links quite nicely.
+It recognizes hard links and avoids wasting any extra effort on multiple copies of multiple references to the same file.
+And ultimately, it decides that a file has changed by comparing content hashes.
+I'm using SHA-256 for the hash algorithm.
+The upload algorithms, a little bit interesting, and the main thing that's a little clever about it is the prioritization scheme.
+And trying to efficiently implement a priority queue of, you know, that's very large turned out to be kind of fun.
+By large, I mean, for example, on my desktop machine, there are just shy of a million files on that.
+And that's, you know, not anything particularly unusual, especially on unix type systems, which tend to have lots and lots of small files.
+So you've got, you know, this job queue after an initial scan with a million entries in it.
+And you've got to calculate a priority on each and then choose the highest priority ones and upload them first.
+So do you keep the entire queue in-round?
+No. No, that's what makes it interesting.
+If you could just load the whole thing in memory, then that wouldn't be that much of an issue.
+But it seemed like a bad idea to assume that I could just keep all of that in core.
+Yeah.
+So actually, I built kind of a clever little system that I really enjoyed, but I'm going to throw it away and replace it with a SQLite database.
+It's not nearly as cool, but it has a lot of advantages to it.
+The biggest one being when I started thinking hard about how I could reliably mark files in the job queue as completed and deal with all of the issues around,
+well, what happens if the machine crashes while I'm doing this and making sure that my file stays consistent?
+I decided I just didn't want to deal with that.
+I'm going to upload prioritization.
+You can plug in any prioritization scheme here.
+The basic system is we calculate a priority value, just a numeric value, and higher means more important.
+So any scheme you can come up with, the plug in there you can use.
+This is the scheme that I've implemented initially, which I think should probably work pretty well.
+User files are weighted heavily.
+Newer files get preference over older files.
+The theory being that the file has been around for a long time.
+It's probably going to be around for a long time into the future so we can back it up later.
+Also larger files get preference on the theory that if you have to pick, it's better to upload a whole bunch of small files than a large file.
+It probably would be a good idea to add a little bit more in here to do things like,
+maybe in my case, I'd probably want to favor dot CR2 files,
+which are raw photo images from my digital camera.
+Those are the, actually, on my computers, that's probably the most important.
+I've got some stuff for work too, but you know, whatever.
+But my photographs are important to me.
+So obviously the prioritization can be tuned in whatever way makes sense.
+This is the approach I'm taking to begin with.
+Dealing with unstable files is also kind of interesting.
+How do you back up a file that's changing?
+Ideally you have a file system that supports snapshotting and you don't have to.
+But given that you may not have that, how do you deal with it?
+And there's a couple of different problems that can show up.
+Because it can actually be changing while you're trying to hash it and scan to store the file metadata.
+And if that happens, and I do that by looking at the M time before and after doing the hash.
+If that M time has changed, then there's absolutely no point in continuing.
+I have no idea what I've got.
+I've calculated a hash value. Probably the file is now different from what that hash value represents.
+And so my approach to handling that is to ultimately copy the file somewhere else.
+Which I may still get a copy of a file that's being changed.
+But it's the best that I can do.
+It's a stable pile of bits that I can then hash and back up.
+There's also the issue that what if the file changes between the time the scanner looks at it and hashes it,
+and the time the uploader gets around to trying to upload it, particularly if it, you know, maybe months later.
+So I also try to address that.
+One interesting thing to note about the decision to separate scanning and uploading is that backups will end up with dangling links.
+I'll have dangling pointers in my backup snapshots that are referencing files that I never was able to back up.
+Because by the time I got to it, the content had changed.
+And I asked about that concept.
+I know a lot of burgeoning, I've used it from material.
+Something that takes a snapshot as a whole.
+The thought is I need as a transaction.
+If I don't have a snapshot of all the changes, I don't want any of them because the new source is built.
+And that's also trying many applications that I change when the LL.
+I can't change just when the LL did not change everything that was worth it.
+There's any concept of sets.
+Yeah, so the question is, is there any concept of grouping changes so that I get a snapshot that's consistent, right?
+The moment in time.
+And that's a big part of why I focus so much on trying to squish this scanning time down as, to make it as narrow as possible,
+so that the set of file hashes in that backup snapshot represent a consistent set of data.
+Now, I may not actually be able to back all of that data up.
+I may actually, I may end up with with hashes in that backup log referring to file content that I didn't get backed up.
+I can't recover, so I end up with these dangling links.
+But at least I do know that whatever I do have links to was from that interval.
+And it should be the case that once you get caught up, the big problem is during the initial backup.
+But once you get that initial backup completed, then your backups won't take very long and you'll actually get, you know,
+you shouldn't have too many dangling links, you know, I get all that data.
+On that same concept, could there be a possibility of considering it so that if it tried to do it and it found something broke, could it unroll it back, like you know, in the database where it served up.
+Can you roll back and come back?
+Well, you could just discard a backup snapshot that has dangling links.
+In fact, well, I've been planning to discard them.
+What I have been planning to do is ultimately when I implement the backup browser that allows you to see the set of backups that are out there and available,
+is to just indicate, you know, which ones are completely available and which ones are missing elements.
+If my backup system is based on target backup, I noticed that if I have a problem, I'm backing up to an external program.
+If I have a problem like that, it can just cable out and it wants to roll back.
+Sometimes it can actually take longer to do the roll back than it does in the incremental backup.
+So it seems like it might be a win, which is still for the eventually consistent idea.
+So maybe we have a read backup and prioritize the ones that missed a lot.
+Well, yeah, it definitely will do that.
+And I didn't talk about that.
+But if the uploader notices that the current file content does not agree with the hash that it has in its job queue,
+then it considers that file to be unstable.
+It adds it to a list of unstable files so that the next time the scanner runs,
+it will make sure to get another job for that to get that file backed up.
+And the scanner will actually also copy that file off somewhere else so that it won't change, again, before the uploader gets to it.
+Why did you do that?
+Right.
+Right.
+Yeah.
+And then that actually creates some complications with, okay, where am I going to copy it to?
+Well, how much space can I use there?
+What happens when that gets full?
+And it creates a bunch of issues.
+But I've put a lot of thought into how to structure that so that I can make absolutely sure that eventually that file will get backed up.
+That it will not get missed no matter what.
+Even if it's changing constantly, like it's a log file or something that's being written to twice a second,
+it will eventually get backed up.
+And actually, files that are based on the prioritization algorithm, files that are changing frequently,
+get high priority, right, because they're new.
+And so they'll tend to get uploaded more quickly.
+We're going to have any, like on CBS, you can tell it.
+The following files in this pattern ignore that they don't count.
+I do have that actually already in the code.
+You can specify regular expressions on either direct resource file names.
+And it will ignore based on those.
+That's part of the advanced configuration.
+Not what I expect the common user to use.
+So as I said, I'll have issues with dangling pointers.
+One of the interesting areas that, one of the unexpected problem areas, I guess I should say, turned out to be file names.
+File names are a pain in the butt.
+Basically, because of encoding issues, you know what?
+When you ask the operating system for the file name, it gives you a string of bytes.
+What do those bytes represent?
+Well, it depends on the file system encoding.
+Well, it's not too bad on Windows, because at least the NT series of Windows operating systems uses
+UCS-16 for all file names.
+So they're all valid Unicode, and you know that.
+Linux, who knows what you're going to get.
+Most modern Linux distributions use UTF-8 as the default encoding.
+But users can override it.
+They can set their own encoding in their .profile or whatever.
+It's not that uncommon, especially if you're like me.
+And you work with people from all over the world.
+I found that I had files on my hard drive.
+I could not figure out what they were encoded in.
+I tried every encoding that Python offers to try and decode those file names and got nothing.
+I had some other files that I eventually did manage to figure out, but mainly because I knew they were from Korea.
+I was able to figure out which of the Korean encodings were used.
+So the big problem, you know, if you can just treat it as a string of bytes, then there's no issue.
+Just save the string of bytes, restore the string of bytes, everything's fine.
+But if you want to get a little more ambitious and say, well, I would like to be able to do a backup from this system and a restore onto that system.
+And I would like to get some kind of meaningful file names when I do the restore.
+Then it gets to be a little more challenging.
+So the solution, let's see, so the solution I settled on is I take the byte string from the file system.
+I try to decode it using the file system encoding that I get by asking Python, sis.getfilesystem encoding.
+I have no idea how accurate that is likely to be.
+On my system, it gives me utf8, and that's what it's supposed to.
+So it works there. I know it works on Windows, and I know it works on OS10, which also uses utf8, by the way.
+So I try that. If that succeeds, then we have a valid unicode string, right?
+A Python unicode string, so I can encode that as utf8, store it off into my backup log, and I can have something that when I do a restore,
+I can convert it back into unicode, and then convert it to the local file system encoding, whatever that is.
+If it's not valid, then the step three is kind of interesting.
+This was suggested by somebody on the all my data mailing list, and I thought it was kind of clever.
+It turns out that every possible byte value is a valid Latin one character, right?
+So if you say, let's just assume this thing is Latin one, decode it with that, then we get a string of some unicode glyphs.
+I don't know what they are, doesn't matter, but at least it gives me a nice thing that I can then encode into utf8, and I also store that with a flag, so that I know that it's a raw encoding, and I know to reverse the process and go through Latin one, again pulling it out.
+So if I can't decode the file name with the file system encoding, then basically I just do this so I can retain the raw bytes, and be able to restore them.
+Which may or may not mean anything on the target platform for the restore, but what can you do?
+Yes, it will be valid. Well, no, it actually, well, it may not, as it says at the bottom, see if the file system will accept it.
+If it won't, then you really do block that file.
+Well, as I said, if it doesn't, what my code does, it says, okay, we'll decode it with utf8, which gives me back this series of unicode glyphs that are the Latin one decoding, and then I'm just going to encode that with the file system encoding and say, there you go.
+It's probably going to be garbage, but it's the best I can do.
+So that pretty well covers everything. I have some slides on some of the key to-do items that are outstanding.
+To date, I'm not actually uploading files. I have probably spent way too much time on building and tuning the heck out of the scanner.
+I really focused a lot of effort on trying to make it very efficient.
+The nice thing is that since this is a hobby project, if I find it really fun to spend a lot of time tuning the scanner, I can do that.
+So my next step actually is to implement actual upload processing.
+And to do that, I've decided to use, rather than using the internal Tahoe API, I'm going to use their web API.
+So basically, just do HTTP puts to the little web server that's built into the Tahoe node and add files that way.
+Mainly because I started looking into the Tahoe code and it confused the heck out of me.
+I'm beginning to understand twisted, but it's pretty twisted.
+I haven't done anything yet on Restore. I have this really cool idea about what I eventually want to be able to do for full system restores,
+which is to have a bootable live CD where you just bring it up, put in that gigantic string that gives you the access to the right Tahoe directory node.
+Yeah, and there's some challenging things with that. I'm not sure. I think I know how to deal with the How.DLL issue, as you guys are familiar with that.
+During the Windows install process, it actually generates dynamically this DLL that's customized to the hardware.
+And as I think I know how to deal with that, I'm assuming that the registry actually exists in a file somewhere so that if I back up everything, I'll get it.
+I don't know that that's really true. Does anyone know it isn't a file? Several files.
+I used to work on a project to use that same mechanism. Registry is actually, it's actually a database that's now owned by a worker called Berkeley.
+Oh, they use Berkeley DB. So that the registry is actually a license copy.
+Huh. Where is it? It's just stored in a bunch of files.
+You can make your own, you can make your own low-medium registry that has nothing to do with the software.
+Then you do anyone know where that registry lives though?
+I don't know.
+When we did it, we just put it in our own directory. It's just files.
+Right, but you were doing your own thing.
+The central Windows one is just a bunch of files that are actually merging a bunch of them together.
+I'm sure it lives somewhere under SQL and Windows. Somewhere down in there.
+Yeah. That's a good bet.
+Oh, yeah? Oh, cool. Do you ask Google?
+Yeah. Obviously, I haven't cared enough to ask Google, so.
+Right, because those are open.
+Yeah. Yeah. No, I haven't addressed that.
+I don't even know how I'm going to.
+Yeah, especially if I can't even read them. I don't need to be able to update them.
+But if I can't even read them, that's a problem.
+Yeah. Right. Yeah.
+There are backup systems that work.
+So there's also some changes that I'm planning to make to Tahoe.
+One of them is I mentioned that by default, it will use the local storage server as one of the storage servers when it's spreading out file shares.
+I mentioned, by the way, speaking of cool stuff that all my data does, kind of clever stuff, the way they select which peers to upload shares to is kind of interesting.
+They take the encryption key for the file that they're uploading.
+And they use that as a keyed hash to key a hash and they hash all of the node IDs.
+Each peer in the system has an ID, so they hash all of them.
+So they get a keyed hash of each node ID and then they just sort those and they start at the top of the list.
+So every file generates a uniquely ordered list of peers based on the content.
+Yeah. So kind of clever.
+Yeah. And item three is another thing down the road away is one that I want to do.
+This is my thought about how to handle backing up laptops that are intermittently connected is to provide an inexpensive way to get a Tahoe node in your house that is always on and always connected.
+By taking a links this router or something like that and putting a custom firmware on it and then attaching a bunch of storage to it.
+One thing you might consider is something that a friend of mine, well, co-worker, he actually just purchased what they call the Apple Extreme or something like that.
+It's basically a wireless device with the USB ports on it.
+Something like that might be the way you go about making that node be persistent so you just attach it a large, you know, can tear it by a drive or whatever with it.
+And that would be the, do it and then you just have like a simple piece of software that you put on the mic itself.
+I'm sure there's other ones that aren't Apple specifically.
+Yeah.
+That kind of thing might be the way to go.
+Right. Yeah, that's basically the same concept.
+I mean, if I can take a little $50 wireless router, put a custom Linux firmware on it, attach with USB, a terabyte or two of disk space, then that kind of a node.
+What's that called?
+FreeNows.
+It's a physical machine.
+If you want to have low power consumption, which is something that I consider really important, then that sort of thing.
+You don't want to run that machine all the time.
+It's basically a store that made it.
+You don't need to run it until often.
+And you can access it from wherever.
+Back to you in a nice way.
+And I have to use freedom.
+So I got to stand in a little bit.
+It's pretty cool. It really is.
+Right.
+But it's on a regular PC.
+Yeah, it's on a regular PC.
+It's a suitable CD type thing that you can install if you want.
+Well, you run an OLPC.
+Yeah, there you go.
+It actually would be a great way to do it.
+Yeah.
+Plugging the USB key.
+Yeah.
+Plugging the USB key right on the right-hand side of that thing.
+Yeah, three terabytes.
+It's terabyte per USB key.
+Hey, you get by two terabyte disks.
+Yeah, you can go ahead and provide that.
+I say like the Mi-1.
+Right?
+That's the kind of I like the format I was thinking of in my field.
+So the backup tool that doesn't like that,
+it will share us an hour.
+Right.
+Is that Matt?
+So I guess I sort of in my mind,
+at least two different ways of backing up,
+and one would be like,
+I want my terabyte disk that backs up locally.
+Have you thought about it?
+Like, if you say backup,
+or I mean, this third one,
+I thought just I'm like,
+it's like in my local system,
+and back of my local system,
+you just found that.
+Or are you just thinking,
+I'm just going to have everything registered
+because there's nothing local back of it.
+Actually, Mike.
+Yeah.
+My idea is kind of a combination of this and this.
+So the idea is if I can have like a small,
+you know, power efficient device
+with plenty of storage attached,
+that has enough storage
+that can act as a backup helper
+so that I can run a scan, you know,
+on my laptop,
+have it identify what's changed,
+dump the data as fast as it can go,
+right, up to that machine,
+which will store it all locally on its drive,
+and then we'll start pushing it out to the grid
+to get that, you know,
+the remote back up,
+the off-site backup going.
+Yeah.
+It seems like,
+somebody wanted to do it.
+There could be a business here.
+A product I worked on that was a little bit forward
+some of these same ideas.
+One of the things that we had on the laptop
+is it had a virtual central file server.
+And so it was sending all of the dedelties to that.
+And so the moment you hooked up to the network,
+but everything was streamed across the network,
+it was a little bit,
+you hooked up to the network,
+but everything was streamed across,
+because it already had everything,
+all the feed-ups,
+or the transfer.
+You didn't have to go dig through the process
+and you see what a change scale is already going on.
+So either you could have a system where the scan
+is already run,
+or even better,
+if you were using something like the OS-10FS events logging system,
+just a matter of going out and looking at the logo,
+this is all the stuff that's changed.
+Where the FS events infrastructure, of course,
+is part of the OS, and it's just there.
+So to finish up,
+just a couple of, I thought,
+besides all this kind of more theoretical stuff,
+it might be interesting to talk about
+some little interesting bits of Python code
+that I wrote and came across.
+I don't know, this maybe everybody hears, you know,
+probably much more experience with Python than I am,
+and this is not that interesting,
+but it was interesting to me.
+So this function right here is kind of fun.
+I really like generators.
+Generators rock.
+All kinds of really cool and efficient stuff
+that you can do with them.
+In this case, we have a generator that takes a list of iterators,
+each of these iterators has to produce values
+in sorted order.
+And then it produces what's essentially an iterator
+that gives you the values from all of those lists,
+merged together, doing a merge sort.
+And that's, I actually store backup snapshots
+as deltas from one another.
+So this is how I do the merging of those backup laws,
+I call them, in order to get a backup snapshot.
+And there are some interesting things I thought about this code.
+This is not actually the first version I wrote by any means.
+In fact, I snitched a lot of the ideas in this code
+from a very similar one that I found out on the net.
+But it has a couple of interesting things.
+The most interesting one to me anyway
+is this concept here of an else on a four.
+Does anyone use that?
+Yeah?
+I really wonder.
+I used years ago when I was a younger, more arrogant programmer.
+Not saying that I'm not arrogant now, but more arrogant.
+I really reveled in extremely clever things.
+And I've since learned that that's a bad idea.
+And so I try very much not to write code that is clever and non-obvious.
+And I really wonder whether or not that else
+falls into the category of something that should be avoided.
+Comments?
+I wish I hadn't seen.
+Does everyone know what it does?
+No, that's why I would recommend that.
+Yeah.
+Conceptually, what does it mean to say four else?
+What it does doesn't really, it's useful,
+but it doesn't really have any meaning to me.
+That's how it's real property.
+Yeah.
+So what it does is the else gets executed
+if the body does not break.
+So basically, if the loop completes,
+then the else gets executed.
+If the loop isn't allowed to complete because of a break,
+then it does not.
+If something broke into the four, then do the else.
+Yeah, that would seem to make more sense.
+Well, let's go one the else.
+In this case, it definitely makes for some very compact code.
+Obviously, this four loop can never execute more than once.
+It does one thing and then breaks.
+The reason for doing that is just because iterator may or may not be empty.
+If it is empty, then what's going to happen when I call next on it
+is I'm going to get a stop iteration exception,
+so I have to try, accept, and handle that.
+And this turns into several more lines of code.
+But by doing this, this, do one operation and break,
+I can let Python deal with all that stuff about handling the stop iteration.
+The same thing is used up here, except without the, without the else.
+I think there's another video where you guarantee that this will break.
+Right, right.
+So there's one interesting and possibly bad sort of code.
+This is a more straightforward piece of code,
+but just one that I found to be very simple and very useful.
+Actually, I've implemented stuff like that in C++ before.
+But it makes some things very nice to have iterators that you can push stuff back into.
+Take a value, oh, I didn't want that yet, shove it back in.
+And so this is just a few lines of code that accomplishes that quite nicely.
+Which the combination of those two things allows me to do this
+up-log merging fairly nicely.
+So I have my merged iterator at the top that takes the set of backup log iterators
+and combines, does the merge sort operation on them.
+And so then what happens, of course, if I'm looking at a series of backup logs,
+I may pull the same file out multiple times.
+Suppose this file is one that changes constantly.
+So every backup scan finds a different hash value for it.
+And it ends up getting mentioned in every backup log as something that needs to be handled.
+So I may get multiple, if I have 10 different backup logs,
+I may have the same file name 10 different times.
+But I only want the latest one.
+So I can pull a value out of the sort of iterator.
+Just keep going through this loop.
+I also have this little bit of logic to handle extracting the hash value if I need it.
+And when I find the next file, not the one that I'm currently processing,
+I say, oh, that's not the one I wanted.
+And I shove it back in the iterator so that I can then get it back out the next time through the loop.
+The pushback iterator cut the lines of code here in half,
+and made it a lot more readable.
+Sure.
+So that's everything that I had to talk about.
+I'm surprised we actually got through it all.
+Question.
+You said, yes.
+Do you know Professor Carter?
+You're confused.
+I don't.
+Back in the 90s, he won Best of the Condex doing a window-based system that was somewhat similar.
+I don't know if he's built that in all sense, but if I want to see,
+he can dig out old source code because it was similar concepts of years
+that was kind of a bit ahead of his time.
+And while it wasn't sophisticated, it was well accepted with the Condex.
+I don't think it's so wide.
+What was his name?
+John Carter.
+Carter.
+OK.
+That's interesting.
+And I don't know anybody down here.
+I graduated from Weber, and actually in math.
+Actually, I got both math and CS degrees, but the CS was kind of just a sight thing.
+The math was my main focus, and I still stay in contact with the math department up there,
+but not CS.
+If you want to look at the code, such as it is, it's all in a Git repository,
+and there's my email address.
+Yeah, I'll send those to Dave and put them up.
+Actually, I was going to hand them out.
+Yeah.
+Yeah, I printed out handouts, and I was actually going to print out copies for everyone,
+but I ran out of time today, so you can get around to it.
+They're great.
+They really are.
+They're fantastic to work with.
+Yeah, no, not only are they good about that, they're very enthusiastic and very supportive.
+I've been really impressed at how helpful they are, and ready to answer questions,
+and take significant amounts of their time to explain intricate details of how stuff works,
+so that I can efficiently make use of their code.
+They're bright guys, and they're very friendly and very helpful.
+Okay.
+I don't know if that's the case.
+I don't know if that's the case.
+I don't know if that's the case.
+I don't know if that's the case.
+I don't know if that's the case.
+I don't know if that's the case.
+I don't know if that's the case.
+The question is, is the system deal with multiple copies of a file that are in some way related?
+There might be minor edits of one another, and the answer is no.
+I've thought about that a little bit, and decided that it's just too difficult to try to address.
+In fact, I noticed a while ago that an interesting property of the way my system is designed right now,
+is that suppose you had a file, and you moved it from one place to another.
+As far as the backup system is concerned, it's a different file.
+That's not a big problem, though, because as long as the content didn't change,
+the system will say, OK, we've got to back this up.
+It'll go ahead and try and find out that, oh, this content is already out in the grid,
+so I don't have to bother with uploading it.
+A result of that is that if you have a very large file, and you move it from one place to another,
+run a backup scan before you modify it, because if you make a modification to it,
+then the backup system will have no way to relate the two,
+and it will do a complete upload, it won't be able to do a delta.
+In order to try and be able to do deltas in those cases,
+I'd have to do something like trying to guess at which file to compute a diff against,
+which pre-existing signature you can maybe try to, yeah, I don't know,
+how you'd make that any kind of efficient in theory.
+If we ignore efficiency, what I could do is for any file that needs to be backed up,
+I could compute a delta against every signature that I've collected ever.
+It may even be that it's really completely unrelated,
+but if I can find some signature that gives me a very small delta, I can use it.
+That would work great.
+But, of course, computationally doing all of those delta generations in comparison,
+it just wouldn't make sense.
+Where that could make sense is if I have a monolithic piece of source code,
+I make a change off of it's one line of code,
+if I didn't always treat file as a whole,
+then maybe beyond a certain size,
+that okay, I'll take a piece of piece and another piece of maybe that would work.
+Yeah, if you were looking at...
+Oh, right over your source code.
+It's all you could not write those 2,000 line functions.
+In parents' community, if you have any code for somebody else,
+I'm not taking any credit.
+That's the truth.
+So, anybody that finds this really fascinating and interesting
+would like to help me.
+I absolutely would be glad for the assistance.
+Don't all shout at once.
+Like I said, I've actually worked on commercial projects that are so related to this.
+So, I certainly think you should start on that.
+Thank you.
+Thank you for listening to Half the Public Radio.
+HPR is sponsored by Carol.net.
+Head on over to C-A-R-O dot-E-C for all of us here.
+Thank you.

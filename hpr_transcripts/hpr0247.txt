@@ -1,0 +1,885 @@
+Episode: 247
+Title: HPR0247: Voice Over IP for fun and profit
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0247/hpr0247.mp3
+Transcribed: 2025-10-07 14:50:22
+
+---
+
+Hey Mother, you下面 in theacağım, where a comment is going to tell...
+What, it is coming from down here, I hope, and president.
+The following presentation from the Utah Open Source Conference held August 28th through
+30th 2008 is underwritten by Utah Open Tech.
+Utah Open Tech's main focus is to help businesses take advantage of voice-over-IP technology
+by using asterisk-based solutions, implementing solutions like customers to gain advanced
+communication features and a lower monthly phone bill, UtahOpenTech.com.
+Streaming and podcast hosting bandwidth for this and many other presentations at podcast.utos.org
+has been provided by Tier 4.
+The presentation entitled Voice-over-IP for Fun and Profit was presented by Chris Cameron.
+The presentation entitled Voice-over-IP for Fun and Profit was presented by Chris Cameron.
+How's everybody doing?
+Good.
+Excited to learn about Voice-over-IP.
+It's an exciting topic.
+Let me tell you a little bit about myself.
+I first encountered Voice-over-IP when I was working for Internet backbone called Electric
+Lightwave.
+That's what stones if you don't like them, but it needs to be quite an Internet backbone.
+We were a big Cisco customer and I think it was about $97.98.
+They sent us these big modules for one of our routers and said, hey, try these out.
+This is a new Voice-over-IP thing we want you guys to play with.
+We shoved them in a couple of 3600 series routers.
+They were these big modules that had FX-O and FX-S ports on them.
+We set up our first Voice-over-IP trunk between Salt Lake and Portland at that time.
+We got to play with that and it was a lot of fun.
+It was really exciting to hear the first Voice call over in Internet line for me.
+That's when I first started getting in the VoIP and playing with it and just found it
+to be really exciting and a fun thing to do.
+How many people in here have ever worked with VoIP before or have any experience with
+it?
+Okay.
+A couple of people.
+This presentation is going to be really fairly haphazard in the way.
+It's going to be really just very basic and I'm going to try to take you through how to
+set up your own Voice-over-IP server, the different components of a Voice-over-IP switch and
+phones and how all those things work together and the things you'd need to set up your
+own Voice-over-IP box and then take a look at how you set that up in a business environment
+or even a home environment.
+If you have any questions as I go, just raise your hand and fire away.
+First thing, there's some terms to understand about VoIP.
+Voice-over-IP, VoIP stands for VoIP.
+There's lots of acronyms and they get a little tiresome, but we'll just kind of go through
+some of them really quickly, some of the basic ones you'll need to know.
+SIP is such an initiation protocol and SIP is one of the primary methods for transferring
+for moving the packets, the VoIP packets across the Internet is kind of the simple way to
+put it.
+IP is for Internet Protocol.
+There's a bunch of audio compression algorithms and we're going to just focus on a couple
+of them because there's just tons of them and there's only a few that really matter.
+Oh, by the way, we're going to be using Asteris for the demo here in the presentation today
+and so G7-11 is building to Asteris, G7-29 is a commercial, it's a patent protected
+algorithm so if you want to use G7-29, you're supposed to get a license for that and then
+GSM.
+Basically, G7-11 audio compression is, it affects the voice quality, but it'll also affect
+how much bandwidth your call takes up.
+So if you're using something like G7-11, it's going to take up the most bandwidth because
+it's basically almost completely uncompressed, full quality, full channel call, which is
+64 kilobits per second, which is what your standard phone line in your house is basically
+running out most of the time.
+And then GSM is a much more highly compressed algorithm.
+It runs about 8 kilobits per second, I believe.
+So the call call is going to be much lower, it's going to be similar to a cell phone call.
+But if you're running over the Internet where your connectivity is going to be spotty
+or you may have packet loss and latency, then you're probably going to have to run GSM
+for those particular calls.
+Okay, FX-O and FX-S are foreign exchange office, foreign exchange station.
+You're running into this a lot because when you go to buy an analog port for your voice
+over IP server or switch, you're going to need to get either an FX-O port which would
+allow you to connect up to the phone company or you're going to need to get an FX-S port
+which would allow you to connect a phone in.
+So the way to think about it is, an FX-O is the plug on your phone where the FX-S is
+the plug on the wall.
+Okay, so if that makes sense, those are easy to get confused and you don't want to buy
+the run card.
+Okay, then so just a quick overview on Asteroids, it was created by Mark Spencer in 1999.
+It's all by a company called Digium and they also are one of the main vendors you buy voice
+over IP cards for from and so you might get like a T1 card, a PRI interface or you might
+get like an analog card, there's different cards you can buy from them to hook to the
+phone company.
+A PRI just to clarify that is like a T1 that hooks to the phone company and it's basically
+the equivalent of 24 channels.
+You get 23 phone lines on a PRI and then you get one D channel which is for signaling.
+So a lot of businesses will buy a PRI line and that's what they'll use for their phone
+system.
+Then you can find out more at astros.org.
+Okay, the distribution we're going to use is TricksBox.
+TricksBox is just a big collection of like free PBX and a whole bunch of tools that make
+it really simple to get your PBX set up.
+PBX stands for private branch exchange too.
+So PBX is just another word for phone switch basically.
+So TricksBox, if you go and download Astros and install it, it really just comes as nothing.
+I mean, you have to configure everything on it from your voicemail boxes to your extensions
+to call plans and routing and all that kind of stuff.
+And so TricksBox is just a distribution that takes care of all that for you.
+So it's all bundled up together and gives you some really nice tools to manage it.
+You can get that at TricksBox.org.
+They also have a commercial version which has a few more features and you just have to
+look at the differences on there.
+Great questions so far.
+Does I'm cruising along?
+Sorry if I'm driven too fast.
+So the first thing we're going to look at is the components of the phone system.
+So these are the things we're going to go through.
+We're going to take a 30,000 foot view of how things work and kind of go through the different components and how they talk to each other.
+We're going to look at how to configure a small number of phones.
+If you're going to do a big group of phones like maybe 20 or 30 or more,
+then you're going to want to try and automatically provision the phones.
+And how that gets done depends on the phone.
+There's a lot of different phone vendors.
+I brought a couple here and I'll show you these again later.
+But a Polycom is my favorite phone right now.
+It's the phone I use quite a bit because of the price and the quality.
+You just make it one of the best voice over IP phones out there.
+And they're also going to talk a little bit about the network requirements both on a local network as well as going over the internet.
+When you start piping voice around your network, you've got to make sure that your network can handle it.
+And you're not just running on a 100 megabit switch.
+It may start to get taxed depending on how much is going on in your network.
+So here's a map real quick of the different components of the phone system.
+What you're going to do is you're going to have a router or a modem typically if you're hooking up to the internet.
+You're going to have a switch that your computers, your voice over IP server and your phone all hook into to talk to each other.
+And then you may have mobile workers and they're going to have some kind of a SIP software.
+There's two ways to handle a mobile connection into your voice over IP switch.
+One is through a VPN and you can tunnel your voice over IP traffic in your network.
+Or you can use a SIP client and then you can expose your voice over IP switch to the internet or to a specific range of IPs on the internet for your remote connectivity.
+Open VPN is a great solution for doing for tunneling voice over IP traffic.
+But you have to be careful with fragmentation and some things like that when you're using a VPN tunnel to move voice over IP traffic.
+Let me talk about that a little more later if anyone has any questions on that.
+So the network switch, there's a couple of different options with a network switch.
+You can buy a network switch that has what's called POE which is power over ethernet.
+And what that does is it lets you hook your phone in through your ethernet cable and it actually injects power into the phone through the ethernet network.
+So that means you don't have to have a power supply on your phone.
+You just have one cable that plugs into it and you're done.
+So it makes it really simple to get power to your phone and deal with it that way.
+Powered ethernet switches tend to be more expensive and so you're going to pay a premium on it.
+And so you just have to weigh it out and decide which way is better to go.
+You want to typically go gigabit if you can because the gigabit switch is going to give you a lot more throughput on your network.
+So the question is where do you buy a switch that has power over ethernet.
+Typically you can buy them online is going to be your most common option.
+From Dell or from CDW any of those places will have them. Cisco makes them, Dell makes them.
+Dell's got a switch that I think it's about a 24 port switch is about $2,500.
+So they can be a little expensive. You can get like a 4 port switch cheaper.
+If you have just a local network you're going to be running.
+You can usually get like a 4 or 5 port switch for maybe 300 bucks somewhere around there.
+And sometimes you have to look at the fine print on the switch because sometimes you get a 4 port switch that sends PLE.
+Only one port's PLE on it. So if you have more than one phone you have to use power to play.
+So another thing you want to do with the switch is you want to try to get a manageable switch.
+What that means is you can go in and configure VLANs and that would allow you to segregate your voice over IP traffic from your local traffic.
+If you're doing a business configuration that can be especially important.
+That way you're not sharing the network with your phones and your computers at the same time.
+Voice over IP is really intolerant of any kind of packet loss or latency, jitter, those kinds of things.
+Another thing that considers your internet connection.
+There's a couple of different ways to get connected to the PSTN which is the plain simple telephone network.
+So if you want to hook your voice over IP switch into the phone network and be able to make regular phone calls through it.
+You can connect either through a POTS line which is just a phone line coming from the phone company or a PRI which is similar just to T1 level.
+Or you can hook to a voice over IP provider and you can hook to one over the internet.
+And there's a lot of good ones out there.
+And even, I'm trying to think of a couple of what sort of P-providers are good for to use.
+I use one called Tell Us is one. There's a bunch out there.
+I don't know if Vonage allows you to hook the answer or something to do.
+You have to get one that will give you like a trunk type connection.
+It will usually be a SIP connection. If they're an answer is shot then they might give you an IAX2 connection.
+So there's two different ways to go that way.
+Typically you can buy a DID which is a direct inward dial number and that's your 801, 990, 4558, whatever.
+That's the DID number and you can buy those from the voice over IP provider.
+Some providers have local DIDs so you can buy one if you're live in Salt Lake and you want a Salt Lake DID you can buy one from them.
+Sometimes they're coverage is spotty though and it's hard to find local DIDs.
+There's also bandwidth calculators online so you can take a look at whether or not your internet line is going to be able to support VoIP.
+If you need a broadband connection at least, DSL in my experience tends to be a little spotty with voice over IP.
+You'll have to definitely compress it most likely.
+Cable modems seem to work really well, especially if you get one that has a two-meg upload.
+There's multiple broadband lines you know they have a high download and a low upload and the low upload can kill your voice over IP connection on most home type broadband connection.
+This is just a quick example of some throughput numbers.
+If you had 10 simultaneous calls going through using SIP and let's see this is the G711 I believe.
+The amount of bandwidth it would take for those calls would be 796 kilobits per second so that's almost a meg of bandwidth on each side.
+You'd have to make sure that you'd be able to support that much if you were going to do VoIP over the internet.
+So if you have like a T1 into your office or something like that, you'd be saturing that line if you had 10 simultaneous calls hitting a voice over IP upstream provider.
+So you have to be careful with that.
+And then I've got another example with GSM over there.
+You can see the bandwidth usage is much smaller at 286 kilobits per second.
+So that compression, while you lose the quality, it'll definitely take up a lot less bandwidth.
+So phones are another component of a voice over IP configuration.
+There's different phones you can use. You can either use a software-based phone, which is just downloading a piece of software and you run it on your computer.
+And then you can go buy a headset over an office max or staples for 20 bucks and then you've got a phone.
+So this is definitely the cheapest option.
+There's two great free software clients.
+X-light, we use quite a bit, and Zoyper, I'm not as familiar with Zoyper, but I hear that one's pretty good too.
+And then you can also buy hardware-based phones.
+And they'll have their own ethernet connection. They require an ethernet connection.
+The soft phones applications are they all?
+Are they what, sorry?
+No, this one's not, but I think Zoyper is.
+So the question was, are the soft phones open source or not?
+And X-light's free, but it's not open source as far as I know.
+There is another, I think it's sip-light or something that's an open source version.
+I don't remember the name exactly, but.
+They're actually really good.
+As long as you have a good headset, the question was, I tried to repeat all the questions.
+The question was, how the quality is between the soft and the hardware phones?
+They tend to be really good as long as your headset's good, and your computer's fast enough.
+If you have a slow computer, then it affects the audio quality quite a bit,
+because you can start getting jitter, which you might hear little pops or kind of bubbly sounds in the phone call.
+And so you want to have a fast enough computer, you want to have a faster computer,
+and you want to have a good headset, so it's got a good microphone like the polyphone.
+Type microphones are really good.
+And then the hard phones tend to be a little better quality usually,
+but they especially like in the speaker phone. They're really good.
+I mean, if you try it, you can't really do, I haven't really seen a way to do a speaker phone very well on the computer,
+because they don't handle the duplexing properly.
+Some of the best speaker phones, as far as hard phones go, are like this polycom.
+Any of their sound points, they have the best speaker phones out there, along with the Cisco.
+The Cisco makes really good ones, but they're, you know, twice to three times as much money on the Cisco.
+Any other questions on phone?
+We can cover it. We can go into some more later.
+Oh, do they? That's good.
+So, yeah, that's maybe why they're so good, or why they're so similar.
+So then you also need an adapter.
+So the adapter allows you to hook to the plain simple telephone network, the PSTN.
+Adapters can range in price quite a bit.
+There's a lot of different styles of adapters.
+This adapter, for instance, is a, yeah, just a little void to analog adapter.
+So, if you were to go voids over IP in your office or your house, and you needed a fax line,
+one way to do that is to use one of these adapters, and it takes, it gives you an analog signal,
+and then it has an analog port and an Ethernet port, and the Ethernet will allow that adapter to hook to your voids over IP switch,
+and then it gives you an analog port for your fax or your credit card machine, whatever you've got to hook up there.
+So, what makes that just about how reliable that is?
+Faxing. Yeah, it does tend to be spotty.
+There's a new T-38 standard out though that helps that.
+So, if your adapter supports it, there's a piece of, it's commercial software,
+but there's a piece of commercial software you can get that'll do fax over the internet.
+So, in general, faxing over the internet tends to be, you can't really do faxing over void.
+It tends to be a real spotty, the way it works.
+A lot of times you get drop pages or things like that, and the fax machine at most can get 9,600 bought,
+and you have to go with a G711 codec to even be able to do it.
+Now, there are people that do it, and they get pretty good success out of it.
+I've got some voids over IP lines, we've got fax machines hooked to, and they work most of the time.
+But, often it's best if you can just take the fax machine and hook it directly into a standard phone line,
+coming from the phone company.
+And another thing tonight is about faxing, as long as I'm talking about faxing,
+with Apps for it's going to show you this later in the system.
+But, Tricksbox comes with built-in fax to email.
+It uses a package called SpanDSP.
+And so, if you've got an analog connector in your, if you've got an analog line coming into your voice over IP switch,
+or a PRI line, when somebody calls a fax number, it'll detect the fax tone, grab the fax,
+and without any fax machine being in there at all, it'll just email that fax as a PDF attachment to your email.
+So, that's a great feature.
+The other ports you have are like a PRI adapter, and an analog adapter.
+The analog adapters, you can buy, there's a whole array of options for analog adapters.
+You can get a single port card, you can get a two-port card, a four-port card.
+You can also get these cards that are modular, where it has the analog port on it,
+but it's not fixed to either FX-O or FX-S.
+Typically, when you buy the card, it's going to be there be an FX-O interface, or it's going to be an FX-S,
+or it's going to be a combination of the two.
+With the modular ones, you can actually just stick a little DSP on the card,
+and then that'll convert, that'll, you know, make it either an FX-O or an FX-S.
+So, you can change it later if you want.
+So, if you want three FX-S ports and one FX-O port, because you've only got one line hooking to the phone company,
+then, you know, you can do that.
+But later on, if you change your mind and go, I need another line, because my phone line's always busy,
+when people try to call, then you can switch that out for another FX-O.
+So, it's a good option there.
+Then you've got the VoIP server.
+The VoIP server is typically, you want to go with a pretty decent box.
+I've run it on some pretty lean-down hardware, so it will run on some low-end hardware,
+but, you know, you typically want to give it the best hardware you can.
+There's also appliance-based boxes out there.
+If you go to like VoIPsupply.com or just Google, you know, asterisk appliance,
+you'll find tons of them.
+Rhino makes them, and they make a really good one.
+And usually the appliances, you can buy them with the interfaces already put in.
+You can buy them pre-installed, so they've got everything in there,
+and then you can go in and configure it and customize it to whatever you want.
+Another way to get into a VoIP server is just virtualize it.
+And you can do that for testing and whatever else.
+It's anybody ever used VirtualBox before?
+It's a great free open source virtualization software package.
+So, if you want to play around with that, of course, I'll use VMPlayer.
+Okay, so what happens when we install phone systems?
+So, the first thing to do is we purchase a server or we can use Virtualization to get it set up.
+You're going to spec out phones for your phone system.
+You've got to figure out how many phones you want to have,
+whether they're going to be soft phone or hard phones.
+If you're in a business type environment, you're going to have to do a little more work up front
+to make sure that you're buying the right things ahead of time.
+There's some great sources.
+There's tons of great sources for the phones online.
+You can just go through Google or Frugal and do searches and see what's available out there.
+Again, I like the Polycoms.
+Another one is this grand stream.
+This is a really cheap phone.
+The speaker phone on it's terrible.
+It does have a speaker phone.
+And the quality is pretty good.
+It's like an $80, $70 phone.
+So, if you want a phone that's really cost effective, that's a good way to go.
+How much are you looking for the polycoms?
+So, the question was, how much is a polycom?
+This phone, I think, is about 150 now, 160 somewhere in there.
+If anybody's ever bought phones for business class type phones,
+they've cost it as much as $500, $600.
+Luckily, Aceris has helped that out quite a bit and made things quite a bit cheaper.
+But they have like a 601.
+They've got some new models out too that I'm not familiar with.
+But largely the cost of the phone will be dependent on how many appearance buttons
+are on the phone.
+And appearance button is basically, you can think of it like a line on the phone.
+So, this one has three appearance buttons.
+So, a three line, it'll give you basically three lines.
+So, you can use the lines to, you know, if another call comes in,
+you can hit another line to grab that column.
+This one will be automatically put on hold.
+Or if you want to conference up multiple lines, these appearance buttons will help you do that.
+And so, if you have like a two appearance phone,
+it's probably going to cost you about 120 bucks on a polycom, like the 301.
+This one is about 150 with three appearance buttons.
+And then like the 601, I think has six appearance buttons.
+And they'll draw about 200, maybe, somewhere around there.
+Cisco's are, you know, add like 100 bucks.
+And that's probably the cost of a Cisco.
+So, and then the other thing you need to do is you need to spec out how your phone system is going to be set up.
+Like how many analog adapters you're going to need.
+So, if you're in like a business environment again,
+and you've got eight analog lines coming from one FBs coming from the foam company,
+then you're going to need eight FXO ports for your phone switch.
+And then if you're going to have, if you're going to need to hook up like a fax machine or something like that,
+you can buy an FXS port for the switch and hook up your fax machine directly through the server.
+And that kind of, that kind of a setup for a fax machine should work fine.
+Because you're bridging the call within the switch itself.
+If you're sending the call through the adapter over the network,
+that's when it tends to get a little spotty.
+Show sample hardware.
+Okay, we already kind of did that.
+I like to put these notes in here for myself.
+Okay, so then the first thing you're going to do,
+once you've got your hardware in place,
+and you're ready to get everything installed and set up,
+is you're going to go get the Tricksbox IIT.
+So, you can download that from Tricksbox.org,
+and you can download either a VMware image,
+so you can just immediately run it and start playing with it.
+Or you can download the ISO,
+it's just you burn a CD with,
+prop it in your machine, and you're off and running.
+It's the CE version, that's the free version,
+that's a community edition.
+That's what you'd want to pick up.
+So, one thing to watch out for is whatever box you put it in.
+If you boot it off the CD, it will wipe the box,
+completely partition it, and take everything out on it.
+So, make sure it's a box that you want to completely wipe
+and get rid of everything on it.
+If you don't, then you should probably use VMware for it.
+You're going to run it in a, let's see,
+to install, you just boot the disk, it will take over.
+I'll just quickly show you some of the installed screens here.
+So, it initially comes up with your typical Linux screen,
+it gives you all the notes and everything.
+Hey, this is going to completely wipe your machine, good luck.
+Next screen is, it's a really simple installation,
+and that's why I like Tricksbox.
+Especially if you've never worked with VoIP before,
+it's just perfect for getting started with it,
+because it gives you all the configuration stuff.
+You've got your keyboard, you set the system clock,
+set your root password, then it will go through
+and just install all the software.
+And you're pretty much done after that,
+and it will just reboot your machine,
+and when it comes back up, it will be ready to run Tricksbox.
+So, let me just kind of walk through here
+and show you some, some Tricksbox screens.
+Let's see, set this here to full screen,
+and turn off mirroring.
+Turn on mirroring.
+Okay.
+And I'm just running this through parallels.
+Let's see, I'm going to get it to cooperate here.
+To do the full screen, so it actually comes up properly.
+Okay, so you're going to get your root log in.
+It asks you for your root password during the initial installation.
+So then after you log in,
+it's going to give you a nice little banner that tells you how to log in through the web.
+It's got a great web app admin,
+which is from a place called Free PBX, that put that together.
+So let's take a look at the web admin here.
+So one of the first things you're going to do with your box is go in and start with the configuration.
+Now you're going to go slash admin.
+There's two sides to the web interface on Tricksbox.
+It gives you a user interface that lets your users go in
+and get access to their voicemail over a web browser.
+And through that, they can configure different things about their extensions.
+So you can set up like a follow me, find me follow me type situation.
+And we'll look at all those features here in a few minutes.
+One of the things you're going to want to do is it has a module admin.
+And it's under set up and module admin here.
+And you're going to want to go through and make sure you've got,
+there's a ton of modules for this.
+So you can go in and add all kinds of modules to do,
+all sorts of crazy things.
+The basic ones that it comes with though is a pretty full feature set.
+And it's not an internet connectivity.
+I can't go and show you the additional modules that are available,
+but trust me, there's many.
+It's got a great system status screen in here.
+So it gives you an overview of your processor utilization,
+your memory, your network configuration.
+It shows you the server status.
+You can see that everything's running, your MySQL,
+your asterisk, the web server, et cetera.
+So the first thing you're going to do to set up your PBX
+is you're going to add an extension.
+So you'll go to the extensions tab here.
+A generic zip device is most likely what you're going to set up.
+So generic zip device is going to be like a soft phone or a hard phone.
+So this kind of a phone or a software-based client.
+So we'll go to this screen.
+And the nice thing about this web interface
+is if you just scroll over any of these links here,
+it'll just give you a little help menu that tells you exactly what it's asking for.
+So it's really intuitive that way.
+And once you get used to some of what they're asking for,
+you'll understand it even better.
+Let's talk a little bit about Dial Plan 2.
+So if you're like in a business environment and let's say you're going to buy a PRI
+with DID numbers on it,
+what the phone company will do is they'll assign you X number of DIDs.
+They'll ask you how many DIDs do you want.
+And so you might say, well, so if you have like 40 employees or 20 employees
+and you're going to probably ask for 30 DIDs.
+So you have 10 extra.
+And you might need like two or three for a fax machine or, you know,
+the main number, that kind of stuff.
+So then the phone company will assign you those 30 DIDs.
+And what I'd like to do typically with my Dial Plan
+is I like to have the DIDs match the extension number.
+And you have to decide whether you want four digit extensions or three digits.
+Sometimes the phone company will assign you a range of DIDs
+but they won't all be contiguous.
+So you might have like 4, 6, 0, 0 through 4, 6, 15.
+And you might have 4, 8, 0, 5 to 4, 8, 0, 10 or whatever.
+And so you can't really do three digit dialing and have everything match up really well,
+especially if it's like 4,600 and then 46 and then it's a whole other range or something like that.
+So you just have to decide if you want to do three digit or four digit.
+So this example, let's do 4, 3, 0, 2.
+So this extension will call 4, 3, 0, 2.
+And typically, that's all you're going to have to do on the extension
+in terms of mapping that DID into the extension that that phone number goes to.
+What happens is the, and it depends on the phone company and how they do signaling.
+But typically, if you watch the raw output of when a phone call comes in your phone switch,
+you're going to see the phone company is going to pass the DID to your phone switch through the PRI.
+And it's probably just going to be the 4 digit number if that's how they've got it set up.
+So it'll be like 4, 3, 0, 2.
+And so as long as the extension is 4, 3, 0, 2, your phone switch will just know how to route it and take care of it for you.
+Now, if the phone company was passing through like the full number,
+so the 1, 801, 990, 4, 3, 0, 2, in that case, you'd have to set up the DID info here.
+So it would be 801, 990, 4, 3, 0, 2.
+And so that's what would tell your phone switch.
+Hey, if you see this DID number, that goes to this extension.
+So that's how you need to map it.
+Okay, so then, another thing you can do that's loads of fun when you're bored,
+is you can set your own outbound color ID if you have like a,
+you can't do this on an analog line on a, you know, like a standard 1FB from the phone company.
+But on a PRI, you can set your color ID to whatever you want.
+So if you want to make a call from your neighbor's phone, you know, you can do that.
+It's a lot of fun.
+Usually, you want that to match the DID number, but you can't override that.
+Sure.
+So the question is, if you go to the voiceover IP provider online,
+will they still allow you to override DIDs or the color ID?
+Most ones I views do, so they still allow you to do that.
+They may, I mean, if they've got abuse, they might, they might change that,
+or they might change your account so that it doesn't allow you to do that anymore.
+But, yeah, most ones I use, they still allow you to set the color ID.
+Can you set the name?
+No.
+Yeah, the way color ID works, so the question is, can you set the name on the color ID?
+You only have control over the number, there's a big, you know,
+there's big databases out in the, in the switching network with the phone companies
+that control the half databases of what the names are.
+So you can override the color ID number, but what happens is on the other end,
+the phone company, when they pass the call to the receiving party,
+they're going to go do a name lookup off that number and then pass the number
+through along with that call.
+So if it's, you know, if it's the White House, they're going to pass the White House color ID,
+or whatever it is.
+So it will look up based on the overwritten ID number.
+Like if I would put my name, my name, my name, my name, my name, my name,
+or name, but also...
+What's that?
+Yeah, yeah, it is a lot like a phone DNS, yeah.
+And so yeah, there's just a big database out there and you don't have control over that.
+And so another thing to note too is when you go get your phone numbers from the phone company,
+a lot of times they might pick some funky name for your color ID and they'll just set that.
+And so you have to go back to their provisioning department and say,
+hey, I want this name to show up for these numbers and you may have different names,
+you know, if your company that does different, you know, a lot of different calling or whatever,
+you may want to pick different names for different numbers, things like that.
+And the phone company can set that for you.
+Another thing you can do is set up an emergency color ID.
+And so if you're going to, if the person using that VoIP line,
+there's a lot of regulations around 911 and there's now an E911 that you might have heard of.
+What happens is when you put a VoIP phone out there, if you have like a business,
+and you have remote workers that are in another state,
+and they've got a phone sitting at their desk,
+but it's DID actually comes into your headquarters at your office in Salt Lake or whatever.
+When they normally are making calls, they might come out as their 801 number,
+but if they needed to call 911 from that phone,
+which legally they have to be able to do,
+then it needs to set a different color ID for that emergency call.
+And so luckily you can override that,
+and you can set it to, you know, maybe their local home number or a number that's local to them,
+so that the phone company has the E9111 information,
+which is their address and phone number and all that stuff over here.
+How does that work if you don't have a landline number at your home?
+In that case, the, so the question is,
+how would that work if you don't have a landline?
+The way that'll work is your provider can set up an E9111 number for you,
+and they can set the E9111 address and routing information for that number.
+So it may not be a number that anybody's ever going to dial,
+but it'll be a number that, when it's passed 911, it'll give the right,
+it'll give the correct info for dispatchers.
+Let me have a question.
+So that emergency CID could be like the antelope fax one that's been there remote office?
+Yeah, could be anything, yeah.
+This is long as, this is long as it maps back to the correct E9111 info.
+And most of all, the online Voic providers,
+if you're not using a phone company and you're using a Voic provider,
+most of them support E911 now so that, you know, you may have an 801D ID,
+but your end user can go into a web page and actually set their 9111 info.
+So if they move or whatever, they're responsible for keeping that address up today.
+They move the phone or, you know, hook it somewhere out.
+Yeah, you want to make sure your E9111 compliant.
+If you see, it'll get mad at you if you're not.
+So the other thing you can do is you can have custom music on hold.
+So the great thing about Asteris is you can, and Tricksbox,
+as you can record, you can use MP3s, you can use, you know, any standard MP3
+and or WAIT file and drop it in there.
+So if you want to have some kind of custom on hold music,
+like thanks for calling Bob's plumbing, we plunge well,
+you can just drop that audio file in there and you can set it per extension
+or you can also set it on, you know, like your global number or any numbers
+that you have that come into like a digital receptionist.
+And I'll kind of go through those here in a minute.
+I'll put up enough time here.
+And then the other thing you need to set is that is the password.
+So let's put one, two, three. So that's the secret.
+Now that's what you use in the phone.
+When you go to configure the phone, you're going to set the SIP server,
+which is going to be the IP address of your voice over IP box or Tricksbox.
+And then you're going to set the extension for the phone.
+So it knows what extension to use.
+And that's also what the phone uses as its, you know, its user name basically.
+And so when it logs in, it needs the extension number, which is the user name,
+and it needs the secret or the password.
+So that'll be one, two, three in this case.
+That thing you can have on each extension in Tricksbox is a fact handling.
+So each extension could have its own fax detection.
+In fact, you know, that could be a fax number and somebody's phone number.
+And then you can set an email for this particular phone.
+So this person, if they want to give somebody their phone number,
+they can just set that and they get an email whenever they get a fax.
+Then you need to set some kind of a fax detection.
+So it could be their NV fax or ZapTel.
+It's usually going to be NV fax if you're on like a SIP trunk or a PRI line.
+If you're on an analog line, then you may use ZapTel.
+And then you also can set a pause after answer.
+Privacy manager will allow, so this is a nice feature if somebody calls in your phone.
+And they don't have color, a decent, it comes from like an unknown, you know, unknown or whatever.
+You can force the user, the caller, to actually enter in their 10 digit number.
+So hopefully it'll get rid of your solicitors you don't want to hear from anyway.
+It's skipping down here, you can do recording.
+Astros has, and Tricksbox comes with some great recording features.
+So you can record all of the incoming outgoing calls on a by extension basis.
+You can have it on demand, so if somebody's on the phone and you want to record their call,
+you just go ahead and click it and just tell it to start recording that call.
+And I think it buffers the first part of the call, so it should grab the whole call.
+And then you can also do, you don't configure it here, but you also do a barge type feature.
+Where if you want to hear it, if you want to barge in on somebody else's phone,
+you just dial like a starcode and pop in on that phone call secretly.
+Of course, observe your local laws when using these features.
+You have a voicemail set up, so you have to click enable to enable the voicemail box,
+and then we'll usually want to have that be a separate secret from the extensions password.
+That way, you know, somebody can't just go look in the phone settings and see what the password is
+or anything like that for the voicemail.
+You can also set an email address, so you can have all the voicemails go to an email box,
+and that'll just, voicemail come as an attachment, as an audio file attachment,
+so it might be like a wave file or whatever.
+And they can also have a page or email address, which would be like a phone.
+If somebody calls your phone and you want to know if somebody leaves you a voicemail immediately,
+it'll just send an SMS message right to your phone.
+So you can put in whatever your email address is for your phone.
+And then you can set some different settings on that.
+Another cool thing that Tricksbox has is this VMX locator, so you can enable that.
+Oh, you have to set a valid display name.
+And what the VMX does is when the person logs into their extension,
+it will allow them to set like their follow me settings,
+they do not disturb settings, all that kind of stuff on their extension from a web browser.
+So they don't have to do anything on the phone to get all those configured.
+Okay, so that's how you set up an extension.
+The next thing you're going to want to do is set up a trunk.
+And so the kind of trunk you set up is going to be highly dependent on the interface.
+So if it's a PRI line, for instance, it's going to be a Zap trunk.
+If it's an online Voic provider, it could be an IAX2 or a SIP trunk.
+Configuration wise, I'll just breeze through this,
+that's somebody has specific questions about the trunk.
+But you can set an overriding outbound caller ID for it.
+You can set a number of channels, like your Voic provider might only give you two channels,
+or three channels or whatever it is.
+And so in here you can set that on your trunk so that if you get more calls in your trunk cast capacity for,
+it'll just give the caller a message and so I'm sorry, all lines are busy kind of a message.
+You can monitor your trunk failures, do things like that.
+Dial rules are where you basically set how phone calls will go out across the trunk.
+Sometimes you might have to manipulate the digits going out across the trunk,
+or the phone number that somebody's dialing in order for it to work.
+Like if this was a long distance only Voic trunk, you might have to prepend it with a one or a country code or something like that.
+And so it has some basic dial rules that allow you to do that.
+And also like if people are wanting dial locally, like let's say they want to do a seven digit dial,
+your trunk might require you to dial the area, a one in an area code.
+Well you can go in here and set that so that it automatically prepends the one 801 or whatever the area code is.
+And that way people still get to do a seven digit dial without, you know, without having to remember the area code part.
+You're going to set up peer details. What happens is when you sign up for a Voic trunk,
+they're going to give you all your log in, your username, the password and everything like that.
+And you just set it up in here and they've nicely gone in and already prefilled it.
+And you just simply replace the sections there.
+That makes it really simple to configure.
+And if it's a two way trunk, you're going to have to set both the peer details and the user details.
+Sometimes you'll set up a trunk that's one way only, so it's outbound only.
+And it's just for long distance calls. And that's a real typical type configuration.
+And so you can leave those out.
+The register string you put in, again, that comes from your provider usually.
+And they'll just give you the register string for asterisk.
+If it's most providers are pretty savvy on asterisk, because a lot of people utilize it.
+Okay, so after your trunks are set up and configured, you're going to need to add routes that tell your phone switch how to route calls out of your trunk.
+And so what you would do is you go to add route, you name the route, you may have a route password.
+Like let's say it's a long distance trunk and you want everyone to enter a four digit code every time they dial on, you know, every time they need to dial long distance to prevent somebody from abusing your system.
+You can set that route password here.
+And that way whenever somebody hits this route, they'd have to dial the password.
+You can set whether or not to allow emergency dialing.
+And then maybe an intra company route.
+So if you have like multiple PBXs put together or something along those lines, you can route those calls through here.
+Then the main thing you're going to configure on here is a dial pattern.
+At the dial pattern, it gives you these nice little wizards here.
+So this would be like a seven digit dial pattern.
+Basically it just tells the phone switch to look for this pattern.
+And if you see it, then, you know, that's a call for this route.
+There's different ways to set up your dial patterns.
+If you're in like an office environment, you might want to have people dial in nine.
+And then the number they're trying to reach, you're probably familiar with that.
+That would be like this pattern here.
+So this is a dial nine to get this trunk to get the outside line.
+And then you can also go in and set that to be a little more granular.
+Like you can have it be nine and any number will hit this route.
+Or you can say if the dial at nine and the NX, you know, and the N and the seven digit number,
+then it will hit this trunk instead of a long distance line.
+So just a lot of different options there.
+Can you configure failover there?
+Yeah.
+Like, well, like trunk failover?
+Yeah.
+So say I want to dial out using my two providers, but then get my two providers
+that are available to my internet.
+Right.
+Go to the zap tail, maybe.
+Right.
+Yeah.
+So the question is, is how would you do redundancy?
+And yeah, you can.
+It has a trunk sequence right here.
+And so what you would do is you put in your first trunk, and then you put in your second trunk and on and on.
+So you can just chain them together.
+And then, uh, yeah, you may be able to, you may have your local line down,
+but you still want to set a call out so then you can just go to your long distance trunk, maybe, or, you know, something along those lines.
+So yeah, as you can see, it just makes it really slick to get all that stuff set up.
+Um, so other things you might want to set up are going to be, so do we go to 1230?
+Right.
+Okay.
+Okay.
+Um, so the other thing you may want to set up is a digital receptionist.
+You're probably familiar with those.
+Or an IVR.
+Those are those annoying things you get when you call most companies these days.
+Here's how you can have your own.
+These are especially fun.
+These are especially fun if you have, uh, if you set this up at your house, you know, you can, you can, uh,
+Hey, thanks for calling the cameras.
+Please dial one for a cell.
+So please dial two for this person.
+Um, and so what you do is you name the, the IVR.
+So you can say, uh, mainline.
+You have a timeout.
+That's basically how long it waits for them to put in some digits before it just says, okay, you're not doing anything.
+I'm gonna hang up.
+Uh, you can have different directory contacts.
+Uh, there's a built-in directory in the fonts, in this font switch that, um, you know, whenever you add an extension,
+or the display name, it automatically adds that into the directory.
+So if you want to have like a job, I need a directory.
+You can, uh, you can have that set up so that, um, when people press, uh, you know, they might press pound as the option,
+when they're in the wonderful digital receptionist.
+And, uh, you can say, please press pound to go to a, to go to a dial by name directory.
+They press pound and then it'll have them enter the first like three or four letters of the person's first or last name.
+And, uh, then it'll go find their, their info and, and route the call form.
+So that's a really nice feature in here.
+You can have, uh, a custom announcement.
+Now, what you want to do first is you go into your system recordings.
+And you can add a recording.
+And, uh, there's two ways to add a recording.
+You can either record it on another, on like a computer.
+And just literally record an audio file.
+And then you can upload that audio file into the system.
+Or you can do it from an extension.
+So you can dial into, uh, a number they give you.
+So let's see it says right here to enter your extension.
+I can say I'm at 4302.
+Go.
+Okay, so now it says, uh, to pick up my extension.
+So you pick up your extension, dial star seven seven.
+It'll beep at you.
+And then you just record your message and then hang, and then hang up.
+And that's recorded it.
+And then once that recordings in there, you can go up here to the, uh, route that you're trying, or the, uh, IVR.
+And you just, it'll just be available here in this drop down menu.
+And they just select that announcement.
+So that might be your, uh, your, you know, whoever you've got this got a wonderful voice.
+You can record the company's, uh, IVR message.
+And then, uh, you have a bunch of different options here.
+You can just, you can just click these buttons to increase or decrease the number of options.
+So, uh, you can put, uh, if the numbers one dot is dialed, then you can terminate the call.
+That's fun.
+And then, uh, you can have the number two.
+We'll take them to this voice mail box, for instance.
+So you just, it just lets you set up, I mean, it's just really simple to set up the, uh, all the features on here.
+Three would go to this extension.
+If you want to talk to somebody, press one.
+Okay, we'll terminate the call.
+Uh, so, so that's basically an IVR.
+Now, there's a lot of other things you can do with an IVR.
+Like, let's say you have a group with five salespeople in your business.
+And, uh, you want to have, uh, you want to have it set up so that when somebody dials a number,
+it, uh, will route the call to any one of those five people.
+And, uh, so you'd have like a, what they, that's called a queue in here or a ring group.
+There's two ways to do it.
+Uh, so the queue is more of your standard, you know, I'm calling some annoying support line at Discover Card, for instance.
+You know, when nobody ever ends up, or eventually somebody ends up answering.
+Uh, the queue is similar to that.
+So you can have a queue number.
+And the number can be pretty arbitrary.
+So we can make it whatever.
+It doesn't have to match up to a DID number necessarily.
+Uh, we can say this is annoying support line.
+Uh, it may have a queue password. We don't need to set one here.
+Uh, a CID name prefix will let you, um, add something to the, to the digits in the caller ID.
+So that when somebody sees the call coming in on their phone, they know, oh, that's the support line.
+So you may say, you know, support or something.
+Uh, alert info. You can have distinctive ringing.
+Not all SIP phone support distinctive ringing.
+So, uh, you got to make sure it actually supports that.
+And then agents are any phones that are part of this group.
+So let's say this phone is 4302.
+I just put 4302 in there.
+Another thing you can do is you can put in, um, outside lines as agents.
+So like you can have your cell phone be an agent.
+And, um, I believe you just do a pound and then the number, if I remember right, for an outside line.
+So you can just have a dial, you know, whatever that number is for an, for an outside line agent.
+Yes, um, what you do is you set the, um, you can set a ring strategy.
+Uh, now let's see. I'm not sure.
+I think they've added some features where he could actually set one line to be more preferred over another.
+Let's see.
+I don't think you can set like a particular agent to be more preferred over another one.
+Yeah, it says they're broken. I've never used them. You'd have to look into that.
+I mean, because it's asteroids though, you can't dig in underneath and, and do, you know, just about anything you want.
+So, yeah, you could probably put, you could probably can, but I don't think through the GUI here you can.
+Uh, but you can set like a, like a ring strategy.
+And so if you want to have like the person that, that's getting the fewest calls be preferred, you can do that.
+If you want to have like a round robin, ring all, ring all just means, you know, everybody rings at the same time whoever grabs it gets it.
+Uh, you can do random, round robin memory. So it remembers, you know, it goes round robin and then it always remembers the last person and then it goes to the next.
+Similar to that.
+So the ring strategy kind of gives you some ability to, you know, set precedence on which ones will get it.
+There's terms of options in here too. So I'm going through all of them, but you can have music on hold. You can have an agent announcement.
+Uh, you can have a max wait time for how long somebody can be in the queue before it says, hey, you've been in the queue too long.
+Um, you can have a maximum number of callers. So if the queue's full, it'll tell them, hey, sorry, call back again some other time if you want to be a real friendly business.
+Um, so yeah, lots, lots of options there. You can also skip busy agents. So, uh, if somebody's on the phone, they don't get a call.
+And then you can also set the call recording, um, independent of the call recording settings on an extension.
+So if you want to record all calls that come through this, this queue, you can do that. So if this is portline and you're recording all your support calls, for instance, it allows you to just set that up.
+Um, yeah, that's still a record. Yeah, yeah, if it bridges the call, it should record it.
+Okay. Um, so, you know, why don't I open it up for questions? Uh, this just like barely scratches the surface on all the features this thing will do.
+Um, it's got, you know, day and night controls, inbound routes for, you know, different times of the day. The follow me is really cool. Like I got my extension, which is one of these phones that my guests set up.
+So when somebody calls me on my main extension, it rings my cell phone at the same time. So they both ring, whichever one I answer it on is the, you know, the phone that takes it.
+So I just give people one number and I don't have to give out my cell phone number as often. And, you know, I'm always insured I'll probably get the call.
+Another thing follow me can do is it can, uh, it'll try one phone after another. Uh, so it, and, uh, you may have heard, you may have seen that features where if you call a number, it'll say, um, please hold and listen to the music while I try to find the person you're calling.
+It's got that feature too. So that it'll just play some whole music. You know, you can play some AC DC while they're waiting for you for the phone system to find them.
+And, uh, it'll just go through and just call one number after another. And then you just set the timeout values like you may say 15 seconds on each phone number and just run through a bunch of numbers.
+Was there a question back there?
+Yes, let's look at that real quick. Sorry, what was that last part?
+Oh, yeah. Um, now of course it's more limited. Um, so the question is on the user interface. What, what options do you have there?
+Um, let's log in here as one of our users. So you have voicemail recordings and a web meet me. There's another.
+There's just so many features. It's hard to go through it all in an hour. But, um, the web meet me is another cool feature. We can set up conference bridges in the phone system.
+And then, uh, you can set up a bridge line and then people call in and enter a password. And then you actually have a web interface to manage that, that conference bridge in the, you know, they call it a room.
+And you can see everybody that's dialed in. It's got their car ID info. You can mute everybody. You can kick every, you can kick certain people from the call.
+You can mute certain people and unmute certain people. So it's got all those features.
+Yeah. All that you've done with the, like, connection. Yeah. Yeah. So question is, can you do the void connection? Um, like the bridging is as long as you have a connection to the, to the phone network so that people can call in or call out of your switch.
+You've got all these features built into it and you can do all this stuff. So that's, that's a really, that's a really cool thing about it. Now the bridge, the conference bridge is going to be dependent on how many lines you have because each call takes up a channel or a line.
+Uh-huh. For the, for the bridge. Right now I got on it. What company would you recommend?
+I like, um, vitality. It's vitality.net. I use them quite a bit. And you just go sign up for an account and they're at great carrier.
+Um, they'll give you DIDs and they have a lot of Utah DIDs. And, um, yeah, lots of different service plans. I mean, they're going to be, um, I'm sorry. I got a cold. I'm trying to get over. They've got a lot of, um, they'll give you like an 800 number for like 10 cents a month. And then it's like, I don't know, 4 cents a minute or 3 cents a minute. Really cheap. I mean cheaper than you get from the phone company.
+Yeah. Yeah. Well, I've actually got, um, I have, I have a data center area that we're set up with. We've got a bunch of servers there. They're voice over IP. So I appear. I lines coming into those. And then I just branched up off to my house. And I've got.
+What I've got set up is what asterisk box bridge with the other asterisk box and appear group. And so numbers that come in here just automatically forwards over through a trunk interface to my home machine on my concats line. And then I just played with the call or do whatever I want there from that end.
+I don't need it. But yeah, I do because I want to, you know, I can figure like different stuff than what we're doing on like our data center boxes.
+Because we have like some voice over IP applications. We do and different things. Yeah. Yeah. Easily you could. And you can just have your phone hook up over the concats line into the, into the collocated box.
+And set up. Yeah. Vitality. It's V-I-T-E-L-I-T-Y dot net. And so real quick, this is the user interface. This is the first page here is where you'd have all your voicemails. So if I had any voicemail, they'd show up here in a list. And then you can just listen to them right here in the web interface. And then you can delete them. You can move them to folder, sort them. Do all that kind of stuff. You can go to call monitor. This is where all of your recordings are for your phone extension. If your extension has been tracking recorded.
+Has been recording your calls in and out. File features you can figure from here. So I can set up call waiting. I can enable or dis enable or disable call waiting for my extension. I can set up call forwarding. So like if I want to have an unconditional call forward, you just enable it there. Put in the number. And they'll just forward all your call to another number.
+Here's the follow me settings. Oh, I don't think I've enabled it on this switch. But this is where you can set up like a list of extensions or numbers to dial.
+Oops, set this IP. Let's see, right here. You can have a personal IVR. So you can have your own press zero, press one.
+Dr. Chris is dot press one. Think I have a little recording there. Let's see extensions. 4302. That is enabled. Let's see.
+Probably something else I have to enable them for getting about. You have to actually enable follow me. I think is what it is. In here. So in order for your users to use follow me, you have to add it. So I've just added it now.
+So now you apply your changes in time. Another thing when you're in the web admin here on tricks box anytime you make a change. It'll say apply configuration changes up here. Most configuration changes are going to require you to apply them, which does a little reset on the asterisk process that's running in the server.
+And so now if I go to follow me, there's my options for follow me. So the question is what disconnect active users if you apply changes. If it's if it's a soft reset. No, but if it has to do a hard reset.
+Yes. So it depends on the kind of changes and it figures it out for you. If you don't know, then you probably want to go into the terminal, log into the asterisk box and set.
+It has an option in there to reset with not busy. So that basically the phone switch. If you've got if you got a business environment, you don't want to do this. So it'll just reset it when there's nobody on it.
+And to get to that, you just do real quick asterisk.r and that'll show you that gets into the asterisk console. So I think it's restart. So they can say gracefully and then that'll do it when it's when it's graceful.
+But nobody's going to get hit by it. And then here's the follow me settings real quick on the user interface. So you can just set up and just by scrolling over it will show you what to do.
+And then like if you want to do an outside number, you know, you can do that. You put the pound either before after I can't remember for sure.
+And then you can also use confirmation, which is nice. So like I have mindset up so that when it calls my cell phone, I have to confirm it by pressing one. And it'll give me a little message when it calls me. It'll say you have an incoming call blah, blah, blah.
+And you can also customize that message. You can have a lot of fun there too, especially in an office environment, which we do. And the person has to press one or they don't get the call. So if it goes to your cell phone voicemail, you don't end up, you know, the person that's calling doesn't end up going into your cell phone voicemail.
+It'll end up going to your voicemail on your tricks box. And then it'll also show you all the feature codes. These are feature codes that are available from the phone. So either the soft phone or the hard phone will let you get to those.
+And then it's got a few settings here for different things. And the other thing that's cool is the someone else have a question.
+Another thing that's cool is the FOP. This is just like a little interface. It's a flash base. It's web based. And it lets you see all the extensions that are in your phone switch and see who's on the phone, what number they're calling.
+If you have administrative rights, you can actually drag like one call to another. Like let's say this person is on the phone with somebody and you want it to go over to this extension. You can just click and drag it.
+So if you have an office environment with a secretary, you know, they can bring this up and do all kinds of stuff with the phone calls. You can also see your cues and conference and trunks and everything else.
+And then there's another open source utility called HUDLIGHT, HUD, L-I-T-E. And this is from Fonality. And it's a little piece of software that runs on Windows, Linux, and Mac. It'll hook into your phone switch and it'll give you like kind of like a heads up on your phone switch similar to this with all the extensions and who's on the phone and who's busy for all that kind of stuff.
+And you can set some security parameters around what people can see through the HUD.
+So the question is, is there like contract companies that come in and set up phone systems? There's quite a few in town and I can't think of any, I can't think of the names of them up my head. But if you go in the phone book under like phone systems, go through there.
+I think they'll usually say asterisk in their ad or whether or not they support asterisk. I think there's at least a few in town that do this that'll set it up for you.
+Does anybody know of any companies that do?
+There's a booth out there for Tristan and Rose, I think.
+Okay. He goes in and do it. Cool.
+Yeah. Switch box.
+Yeah, so I just installed one of these for a company not too long, like a month ago.
+And they had 40 extensions that we set up on just a standard box. I mean, it was like a, you know, an Intel Xeon. It wasn't like an $800 box.
+And it ran perfect. Drop a PRI card in and they were often running.
+So this makes a great phone switch for an office environment. It's a lot cheaper than going and buying a Viya or Cisco switch for 20 or 30 grand for a similar setup.
+So I installed it, run it.
+My biggest thing is Trixbox pretty much walks you down. You can't really do a lot.
+It's hard like doing other things on it. Custom stuff.
+So my question is how well does it work in any virtual situation?
+What hardware would you recommend?
+And how does this parent do?
+Is it really Trixbox has everything together?
+And trying to install it by hand, you can install a different package, get it on.
+It takes most of our customer work on anything but the door is the specific office.
+Yeah.
+So in general, if you want to do a virtual home, how would you mentor, maximize in the part where you want to do other things?
+Well, okay. So I'll take the first part of the question there first.
+So the first part of the question was, you know, Trixbox is hard to customize or it locks you into things.
+And that is largely true because it really takes over all the configuration parameters.
+And it's really free PBX. It does a lot of it because that's the web interface for it.
+You can, though, however, do a lot of customization. They do give you a lot of places where you can put your own custom config under CD at C-Asterisk.
+And if you look in there, you'll see they have like on the SIP settings, for instance, you'll have the SIP custom, SIP General, SIP NAT, SIP.com, and SIP additional.
+Trixbox will take over like SIP additional and the SIP.com, but if you want to put in some custom stuff, you just go ahead and edit SIP underscore custom.
+And the thing you put in there won't be overwritten or deleted by Trixbox. So it is very customizable in that way.
+So that kind of alleviates some of the customization issues. If you want to do some really custom stuff, though, it still may not work well for you.
+But it does go, I usually use Trixbox for our default installation just because I like all the web interfaces and I don't have a lot of time in life and I don't want to spend a lot of time compiling everything.
+And I've had two before, but I avoided default possible. And so I have, we've got some really highly customized Trixboxes that are doing all kinds of crazy stuff that we've just going to override all the stuff and custom and take care of it that way.
+And we've been able to do most all the stuff we want to by doing that.
+Yeah, there's really not, because I mean, it's just asterisk. And as long as you understand the layout of how the configuration GUI tools configure things and how they customize how they manage different files, as long as you're overriding things in the custom files and using the custom files where it's not going to touch, you're going to be fine.
+And you're not going to, you're not going to get nailed by it overriding something you changed.
+On the hardware side of things, so the other question was, what level of hardware would I suggest? For virtualization stuff, I mean, a core 2 type processor is going to be fine.
+I mean, I've run on this MacBook Air, which is like, you know, it's really leaned out and everyone's great. I'll run the VMware or the parallel server on it and I'll do different things with it just for testing and stuff.
+And I haven't had any performance problems just doing that. Now, if it's a server in your network, it really depends on how many phones you're going to have. If you have three or four phones, you know, it doesn't take a lot to run it.
+I mean, a P4 would handle it fine. An old P4 on a, you know, if a SATA disk would do great.
+But if you will, if you have another system that may take up CPU every once in a while, you'll have to take it in.
+Like you're, like you have a virtual, you're going to run a virtual machine. Yeah, it'll.
+Yeah, I mean, if it doesn't have CPU available, it'll, it won't be happy with that because what happens if you're on a call and the processor starts to peg, then you'll just start hearing jitter pop bubble type voices.
+You get a lot of that stuff. That means, you know, it's either having some kind of a processor memory issue or whatever.
+And then network, network problems can also affect it. You know, if you're pegging out your network for some reason, again, you'll get jitters, pops, problems in the call.
+So those are things to look at if you start getting those kind of quality issues in there. Any other questions? Okay. Like we're done. Thanks.
+Thank you for looking to ask the public radio.
+HPR is sponsored by Carol.net. So head on over to C-A-R-O dot-N-C for all of those meetings.
+Thank you.

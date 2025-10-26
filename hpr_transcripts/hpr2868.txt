@@ -1,0 +1,187 @@
+Episode: 2868
+Title: HPR2868: Custom data with Persistent
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2868/hpr2868.mp3
+Transcribed: 2025-10-24 12:31:58
+
+---
+
+This is HBR episode 2008-168 entitled Custom Beta with Persistent and in part of the series,
+Haskell, it is hosted by Tuku Toroto and in about 20 minutes long and Karima Clean Flag.
+The summary is, Tuku Toroto explains how to serialize Custom Beta with Persistent.
+This episode of HBR is brought to you by Archive.org.
+Support universal access to all knowledge by heading over to Archive.org forward slash
+Donate.
+Hello, this is Hack about the radio and you will listen to Tuku Toroto or Tuku Toroto.
+Today I am talking about Custom Beta with Persistent.
+Persistent is the Haskell Libertable connecting to the database that I have been using with the
+Dessert that is a framework for building websites.
+So, quick recap of how these things work.
+There's a models file in a config directory that is text and this config file is used by the compiler.
+In the config file, you list your data types or entities and the compiler will generate
+you the code for that and it also will generate code that will create the database for you.
+So, when you start your printer dessert application, it will connect to the database.
+Notice that it is empty and it will generate the database schema for you.
+Later on, every time it connects, if you choose to use it, it will check the schema and the config file
+and perform the migration if this changes there.
+Sometimes the migrations work, sometimes they don't, depending on what you do.
+If you add a non-mandatory column or field in your data, then Persistent can do that,
+but if you add a mandatory value, then it can do the update and you have to do it by hand.
+I wouldn't use this for the production data, but in the development, it's really handy.
+So, Persistent maps, database and the Haskell types.
+So, you get the records on the Haskell site and then you get the database tables on the database site.
+And columns of the database, of course, have different types and so does the Haskell data
+and the person that does the mapping between this data too.
+There's a bridge to the meetings for common types like text and numbers of various kinds.
+But sometimes, quite often, actually, you want to have a bit more granular approach on the Haskell site.
+You don't want to use the data, rather primitive data, so you want to have something more specific
+and then the Persistent doesn't know how to handle those.
+So, you need a mapping between the data that you wrote by yourself and the database.
+A good news is that Persistent can do this manually.
+I'm sorry, automatically.
+If the, well, basically any type of data.
+If you have a, for example, in my game, I have a building type.
+That is an enumeration.
+It has a values like sensor station, research complex, farm, particle aggregator, neutron detector, so on.
+If I want to store this in the database, I could fight on the Haskell site,
+derive text field, quotation, building type, quotation.
+And during the compile time, the compiler will generate nothing for me.
+I can, I can use in that config slash models file that defines my entities.
+I can now have, for example, a building entity.
+And there I can have a field type that has a value of building type.
+And in the Haskell site, this is just nothing, nothing strange.
+There's such a stuff.
+I have a building like that that I can use as any regular data.
+Because it is regular data.
+On the database side, there's a column in my building table that has a type of far chart.
+Because the default implementation of the mapping is to turn the enumeration into text.
+So if I have a farm type of, if I have a building that is type of farm, then it type is stored as a farm stream in the database.
+Some people like to store these enumerations as numbers because it's more compact.
+It doesn't take so much of space.
+But I actually like storing them strings because they are easy to handle than you are manually editing or leading the database.
+It's easy to remember that the farm as a string means a farm.
+Then remember that three as a number means a farm.
+So this is how the persist can do the automatic driving.
+It also works for the complex type.
+For example, I have a person name in my project that has three cases.
+And like it is a simple name.
+This is basically just a first name and maybe a cognomon.
+Or you're going to have a date or you're going to have a some definition.
+Then there's a record of names that have a first name, family name, maybe the cognomon.
+These are like John Smith and Susan Johnson, the brave.
+And then there's the legal names that are most complex.
+This is the first name, family name.
+They have a regional number.
+That is the running number that is used to distinguish between the rulers of the same names.
+And then they have the cognomon.
+So you can have a George Third and William the Concubine and such.
+And of course, these would have a family names too.
+But for some reason, what do you think about Royalty?
+Depending on the culture, the top ID first name and the regional number.
+Anyway, and this I actually can have a person name as a data type and stored it into the database.
+And it gets converted into the large cell again.
+And there's a lot of information about which are of these three types.
+It actually is and what field is what.
+And there's quite a bit noise.
+I wouldn't want to deal with that manually.
+So I can just say to the person to this, to this for me please.
+The downside is that manually editing that person name,
+manually editing the column that is type of person name is painful.
+I usually don't know that.
+For new types, automatic driving doesn't work that well.
+There's this extra noise and extra information and it's stored as a text.
+So I think that's a bit extra.
+New type is that method of the way of defining a new type that behaves like an existing type.
+What is this thing of that?
+For example, in my game, I have a start date that denotes a point in time started.
+And that is internally repression as an int.
+So I'm defining it as a new type, started equals started,
+open curly bracket and started double column in close curly bracket.
+So now I have a start date that is actually an int.
+I can perform calculations with this.
+I can add two star base together.
+I can compare two star base.
+I can see if they are equal or if one is big later in time with another one and so on.
+If I were to store this into the database using the automatic driving,
+for example, today's start date will be stored into the database as a text,
+start date, open curly bracket, and start rate equals 2, 0, 1, 9, 6, close curly bracket.
+And that's a six month of 2019.
+And because it's a text in the database, it's hard to compare them in the SQL.
+You cannot order them.
+And you cannot pick all the dates with a given range and such things.
+You would have to do all that theme in the code.
+So I was one to store this as a number.
+So in the database, it will be number.
+So I can do all the database operations that can be done to the numbers,
+but on the Haskell site it will still be a start date.
+Because I don't want to mix the star dates with the two sizes, for example.
+So how do you start?
+There are two five classes that I have to make instance of.
+I know that I still haven't made an episode about that classes, but I'll write them.
+I'll make that a tool.
+But our five classes basically mean that you have a common interface that is shared between different data.
+So in this case, there's two five classes.
+There's a text field, and then there's the text field SQL.
+So the first one is used to map between the Haskell site and the database site.
+And the second one is used to tell what is actually the type on the database site.
+So the basis field, I have these definitions written down in the show notes if you want to check them.
+And I try to skip a bit of the extra noise here, so it is a followable if you're just listening.
+So the basis field, I basically have to just write the instance basis field star dates where and then the definitions.
+So I have two functions to persist value that takes a start date and returns a burst value.
+So it converts to the burst value.
+And here it's just, I just say that to burst value start date n equals persist in 64 dollar form integral n.
+So I take my start date apart so that I have access to that internal integral and I construct a persist in 64 with this value.
+Now I have not my started into the burst value.
+Then there's another function from burst value that makes burst value and the positive returns are started.
+Possibly because there's multiple burst values, like there's numbers, there's text and so on.
+So we have to take into account that maybe somebody made somewhere mistake and we are trying to deserialize text into the start date.
+But first the happy case from burst value, persist in 64 and equals write dollar star bet dollar form item in the crown end.
+So we are taking that persist in 64 apart so that we get access to the number inside of it.
+We call the from integral into that so that we can make sure that it's correct correct indexes because there's instances indexes and so on.
+We construct a start date with that value and then we construct a write with that a constructed start date value.
+So we are returning write start date and the value is the happy case.
+Then we have an unhappy case when we just write from burst value underscore this means that anything that hasn't been matched so far.
+So basically anything else that isn't there is in 64 so from burst value underscore equals less quotations fail to deserialize.
+This means that if for some odd reason somebody would try to deserialize size text into the start date.
+This wouldn't happen but because we are dealing with the half square we have to take into account cases that shouldn't happen because they still might happen.
+So if somebody would try to deserialize text into the start date they would get a left fail to deserialize so they would get a error case.
+So this takes care of nothing between ask the data.
+The second second R type class that we need to implement or have the instance of is the first field SQL that is short one.
+It just says instance first field SQL start date where SQL type underscore equals SQL into 64.
+This tells that when a president is creating the database and it encounters a table definition which is a column type of column is started by this.
+It understands that it needs to create a column of SQL into 64.
+So now when we use this if we now use the start date in table definitions we are not getting a word size any more but we are getting a index which is more compact and allows us to create this as a number in the database and allows us to do what you can do with the numbers of the SQL database.
+So this is how you do the mapping.
+There's one more trick that is tangently related to here called is string pipeline.
+So for example in my code I have a planet name new type that is used to store.
+Surprise, surprise, plant names because I don't want to mix planet names with the star names with the lower names or with the ship names for example.
+So I have planet name and normally if I'm constructing these planet names on the hospital side manually I would have to say that let I would have to say like my planet equals planet name.
+So now my planet name is a earth but it would be really nice to just write earth and have the compiler to deduce the correct pipe because if couple lines after that I'm using it as a planet name the compiler should be able to do that.
+So as it knows that here's some sort of text and the couple lines afterwards it's used as a planet name so it has to be a planet name.
+And this is a system where you have to go in this it requires a language extension called overloaded strings.
+You can enable this with now compile options when you're ever invoking the compiler in depending on your build system you can configure them or you can just have a language program in your source code file.
+That is just open open curly bracket that is the thing that looks like a fence language overloaded strings again that's sending that close curly bracket.
+So this this this pragma means that now in this source file overloaded strings is turned on.
+And then of course you have to well of course but you know but then you still need that is string instance for data path data path.
+So in our planet name it would be just instance is string planet name from string equals planet name dot from string.
+That's it nothing nothing more.
+What this means is that whenever the compiler needs to convert from some some text into the planet name it knows that it can to use the from string.
+Component the planet name so planet name value constructors of this value and this allows us to use the planet name without specifying that it is planet name.
+The compiler will still still type check it want to allow you to mix things that aren't the same things but you don't have to keep specifying that this string is a planet name.
+As long as you consistently use it as a planet name everything works out.
+It's not a big deal but it it like I think it makes writing programs a bit nicer and the advantage so that you will never
+let me explain it with a star name or building that with a shoe type or hat size with a shoe size.
+Okay that's that today's episode.
+Thanks for listening.
+If you have questions or comments you can reach me by email or at the 31st.
+We are on the 22th at master.com.
+Social.
+Thanks for listening.
+Ad Astra.
+You've been listening to heckaPublicRadio at heckaPublicRadio.org.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show like all our shows was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast then click on our contribute link to find out how easy it really is.
+HeckaPublicRadio was founded by the digital dog pound and the infonomicon computer club and is part of the binary revolution at binrev.com.
+If you have comments on today's show please email the host directly leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise status today's show is released on the creative comments, attribution, share a life, 3.0 license.
+Thanks for watching.

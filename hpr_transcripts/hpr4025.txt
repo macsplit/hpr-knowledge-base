@@ -1,0 +1,162 @@
+Episode: 4025
+Title: HPR4025: Testing V language
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4025/hpr4025.mp3
+Transcribed: 2025-10-25 18:48:34
+
+---
+
+This is Hacker Public Radio Episode 4,025 for Friday 5 January 2024.
+Today's show is entitled, Testing the Language.
+It is part of the series' languages.
+It is hosted by Celeste, and is about 17 minutes long.
+It carries a clean flag.
+The summary is I tried V, a new experimental programming language.
+Today's show is licensed under a Creative Commons Non-Commercial License.
+Hello everyone and welcome to this new episode of Hacker Public Radio.
+Today we will dive into an experimental, a new programming language called the V Programming Language.
+It has been created by a guy from Netherlands, Alexander Medvednikov.
+And it's still experimental, but the foundations are really cool.
+And I want to explain, I tried it for some days, what I think it's heading in a great direction,
+and which parts instead are heading to a bad direction, and I fear some of them.
+So let's start with the great benefits.
+Strong static typing, it's not a functional language, it's not a really low level language,
+it feels either, it feels like go, it's quite similar, really similar for the syntax,
+but it has very, very strong static typing, very strong, and that's good.
+It has, it borrows some of the concepts of some types, which means you can
+pattern matching, which has one of the great features of draft that have been borrowered
+by other research level languages and put into a more usable production-ready language.
+And the language is also taking these, so you have option-and-result types to mark functions
+and return types and values that can be either empty or can contain something,
+or can like some other stuff like file access, which can have input output errors.
+So you have to make sure you handle the errors state.
+If something went wrong, you have to tell the program what to do every time.
+This is something that gets really overlooked in C and in many other languages.
+The function says, hey, if this function returns minus 1 or a specific value,
+it means that there was an error and make sure to check the return code,
+but it's a software both that no one checks every return code.
+And it's really easy, even if you want to try to check every return code,
+it's really easy to forget about some of them.
+By, instead, by having the result type, it means that if you want to use the value
+that was returned by the function, for example, on file read access,
+you have to tell the compiler what to do if there was an error.
+If it's OK, you can use the value, but you have to tell explicitly what to do if there is an error.
+And maybe the solution is to crash, but you have to tell the compiler if there is an error here, crash.
+If you don't tell the compiler, it won't compile and that's really great.
+So it takes many parts from the a good type system and heavily inspired from the rast type system.
+And so I really like that part, but with an additional benefit.
+It has automatic memory management.
+That's really, really great for many tasks.
+Not for low-level stuff.
+For low-level stuff, obviously, you want finer, greater control over memory.
+But sometimes you really want automatic memory management.
+And that's something you usually get from higher-level languages like Python or Java.
+But they run in an interpreter or in the Java virtual machine.
+We are either very big program just to run your code.
+You cannot just have a simple executable like you would produce in C and run it
+and have automatic memory management on that instead.
+And that's something we achieve.
+That's really useful.
+You get a really small compiled binary because the compiler intermediately uses C.
+It turns V code to C code and then compiles the C code.
+So you get a really small executable, you get for free all the platform support that C
+compilers have had since C exists.
+You get all of that for free.
+And plus, as you said, you get memory management, memory allocation, which is really great
+for some tasks.
+For example, Rust solves that by using the borrowed checker and the move semantics.
+So I'm a way of keeping track that only a variable, only one variable at a time is responsible
+to be the owner of some value and it is responsible to clean it.
+And in order to do that, the Rust compiler is a lot stricter in what you can do and what
+you cannot do, what memory can you access and what you can't.
+If the Rust compiler can make sure that a call you're doing to a variable is valid and
+it's leading to a correct memory address, it won't compile.
+So yeah, you have to fight the borrowed checker and fight the compiler many times depending
+on what you're doing.
+One of the fields where you feel the problems of the Rust approach the most is user interfaces.
+If you're rebuilding a graphical user interface, it's hard, Rust.
+Because you have many interconnected parts that need to share some variables.
+So you have a part with event listeners, a part with the components you want to draw
+and then event listeners attached to the components, to the button, for example.
+So that it activates when you click on it.
+And then the event listener in turn should call and modify other variables.
+But the scope of the event listener is different from the scope of the component it has been
+declared into.
+It can leave more, it can leave less.
+The variables it's using also can leave more or less than its lifetime.
+It's really a hard problem if you don't have a garbage collector.
+It's really a hard problem.
+So for graphical user interfaces, a garbage collector is really useful.
+And I like that V has both strong static typing, both garbage collection and both it produces
+a very small binary by going through C.
+It's really useful.
+I haven't found anything similar so far.
+The most similar one is Scala, but it needs the Java virtual machine, which is an elephant
+for its sites.
+And I don't want that.
+Yeah, now we're talking about the last advantage of the V language that I liked.
+And then we will go into the disadvantages and problems of it.
+So another cool thing, compile time reflection.
+Reflection means being able to declare a struct and then being able to iterate over the
+struct field and types.
+So you can iterate in your code and say, hey, if this for each field of the struct, if
+the field type is an integer, then inject this code.
+If the field type is a string, inject this code instead.
+And in some languages like Go, for example, you can access that data at runtime.
+But here you can access it at compile time.
+So the only code that gets generated is the code that matches those for cycle and if conditions
+of types and field names you wrote.
+So for example, if you want to parse a query string and you want to parse the query string
+into a struct, you need to know and inject into your code what are the types of the
+struct fields.
+So like you can convert each value from the query string, which will be a string value
+to the correct type in the field, in each field.
+To do that, you can write a specialized code for each struct.
+So for extract you manually write the parsing, that's one approach.
+But in the, you can make a generic function that works on every struct type.
+And at compile time it takes the type, it looks at what the struct fields are and what
+are each their types.
+And it generates the code for each field to parse the query string.
+You can make that.
+You can select like rust macros, rust the rive macros, you can achieve something similar.
+But rust the rive macros are both more powerful but also very, very, very hard to write.
+I tried to write one for a project and it was really a hard time.
+While compile time reflection as in V, so it's more most cases without problems.
+So let's go to the bad part, the dark part.
+First, it's still in beta version, it's a language from 2019 and it's at the zero point
+for version and still a long time to reach a stable version.
+Things may change, things are partially broken.
+The compiler works decently but I found some compiler bugs here and there.
+That works overall, okay, certainly you don't want to build anything for production now
+using V.
+Second problem is that it wants to be really, really clean but they are adding too many
+features.
+They are adding database object relational mapping into the language.
+Very cool but maybe too much.
+They are adding functionality to write GPU shaders in V language.
+Yeah, cool but yeah, maybe too much.
+I would really prefer if they stabilize the strong core points of the V language that
+I highlighted and refine them instead of adding too many features and complicating the
+language before even how can I say before adding more stuff instead of adding more stuff
+it's better to refine the core.
+Overall it has been a really cool experience.
+I don't get usually excited for a new programming language, I want to use one or two programming
+languages that work and then are reliable and solid.
+But yeah, it seems like a good combination of ideas, good static typing, small sites binary
+and compiling to an actual executable, no Java virtual machine and at the same time immutability
+by default, pattern matching, result types, compile time reflection and garbage collection.
+All of at the same time.
+I'm really interested in seeing how it goes and what it will reach.
+I notice now that you can also donate to the author if you want.
+And yeah, but not first I would encourage you to try it and let me know in the comments
+how it felt.
+Was it interesting, was it functional?
+Did you prefer some other types of programming languages or and why?
+Thank you for listening and see you next time.
+You have been listening to Hacker Public Radio, as Hacker Public Radio does work.
+Today's show was contributed by a HBR listener like yourself.
+If you ever thought of recording a podcast, you can click on our contribute link to find
+out how easy it really is.
+Hosting for HBR has been kindly provided by an honesthost.com, the Internet Archive
+and our Sync.net.
+On the Sadois status, today's show is released under Creative Commons, Attribution, 4.0
+International License.

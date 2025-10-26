@@ -1,0 +1,554 @@
+Episode: 3519
+Title: HPR3519: Rust 101: Episode 2 - Rolling With the Errors
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3519/hpr3519.mp3
+Transcribed: 2025-10-25 00:55:47
+
+---
+
+This is Haka Public Radio Episode 3519 for the first day the 27th of January 2022.
+Today's show is entitled, Rust 101, Episode 2 rolling with the errors and is part of
+the series, programming 101, it is hosted by Black Colonel and is about 54 minutes long
+and carries an explicit flag. The summary is in this episode, Black Colonel helps you construct
+a simple dice rolling application in Rust.
+Hello and welcome to Haka Public Radio. My name is Black Colonel and this is Episode 2 of my
+tutorial on Rust. In this episode I'm going to be taking you from the Hello World default
+program that gets created when you create a new program with cargo that I went over with last
+time and I'm going to take you from that to a fully functional dice rolling application.
+It's not going to be anything fancy at this stage but in this episode I'm going to go over how
+to use external crates so those are crates which do not come pre-installed with Rust so not
+in the standard library of Rust. I'm going to show you how to use a standard crate which actually
+it's going to be in that order because the standard crate that we're going to be using is a slightly
+more esoteric than the external crate that we're going to be using because the external crate is
+the random library that we're going to be needing to roll dice. I'm also just going to go over how to
+do variable declarations, loops and a couple of other things. Now I'm not going to be getting into
+well I'm going to be getting into if statements but I'm not going to be getting into for loops or
+while loops because I kind of think that those might be, I mean first of all the syntax of them
+are just based on the same syntax as an if statement. So once you know how to write an if statement
+you can pretty confidently go into especially while loops and for loops aren't that complicated
+if you're familiar with other for loops but if you're not familiar with programming in general
+both of those can get pretty complicated as far as from a logical perspective and Rust has this
+concept of just a loop which is an infinite loop. You can think of it like a while true in most
+languages like you can do a while true in C or you can do it in bash even and that's kind of what
+it is but it's just a infinite loop that's just loop and then you break out of the loop when you
+want to break out of the loop. That's what I'm going to be using in this particular example for
+simplicity as well as just to show off that functionality of Rust because I think it's really cool.
+So to get started we're going to we have the hello world program right here and I'm just going
+to start out with making I think I went over this in the last episode but it's been a while so I
+don't actually know what we're going to do is we're going to change this so instead of printing hello
+world it's going to be printing out a variable specifically I'm going to use the variable for the
+total of all of the dice that we're going to end up rolling so I'm going to replace the hello
+world with total TOTAL a colon and a space and then an open curly brace and a closing curly.
+And what this is is if you've ever used the print f statement in bash or in C or any of those
+languages this will be kind of familiar as a as in the syntax that this how this works which is
+you put in a some kind of marker token and then it will replace that token with the variables you
+put afterwards in order and how it does that is if you ever used a bash with like an echo and then
+a double quote and you want to put a variable inside of that double code just inserted into the
+middle of the string you can put a dollar sign in front of the name of the variable it kind of
+does a similar thing but it's a little bit more flexible and a little bit more general so we'll
+have the opening and closing curly braces and then after the closing double quote we're going to
+put a comma a space and the name of the variable that I'm going to use here is some or SUM because
+it's going to be the sum of all of the dice rolls later on but for right now it's just a variable
+so you could call it anything that's just what I'm using here so the way that this is going to work
+is whatever value we give to some it's going to take that value and replace the opening closing
+braces that little token it's going to replace it with the value that's in some you can get a
+lot more complicated with this formatting style in Rust but for right now that's all we're going to
+be using it so then before this line we need to define what sum is so I'm just going to do a simple
+declaration for now so right before that line I'm going to put let LET space and then the name of
+our variable in which in this case is some SUM and I'm going to do I mentioned that you don't have
+to do this when I was talking about just stuff in Rust in general I believe in episode zero
+but I'm going to make explicit type declarations just for ease of reading just so that you know
+what everything is so I'm going to put a colon after the name of the variable a space and I'm going
+to put U32 which is an unsigned integer that is 32 bits which can get very large because it takes
+all of the same amount of memory as a 32 bit integer so it takes one 32 by bit of memory but it
+doesn't use negative numbers so you can just keep making it as big as you want you get double the
+amount of space as you would with a signed integer that's the same bit so you can get much bigger
+positive numbers with a U32 then you can with an i32 but you're limited to only having positive
+numbers so this wouldn't work for negative numbers or any of that kind of stuff but since we're
+using this as a sum of dice rules we're not really expecting to get a negative value out of it
+at least not in the way that I'm doing it right now which is not involving the fudge dice or
+anything that involves negatives in that way and I'm going to put a space an equal sign a space
+and then a zero and then a semicolon so we're going to assign this the value of zero to start with
+and then we're going to add to it later but right now this is what we're what we got
+going to save this file and I'm going to run it just with if you are in the the project folder so
+in this case I'm using the name rust roller for this project if you're in that project folder
+you can type in cargo space run and it will compile and run the program I believe I went over
+this before but that's how we're going to be testing it at each stage so what we're expecting
+to get out this is sort of I know this isn't really about specifically this is a programming
+thing in general but one of the first things about programming is debugging and going through
+it step by step like this will aid you in debugging because the first rule of debugging is to know
+what you're expecting to get out and then when you test it you compare what you expected to what
+you got and then you try to figure out if something went wrong how it went wrong from that point
+so right now we're expecting for it to just for it to print out total colon space zero because
+that brace that double brace thing is going to be replaced with the value of some which in this
+case is zero so I'm going to run cargo.run and we get total space zero which is exactly what we
+were expecting so everything is good at this state so now we have something which can print out our
+some variable so now we need it to actually generate a random number and to start out with this
+we're going to be doing a single random number from one to two to start out with just to make
+sure that we can do we can get that down before we move on to the next step this is sort of building
+on what we already have at each stage because then if something goes wrong we can pinpoint
+exactly the change where it went wrong this is some basic troubleshooting stuff but I think it's
+good to go over it in case there's anyone who hasn't really been exposed to basic troubleshooting
+or basic programming concepts before it and I just find it useful to refresh even for people who
+are familiar with it so you understand more of what exactly is the thought process behind the
+debugging rather than just sort of going on instinct or something like that because it can be a
+little bit dangerous to do that so in order to import our random library we're going to go into
+the project folder there's a file called cargo.tommel which is cargo with a capital C
+.tango oscar mic lemma t o m l and this file we got two headings we have package and dependencies
+they're both in square brackets in the package heading we have the name of the of the project which
+in this case is rust roller we have the version of the package in which in this case is 0.1.0 which
+is the default that it gives to the very first instance of the package and you have the addition
+which in this case is 2021 this is the addition of the version of rust that you're using because
+they've changed the syntax and stuff in each addition so this will make sure that the compiler knows
+what addition it should be comparing it to so that it knows what's an error and what is in
+so knows what syntax to be using all that kind of stuff and then under that you have the dependencies
+heading and this is where you're going to add whatever external crates you're going to be using
+this is something I really really really like about rust because it has its own package manager
+in cargo when you make a library you can upload it to cargo you can upload it to well I guess it's
+crates.io technically but you can upload it to this place that is connected to the whole cargo
+ecosystem you can write documentation which is has a standard form which goes on to docs.rs
+which allows you to find documentation for the crates really easily which is really nice
+and it allows for you to utilize those packages very very seamlessly within a rust program which
+I'm going to be showing you a second but right now all we need to do is underneath the dependencies
+heading we're going to type in rand that's Romeo alpha november delta space equals space double
+quote and then zero dot eight dot zero and then a closing double quotes now that's the version of
+this particular package that we're going to be using I believe this is the latest version
+but you can put any other version number as long as you're familiar with like the way that it works
+because it's going to be drawing on that version specifically now just going to take a brief aside
+here because I think this is really cool if you go to docs.rs that's delta oscar Charlie Sierra
+dot Romeo Sierra you put a slash you put the name of the crate which in this case is rand
+then you put a slash and you put the version that you're using of that crate which in this case
+is zero dot eight dot zero then you hit enter you're going to be taken to the documentation for that
+crate and for that version of that crate which will give you all of the module structures traits
+functions et cetera whatever's in there for that crate to give you a sense of how to use that
+crate which is really nice because if you end up using an old version or crater if you end up
+having to maintain legacy code using an older version of a particular crate you'll still be able
+to access the documentation for that version until you get a chance to update it which is it's
+just beautiful in my opinion it's one of the things that's just it's so nice to be able to have
+that we've basically finished importing it as far as what we need from the cargo dot tommel so let's
+go back into our main dot rs and above the main function declaration above that fn dot or fn space
+main going to give myself a couple of lines and we're just going to type in use that's uniform
+Sierra echo space and then the name of the crate which in this case is rand so that's going to be
+Romeo alpha november delta and then we're going to put two collins that's colon colon and then
+we're going to put a opening curly brace and we can put in here it's going to be a comma separated
+list of the things that we want to import from this particular crate in this case what we're
+going to be importing is the function thread range and the trait range so a common convention
+in rust is that if you have a function or a variable that spans multiple words you'll use what's
+called snake case which means that everything is lowercase and the words are separated by underscores
+and if you have traits or classes or any of those higher level structures then they will be in
+camel case I believe they might still be in they start with a capital letter that's that's all
+I'm trying to say they if it starts the capital letter it's probably a trait or a class or a
+struct or something like that and if it's snake case then it's probably a function or a variable
+that's sort of the way that they separate things in rust parlance so in this case we're going to have
+the function thread range which is going to be the word thread all over case an underscore
+and then rng which is Romeo november gulf I'm going to put a comma and then a space and then
+I'm going to do a capital r capital Romeo lowercase n lowercase g this is the trait range which is
+used by the function thread range and that's why we need to import it we're not actually going to
+be using it directly in this example so at this point we can use the function thread range or the
+trait range in this program so within our main function at the very top above the above the
+sum declaration I'm going to put let space and then it's I'm going to put in a mute which is an
+MUT mic uniform tango because we need this variable to be mutable because it's going to be random
+as as we're using it it's going to be changing so it needs to be mutable and then we're going to put
+a space and then we're going to put um rng a lowercase in this case you can put whatever name you
+want for this but because it's the it's the range that we're going to be using or the random
+number generator that we're going to be using um that's sort of the uh parlance that it makes
+sense to use so it's going to be the rng the random number generator and we're going to set this
+equal to the function thread range so that's thread underscore rng and I know I keep saying range
+even though it's supposed to be random number generator it's a bad habit that I've gotten into a lot
+but whenever I say range I mean random number generator I think basically oh no because there's
+actually the word range coming up so I'm going to try in the future of this to specify rng versus
+range because I know that the rng is random number generator it's just a little bit more difficult
+to say random or rng set of range even though they mean totally different sorry about that um
+so we have this rng now this random number generator uh and what we're going to be doing for this
+is we're going to be generating a number in this case I'm for this example it's going to be from one
+to two because it's easy to see if it's working if you have a very small range because you won't
+be getting the same number over and over again it'll be a 50-50 chance of getting the same number
+I mean I guess it would be better if it was a larger range now that I'm thinking about it because
+then it'll change a lot more over a larger range so you know what I'm going to change the what I
+have here to between one and a hundred because why not um so we'll be able to see if it changes more
+often um which will aid us because if we keep getting the same number we don't know if it's working
+or if it's just giving us the same number over and over again so after our some declaration
+right now it's set to zero because we haven't added anything to it now now we're going to
+essentially roll a die we're going to get our first die which in this case I'm going to be calling
+our current die because later on we're going to be rolling more dice so I'm going to start the
+declaration with a let le that's uh Lima echo tango space current or c-u-r is what I'm going to
+be using that's charlie uniform Romeo underscore die di it's delta india echo and then a colon
+and space uniform 32 because this is also going to be a 32 bit unsigned integer because it's not
+possible at the moment for us to be rolling a negative value then we're going to put an equal
+sign a space then we're going to put lowercase rng that's a reference to our variable that is
+assigned to thread rng we're going to put a period a dot and then we're going to put in gen that's
+gulf echo november for generate and then underscore range the word range that's Romeo alpha november
+gulf echo a open parenthesis and then this will be the range that we want to generate over which in
+this case is going to be one to one hundred inclusive you can do exclusive or inclusive range in
+this particular random random library which is something I really in I really like because it's
+useful to have flexibility there so we're going to be doing it inclusively so that the numbers
+can be right more easily and make more sense so we're going to do a one and then a double period
+that's dot dot and then an equal sign and then the number one hundred so this is going to be a range
+from one to one hundred including one hundred at the end and then a closing closing parenthesis
+and a semicolon so what this is going to be doing it's going to be generating a range from one to
+one hundred including one hundred and including one because it includes the lower bound
+always and it's going to be generating our rng it's going to take it's going to generate a random
+number with the random number generator from that range and feed it into our current die variable
+and since we're not using any negative numbers in the range we know it's not going to be negative
+so we can use an unsigned 32-bit integer to basically have more memory efficiency because it's more
+efficient if we're not going to be using any negative values to use an unsigned integer technically
+I could use like an 8-bit unsigned integer if I wanted to because I don't think that this I mean
+one to one hundred is definitely not going to be above a 8-bit integer our 8-bit unsigned integer
+but we're going to be making this user modifiable later so this is a lot of the user to get larger
+numbers if they so wish although if they're rolling dice for that large of numbers for a tabletop
+RPG or something then you know may whatever god have mercy on those players or the god forbid the
+DM so now we have a die that has been rolled but we haven't added it to our sum yet so that's
+the next thing that we're going to do after our current die declaration we're going to type in
+the word sum which is our variable and then a space and then equals and then a space and then
+sum so we're going to add whatever the current value of sum is to it and then add to it so plus
+and then a space and then CUR underscore DIE that's Charlie uniform Romeo underscore Delta
+India echo which is the name of our current die variable and then we're going to end that line
+with a semicolon so this will take whatever the current value of sum is add the current die value
+to that value of sum and make that the new value of sum this is going to be useful for when we put
+in the loop to add more dice but for now it's just going to be adding whatever the current die is
+to zero which is going to be whatever the current die value is anyway and then we're going to output
+that sum which is going to be whatever the die value is because this original value of sum is zero
+so it's already all going to work correctly it's a little bit bloated at this point just because
+we're going through multiple steps but those multiple steps will help us later when we're adding
+more complexity to it it's also broken down a lot more simply so that we can follow the way that
+the values are changing throughout the program so now it should give us a value from one to 100
+and including 100 so we're going to save this and we're going to run cargo dot or cargo run
+from the project folder and I get an error why do I have an error oh so I only got one error
+here says error expected semicolon found keyword function it says that the error is in my main.rs
+file line three position one so this was not intentional it also gives underneath that it gives
+the actual lot like it gives a little code snippet and it says it has the use rand double colon
+open curly brace thread underscore rng comma rng with capital R close curly brace and then
+underneath that it says in blue it says expected semicolon so the problem if that wasn't already
+clear is I forgot to put a semicolon at the end of my use statement at the beginning of the program
+so it freaked out but you can see this is one of the reasons also that I really like rust because
+the output of the compiler tells you exactly what the problem is and you don't got to look through
+very much to find out what happened there so that was what the problem was I'll just save the
+program again I will do that and then I will run cargo run again I got another I got another error
+which if you read the comments for the last episode errors are very common in rust just because
+it has a very strict compiler which is very good because the compiler is also very good and will
+tell you what the hell the problem is and the problem in this case it says cannot assign twice
+to a mutable variable sum now from that I already know what the problem is it gives me more
+descriptions afterwards as well as a helpline which says consider making this binding mutable
+mute sum instead of just sum it is absolutely correct so when I define sum I just defined it as a
+static variable a immutable variable but I also edited it later I added current die to it which
+you can't do if it's not mutable so I'm going to change that line from let sum u32 equals zero
+to let space and then mic uniform tango space sum colon u32 equals zero so I'm going to add that
+little mute keyword right before sum now we'll make it mutable which will allow me to edit it later
+and then I'll save this and then I'll clear that and I'll run cargo run again and this time it
+works I get a value of 33 for my total I'm going to try it again to see if it's gives me a random one
+each time this time I got 70 one more time I got 99 so I'm going to run it a couple more times to
+make sure that I can get well actually if I wanted to now I'm going to change the 100 here to a two
+so now it's going to read let curd diet u32 equal rng dot gen range one to equal sign two so
+what that's going to be is I'm going to be checking now to make sure that it's possible to get a
+value of two because now I know it gives me different values every time because the 100 was
+large enough that I could see that it gave me different values at all every time but I never
+got a value of 100 out of it so now I need to make sure that it is including the end point so I
+changed the 100 to two so that it's more likely that I will get that endpoint and then I'll know if
+it's including that endpoint or if something is going wrong deeper in the program that I can't see
+this is useful if you have a much larger project just to double check to make sure that everything
+that you're expecting to happen actually happens that way you're not surprised by bugs later on
+so I'm going to save this and then I'm going to cargo run I got one going to run it again I got one
+going to run it again I got a two so since I got a two I know that it is including that endpoint
+because there's no way I would be able to get it to if it didn't include that endpoint so we're
+good to continue the next thing that we're going to be working on is the is to make it user editable
+to make sure that the user can put in whatever value they want into the command line arguments so
+that it can roll a bunch of different types of dice and for this we're going to be using the ENV
+the echo november victor crate from the standard library and what this is is that it provides a lot
+of environment information to rust and this is environment information independent of operating
+systems so this will give you environment information from Linux Mac and windows if you care
+about that I don't I only use Linux because I think it's the best operating system but if you
+use windows this will be the same thing because it is cross platform in the way that you write the
+code which is very nice in a few ways especially for tutorials like this so underneath our use
+line we're going to put use space STD that Sierra Tango Delta double colon ENV echo november victor
+and then I'm going to remember to put the semicolon at the end of the line this time and this will
+import that environment information into our program and now right before our RNG variable
+declaration the let mute RNG equal thread range line right before that line I'm going to put let
+space args that's alpha Romeo Gulf Sierra colon space and this is the type declaration it's going
+to be a capital V capital victor echo charlie that's vec for vector and then I'm going to put an
+opening pointy brace open triangle bracket then a capital Sierra T lowercase T RNG so that's
+the word string with a capital S and then a closing pointy bracket and then I'm going to put a space
+equals and then a space and then echo november victor ENV double colon alpha Romeo Gulf Sierra args
+open parentheses close parentheses dot collect the word collect that's Charlie Oscar Lima Lima echo
+Charlie Tango and then a double sees an opening and a closing parenthesis and a semicolon to end
+that line so what this is doing is it's from that environment from that environment variable
+that ENV it's going to be calling the function args which is going to grab all of the arguments
+from the command line and then it's going to collect them using the collect method into a
+container that you've specified with the function duck or with the variable declaration and this
+case it's going to collect them into a vector of string so each one of the command line arguments
+is going to be a string in that vector I'm going to show you how to call items from a vector
+a little bit later as we're when we use this but it kind of works very similarly to bash where the
+zero the zero with element of that array in bash or this vector in rust is going to be the name of
+the program then the first element is going to be first command line argument in the second
+element is going to be second command line argument etc a vector in rust by the way is a
+it's basically like an array in bash where it's I'm trying to think of the equivalent in I mean
+it's like a vector in C as well where you can if you make it mutable it doesn't have a defined
+size at compile time it has a defined size at runtime so you can have multiple different sizes of
+them and it'll handle all of that dynamically which is useful in something like this where you
+don't know how many arguments you're going to be getting it'll collect all of them and put
+them into a container that is accessible at runtime the downside of this is that it'll compile fine
+but if people put in things that are weird it will break and you'll end up with a like a core
+dump type thing I'm blanking on the name of that particular error but it's basically it'll crash
+and you won't get a whole lot of information out of it until you debug that software so it'll
+just essentially crash without saying anything you can put in checks for those crashes into your
+program to catch those in case you're worried about that but because this is just a simple program
+I'm not going to worry about going into that heavy of detail here and we're just going to use it
+as is and you know we're not we're not going to put in or we're not going to try to call
+the 30 second or I mean in this case we're not even going to call the second element yet of the
+vector because we don't know if it's going to exist yet for right now we're just going to be putting
+in one command line argument which is going to define the number of sides of the single dice that
+we're going to be rolling right now all right I'm going to add a couple of new lines into this
+document it up specifically I'm adding them underneath the mute rng line and the some line
+because it divides my main function into a couple of blocks we have all of the stuff that is
+essentially system level with the args and the rng which is stuff that happens outside of the
+program that initialize that needs to be initialize in order for this program to work then we have
+the stuff that I'm defining for this program so a the stuff that is going to actually be used in
+this program that I have underneath that the stuff that is actually being changed in this program
+like the current dice and all that kind of stuff so underneath the sum declaration I'm going to
+put let and I'm thinking about the mutability of it now because I got that error for the sum but
+this doesn't need so I'm going to put let sides that Sierra India Delta Echo let side then Sierra
+so let sides plural colon uniform 32 space equals so this is a variable called sides that is an
+unsigned 32 bit integer I'm going to put args which is the name of that variable we did that's
+that vector of strings that holds all of the command line arguments I'm going to put a square bracket
+and I'm going to put the number one because we want the first element of that particular vector
+it's the same way that you it's the same way that you index or raise in python or in
+bash or any of those you just put the number of the index in square bracket then we're going to put
+a dot then we're going to put the word parse that's papa alpha Romeo Sierra Echo we're going to put
+two colons a open triangle brace you three two closed triangle brace dot unwrap that's uniform
+november whiskey Romeo alpha papa then an open and closed parenthesis and a semicolon so what
+this is doing is you're getting the first element of our args which is that first command line argument
+and we're going to we know that's a string so we need to parse that string in a particular way
+so that we can get a number out of it and not just character because the reason why this important
+is because in your computer system all everything is just being stored as numbers but like the letter
+a a lowercase letter a is like the number 42 or something like that I think it's 47 I could look
+it up but I'm care right now but if we have an a that we're getting from a from our command line
+argument we don't want it to take it as 42 or if like the number one that one I'm actually going
+to look up because it'll useful for this particular discussion of why this matters look up the
+ASCII table because it is inclusive in unicode which is what rust uses natively so let's see the
+numeral one the numeral one has value has a hex value of 31 or a decimal value of 49 so let's say
+we wanted to for some reason I'm actually going to use a four let's say we're casting magic missile
+so we're going to want to roll a d4 for that magic missile for the damage if we put a four in
+there and we just ask it to use that for from the string and we just want to shove that into our
+the number of sides that we want it's not going to put it as four sides because since it's has
+that string of four that string of four to the computer is the number 52 so we're actually going
+to be rolling a 52 sided die instead of a four sided die which is not what we want so we want it
+to parse that string that number four string and we want to parse that as a four not as a four
+not as a 52 so to do that we use the parse function in rust which will take that string and interpret it
+based on the based on what the string looks like rather than what the computer thinks that is
+essentially it's just minusing what is it it's minusing whatever it needs to minus in order to
+get the actual value of what that number looks like rather than what it thinks it is just based on
+what it's what the number is that's being stored in memory is that would might might have been a
+little bit complicated but I think it that made sense but that's the reason why you need to parse
+things from strings to numbers rather than just asking it to handle the string natively because
+the computer doesn't know what the heck a string is all it knows is numbers while we were doing that
+aside I think I noticed that I screwed up yeah because I needed to add after the triangle brace
+u32 and then a closing triangle brace after that second triangle brace I need to add an open
+and closing parentheses because it's a function that we're calling here now the double colon thing
+that's in the middle there with the triangle brace nonsense that's a particular way of declaring
+what type we're giving this function because there's a lot of different ways of
+one of the biggest most important things about rust is that it is statically so at each stage the
+program needs to know what the heck is going on when it comes to the type it will infer as much as
+it can but it always the program itself always needs to know and if there's ambiguity you need to
+tell it because otherwise it won't assume if there's more than one option so in this case the parse
+function can parse it into different types of numbers so we could parse it to an integer
+an i8 or an i32 we could parse it into an unsigned integer like a u8 or in this case a u32 in this
+case we wanted to give us a u32 out of it so to do that we put that double colon and we put the
+type in triangular braces and then we put the double parentheses that open and closing parentheses
+to actually call that function so after all of that is done after that parse function is called
+we have a technically we have a result with a u32 in now what a result is in rust i mentioned
+this earlier in the series is it is a essentially a boolean with information inside of it so in this
+case it'll tell us if if the parse function succeeded or failed and if it failed at this point we
+could catch that failure and we could display something on the screen to say hey you just put in
+you just put the letter a in this into this and you want me to parse this as a number and I don't
+know what the heck that means so I just threw an error and you can catch that and say hey you put
+a letter in here what is wrong with you in this case we're going to be smart about how what we
+input so we're just going to unwrap it willing nilly which will if it succeeds it'll unwrap it and
+give us that the value of that u32 that's in the success but if it's a failure the failure doesn't
+have a u32 in it so if it's a failure it's just going to crash kind of anonymously it's it gives
+us a little bit of information but it'll I mean it'll say that it failed to unwrap this particular
+line which will tell us where the problem is which is enough in this case but we're going to be
+we're going to be smart about how we input things so we shouldn't fail this but if we were trying
+to put this into a user base we probably would want to let the user know that where the actual problem
+is we're not going to worry about that right now but that's the whole point of the why that's
+worded the way it is because we're unwrapping whatever we get out of it sort of willy nilly and we
+don't really mind if it crashes at runtime because the user screwed up and so after that gets unwrapped
+that's going to be a unsigned 32 bit integer because that's how we parsed it and it'll feed that
+unsigned 32 bit integer that was the value that we gave to the command line argument that first
+command line argument that's what that's going to be it's going to feed that into sides that variable
+and now it's in sides we still haven't called sides for anything so what we're going to do is in the
+declaration for our current die when we're rolling that current die we're going to change that
+equals two that we have to equals sides so it's going to be equal Sierra India delta echo Sierra
+and then the closing parentheses and then the semicolon and what that's going to do is rather than
+going from one to two or one to 100 like we did before it's going to go from one to the number of
+sides including the number of sides so it's basically the same as rolling a 1d whatever the number
+of sides are and now we're going to save the program and this should work but the way that we
+need to call it because we've been using cargo run which doesn't allow you to or rather we've
+been using cargo run and then just hitting enter because everything was built in but now we need
+to actually provide it with an argument if we just run cargo run right now it's going to say
+that it panicked so this is sort of one of the things that we were talking about or we're not
+being very safe with how we're writing the code necessarily because there are a lot of places
+where things could break but it'll break at runtime and it won't break at compile times right
+now we just gave it a zero argument so all that's in there but then we called the first argument
+but we didn't give it any argument so it says thread main panicked at index out of bound the
+lenn is one but the index is one and then it gives us the file which in this case is source slash
+main dot rs gives us the line number and it gives us the character character number of the
+actual problem um so in this case if we go to line nine and we go to character number 32 or 22
+rather uh it's probably there okay so we got a character 22 that's right before the word
+args in that line and the reason is because we called args at the index of one which is the second
+element but the length of args is only one it only has one value which is the zero with element so
+we tried to call something outside of its range so it panicked um but that's because we didn't
+provide it with any arguments so we didn't actually do anything wrong in writing the code we did
+something wrong in running the code which is why didn't yell at us in the compiler only at when
+we were running it now the way we add command line arguments to cargo run is we do cargo space run
+and then space and then two hyphens two little dashes and what this does if you're familiar with
+bash is that says that this is the end of our first program like this is the last um like this is
+the last thing you need to parse for the command line arguments for this function so this is saying
+cargo you're done you've gotten all of the command line arguments that you need and now we're going
+to be giving the command line arguments for the function that is about to run which is our function
+or the rust roller function so then we're going to put a space after the double hyphen and we're
+going to put 100 because we're going to roll 1d100 in this case to make sure that it can give us
+different numbers every time we roll it and then we're going to hit enter and now it doesn't panic
+it gives us a total of 34 and now we're going to run it again and it gives us a total of three
+I'm going to run it again and it gives us a total of 71 so now we know we're getting different numbers
+that are all between the range of 1 to 100 which is what we gave it as the upper bound now without
+changing anything in our code I'm going to do cargo run double hyphen and then the number 2 and
+now gives us a total of 1 gives us a total of 1 and then on the third time running it it gives us
+a total of 2 so now we know that it's keeping it between those two ranges I'm going to run it
+a couple more times gives us a total of 1 and a total of 1 again and so it hasn't given us anything
+outside of that range of 1 to 2 including 2 and that's what we want so now we have something which
+can roll 1 die from 1 to a given number of side but what we really want is for a to roll multiple
+dice at whatever side count that we want so what we're going to do now is we're going to entry loop
+which is going to roll a die in each iteration of the loop and then add those dice up I'm also going
+to have it display what the die rolls were for each individual dice because that can also be
+useful and also I want to so that's what I'm going to do so underneath our sides declaration that's
+let sides u32 equal underneath that we're going to put let that's a Lima echo tango dice that's
+Delta India Charlie echo then a colon and then a space and then u32 because we're not going to
+have a negative number of dice equal and then a space and then we're going to put args actually
+this is a good point this is where we need to decide on how we want the syntax of our command to go
+I want to do it so the first number is the number of dice we're rolling and the second number
+is the number of sides that way it corresponds to dnd notation of like 3d6 or 45 which isn't a real
+dice number but whatever so I'm actually going to change this line I'm going to copy this line
+and I'm going to paste it underneath the let mute sum u32 equal line so it's right before our
+sides declaration that way it makes more sense when we're reading it because we're going to call
+that the number of dice is going to be args square bracket one closed square bracket the whole line
+right now reads let dice colon u32 equal args open square bracket one closed square bracket
+and then we're going to put dot parse double colon triangle bracket u32 close triangle bracket
+open and close parentheses dot unwrap open and close parentheses semicolon now we're going to change
+the let sides line to be args two instead of args one because that's going to be the second command
+line argument is going to be the number of sides so right now it should work as far as how we
+had it before but we would need to put like some filler number for the number of dice because we
+haven't actually used that yet so now right before our current dice I'm going to actually start building
+the structure of the loop that we're going to the first thing I'm going to have it do I'm going to
+have it print the word dice so I'm going to have print exclamation points this is a macro called
+print and then opening parentheses and then a double quote and then the word dice and then a
+colon and then a space so it's going to print out the word dice a colon in a space the reason I'm
+doing this is because each time it loops I'm going to have it put what the current value of the
+die was so to list out all of the dice values and then in a line under it a list what the total is
+of those dice values so at the end of that line I'm going to put a semicolon and a new line
+and now I'm going to need a variable a mutable variable that will keep track of what loop number
+were on you could use i for this for like an iterator I mean you could do this in a actual for loop
+if you wanted to or a while loop if you wanted to I'm going to be using a general loop but we still
+need a way of keeping track of what loop number were on so I'm going to put let mute that's let space
+mic uniform tango space loop underscore num space equals space zero semicolon I don't really care
+what type of number it designs to this one so I'm not going to worry about a type declaration for
+this one because it's just going to be whatever zero it wants to put there then on the next line
+after the semicolon I'm going to put the word loop now this will create an infinite loop between
+two curly braces so loop open curly brace close curly break um then in between those curly
+brace I'm going to do some new lines so that I have it inside of the loop there the first line
+of the loop so underneath the loop open curly brace I'm going to put an if statement the way if
+statement what's working rust is you put the word if and then you put the conditional without any
+parentheses or anything around it and then you put the scope of the if statement in curly braces
+so in this case we'll put the word if that's India Foxtrot space loop num that's that variable
+we just defined as zero before so if loop num and then a space and then a double equal sign this
+is because a single equal sign is assignment it'll assign a value to a variable whereas a double
+equal sign is comparison so it's comparing is this value equal to that value if it is it'll return
+true if it's not it'll return false so basically if it is true that this loop num is space equal
+to dice which is going to be the number of dice that we want to roll that's the variable we just
+defined earlier as being equal to the first argument of our argument vector of strings and so what
+we're saying in this conditional is if the loop number that we're on is the same as the number
+of dice we want to roll because we're going to be having one loop per die and so if we're at the
+last die meaning it's equal to the number of dice that we were supposed to roll since we're starting
+at zero dice if that's true then I'm going to do a opening curly brace and then a space and then
+the word break that's bravo Romeo echo alpha kilo and then a semicolon and then a space and then
+a closing curly brace and we do not need a semicolon at the after the curly brace because it's
+scoped so since it knows that the curly braces define a scope the closing curly brace implies
+a semicolon you can put a semicolon there I believe but you don't need to put a semicolon there
+so I'm not going to and then I'm going to put in a new line so that line is basically going to say
+if we're on the last loop if the loop number is equal to the number of dice we were supposed to roll
+since we're rolling one die per loop then you can break out of the loop and it'll go right to the
+closing curly brace of that loop declaration you can see that this is very similar to a while loop
+if we were doing a while loop num is less than dice would be kind of the same thing or it's even
+more similar to an until loop in languages that have an until loop so we could say until the loop
+number is equal to the dice then we can do this thing but I'm this is more of just a general loop
+and a way of breaking out of that loop given a can do which I think is a little easier to understand
+and so therefore I think it's a little bit better for this sort of simple level of program so
+then on the next line underneath that if statement I'm going to put our current die declaration
+I'm actually going to just copy and paste it from what we had earlier so I'm going to paste that
+underneath that if declaration just wholesale because we want to do exactly the same thing we're
+going to roll a die from one to the number of sides that's it and then the next thing that we
+want to do is we want to print that out so we're going to print exclamation points that's the
+print macro note not the print line macro because the print line macro will add a new line
+character and we don't want to add a new line care and we're going to put an open quote
+a open curly brace a closing curly brace and a closing double quote sorry
+oh we're actually going to put a space right after that closing curly brace so the whole thing
+in between the double quotes is going to be a open double quote curly brace close curly brace
+space close double quote and what this is going to do is it's going to separate each one of the
+die rolls by a space then we're going to put a comma a space and then a then CUR underscore DIE
+which is the current die variable that we defined in the previous line and then we're going to have
+a closing parentheses and a semicolon so what this is going to do is we already have it printing
+without a new line the word dice and then it's going to have a space separated list of the dice
+that we roll then we're going to go on to a new line and we're going to put in that
+the some aggregator that line that we have below this where it says some equals some plus
+curdye or the current dice we're going to take that line there we're going to
+we're going to copy it or cut it and paste it right underneath that print statement so it's
+going to take whatever the value of some is which at the first loop is going to be zero but on
+each loop is going to be the sum of all of the dice we've rolled so far so it's going to sum up
+all of those dice and we're going to add to it whatever the current die roll is to add to that die
+so that way we get this running total of all of the dice that we're rolling and then underneath
+that line we're going to put loop num that's our thing which is keeping track that variable that's
+keeping track of what loop number we're on space equals loop num plus so we're going to add one
+to the loop number because we finished this loop and now it's going on to the next loop
+so we're going to add one to that value what this is going to do is it's going to loop through
+rolling a die at every point and then adding that die to the sum variable creating an aggregate
+of all of the dice rolls for each loop with one loop per die that we defined arguments so at this
+point we can we can have it roll 3d6 46 3d10 whatever you want but we need one more line to make it
+readable so after the loop num equals loop num plus one line after that line we're going to put a
+closing curly brace to close out our loop and then underneath that line we're going to put
+print exclamation point parenthesis open parenthesis open quote and then backslash which is
+a escape character for a new line character and then a closing double quote a closing parenthesis
+and a semi and what this is going to do is going to create a new line after it's written out all
+of the dice and then it will have that print line exclamation point open parenthesis total space
+double curly brace comma sum which will put out what the sum is of all of those dice roll so
+now I'm going to save this project and then I'm going to cargo run and then I'm going to have it
+roll 1d100 so I'm going to do 1 space 100 after the double hyphen so it's cargo space run space
+double hyphen space 1 space 100 and I'm going to hit enter and it says dice colon 58 total colon 50
+so it only rolled one dice or one die so it only has one element in the dice column and the total
+is equal to that one die that it rolled so that worked well I'm going to run it one more time
+and we got a different number so we know that the random number is still working it rolled a 55
+so the dice colon 55 total colon 50 so now I'm going to have it do two space 100 so it's cargo run
+double hyphen space 2 space 100 I'm going to hit enter and now it says dice colon space 21 space 26
+and the total is 47 so you get both of the die values and their total which is what we're looking
+for here because now for example if you wanted to do I mean I'm going to use this as an example
+if you're playing backgammon if anybody knows how to play backgammon you roll 2d6 but you can use
+either the total or each one of the dice individually to move various tokens so what you can do
+here is if I do cargo run space double hyphen space 2 space 6 then it'll roll 2d6 and we have
+five and a six on each die for a total of 11 so now if I'm playing backgammon I know that I can
+either move two tokens one by five and one by six or I can move one token by 11 and I know that
+just at a glance because I have both the dice values as well as their total can also be used in
+other things as well but this is sort of this is the culmination of everything that I wanted to
+and so now we have our nice little dice rolling application I'm going to clean it up a little bit
+with a couple of new lines just to make it a little bit more readable and I should probably add
+comments to this but I'm not going to because I have this entire episode explaining how I wrote
+each one of the lines in this code and I'm going to put that in the read me file for the
+get repository so it should all work out um this is basically the end of this episode and if there's
+anything you need to want me to explain to you more that isn't clear uh give me a message on
+mastodon I'm uh at black kernel at nixnet.social I believe uh it'll also be in the show notes for this
+episode or you can email me at easy leboits at pm.me and that'll also go to my email and we can
+talk about it um think that's about it so thank you for listening and I will talk to you next time
+where what we're going to be doing is we're going to be taking this dice roller and beautifying it
+making it a little bit easier to use on the command line as well as making it able to handle
+advantage drop the lowest for like 46 drop lowest stuff like that just kind of like adding more
+functionality to this solar program uh I'll talk to you next time
+you've been listening to hecker public radio at heckerpublicradio.org today's show was contributed by
+an hbr listener like yourself if you ever thought of recording a podcast then click on our
+contributing to find out how easy it really is hosting for hbr this kindly provided by
+an honest host.com the internet archive and our sync.net unless otherwise stated today's show
+is released under creative commons, attribution, share-like, slid-o-licence

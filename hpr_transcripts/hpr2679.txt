@@ -1,0 +1,361 @@
+Episode: 2679
+Title: HPR2679: Extra ancillary Bash tips - 13
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2679/hpr2679.mp3
+Transcribed: 2025-10-19 07:25:27
+
+---
+
+This is HPR Episode 2679 entitled Extra Ancillary Mash Tip 13 and in part of the series Mash
+Cripting.
+It is hosted by Dave Morris and in about 37 minutes long and carrying an exquisite flag.
+The summary is making decisions in part 5.
+This episode of HBR is brought to you by AnanasThost.com.
+With 15% discount on all shared hosting with the offer code HBR15, that's HBR15.
+Better web hosting that's honest and fair at AnanasThost.com.
+Hello everybody.
+This is Dave Morris.
+Welcome to ICovublic Radio.
+Today I'm doing a show about Bash.
+This is the 13th episode in the Bash Tip sub-series and it's the fifth of a group of shows that
+I'm doing about making decisions in Bash.
+This is the last one in that group.
+If you've joined me here, I would recommend going back to check out the previous four episodes
+which are all listed in the link section of the notes.
+And there are two sorts of notes here by the way.
+The short notes are just a preamble and then a link to the long notes which is quite detailed
+so that you can read independently or read as you listen.
+Reading as you listen might be the best but depends where you are and what you're doing.
+So in the last four episodes we saw types of tests that Bash provides and some of the commands
+that use these tests.
+We looked at conditional expressions and all of the operators that Bash provides to do
+these things, making decisions.
+And we concentrated particularly on string comparisons which use glob and extended glob
+patterns and in the last episode we devoted it to looking at Bash's regular expressions.
+And now we want to look at the final topic within regular expressions which is capture
+groups.
+Now if you followed this series on said that I did some time ago or indeed the one that's
+covering the alt language that I'm doing in conjunction with B easy, then we've talked
+about regular expression and capture groups there so this won't be a particular surprise
+to you.
+It's a way in which you can group the elements of a regular expression using parentheses
+and you can thereby denote a component of the string that you're comparing with the
+regular expression.
+So for example you might want to look for three word sentences.
+So there's an example in the long notes that shows this.
+There are three groups and they each consist of in parentheses a character class, one of
+these things where you put in square brackets a list of characters which you can also refer
+to as ranges.
+So it uses lower case A to lower case Z as a range and uppercase A to uppercase Z.
+Then after the closed square bracket there's a plus sign which means one or more alphabetic
+characters.
+So that's all in parentheses.
+When each of the words so defined are followed by a space and a plus sign which means one
+or more spaces, not each of them but the first and the second.
+The third case is followed by zero or more spaces and an optional full stop.
+So your sentence might end with a full stop.
+You might put spaces before the full stop which would be wrong but you might do that.
+So the entire regular expression with these three groups in it is anchored to the start
+of the string.
+So the way this thing is written only the words themselves are being captured by being
+in groups, not the intervening spaces or the full stop at the end or anything.
+So we're going to look at a script that uses this regular expression soon.
+A bash uses an internal read only array called in capitals bash underscore rematch and that
+holds what is matched by regular expression.
+The zero element of this array holds what the entire regular expression is matched and
+the rest hold what was matched by any capture groups in the regular expression and just
+like other regular expression systems each capture group is numbered in order of occurrence.
+So element one of bash rematch contains the first element and first word or first match
+which is perhaps a better way of putting it, element two contains the second and so forth.
+Now in said it's possible to refer to a capture group within a sequence.
+You can do that with backslash one so and that allows you to write a regular expression
+that repeats stuff.
+So for example in the said syntax where the parentheses are going to be followed a bit
+preceded by a backslash then backslash open parenthesis cat backslash close parenthesis
+then backslash one which is the capture group means that you want the word cat to be repeated.
+So I've shown you a little example here where we echo the word or the sequence cat cat
+into said and the expression is to replace or the said script, I think it'd be better
+way of putting it, replaces using the s command the word cat which is in a capture group
+followed by the same thing again which is referred to as the backslash one replace that
+with the word match.
+So in that particular case it would come back with the word match so because it matches
+So I'm really mentioning this is because it's apparently not available in bash.
+This is nothing documented that I can find in any of the official bash scripting documentation
+of the GNU bash manual and so forth.
+There are references to a partial implementation that some people have.
+I don't know, discovered maybe they've looked at the source or something or maybe this
+is a known thing that's in development but it doesn't seem to be a thing to rely on
+but I've still spent a little time doing an example example two later on in this episode
+to experiment with it.
+So here comes an example of a script that uses the three word thing and looks at the
+bash rematch array and it's a downloadable example that you can grab and play with if
+you want to.
+It's called bash13 underscoreex1.sh.
+So the regular expression in here stored in a variable called RE and it's the same expression
+that we already looked at.
+The script checks to see that there's an argument because that's the way you're going to give
+it a sentence when you when you've written it when you run it.
+The script prints out echoes the sentence preceded by the word sentence so you know what
+to just confirm what you typed is what the script has seen.
+Then it compares in an extended test, a dollar one which is that argument with the regular
+expression in the variable RE and if it matches then you get the message matched.
+Then there's a for loop which iterates a variable i through the value zero through to
+three using a brace expansion.
+And for each iteration it uses printf to print out the number in i and then the contents
+of bash rematch index by that number.
+So running it with the sentence advarks eat ants full stop in quotes because otherwise
+bash would split them up into three arguments.
+Then it reports back sentence the sentence was advarkity and which they do it's an ant
+eater.
+Well they're anything to eat.
+And then it reports matched and then it goes through the zero element which is the entire
+string advarks eat ants.
+One is advarks, two is eat and three is ants without the full stop.
+So those are the three capture groups.
+Now if you've listened to the previous episodes talking about this sort of stuff what the
+last episode in fact then you might expect that you could put the capture group for a word
+which is that square bracket of expression in parentheses and then follow that with space
+and an asterisk meaning zero or more spaces and put that all in in parentheses and follow
+it with a number in curly brackets.
+So if you put a three there it's written in the notes back slash full stop question mark.
+Then you might expect that first of all that would match advarks eat ants.
+Well it does but there's only when there's two capture groups here in fact there's the
+inner one which is for a word and the outer one which is the thing that's just used to
+hold it all together and repeat it but you don't get the three elements of the sentence.
+You would get in element zero advarks eat ants.
+Then you'd get element one which would which contain ants that's from the first capture
+group which is the outer one and then two will also contain ants because it's the result
+of the three iterations I guess the last word in the sentence so it's not useful if you want
+to capture the words.
+So the Bay of Land in mind is it's a useful thing to be able to do when you just want to shorten
+a complex regular expression but it doesn't let you pick out the bits that capture groups will
+let you do. It's probably why you use them in the first place.
+So the rest of this show is just a bunch of examples.
+An example one is a revisiting example four from the last episode where I've written a script
+which takes an IP address a type four IP address IP version four and it checks it for
+for validity but I've made it a little more clever and I've also used capture groups to do it.
+This one is downloadable and it's called bash 13 underscore EX2.sh.
+So in the previous example we had four groups of up to three digits and the numbers that they
+form have got to be in the range 0 to 255 and they're separated by dots.
+So the regular expression that we have does this just as the previous one did although in the
+previous one we used a repeat count in curly brackets for each of the expressions.
+So this time we're spelling them out we're putting them one after the other but we're putting them
+in parentheses and we're anchoring the whole thing at the front and the end of the string.
+So the script checks to see that there is an argument which is going to be the IP address
+and produces a neuromessage if it's been forgotten and then it compares the argument dollar one
+against the regular expression. So that's pretty much what we did last time but in this particular
+case we're going to be a little bit more detailed about it. So inside the if statement then we have
+a variable ERRS which is short for errors being set to zero and another one called problems being
+set to nothing so it's just problems equals that just sets a variable to an old string.
+Then there's a for loop that iterates through the values 1 to 4 that's for the four groups of numbers
+and it uses the variable i to do that. Then we set a variable d to the result of the
+bash rematch array indexed by the variable i. Then there's an if statement that says if d
+dollar d is less than zero or dollar d is greater than 255 then and that's obviously checking
+to see whether it's in the range 0 to 255 and we're using here a it's not regular expression at all
+of course we're using extended and extended test and the or is the two vertical bar. So if that
+turns out to be true then we increment the variable ERRS. I always tend to type this name but
+I've had to pronounce it errors anyway we increment it because that's counting the number
+and we also add to the problems variable which is it's just a string we add the value of the dollar
+d variable that that's a number but it's going to be treated as a string and we follow that with
+the space. So what we're going to end up with if there's multiple errors we're going to end up
+with a bunch of numbers separated by spaces. So after that loop has gone through four times
+there's there's either going to be no errors or there's going to be one to four errors and what
+and one to four numbers in the problems string. Then there's another if which checks to see if
+e double r s is greater than zero and if it is then we want to say there were problems and it's not
+valid IP address in here here are the problems. So the way I've done that there are many ways
+you could do this. The way I chose was using the variable problems I set it to itself using
+the parameter expansion capability where you can extract a piece out of a string. So I extract
+problems colon zero. I was starting at position zero it's called zero relative colon minus one
+that's in curly brackets with the dollar on the front. What that means is from position zero the
+start of the string up to but not including the last character and that's because we were adding
+a number in a space to it each time we found a problem we just want to take that space off from
+that's what it was doing. Then we echo the error report dollar one is not a valid IP address
+semicolon contains and then we want to report the problems string but I've got fancy with it and
+I've put that in curly brackets with a dollar on the front and inside there's another parameter
+substitution expression using double slashes space and then a single slash comma space. So what that
+does is to go and find every space in this variable and replace it by comma space. So you'll get back
+a list with commas in between and that's basically a comma in a space and then it exits if
+they were x so the value one. If there were no errors then this branch of the if and which
+validates it against the regular expression is we'll return that the address is valid. If the
+regular expression didn't match at all then it will say that it's not a valid IP address. So I've
+drilled down in the notes after this into the regular expression a little bit more and just I think
+I've already said what this says so I'm pointing going over it yes I've explained this already with
+that reading out here so hopefully you'll find both what I've just said and also the notes help
+you to understand if you're having difficulties and there's a bunch of examples running it
+with different IP addresses such in valid so 192168 zero with dots in between and a
+trailing dot is not valid because there's only three numbers in 192168 zero five is it's
+perfectly valid those had dots in between as well and the last one is 192168 500 dot 256 well
+5256 are out of range so it says it's not valid and it contains 500 comma 256 you might type
+that in in error because you're a terrible typist like I am the point is that we've got regular
+expressions here to to do these sorts of checks and a few other bells and whistles to make it
+so example two is the one where I played around with the ideas of back references as I said I
+couldn't find any official documentation about them but it does seem to be something available
+and it's in well at least in the version that I'm using I haven't tested any others
+I could have done I guess on some of the raspberry pies I have which I'll have various
+versions but a back reference consists of a backslash and a number the number refers to then
+the capture group starting counting from the left of the regular expression but it looks as if
+you can only have a single digit after the backslash so it means you can only refer to capture
+groups 1 to 9 you've got 10 or more then there's no way of referring to them with backslash number
+some regular expression systems allow you to follow the backslash with curly brackets and
+and a multi-digit number can't remember if said does but that there are there are
+purlers the one I know most but anything which is derived from the pearl regular expressions which
+is a thing called PCRE pearl compatible regular expressions will have that capability I think Python
+uses PCR so does PHP number of other languages too so what I've done to to mess around with this one
+so I've created a regular expression which consists of in parentheses a thing that one of those
+regular expression meta characters which is a backslash and a less that which means start of word
+then a full stop followed by in curly brackets 1 comma 10 so that means 1 to 10 characters
+any characters we follow that with the backslash greater than meaning end of word closer parentheses
+so that's that's a word of up to or between 1 and 10 characters then a space and backslash 1 so
+that's my regular expression so then I compare the and this is a very simple script just
+not really a production thing just a messing around thing I compare dollar one in the assumption
+that there's an argument with that regular expression as a and the usual way then if it matched
+then I then put out the message matched otherwise put the message no match so my simple example is
+running this script which you can download again bash 13 underscore EX3.sh you can run that and I gave
+it a two word string in single quotes of turnip turnip and so it's less than 10 characters long
+and there's two instances of it and the script says it matched so it's actually working
+but I don't think I would recommend using it it's maybe something to to keep an eye on it's maybe
+something that's going to be available in a in an upcoming version of bash so that would be that
+would be good isn't really useful feature to have but it's not officially there yet so my last
+example is a quite a complex one and in this one I'm trying to parse a file of email addresses
+sort of things that you might have put together from an address book or something the format
+of email addresses is quite complicated and there is an rfc several rfc's that define it
+it gets a lot more complicated than you could you would imagine it would because email goes way
+back in time nobody uses a lot of the the features of it now of the email address I mean but the
+script doesn't try to be fully comprehensive about this it's it's not the best way to validate
+email email addresses to write a bash script to do it there are libraries that will do it
+in various languages so but this is hopefully a useful example to to mess around with so the two
+formats that the script is catering for is where an address consists of so-called local part
+followed by an at sign followed by a domain so my example is something like vim at vim.org
+so that's probably the simplest format email address that you can have but there's another one
+that you'll often see which consists of a name where the name I think there must be some restrictions
+of what characters it can contain but let's say it's letters and numbers possibly parentheses and
+um that's followed by a local part at domain address but it's in a less than greater than
+sort of diamond brackets as I think they used to be called so an example of that would be
+the thing you might see when you look at email from the hpr mailing list it's often titled
+hpr-spaced-list-space-lesson-sign-hpr at hackpubb.radio.org and then the greater than sign so those are
+the two generic formats that we're going to be playing with so there's two files here there's
+bash 13-ex4.sh which is the downloadable script but it's it's reading data from a file
+which is bash 13 underscore ex4.txt which you can also grab and mess around with if you want
+so this let's talk about this script it's not hugely long but it's it's fairly complex it's
+can take me a while to to talk about so the script contains a variable called data which refers to
+the the text file of of addresses I haven't put a path in there assuming it's in the same
+directory as the script you could get fancy with that if you wanted to there's a check to see
+whether that file actually exists and if it doesn't then it's reported as missing and the script
+will exit with a with a false value I won't go into details about how that's done you can you
+can see it's similar to the things I've used before now the regular expression is complex it
+consists of two parts two components which I have written out as two individual variable
+which are called part one and part two and then I've concatenate them together inside a string
+and put them into a variable RE and the two parts are enclosed in parentheses in that final
+statement the third statement and in front of the open parentheses is a circumflex and after
+the closed parentheses is a dollar so it's it's an anchored thing to the to the line
+of reading from the far it's not really necessary to do that but putting them in parentheses is
+definitely recommended two variables are being substituted in a double quoted string and they're
+separated by a vertical bar so we have a regular expression which has two alternative parts
+if we look at the expressions themselves look at part one that's the one to match the simpler form
+of the email address and it just consists of in square brackets the low case 8 is z uppercase 8 is z
+0 to 9 and underscore that's the first first character that's because there are some restrictions
+on how an email address can start it can't begin with a with a dot for example can begin with
+the number and it can begin with another letter indeed it can begin with an underscore then after
+that we've got it got more or less the same thing except that inside the square brackets there's
+a dot as well and that's followed by a plus look after the closed square bracket so that means
+any of those characters one or more time that's followed by an at sign and then the square
+bracketed list is it follows and it includes instead of an underscore it includes a hyphen and
+that hyphen has to be at the end because the hyphen can be used to separate ranges of things so
+you have to put it at the end so it doesn't look like it might be a range I think you put it as
+the first thing as well in fact I know you can after the closed square bracket we've got a plus
+so that's the domain part which can be any any character any letter or number can be a dot has to
+be you have to have a dot in between the the components you can have hyphens in the in the name
+there's probably other things that could go in there I didn't want to get too complex
+part two is pretty much the same except that that expression we just looked at is enclosed
+in a less than greater than and prior to it there's another bracketed parenthesized expression
+which consists of open square bracket circumflex less than closed square bracket plus which means
+one too many not less than signs in other words it's the characters from the start of the string
+to the less than sign that begins the address part can be anything as long as they're not
+less than signs and so I think I've mentioned this before and it's a common thing that you see in
+regular expressions so this is quite a complex regular expression it could be simplified
+yet further I think or indeed you could do some clever things with a string substitution in
+bash but I didn't want to get into that because it would just just make life too complex for
+for anybody you're reading anything so the main script is a loop and it's one of these wild loops
+which on each iteration is reading a value from somewhere other into a variable called line
+and the way that's done is the final line of the wild loop and done line is followed by
+a less than sign and the name of the data violin quote in double quotes so the loop will
+attach itself to that file if you like and by using the read command will whenever read wants to
+read something it will read from that file again we've seen this before it's a common trope
+in bash groups inside this loop we first will have an if statement which is simply comparing the line
+with the regular expression so if it matches then we want to check things about the contents of
+bash rematch and here's where things get a little little complicated so let me just digress for
+a bit there's there's a fair that my notes are maybe possibly a bit more comprehensive than what
+I've just talked about I wasn't reading what I was doing off the top of my head really because we
+have capture groups within capture groups and we've got two sets of them and in one case one set
+will be triggered and in another case another set will be triggered we need to do some quite clever
+checking on what comes back to determine what type of address we've got and the way that I
+worked this out was by using what you see commented out in the script at just after the regular
+expression match there's a statement declare space hyphen p space bash rematch without any dollars
+or anything there the name of the array declare is a is a command within bash that allows you to
+create various things various variables but in amongst them there are you can create a raise
+this way when you use the hyphen p option it means to print out its contents and it's at its
+attributes so we're asking that to print out the attributes and contents of bash rematch
+it's commented out so it's not actually being run at the moment but what I did was I ran this
+script using that declare in order to see what bash rematch would hold and a bit further down
+the page it shows what is produced for two addresses two of the different types of addresses
+so the first one was the and these are all dummy addresses by the way which I generated on a
+so if I found that we'll generate batches of dummy addresses for you few real ones I chucked in
+but things like vim vim.org and stuff like that anyway this one is kawasakiatme.com and when this
+is checked through the regular expression comparison then bash rematch element zero not surprisingly
+gets the whole address element one also gets the whole address and element two similarly elements
+three and four get nothing element zero always gets the whole regular expression the whole not the
+whole regular expression but everything that the regular expression matches since we put brackets
+around the whole thing parentheses around the whole thing in order that we can contain the two
+alternatives we we get the same in element one as well of bash rematch so it's also matching
+everything because everything all both of the the two alternative regular expressions are inside
+this thing so so you can ignore element zero and element one if the address matches the first
+sub expression it will get stored in bash rematch element two if it matches the second sub expression
+because there are the third and fourth capture groups exist in that sub expression then you'll see
+results in there but in this particular case there's nothing being matched so they're empty so
+the case where regular expression the the bash rematch element two contains something then we have
+email address of the first type then if further down my notes you'll see that it's matching with
+another address which is which consists of s space mayor space and then in less than greater than
+s mayor at yahoo dot com so ignoring element zero and element one we find that element two
+bash rematch is empty because that's when it matches with the first case the first sub expression
+with element three and four have first of all the the name portion and secondly the address portion
+of this email address so the script uses the fact that element two of bash rematch is zero length
+in order to determine which type of address was matched so go back to the actual script itself
+you'll see there is an if that goes if and then an extended test hyphen locates z then bash rematch
+element two so if bash rematch element two is zero length then we know that it's the type two
+mail address which is the name and then the local partner main inside so-called diamond brackets
+so I've commented it this is it this there's room for confusion here in fact so I was writing this
+I got confused just why I added comments so in that particular case we put inside variable name
+we store bash rematch element three and in a variable email we store battery no match element four
+if it's not zero if it's not zero length bash rematch two then it's type one address or
+just the simple local partner domain format so we set name to nothing because there was no name
+portion there and we set email to bash rematch two element two and then that's the end of that
+if that checks which which version it is we simply print out the contents of name and the contents
+of email because name is going to be blank in some cases but that seemed to me to be reasonable
+you could you could permit printing out name when there is no name but I thought it was more
+useful to report that there was no no name explicitly because the other branch of this if which
+the if which was testing the regular expression if it doesn't match at all then we say not recognized
+and report the line that failed there's a there's an empty echo towards the end of the loop which
+just causes blank line to be produced between each iteration through the file if we look further
+down the page of everything relating to this example then I included an excerpt from from what
+was what was produced when the script is run and this is the the one with the declare command
+commented out as it as it will be if you download it and it's first email address that it finds
+is a failed spa at Yahoo dot CA who has a name that was the the second type of of mail address
+so the name field is populated the email field is populated second one is somebody called
+mcraw4atlive.com within there was no name the third instance is one where for some reason
+other email address of dot four two this is one I had it's because it's illegal at unknown dot
+Mars it's illegal because it begins with the full stop so it says not recognize it doesn't
+doesn't match anything that's what it does if you feel interested enough to investigate
+further you can download all of that stuff and run it yourself and see what it does
+indeed adds more and see how it baves you could also enhance the regular expression to make it
+more generic but I'm not sure as I say that bash is the correct vehicle for this but it makes the
+point about regular expressions and bash rematch and capture groups etc etc so hopefully find it
+well that's the end of that at the end of this group and I hope you found this to be useful
+there's some powerful features within bash as I'm sure you're well aware by now so I hope
+this helped to reveal this particular set of features to you okay then bye bye
+you've been listening to hecka public radio at hecka public radio dot org we are a community
+podcast network that releases shows every weekday Monday through Friday today's show like all our
+shows was contributed by an hbr listener like yourself if you ever thought of recording a podcast
+and click on our contributing to find out how easy it really is hecka public radio was found
+by the digital dog pound and the infonomican computer club and it's part of the binary revolution
+at binrev.com if you have comments on today's show please email the host directly leave a comment
+on the website or record a follow-up episode yourself unless otherwise status today's show is
+released on the creative comments attribution share a live 3.0 license

@@ -1,0 +1,743 @@
+Episode: 3434
+Title: HPR3434: From 0 to K8s in 30 minutes
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3434/hpr3434.mp3
+Transcribed: 2025-10-24 23:23:06
+
+---
+
+This is Hacker Public Radio Episode 34344 Thursday,
+the 30th of September 2021.
+Today's show is entitled From Zero to K-8S in 30 Minutes
+and is part of the series networking it is hosted by Clot 2
+and is about 32 minutes long and carries a clean flag.
+The summary is Build a Cubernite's Cluster,
+Run a Website, Route Traffic to Website.
+This episode of HBR is brought to you by
+An Honesthost.com.
+Get 15% discount on all shared hosting with the offer code
+HBR15. That's HBR15.
+Better web hosting that's Honest and Fair at An Honesthost.com.
+Hey everybody,
+you're listening to Hacker Public Radio.
+My name is Clot 2 and this is From Zero to Cubernities in 30 Minutes.
+I believe I can do this.
+Okay, in order to get a Cubernite's Cluster up and running,
+you need at least three computers.
+Now there are edge cases where you could run a local Cubernite's
+instance with just one computer and it sort of tricks itself into thinking
+that it's a cluster.
+But what I'm talking about is a real live cluster that you're going to be able to
+deploy applications on.
+You're going to be able to load balance and you'll have a lot of fun with it.
+Three computers.
+One will be your control plane.
+That's what they call it, the control plane.
+Two of them will be nodes, compute nodes.
+So it'll be a small cluster but it will be a cluster.
+I am using Raspberry Pi's for this.
+I went out, bought three.
+Raspberry Pi 4s and installed Sint OS on them.
+That you can get an image for Sint OS for a Raspberry Pi 4
+at people.sintos.org slash P Greco.
+Just like the painter with the letter P in front of it, P Greco.
+I'll put that link in the show notes.
+I'm going to also admit it's easier to do this on Debian.
+You may as well just use Debian.
+I'm not saying it's difficult on Sint OS.
+It's just that Sint OS, the support for Pi 4 on Sint OS seems to be
+hit or miss.
+Sometimes it exists.
+Sometimes it doesn't.
+Sint goes for Fedora.
+So if you're not invested in running an RPM-based distro,
+the way that I am, then please just use Debian.
+It's easier and all the steps are the same.
+Do this.
+Get Linux on three separate Pi units.
+Each with the same specs.
+You don't want to do a mixed environment.
+Keep them all the same.
+It makes everything a lot easier.
+Once you have that sorted,
+make sure that they're all plugged in, powered on,
+hooked up to the same network.
+They can talk to each other and so on.
+Now you're good for the next step.
+And the next step is to manage your host names.
+The host names of each Pi must be unique.
+Without a unique host name, your cluster will not function.
+Now, there are several kinds of different host names.
+There's a transient and, I don't know, permanent and happy and grumpy.
+I just set everything to make sure that everything,
+all the host names are going to get set right now in three different commands.
+Now, you want to use probably a naming scheme
+just to make this make sense for yourself.
+I use K for Kubernetes and integer,
+starting at 100 just because.
+And then C for cluster or cloud, I guess.
+So the commands are sudo hostname K100C,
+sudo sysctl kernel dot hostname equals K100C,
+sudo hostname control that's hostnamectl.
+Space set dash hostname K100C.
+You do that on each Pi.
+Of course, you increment 100.
+So the next Pi, you'll do all those three commands K101C,
+101 and 102.
+Next step reboot.
+I know you shouldn't have to reboot.
+I reboot anyway, just to make sure that hostname gets through
+all of the different systems and subsystems
+that it needs to get through.
+Next step set of verbose prompt.
+This seems weird and unnecessary,
+but honestly, when you're dealing with this many computers,
+you're bound to get confused.
+Now, in real life, you probably actually won't be
+interacting with your nodes all that much,
+but initially, you will be.
+And I guarantee you, you're going to do something stupid
+if you don't have a unique prompt.
+At the very least, export PS1 to include your hostname.
+That's the very least.
+I make it big and bold and really long and ridiculous
+so that I'll never miss which unit I am on.
+I will paste my dash RC line into the show notes.
+So that you can see what I do.
+I think it really works.
+It's changed my life.
+You should do it too.
+Next step install a pi finder script.
+This is not strictly necessary.
+It has nothing to do with Kubernetes.
+And if you're not using pies for your Kubernetes cluster,
+then this doesn't apply to you.
+But if you are, this is a great script.
+I got it from a guy named Chris Collins
+over on opensource.com.
+I've learned a heck of a lot from him about Kubernetes.
+This script is just one of those really, really great ideas
+that he had.
+It causes the pi LED to blink.
+So if you need to go to a pi on your network
+because I don't know, you need to swap out the SD card
+or plug a USB device into it or something like that,
+then this script you activate it
+and it starts blinking the LED for you.
+So you know exactly which pi you're actually targeting.
+I'll include a link in the show notes.
+Next step install Kubernetes.
+This one's a little bit confusing.
+Kubernetes is a little confusing.
+Kubernetes is a project.
+I mean, it does exist.
+Kubernetes.io.
+But there are different implementations of it.
+It's an open source project.
+People can do what they will with the code and they do.
+So you'll find different implementations
+and different versions.
+You'll find things like MiniCube and MicroKates and OKD
+at OKD.io and OpenShift at OpenShift.io
+and Kubernetes itself.
+Just pure Kubernetes at Kubernetes.io.
+There are lots of them out there.
+The one that I am going to recommend strongly
+for Raspberry Pi usage is K3S.
+K3S.io.
+It's the easiest and cleanest
+and frankly just the most serious method
+for getting Kubernetes on an ARM device.
+If you're not using a Pi for your cluster,
+then you can use whatever you want.
+And certainly if you're listening to this episode
+because you have to learn Kubernetes for work
+or you're learning it so that you can get a better job
+and upskill and stuff like that,
+then use whatever you think you're going to be using in the end.
+Having said that, there's still all Kubernetes.
+But you'll still encounter the same commands
+like CubeCuttle and things like that.
+My guiding principle here would be to get the Kubernetes
+that installs on the thing that you are running Kubernetes on.
+From this point on, I will assume that you've taken my advice
+in that you're using K3S.
+If you haven't taken my advice or you're not using a Pi
+and you don't see the reason to use K3S,
+that's fine.
+All of this will still apply to you,
+at least generally the install of Kubernetes itself
+might be a little bit different for you.
+But generally speaking,
+these are the steps you're going to take.
+Like I say, K3S makes it really, really easy
+so I encourage you to try that out.
+But even if you're not using K3S,
+the CubeCuttle commands that we'll cover later on
+all apply, so all is not lost.
+So for K3S, installing it on a Pi.
+The first thing that you do is you run the little curl command
+that they give you on their website.
+It is linking to an install K3S script.
+I like to curl it down to my computer and then look at it.
+It's a really big script.
+It's very impressive.
+Curl-SF capital L, HTTPS, colon slash slash get.K3S.IO.
+That's get as in GET.K3S.IO,
+dash O for output, install underscore K3S.SH or whatever.
+And then cha-mod 700 install underscore K3.SH
+just to make it executable.
+Read the script over, see what it does.
+Make sure that it's doing what you think it does.
+It is, but still make sure.
+And then you can run it.
+That slash install underscore K3S.SH.
+As I recall, it asks you to become pseudo
+and it runs the installer and installs Kubernetes.
+This, by the way, is pretty common in the Kubernetes world.
+Apparently Kubernetes doesn't really
+like to deal with package management for some reason.
+And all of them seem to just tell you to curl a script
+and install it on your computer.
+I see very few of them that do it differently.
+It's very odd to me.
+After installation, you're prompted
+to add some arguments to your bootloader.
+Again, if you're running this on a pie,
+so you'll open slash boot slash command line
+that's cmdli in e.txt in a text editor
+and add cgroup underscore memory equals one space cgroup underscore
+enable equals memory to your bootloader line.
+They'll print that in the terminal after you install.
+So it will be very easy to do.
+You can just copy and paste it.
+Reboot your pie.
+I know you shouldn't have to, but I still do just because
+that command line, I want to make sure
+that that gets loaded in at boot time.
+Once the pie is back up,
+verify that your node is ready.
+K3s space cube cuddle.
+That's K-U-B-E-C-T-L.
+That's a command you will be hearing a lot in this episode.
+So we'll just get used to how I say it.
+Cube cuddle space get space node.
+This shows you the name of the device,
+which is K100C in my case.
+It tells you the status.
+It should say ready.
+It tells you the role that it's playing in your cluster.
+Well, this is your control plane.
+That's what they call the sort of the central node
+of your cluster.
+This is the one that you'll log into
+and you'll control your cluster from this exact pie.
+The name for that is a control plane.
+Get used to that term.
+You'll hear it a lot.
+Next step, you need to token.
+It's a way to authenticate so that when you're adding nodes
+to your cluster, they know that the control plane
+that they think that they're joining is the control plane
+that they think that they're joining.
+And vice versa, you can create one
+or you can possibly find one that's already been generated.
+K3S distribution already generates it for you.
+Sudo, space cat space, slash vars slash lib slash rancher slash
+K3S slash server slash node dash token.
+And you get a big long, I don't know, 64 or 72 alpha numeric
+string that identifies your control plane
+to the nodes that you'll be adding to your cluster.
+If that doesn't exist, if you're not using K3S,
+that's OK, you can use the CUB ADM command or CUB admin
+or whatever, K-U-B-E-A-D-M space, token space generate.
+That'll generate the token.
+And then you can use that to authenticate.
+Next step, add your control plane.
+Host name to your posts file.
+If you know how to manage local DNS settings,
+then you can just use your DNS server
+to identify hosts in your cluster.
+But if you're not running that, then the easiest way
+to make nodes be able to find your control plane
+is just add your control plane's host name and IP address
+to the slash Etsy slash hosts file on each node.
+This also assumes that your control plane
+has a static local IP address.
+For example, this is the host file of K101c and K102c
+for me, 12701 local host local domain, colon colon 1,
+local host 6 stat locals doing 6, and then 10.0.1.100 space K100c.
+Save that.
+Now I've got my Etsy host file with an entry for K100c.
+So if I ping K100c from a terminal,
+then it knows where to look.
+It looks at 10.0.1.100.
+And it finds that pie there because I have a static IP
+address set in my home router to ensure that K100c
+is always going to be located at 10.0.1.100.
+To be clear, of course, that IP address
+might be different on your network.
+So you need to know your network well enough,
+and you need to have mapped your IP addresses out correctly
+so that you can always reliably find your control plane
+on your network.
+Next step, time to add some nodes.
+Now you can add the other pie computers to your cluster.
+On each pie that you want to turn into a compute node,
+install K3S with the control plane and token
+as the environment variables, which I'll demonstrate
+in a moment here.
+So on the second pie, for instance,
+you'd run this command curl dash sf capital L, HTTPS colon slash
+slash get dot K3S dot IO pipe K3S underscore URL.
+That's all capitals equals HTTPS colon slash slash K100c,
+which this pie can resolve because we've
+added it to the host file colon 6443.
+That's the standard Kubernetes port space K3S underscore token
+all capitals again equals quote, and then the big long token
+that you got, you'll have to copy and paste that, you know,
+through ssh, close quote space, sh space dash.
+So just be aware, this is pulling a script off the internet
+and piping it directly into a shell session.
+If you're not comfortable with that,
+you can download it first, reread it, and launch it again,
+just as I did in the first original K3S install step.
+I figure once I've done it once, I might as well trust
+that it's going to be the same script the second and the third time.
+If you're not comfortable doing that, that's fine.
+You can just secure copy, you're downloaded script
+that you've audited over to each pie and run it through there.
+Either way, you're installing K3S on the other two pies now,
+but you're doing it with these arguments, the K3S URL
+and the K3S token, which tells this install script
+to add these little pie units as compute nodes in a cluster
+that already has a control plane.
+Next step, you have a cluster, it's done.
+You are actually fit, you've created a Kubernetes cluster.
+You can verify this on your control plane.
+So this is K100C now, you go back to the original pie
+and you can verify that all of your nodes are active
+with this command, K3S, space, cube, control,
+space, get, space, nodes.
+That's K3S, cube, control, get nodes
+or just cube, control, get nodes.
+That shows you the name of all of your compute nodes,
+which K100C, K102C, K101C.
+The status is ready, the roles that they play
+is control plane and none and none.
+And that's it, you've now got a fully functional
+Kubernetes cluster.
+What are you gonna do with it?
+Well, that's the next half of this episode.
+We're going to install a web server and deploy it
+and expose it to an external IP address.
+But first, a coffee break.
+Oh, wrong show.
+Next step, now that you have a Kubernetes cluster
+running on your pies or your spare computers
+or whatever you're using for this,
+you can start running applications in containers.
+That's what Kubernetes does.
+It orchestrates and manages containers.
+You may have heard of containers.
+I did an episode about Docker containers
+in episode 1522 of hacker public radio.
+You can also go listen to an episode I did on LXC,
+which is kind of the containers
+that just comes with Linux anyway.
+In episode 371, GNU world order.info,
+there's a sequence to launching containers
+within Kubernetes though, a specific order you need to follow
+because there are a lot of moving parts.
+And those parts have to reference each other accurately
+for them to find one another and work together.
+Generally, the hierarchy is something like this
+and maybe it's not exactly a hierarchy,
+but the landscape looks like this.
+You've got name spaces.
+These are the sort of the project spaces of Kubernetes.
+It's more complex than that.
+And I cover it in great detail
+in a GNU world order episode 1339.
+That's GNU world order.info slash hash 13x39.
+Within a name space, you can create a deployment.
+A deployment manages pods.
+Pods are groups of containers.
+They help your cluster scale on demand.
+Services are front-ins to deployments.
+A deployment with its little pods,
+they can be running in the background quietly
+and they'll never see the light of day
+until a service points it out.
+And then finally, you've got traffic or exposure.
+A service is only available to your cluster
+until you expose it to the outside world
+with an external IP address.
+So once again, that's name spaces, deployments and pods,
+services and then traffic or network traffic or routing.
+I don't know what we want to call it.
+First, though, we're going to create a name space
+for this test application that we're doing right now.
+We're just going to be a quick little web server
+and in GeneX web server.
+Cube control.
+I know I said earlier, I was going to say a cube cuttle
+and now I'm saying a cube control.
+It's weird.
+Cube control, create name space, K test.
+I'm calling it K test as in Kubernetes test.
+You could call it whatever you want.
+It's nothing special about the term K test,
+but that's what I'm choosing to call this name space.
+So again, that's cube control, create name space, K test.
+The Kubernetes project provides an example
+in GeneX deployment definition.
+It's very handy.
+Go to HTTP, s colon slash slash kates.
+That's K. And then the number eight s.io slash examples,
+slash applications slash deployment.yaml.
+I'll put that in the show notes.
+Read through it to get an idea of what it does.
+It'll look something like this.
+It'll have an API version, which is a part
+of the specification of how Kubernetes interacts with you
+and with the world kind is deployment.
+So kind colon deployment metadata name in GeneX
+dash deployment.
+That is super, super important.
+This is the name of your deployment.
+I am calling it very logically,
+in GeneX dash deployment.
+In real life, you might have a different scheme
+that you want to follow.
+But for me, it just makes sense to name the thing
+after what it is and then the type of object on Kubernetes
+it is.
+So in GeneX dash deployment.
+And then you have to tell us some specifications.
+So spec colon, this is really important.
+Selector, match labels, app colon in GeneX.
+So this is another one of those terms app colon in GeneX.
+That's a label that gets applied to this deployment,
+identifying to the rest of your cluster
+what this deployment provides.
+It's really just kind of a tag and you'll see it later on.
+We'll search for things in our cluster
+with the app equals in GeneX attribute.
+So it very much kind of gets referenced later on.
+And that's important to know.
+Replicas colon 2, that tells the deployment to run two pods,
+matching the template that you're using.
+And the template has metadata and labels.
+And again, the label is app in GeneX.
+And it's going to reference a container.
+And the container's name is in GeneX.
+And the image itself is in GeneX colon 1.14.2.
+This is all provided by online repositories of images.
+This is how the cloud works.
+And then finally, you're defining in the container
+the ports that you're going to need this container
+to be able to access.
+And the port that you're accessing here,
+as you might expect with a web server,
+is container port colon 80.
+I will put this yaml in the show notes.
+Don't worry about it, but it's also, as I've said,
+this is available on Kubernetes's website.
+So it's very easy to obtain.
+But this is of course just one in GeneX container.
+There are half a dozen, probably more,
+out there from other people with in GeneX servers
+in container images and so on.
+So this isn't that unique.
+But this does define a nice, tidy little test deployment.
+So remember, app is set to in GeneX.
+And the name of this deployment is in GeneX dash deployment.
+Those are two important attributes about this deployment.
+Now we can create the deployment using this example file
+with cube control, space dash dash, name space, k test.
+That's important to see where we're starting to use
+cube control with the additional option, dash dash,
+name space, k test, so that we're actually,
+we're sort of installing everything
+into this specific name space.
+If you forget to specify the name space,
+it gets installed to your default name space
+and you don't always want that.
+It's not the end of the world.
+You can remove them.
+It's not that hard.
+But be aware that the dash dash, name space
+becomes really important as you progress further
+into your Kubernetes install.
+Because now you've got different sort of folders,
+if you will, if you could think of a name space as a folder,
+you've got different folders where you're putting stuff now,
+and you don't want to just scatter it all over your system.
+And they're not really folders,
+but I'm using that as an analogy.
+Cube control, dash dash, name space, k test, create,
+dash f, that's from a file,
+HTTPS, colon slash slash kates.io, slash examples,
+slash application slash deployment.yaml.
+So you're pulling that yaml file off the internet,
+you're feeding it into cube cuddle,
+and there I did it again.
+And then you can confirm that the deployment exists.
+It has generated new pods by using the command cube control,
+space, dash, dash, name space, k test,
+space, get, space, all.
+That prints out a couple of different lines for you.
+It shows you that you've got a couple of pods running.
+I have two pods here running.
+I've got a deployment, deployment.apps slash enginex dash deployment.
+It shows as ready.
+Replicaset.apps slash enginex dash deployment,
+dash some random string of alpha numeric characters.
+You can see all of the pods labeled with app enginex
+by selecting app enginex.
+So you do cube control, dash dash, name space, space, k test,
+get pods, dash l app equals enginex.
+So you're just looking at the pods, get pods,
+but you're adding a little dash l app equals enginex
+so that you're filtering out just the pods
+that have the attribute of app enginex.
+I don't need you to do that for any particular reason.
+I'm just trying to demonstrate that the way
+that you've defined this deployment
+as being an app of enginex, that gives you extra data
+that you can query against later on.
+And you can reference in other YAML files
+when you do whatever next step there is, such as, I don't know,
+creating a service.
+Next step, create a service.
+A service is the thing that sort of exposes a deployment
+to the rest of the cluster.
+Without a service, your deployment and your pods
+could be running, I mean, they are running.
+So enginex right now is running on your cluster.
+It's just, you can't get to it from anywhere
+because there's no defined service
+alerting everyone of its existence.
+And the reason for that would be
+that you've got lots of pods running,
+but which pod would you personally go to?
+Well, we don't want to leave that up to you.
+So we create a service.
+The selector element in the YAML
+of your creating a service is going to be set to enginex
+because you want to match pods running app equals enginex.
+Without this selector, there'd be nothing
+to correlate your service with the pods running
+the application you want to serve.
+You can do this with a YAML file.
+Again, I'll put this in the show notes,
+but it would be API version, colon version one,
+kind colon service, metadata name,
+enginex-deployment labels, run, colon,
+enginex-deployment spec, ports, ports 80,
+protocol TCP, selector, app, enginex.
+That's the YAML.
+So you can kind of hear in there as I rattle it off
+that we're referencing the enginex deployment
+and we're referencing the different ports
+that this application wants to talk to.
+And then we are also referencing the application itself,
+which in this case has been defined as enginex.
+You can verify that this service exists once,
+oh, actually first you have to apply it.
+So cube control, dash-name-space-k-test, create-f,
+and then the path to the YAML file
+that we just rattled off, so service.yaml maybe.
+Once you've done that, you can verify
+that the service exists with cube control,
+space-name-space-k-test, get-service-enginex-deployment.
+It reveals to you that there is an enginex-deployment
+available on the cluster IP of 10.43.32.89 in my case.
+That's just an example.
+The external IP is set to none, that's important.
+The port available is 80 slash TCP.
+You can get a lot more information than that though.
+Cube control, space-dash-name-space-k-test,
+space-describe-space-service-enginex-deployment.
+This shows you, I don't know, 10 or 12 lines
+about this service, the name of it,
+the namespace that it's running in,
+the labels that it's looking at,
+the selector that it's using,
+and very importantly, it tells you the end points.
+The end points, in my case, are one thing,
+in your case, there'll be another,
+but they're a list of available really pods.
+Now, this is all internal.
+This is all inside your cluster still,
+so it's not very useful anywhere else,
+but on your cluster.
+But if you wanna see something cool,
+go to one of your nodes, SSH into one of your nodes,
+so either K 101C or K 102C,
+and do curl, space HTTP colon slash slash 10.43.32.89,
+or whatever the IP is of this service.
+That's not the end point IPs,
+it's the main IP, the cluster IP.
+When you do that, you'll see the welcome page,
+raw HTML dumped into your terminal,
+but it's the welcome page of your Ingenx web server.
+Next step, expose your deployment.
+Literally, you have to SSH into your node right now
+to see your website.
+That's not gonna be very useful,
+so to make it available to outside traffic,
+even if it's just on your local home network for now,
+you need to route network traffic to your cluster IP somehow.
+There are many tools that provide this functionality,
+some different Kubernetes distributions
+have different tools built in,
+some of them don't have anything built in at all.
+I don't have that much experience with all of them,
+but the one that I'm using right now
+and the one that I have been enjoying is MetalLB,
+like Metal Load Balancer.
+You can install it according to their website
+install instructions.
+It's pretty much just these three incantations.
+Cube Control, spaceapply.f,
+HTTP SQL on slash slash raw.gethubusercontent.com,
+slash MetalLB, slash MetalLB, slash V0.10.2,
+or whatever the latest addition is.
+Slash manifests, slash namespace.yml.
+You can read that file before you actually apply it
+if you want.
+I mean, not if you run that command,
+but you can go to that URL, read it.
+It creates a namespace, it's pretty straightforward.
+And then you do a cube control apply.f,
+same URL, except instead of namespace.yml,
+you do MetalLB.yml.
+Again, you can read it before you do it.
+That one's quite a lot more complex than namespace.yml.
+It creates a demon set and a security policy
+and a deployment and a bunch of other things.
+So it's good reading.
+If you want to see a complex yaml for Kubernetes,
+go read that.
+Finally, you have to create a secret code
+for the MetalLB system.
+So it's cube control space creates,
+space secret space generic, dash dash namespace,
+MetalLB, dash system.
+You'll one remember MetalLB, dash system.
+That's the namespace that MetalLB exists in.
+Space member list, space dash dash from, dash literal,
+equals secret key, equals quote dollar sign parentheses,
+open SSL, space rand, space dash base 64 space,
+128 close parentheses, close quote.
+This is all available for further reading
+on MetalLB's website under the install instructions.
+You can read more about what you're actually doing
+and why you're doing it there.
+I'm not going to get too far into it.
+For now, we'll just say it's another component
+for Kubernetes.
+In this case, of course, it's going
+to be routing the traffic.
+In order for it to route network traffic,
+you need to decide what the network range
+you want your cluster to govern.
+So this cannot.
+It must not overlap with what your DHCP server governs.
+You may not necessarily have a DHCP server as such.
+I mean, not that you think about all the time.
+But of course, if you're just at home and you better router,
+then the DHCP server is probably in the home router.
+If you're at work, it might be a separate server.
+Reserve some block of IP addresses just for your cluster.
+I start my network at 100, so 10.0.1.100.
+And on up, that means I've got the lower block
+entirely available to something else.
+And that's something else.
+Now is the cluster.
+Here's what that looks like.
+It is a config map is the object type that you're creating.
+And so you would probably call this like
+MetalLB.yaml or something.
+And it would look a little bit something
+like API version colon V1 kind colon config map.
+Metadata namespace colon MetalLB-system.
+Remember, that's the namespace of MetalLB.
+Name colon config.
+Data config creates an address pool.
+The name for me is address-pool-0.
+Protocol layer two addresses.
+Again, this is just for my network 10.0.1.1 slash 26.
+That gives me like 62 addresses available just for my cluster.
+That my DHCP server will never touch
+because my DHCP server doesn't start assigning addresses
+until the 100 block.
+You can also define it as, for instance,
+10.0.1.1-10.0.1.62 or whatever it is.
+Save that as something MetalLB.yaml
+and apply the configuration as usual.
+Cube control, space apply, space-f, space MetalLB.yaml.
+You now have a config map for MetalLB.
+And of course, MetalLB is running.
+So the next step is to create a load balance service
+mapping your deployments ports.
+That's port 80 in this case, which you can verify
+with Cube control dash-dash-name-space-k-test-get-all.
+And you'll recall that it showed the available,
+or the port that it wanted to talk to.
+So here's some yaml that you'd save as like load-balance.yaml.
+API version, colon v1-kind, colon-service-metadata-name-k-dash-external.
+Name-space-colon-k-test.
+Spec is the selector is app-colon-in-gen-x.
+So there again, we're selecting the containers running an app
+with the label-in-gen-x.
+That's an important attribute that we keep coming back to.
+And that's a very common thing within these yaml files.
+And it takes some training to sort of recognize the patterns.
+But eventually, you'll get to realize that this name or that app,
+those are significant values that map to something else
+on the system somewhere else.
+Port protocol TCP, port 80, target port 80, type load balance.
+This service selects any deployment in the k-test-name-space.
+And of course, we know that we're only running one deployment there.
+But if we weren't, it would look at them all.
+And it selects it if and only if the app value is set to in-gen-x.
+And then it maps the containers port 80 to a port 80
+on an IP address within the address range
+you've given the cluster permission to use.
+One quick note about that, port 80, target port 80,
+they're the same in this case.
+Target port is the one inside your container or in your deployment.
+So for instance, if that in-gen-x image had been running on port 8080,
+then I would have put port 80, target port 8080.
+Apply that yaml with q-control-apply-f-loadbalance.yaml.
+And now you can find the external IP address with q-control-space-get-space-service-k-test-external
+or whatever you called your service.
+I called it k-test-external-name-space-k-test.
+That gives me a little bit of a read out here.
+It says the name is k-test.
+The type is load balancer.
+The cluster IP is 10.43.whatever.
+External IP, 10.0.1.3.
+Open a web browser, navigate to the external IP address, 10.0.1.3.
+And you'll see, finally, in a graphical view, the in-gen-x web server welcome page.
+Got an internal IP address now, 10.0.1.3.
+You could then go to your router, do some port forwarding so that you could get through
+your home router and see 10.0.1.3 in the wider world.
+I hope that was helpful.
+I know that was a lot of information in a very, very short amount of time.
+But that's everything.
+Thanks for listening.
+I'll talk to you next step.
+You've been listening to Heka Public Radio at HekaPublicRadio.org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out
+how easy it really is.
+Heka Public Radio was founded by the digital dog pound and the infonomicant computer club.
+And it's part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment on
+the website or record a follow-up episode yourself.
+Unless otherwise status, today's show is released on the creative comments, attribution,
+share a live 3.0 license.

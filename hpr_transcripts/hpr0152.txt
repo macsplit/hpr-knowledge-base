@@ -1,0 +1,536 @@
+Episode: 152
+Title: HPR0152: Pulse Audio Intro
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0152/hpr0152.mp3
+Transcribed: 2025-10-07 12:30:28
+
+---
+
+That's it, thank you.
+It seems to be in Fedora since, I guess, the last release.
+Was it in version 8?
+Yeah.
+Did they put it in version 7?
+I don't know.
+I saw some messages from version 7, but I don't know if it came by default and everything.
+Well, I know it's in version 8 though.
+I know it's in 8.
+I don't recall it being in 7.
+And now it's in Ubuntu, so that's going to be...
+There's got it, and there's talk of no matchfully using it instead of ESD.
+Okay, so there you go.
+Basically everywhere, but you don't have to use it if you don't want to.
+Because it never runs system-wide, except on embedded devices.
+Okay, and how...
+And if your distribution configures a system-wide, it's an error because...
+All right.
+It's not designed for that purpose.
+Okay.
+Well, the reason being is that you don't want it to run system-wide, because one of the things that it does is...
+It uses the Linux capabilities module in the kernel, which I don't know if you're familiar with what that does.
+I mean, I guess they're...
+Okay.
+If you're not, it lets you elevate privileges.
+It lets you...
+It lets you...
+Because normally regular users can't change the things like the process priority that their process runs at.
+Well, they can change because you have to have limits set so you can change the nice value of something or the...
+So, because Paul Sodio, in order to reduce latency, will run at a higher priority than the rest of your system processes.
+Right.
+Or it would like to.
+And the other thing that it does, which is very cool, is it will run in real-time mode, which is a different scheduling priority.
+It basically can't get its own thread, basically.
+It asks for its own thread that it can do all of its stuff in.
+And so that means that you're a musician and you actually are playing an instrument or something.
+You can be reasonably sure that when you press a key on your keyboard, it will sound as soon as you press it rather than waiting for some other process under load to do something.
+Right.
+But why don't you explain what Paul Sodio is exactly like on the most, I guess, barest simple level?
+Well, it's a sound server.
+So, it's like a server except that instead of serving data, it's serving audio.
+So, you can use it on a network if you want to.
+Just like you would a regular server.
+Usually, it talks with unique sockets, but it can talk over TCP if you want to do that.
+Right.
+So, if I'm not putting it on a server, I'm just using it on, let's say, my own laptop and my own desktop.
+I want to play a song in Amorock or something.
+How is Paul Sodio involved in something like that?
+Well, it's basically the way that it's supposed to work is it's you're familiar with the, well, this gets kind of complicated because normally what happens is you have the alpha drivers from the kernel.
+Which is the basic background hardware.
+Right.
+Yeah.
+And then you have the libraries that talk to the drivers.
+Then you have Paul Sodio that talks to the libraries that talk to the drivers basically.
+Because you just have the alpha libraries by default.
+They come with a sound mixing plugin that's part of the libraries.
+And they run some code that enables that if your card doesn't do mixing in hardware.
+And the reason that that is a bad thing is because there's some resampling that happens that you have no control over basically.
+As in order to mix sound streams, they all have to be a certain sample rate.
+Right.
+And the problem is that also this DMX plugin doesn't do it intelligently.
+It basically decides to resample everything to a given sample rate even if it doesn't need resampling.
+It completely ignores what the hardware was going to do with it because it's happening in the library.
+Right.
+So you can end up with a situation where, well, this happens on my card because it doesn't support 16-bit audio.
+So what ends up happening is card opens in, you know, 32-24-bit mode, which is actually 32-bit mode.
+But the first eight bits are zeros for precision, basically.
+Okay.
+So it opens in this 24-bit mode for audio.
+And that means that DMX ends up resampling the audio to 16-bit 48,000 hertz.
+And then the card ends up resampling it to 32-bit.
+And it's like, no, it's not good because then you get artifacts.
+Yeah, because you're basically going through a lot of different conversions there just before you have hearing it.
+Yeah.
+So Pulse Audio doesn't do that because it opens the hardware directly.
+You can make it open and also plug-in device, but you shouldn't.
+Okay.
+I've seen people do that and I think some distributions do it, I'm not sure.
+But it should open the hardware directly because that way nothing from ALSA can get at your hardware.
+So some applications trying to use ALSA will try to open the card while Pulse Audio has got it.
+Point of Pulse Audio is to make sure that your sound gets mixed and served wherever it's supposed to get served here.
+And you don't want things any your sound straight.
+Right.
+So how does the average user configure, I guess, Pulse Audio to behave like they want to?
+Well, there's usually some, there's a bunch of GUI tools.
+I don't know if I haven't used them because I haven't gotten around to that because I like the command line logs.
+But there's several command line utilities and there's like a couple of GUI tools.
+Yeah.
+The GUI tools are Pulse Audio volume control, which I think is PAVU control.
+Yeah.
+You can do a yum install of that.
+You got a...
+And there's PA prefs, I think it is.
+Yeah.
+And I think Pulse Audio dashed you tools.
+Yeah.
+And then there's also, isn't there a device chooser as well?
+Yeah.
+You think the PA dev chooser?
+Yeah.
+Yeah.
+So basically, it's very easy to control because the GUI tools do pretty much mostly what you want.
+If you want to use the command line utilities there, they have a fairly reasonably up-to-date wiki.
+And as soon as they get to 0.9.11 release out, they'll probably boot the documentation up a bit.
+You can edit two files that you have.
+One is slash Etsy, slash Pulse, slash demon.conf.
+And that controls what happens when it's running as a demon, which is the way that it usually runs.
+And then the other one is slash Etsy, slash Pulse, slash default.pa, which is a default script file that loads all the modules.
+And if you have a cheap on-board sound card and you really care too much about audio quality, then you have two options.
+If you really don't care about artifacts because you have deaf and can't hear them or you just don't care, then don't bother using Pulse Audio because it's basically a waste of your time.
+Also, we'll eat more CPU cycles in some circumstances.
+You really don't care, so you can just remove it entirely if you don't need that.
+But if you actually want to do cool things with your audio, then you probably want it because it will let you set the volumes of all your applications.
+So you can go in and tell it that you want M player to be at 50% of the other volume and then you want your instant messaging sounds to be at 60% and you want
+blah, blah, blah to be at whatever level.
+It will be smart enough to remember that so when you close all the applications and kill off Pulse Audio, when you restart it,
+assuming that you have the Pulse Audio cookies and everything in place, it creates a directory in your home directory called .Pulse and it stores a bunch of settings in there.
+So it remembers when you close an application and start it up again.
+I don't remember if it persists over, I don't remember if it works when you kill off Pulse Audio, you might have to set the volumes per session.
+I don't remember because I leave mine up times so I don't reboot that often.
+I don't kill off Pulse Audio that often either because I usually have sound going, but I know for sure that if you close an application and then you open it again,
+it remembers that it remembers that you had volume set a certain way so that it'll keep from that way for you so you don't.
+It doesn't matter whether because I know that G-string replugins will do that for some applications, but this does it on like a global your sound in general.
+So because I find that a G-string will have some clipping if you tell it to put the volume at certain levels in relation to other sound, it doesn't do it very well.
+The other thing that Pulse Audio does is it only re-samples audio when it needs to.
+So if you open the sink and it calls output sources sinks for some reason.
+I'm wondering what that would be.
+It is like a sink too.
+Yes.
+I don't know what they call.
+They call things that you are sending audio to for playback, they call them sinks.
+And then they call the applications that are currently doing something.
+They get assigned sink inputs because they're sending input to the sink so it can play stuff.
+Gotcha.
+And that's important because you see a crap like this in the documentation.
+It took me a bit to figure out.
+I was like, wait a minute.
+What's the difference between a sink and a sink input so I'm looking at it.
+So the sink input is basically the sender and the sink is the receiver.
+Yeah.
+Yeah, it's basically that's the point that it works.
+But what's cool is that you can move a sink input from one sink to another so you can...
+If you were listening to music on your fancy sound card and you decide that you want that stream to be moved on to your headphones
+because you're going to keep people awake or whatever and you plug in your headphones or whatever other sound card you want,
+you can happily move the sink to somewhere else, move the input somewhere else and it won't drop your audio.
+And moving that stream is...
+The stream doesn't touch the application playing it either.
+Right.
+But how is it done?
+Is it through the GUI tools or it's through the...
+Yeah, you can do it with GUI tools.
+Or you can do it through the command line tools.
+Or you can do it with the command line.
+There's a tool called TACMD which gives you like a little sort of a shell.
+Oh nice.
+You can type in pulse audio commands.
+And the commands that you type in are the same ones that are in the script file.
+Okay.
+So if you look on the wiki, there's a couple of pages.
+One of them is the command line page.
+But that's also the same script that's in default.pa, which you can make load other script files too.
+So you can if you decide that you want to have your default script load some other stuff.
+And it's kind of got a mini programming language sort of.
+It knows about like it's got things like .if and .else.
+Oh wow.
+And there's examples where it's like by default it will check for instance whether you have how enabled and if you don't then it won't load the how to detect modules.
+Nice.
+So it's got some sort of primitive decision making ability.
+The other thing that it can do is if you want some syncs configured a certain way it lets you configure modules in some auto load way.
+So you could have some syncs configured but not actually plugged in.
+And then when you plug it in it will do the right thing.
+It will know that oh that's this sound card.
+You usually have it set up that way so we'll plug it in.
+And how are syncs?
+How is that?
+It requires the how to detect a thing which I usually disable because I like to just add the new sources myself.
+Right.
+The new syncs myself because I'm a control freak.
+Right.
+Which is a good thing.
+You care about automation.
+You can make it do that.
+How are syncs identified?
+Are they identified by the name of the sound card?
+Well, they're by default how it gives them some weird name.
+This is one of the reasons that I don't enable the how module because if you don't specify how to load a sync it won't get a name at all.
+It'll just get like an index.
+It'll get a name but it'll be something weird.
+It'll be something like alza line output dot something or other.
+Wow.
+Just be weird.
+And so then what you end up doing is you have this really long bizarre you know sync name.
+And then you have to go list the syncs and figure out which one is where and move whatever.
+So you can't name the sync inputs obviously because they change all the time depending on what's playing.
+Yeah.
+So you have to look those out.
+You have to look those up in the index.
+If you look at the PACMD tool, come out called list, list their sync dash inputs.
+Nice.
+So you list all of the sync inputs that you have.
+So then if you had music that you wanted, the way that I have it set up is I know a post audio to load all the modules myself.
+So I have something like you know load dash module module dash alza dash sync.
+You know device equals HW column, whatever zero or one or whatever.
+I'll have like rate equals 48,000 and format equals S32 LE.
+And then at the very end of the output, it doesn't the order of arguments on the command line for loading modules doesn't matter.
+But and then the important one is the sync.
+The sync underscore name equals never you want to call the sync.
+I have to, you know, my USB headset just gets called USB and Delta just get the M audio Delta card that I have just gets called Delta.
+Delta.
+Yeah.
+That way I don't have that way.
+I know what it is.
+So I can say, you know, you know, move that sync dash input 53 Delta, which will boot that input that's got the index of 53 on the sync inputs to the Delta card.
+Okay.
+And employers pulse audio plugin will let you specify what sync you want it to go to.
+You can also set the default sync to there's a set s default that sync command that you can set it to be whatever you want it to be.
+So if you have some pain in the ass application that refuses to let you specify a pulse audio sync, you can set the default sync to be for that.
+It is wherever you want the application to go to once you got something connected to pulse audio, you can move it wherever.
+Cool.
+Which is very handy because sometimes you originally wanted your music on your big speakers and then you want to move it to your laptop, which might also be connected on the same network getting served for a pulse audio.
+Because it serves over a network, right?
+Right.
+It doesn't care that that computer is across the network.
+It just sees it as another sync.
+Right.
+It doesn't care that that was loaded with the RTP module.
+It just knows, oh, that's all across the network.
+So you want to move the audio over there.
+Okay, cool.
+And so you can have it though.
+If you're going to stream CD audio across your network, you better have at least 100 megabits switch or you're going to be in trouble.
+Yeah, well, sure.
+Well, I mean, I'm just going to eat like two or three megabits.
+Yeah, yeah.
+Stream or whatever.
+So don't do that over TCT unless you've got stacks of bandwidth.
+But in theory, you could stream like something on your pulse audio over to my computer if I had a TCT connection.
+Sure, sure.
+Which would be really cool because you could be like, I'm listening to this song.
+I think I'll stream it to you.
+Yeah, yeah.
+That's kind of a neat thing you could do.
+I just like it because you could do all this neat stuff with your audio.
+And that's what it sounds so great about it.
+I just think some people have some problems with it.
+Yeah, no, if it doesn't care.
+And if you need to move audio around, you can't.
+And it's also good for power saving because it has a feature that if your sound card isn't being used for certain amount of time, bend on idle,
+which will close the sound device if it's not being used.
+Yeah, so it sounds like the command line tool is actually the way to go.
+Yeah, if you type TACM, D, and you'll get a little shell thing,
+and then you can type help and it gives you a list of the commands that it accepts.
+Oh, cool.
+And then you, if you say that you didn't understand how the load module command works,
+you could just say, help load-module when it would tell you, give you the generic syntax.
+But you probably want to look at the default script, which is well commented, so you can look at it.
+And if it doesn't make sense to you, I'm usually around on IRC and you can probably fill with it.
+At first, I didn't like it because I was, what do we need another sounds for?
+Right.
+Well, why do we need all this extra sound stuff?
+And then when I, when I heard the audio that was coming out of it, it was like, oh, didn't resample my audio.
+We just sent it straight to the card.
+That's extremely cool.
+That is.
+Because none of the sound cards these days have any multiple mixing streams.
+So, except for like, if you have an older sound blaster live or something, it will,
+means that Pulse Audio might give you some issues because it's basically designed to control the whole sound card.
+Oh.
+It wants to take over the card entirely.
+It doesn't want anything else.
+Yeah.
+It doesn't want else to send a signal to it and Pulse Audio.
+No.
+Because it's designed to grab the card by itself and that's what it wants.
+Because the reason you're using Pulse Audio is because you want all of your sounds to be easily readable and used.
+So, pretty much everything works with Pulse Audio.
+If it doesn't support it natively, you can use the also Pulse plugin.
+There's also a TADSP utility, which is an OSS wrapper for it.
+So, it'll make the application look like it's talking to OSS, but it's not.
+It's talking to Pulse Audio.
+And it knows about eSound as well.
+So, if you have it said, if you adjust a SIM link, which is usually done by your distribution.
+Most of the distributions these days, if you look at their Pulse Audio packages,
+they just, because it's designed to basically replace all other sound systems.
+So, they drop it in place for eSound.
+So, if you're launching a GNOME and you get the eSound software mixing configuration thing,
+it'll just start Pulse Audio.
+And it will, anything that was thinking it wanted to talk to eSound is now talking to Pulse Audio.
+And if you want to, you can do what I do, which is I have just everything going through Pulse Audio.
+It's all like, because most things that I use have native Pulse Audio support, so I don't have to worry about it.
+And if I get an error when I go to play something, that means that it wasn't supported by Pulse Audio.
+And then I can put that through, there's a Pulse plugin that I can put through or whatever.
+There's some applications, like some of the voiceover IP stuff that want to grab the whole sound card.
+Right.
+And they want to do weird, they want to open the hardware directly, because they want to adjust latency settings and stuff.
+Which, they don't need to, because Pulse Audio is designed to do that already, but they don't know that,
+so they try to open the whole hard, and they can't, because Pulse Audio's got it, so they just bail.
+And if you run into one of those, there's a TA Suspender command line utility that will make Pulse Audio suspend itself,
+so that it can have the whole sound card moving for whatever that application is.
+But if you're one of these people that's in the habit of like having some voiceover IP application up all the time,
+you probably don't want to do that, you probably want to hack the application,
+so it goes through Pulse Audio properly.
+But for the most part, you don't really care, because everything's just supposed to behave, like it's supposed to behave.
+So I wouldn't even have bothered to configure it at all, but it came, I had to, I didn't have a choice,
+because my card wants to open things into an A format that's not on the standard,
+because it's a pro audio card, and it wants to make sure I have better quality, so it does that.
+How do USB devices sound devices do with it?
+I mean, you said you had a USB headset that you were using.
+I got one of those USB headset microphones, it works fine, I just plugged it in,
+and I told it to move some audio over there, and it said sure, who moved audio over there?
+And again, it was able to record from there and stuff, so it didn't seem to give me any trouble.
+Cool.
+Because USB devices, if you probably know this already, they tend to be problematic for audio.
+Yeah, I mean, they introduce a lot of delay and stuff.
+But Pulse Audio does something sane, because the cool thing with Pulse Audio is,
+because it's got a real time thread, if you enable it properly, which means that most distributions, by the way, don't do this.
+Because the reason they don't do this is because it's kind of a security risk, and if, well, it's not really a security risk,
+because Pulse Audio drops privileges almost immediately.
+Okay.
+Like, they install the binary with a set user ID bit set to root.
+So it thinks that it's running as root, but then it drops privileges immediately.
+Because it wants root to be real time, basically.
+Yes, it has to, it can't get real time.
+It can change the nice level, but it can't get real time unless it's root.
+So what it does is it grabs the capabilities that it needs, and then it drops them.
+And so it's pretty hard to exploit it because it won't even try to get higher priority at all.
+Like, there's two things that it does.
+One of them is it changes its nice level, and then it gets a real time thread.
+It won't even do either of those things, unless the user is in a real time group,
+or by default it's called Pulse-RT, I believe, or Pulse-Sunderscore RT, something like that.
+But some distributions hold real time.
+But anyway, it'll be at UF here, not in that group.
+It'll, when you start, it'll come up with an error.
+Yeah, yeah.
+Be in your logs, about not being in real time, and we didn't get privileges and blah, blah, blah, blah, blah.
+And you have to add yourself to the root.
+You've got to add yourself to that group.
+And then you've got to go into slash Ft, slash security, slash limits.conf,
+which is where Pam sets the limits for your user.
+And you've got to make sure that your user is allowed to raise their real time priority
+and their nice limits so they can change their priority for processes.
+And once you do that, then it will enable all the real time stuff
+and crank up its priority, which means that it's very low latency
+because it's now running at a higher priority than everything else on the system,
+which is great for me because if I'm sitting on IRC and I'm gacking in about 12 different channels,
+I don't want to wait for my compile to finish until I hear what coming on IRC.
+Right.
+I want the sound now.
+Yeah, yeah.
+And if I'm listening to some music, I want to make sure
+that it gets reproduced accurately because I might be trying to learn it.
+Right.
+Right.
+Get the notes in the right order and you get audio dropouts.
+If you heavily load a system with ALSA,
+it will probably get some audio dropouts.
+Pulse audio in its current state will give you them.
+And it won't give you dropouts until you load the system
+to like, you know, gikulous load average like 10 to 9 or something.
+Basically, I tested that because I basically ran, what do I do?
+I did something like three simultaneous kernel compiles.
+And then while I was doing that, I made it do a bunch of disks.
+I got the load average up to like 15 and then it started doing audio dropouts.
+But I don't think most people are in the habit of cranking their load average up that high.
+This is what pulse audio is trying to solve.
+It's trying to solve the fact that flash wants OSS,
+but you don't have OSS modules installed because nothing you use
+is used as that old protocol.
+And then, you know, something else wants Wilson,
+something else wants the E sound thing,
+and something else wants arts.
+And you know, these silly sound things going on.
+And it's like, this is really stupid.
+You just get them critical and, you know, use it.
+Right.
+So the pulse audio is trying to replace everything,
+which is why it's got all those compatibility layers.
+Yeah, yeah.
+It's trying to take all the, it's trying to take all the issues away from the guy
+who just wants to listen to his music and doesn't really care.
+You know, because I mean, I really don't care as long as my,
+ever I'm listening to, doesn't get in the way of my other processes.
+Right, right.
+And you could configure all that individually anyway, like you said,
+just, I mean, on a per application, the beta is too.
+You can, you can fiddle with the volumes,
+which you can't, which you can't do with, with the else's stuff.
+If you, if you run something like M player,
+and you tell it to lower the volume,
+it's just going to crank PCM volume down on your card.
+Right.
+Which is what you want.
+What you really want is for that application to turn its volume down.
+Correct.
+Because you've got other sounds that you would like to be louder than that.
+Maybe.
+And you don't want the sound thing eating up so much,
+CPU time, but it's going to get in the way of your other processes.
+Yeah.
+So if you give it a higher priority, then the theory is that its work will be done
+so that by the time the other processes get around to New England,
+CPU, the audio's already gone out to the card and you don't have any issues.
+If you don't enable the real pun stuff though, it's not very nice to use,
+because it assumes that it's going to get higher priority than your other processes.
+And you will find if you don't enable all that stuff,
+you'll end up getting lots of audio dropouts and all sorts of things.
+What they are doing for 0.9.11, which is really cool,
+is they've figured they've had some fixes to ALSA
+so that all the audio reads like all the hardware reads are atomic,
+so they either happen or they don't get a nice accurate reading of the sample clock on your card.
+So then what they do is they figure out how long it takes your card to play the audio
+and they like dynamically adjust the audio buffers accordingly.
+Wow.
+So even if the system is under huge amounts of load,
+it likely won't make your audio drop.
+Right, yeah.
+It's pretty sweet actually.
+You would know this because you're familiar with Apple's core audio.
+They basically grabbed because Apple published a paper on how their core audio works.
+That's right, I read that actually.
+So that's what the Pulse Audio guys did is they grabbed that paper.
+Cool.
+And they took everything that was good about that and they put it in Pulse Audio.
+It's in SDN right now, which I checked out and played with.
+Very nice.
+Don't do that though unless you want some crashes.
+But what it does is it figures out how long it takes for audio to play
+and then as the system gets more heavily loaded, it readjusts its buffers,
+which is very cool.
+Yeah, that's fantastic.
+But of course, core audio wasn't running real time either.
+So this is even lower latency.
+And because I was able to do a test, I had like this old G4 tower sitting around
+that was running the left hand on that.
+So just because they're similar sound systems,
+I wanted to see which one sounded nice or whatever.
+So I flagged them in and set up the same sample rate on both of them.
+Same speakers and everything.
+The Pulse Audio just kicked a crap on it,
+whatever our left hand was doing.
+Wow.
+It's using the Speaks Codex for resamplers.
+Well, not the Speaks Codex, but the libraries that the Speaks Codex use.
+Okay.
+Which are the same, which are the same libraries that the,
+it's the same algorithms that get used by Agbormas in all those
+because it's the same codex family.
+Yeah.
+Those are really high quality resamplers.
+And so, I mean, if you do it right, you could conceiveably,
+if you have a decent sound card,
+you can probably get better quality than you would get from a stereo system.
+Oh, I'm sure, yeah.
+Because you're getting like one of the things that the M-Audio cards have
+is they have a latency monitor and they have some other stuff in the hardware
+to make sure you get a bit perfect copy of your samples.
+So the IRC channel was very helpful.
+Very cool.
+They were, you have to be patient, of course,
+with any, like you would with any IRC supporter.
+Yeah.
+But, you know, you ask your question and they'll give you a good answer.
+Yeah.
+They will tell you to go read if you didn't.
+Right, you know.
+But that's sort of what you should expect.
+Yeah.
+It is reasonably well documented.
+I can't say so much for the code itself.
+There's some, there's a lot of go to you in there.
+Okay.
+So long other things, but.
+The best resources for people that check out would be, I guess,
+pulsaudio.org.
+Dot org and the, and the IRC channel.
+There's also, which is on free note.
+It's just like hash, pulsaudio on, on free note.
+Right.
+And then there's also a mailing list, which you will find on the pulsaudio.org page,
+which is worth subscribing to because there's support there.
+So if no one else is on IRC, you can subscribe to the mailing list and post questions.
+Someone will give you an answer.
+And it's not, it didn't split it off.
+You know, a lot of projects will have developer lists and user lists.
+Yeah.
+The pulsaudio one is just a pulsaudio list.
+So if you're a newbie and you feel intimidated by discussions about people not being able to
+implement certain callback application or something, then hit the delete button.
+But it's not a, it's, it's not a user-only list and it's not a developer-only list.
+And they have, and the mailing list is archived at like mailarchive.com or something.
+You didn't find it in this wiki or no one was around on IRC.
+Well, gosh.
+Thanks for talking to us, Kajarya.
+I think it's a lot of really cool information.
+Yeah, it's very cool.
+If you need help and you get something to work, don't go and install a pulsaudio
+because I'm sitting around on IRC.
+They didn't put it there to waste your time.
+Right.
+If you're going to uninstall it, it's do it because you're half deaf.
+Yeah, I'm a good reader.
+Don't just ditch it because some guy from Fedora is maintaining it or whatever.
+Yeah.
+Because I looked at the maintainer and it was like, keep the guy works for Red Hat.
+Oh, this is some, you know, hand-holding newbie application.
+Maybe you're going to remove it and then I started looking at it mostly.
+No, it's actually very good.
+It's just going to take some time to hit with it.
+Yeah.
+Because I see a lot of comments on just various IRC channels about people getting frustrated
+and installing it.
+Yeah, yeah.
+If you're going to do that, do it because you don't care about your audio quality.
+I think it's good because it's, it's some, basically, because one of the things that people always
+want about is Lidix ready for the death cop.
+Right.
+Which I think is bullshit because he's the same people that said that it wasn't ready 10 years ago when it was.
+No, right.
+Because they failed to understand that it's, if you're not going to pay attention
+and learn how something works, then it's not really going to help you because it's not designed.
+It's not designed to be just a plug-in play thing.
+It's designed for people who actually want to use stuff.
+Yeah.
+And then one of the complaints has always been, well, the audio sucks.
+So he doesn't suck now.
+Thank you for listening to Hack the Public Radio.
+HPR is sponsored by Carol.net.
+So head on over to CARO.NET for all of her TV.
+Thank you.

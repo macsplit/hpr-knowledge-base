@@ -1,0 +1,546 @@
+Episode: 3492
+Title: HPR3492: Linux Inlaws S01E44: Pipewire Just another audio server Think again
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3492/hpr3492.mp3
+Transcribed: 2025-10-25 00:24:25
+
+---
+
+This is Haka Public Radio Episode 3492 for Tuesday 21st of December 2021.
+Today's show is entitled, Lihak's in-laws S0144, HypeWire just another audio server
+think again and is part of the series, Lihak's in-laws, it is posted by Monochrome, and
+is about 53 minutes long, and carries an explicit flag, the server is, HypeWire just another
+audio server, think again.
+This is Lihak's in-laws, a podcast on topics around free and open-source software, and
+is hosted a contraband, communism, the revolution in general, and whatever fence is your
+tickle.
+Please note that this and other episodes may contain strong language, offensive humor,
+and other certainly not politically correct language you have been warned.
+Our parents insisted on this disclaimer.
+Happy Mom?
+Thus, the content is not suitable for consumption in the workplace, especially when played
+back in an open plan office or similar environments.
+Any minors under the age of 35 or any pets including fluffy little killer bunnies, you
+trust the guide dog, a lesson speed, and QT Rex's or other associated dinosaurs.
+This is Lihak's in-laws, Season 1 Episode 44, part wire, just another audio server, think
+again, due to technical reasons, and Martin knows exactly what I'm talking about.
+This episode is slightly out of schedule, we will be back to our normal roadtires soon
+as possible and apologize for this slight delay in publishing this episode.
+Unfortunately, my beloved co-host, Martin Visner, cannot make it tonight, but we, so I'm
+afraid that the dear listeners and you listen to this episode I have to do with just me,
+but to make up for this, I have very important guests tonight, a guy called Wim Tamens, I hope
+I got this right without bitching last name.
+For those few listeners who do not know Wim, of course he's the guy behind something
+called pipe wire, the successor of something called Puzz Audio, but we're going to go into
+the technical bits in a while.
+But maybe we might not introduce ourselves first of all.
+Yes, hi, hello, I'm Wim Tamens, I'm a Belgian, I'm living in Spain currently, I'm a programmer,
+I started programming when I was young on Commodore 64, I made some games when I was young
+in university, and then I started getting involved with a project called G Streamer, so I was
+the second person to contribute to that, so I got involved with multimedia stuff from Linux
+and all of that, with GNOME desktop, went to a lot of conferences, so I've been doing
+them for a while, G Streamer, and then four or five years ago I was asked to rethink the
+video sharing mostly for cameras, from web browsers, but also for screen sharing, and that's
+how pipe wire started five years ago, so it's sort of evolved into everything, into an
+audio replacement for all the Linux audio stuff, so that's kind of exciting, a little bit
+more than expected.
+Yeah, similar to 42, the answer to all questions by the sound of it, no Wim, but before we
+go into pipe wire, if you have been working on G Streamer, maybe, now is the time to give
+a short overview for the few listeners who do not know audio under Linux, maybe now is
+the time to kind of give a short overview of how this whole stack fits together, starting
+maybe with Elsa, and then continuing to pause and what this G Streamer thing is all about,
+so that we have a little bit of context before we start to discuss something called pipe
+wire, if that makes sense.
+Yeah, so at the lowest layer, you have the kernel with the driver, so each audio card has
+a driver, there's a generic driver for USB cards that comply with the USB standard for
+audio, but on top of that, user space applications, they communicate with a library called ALSA.
+ALSA is a lot of stuff, but in essence, it's a little wrapper around IOCDLs to do stuff in
+a kernel.
+Sorry, it stands for advanced Linux, sound architectures on Flotters?
+Yeah, yes, yes.
+Okay, sorry.
+So it was meant, initially it was meant to be everything, it has like plug-in architecture
+and you can link plug-ins together, and it has like a mixer as well and all kinds of tools.
+But these things, they are less used these days.
+So in essence, ALSA is used to just communicate with the driver, and also the plug-in system is
+still useful as you'll see later.
+So ALSA of course replaced a previous kernel API, OSS, so ALSA is not used anymore, it's
+mostly ALSA.
+Open sound system, it's not a complicated sound, right?
+Open sound system, there is a whole history about how it was in the kernel and then proprietary
+and back out, and then back in.
+For the old folks, yeah, I can't remember it well when I used to compile my old kernels
+about 20 years ago, something like that, but I digress, sorry, I didn't want to interrupt
+you.
+Exactly.
+So there was some efforts to try to write a sound server in ALSA itself, but the routing
+was a bit difficult.
+So eventually there were other sound servers that came out, so like one of the first one
+was ESD, if I'm not mistaken, you know, and then there were other projects that were
+more like a synthesizer, infrastructure, like ARTS on GDE, there were others that never
+gained really much traction, like MOS.
+But eventually a new sound server came, which was also audio, so the pulse audio sits on
+top of ALSA, it basically talks to the application, takes all the audio from the application, mixes
+it together, and then sends it to the device.
+It's fairly simple, but it also needs to do things like moving applications to different
+devices, or plugging of new devices.
+So there's a bit of logic that lives in a sound server, and over the years it has grown,
+like you can do network transport, send audio between computers using pulse audio.
+But there's another container called jack, right, if we were completely mistaken.
+Yeah, so right around the time, a little bit before pulse audio was developed, the professional
+Linux of, and also actually also was developed mostly by the pro audio people, they lived
+in a separate group mostly, and they were focused on pro audio, which means like low
+latency, you capture signals from a microphone, you apply effects, and send it back out, things
+like that, or like digital audio workstations, mixing desks, these things.
+And they had their own sound server that did very little, but was all about flexibly routing
+signals around their apps, their drum machines, and all of that.
+So the focus was completely different, and they sort of developed, they sort of developed
+independently from each other, and by the time the pulse audio wanted to do the desktop
+things, they already saw jack, which did something completely different, and then we ended
+up with two situations, one for pro audio, and one for desktop.
+So this is one of the reasons why many distributions picked up pulse as the answer to more consumer-oriented
+audio approaches, right?
+I suppose.
+Yes, exactly.
+So jack is very, very narrow focus, you can only use one device, and it has to be, you
+can do other things, it's very difficult to configure, it doesn't really do any Bluetooth,
+it's very narrow, very narrow focus, it's not very generically used for a desktop.
+So pulse audio instead is very useful, it does everything automatically, you don't really
+need to configure much.
+So that works better in a desktop environment, but on the other hand, pulse audio was not
+designed for the low latency use case of jack for different reasons, for different reasons.
+Yeah.
+Another interesting perspective here, and now how does this whole G streamer thing come
+into play here?
+The way I see it, and full disclosure, I'm by no means a multimedia expert when it comes
+to maintenance, I just use the stuff and wonder about the different backends, for example,
+when I use my favorite music application, which is known as strawberry, it used to be
+an Amaraq, but then I switch over to strawberry, Clementine or Clementine came in between,
+but then Clementine, by the way, said with regards to bit-trots, so I switch over to strawberry,
+but therefore, for example, I see a G streamer backend that I normally use and it works.
+So maybe now it's the time to shine a little bit more light on more user-land things.
+Yeah.
+So we talk about Alza, we talk about the sound servers, the thumb on top on the next layer
+is the media frameworks.
+So what do media frameworks do?
+They decode, they read files, they demux things, they extract compressed audio, they decode
+the audio, and then eventually send the audio to, in this case, puls audio, for example,
+of the video to the compositor, all right, 11.
+So that's the task of the multimedia framework.
+It's like the gluing of all of those decoders, and possibly also provide a good user interface
+for applications to do this, to make this possible.
+So that's what G streamer is, it's a API to be able to construct these kind of things,
+decoders and demuxers reading tags out of it, sending it to the sound server in a pluggable
+way, so that if you have different sound servers that automatically selects one and all
+these things, so that's a multimedia framework.
+So it's more like a workflow that allows you to connect different components to each
+other?
+Yeah.
+Different blocks, different functional blocks that you connect together, it doesn't really
+have to do anything with audio or an audio server with audio, it can be reading files,
+reading tags, interfacing with various APIs at lower levels.
+So it could be like video capture encoding, sending it over RTP, for example.
+So that's the thing that that multimedia frameworks do, it's like the big glue for gluing
+all these components together.
+I see.
+And do you know where the name comes from as in G streamer, does that have anything to
+GNOME?
+Yes.
+So originally it was called GNOME streamer, so it was built, well the first version was
+from 1998, 1999, which is exactly when GNOME started implementing their stuff and it was
+actually using also GDK at that time, and it was built using all of these things.
+These technologies that GNOME was going to use for their GUIs.
+It was using that object model and it was meant to go into the GNOME desktop as the multimedia
+framework.
+Okay.
+So it was called GNOME streamer.
+I see.
+So that's a bit of history.
+After a while we figured it out, but it doesn't really have to be GNOME specific, there's
+really that we need to do GNOME specific.
+I mean, we can use the technology, but we can just call it G streamer.
+Okay.
+Interesting overview now.
+Given the fact that Pulse Audio has been run for a while, why or how did you come to
+the conclusion that now it would be time for a new approach, hence Papuaia.
+You can check it a little bit of light on the history of the project.
+Yes.
+So the first version of Papuaia was simply meant to be sharing of a camera video for Linux
+camera and just capture video and we also had capture video from the desktop for screen
+sharing.
+It was all implemented using G streamer.
+So that's basically the first fundamentals.
+But when I started doing the project and I was thinking about things, it became clear
+like, okay, I'm actually re-implementing all of these G streamer things.
+Can I not make like an audio server with this?
+And then I actually built an audio server using G streamer, but then I got into trouble
+because G streamer is a bit too high level 40s.
+It doesn't exactly have the lowest possible latency that you want, such a server.
+So then I started rewriting those components and then it's sort of evolved into JAK, actually.
+And then I had the JAK, but I also had components that actually made it work like Pulse Audio.
+So then I sort of ended up something in between and then I started getting serious about
+it.
+Maybe I can actually implement both JAK and Pulse Audio with this new thing.
+So if you say, how did I get to this?
+It's more like an experimentation and an logical evolving of the code to where it went naturally.
+There wasn't actually a plan to say like, I'm going to replace JAK or Pulse Audio.
+It's more like building all of these things.
+It just came to me once.
+Maybe I should actually try to do this.
+And I had to go to another redesign to make this actually happen because the initial design
+wasn't suited to do JAK.
+If you want to do like pro audio stuff, you need to be very, very, very specific and very,
+very attention to all the little details to actually make this work.
+And all little bottlenecks that can cause latency is just not slow.
+Yeah.
+I can recall an interview with Leonard Pottering where he kind of shed some light on the
+challenges that he encountered when designing and implementing Pulse and latencies were
+at the very top of that list.
+So it came a little bit of a surprise that he actually didn't write this in December.
+I'm joking.
+But the reckoning C would be the natural choice for implementing this in the light that probably
+Russ isn't ready for primetime here.
+But you need a performance program in that year, right?
+So yeah, but more importantly, even is the design of the communication between the clients
+and the server, which is what Pulse Audio does not do correctly.
+Okay.
+That's the big problem that Pulse Audio's design for the communication between clients and
+the server is based on a socket, which can be a local socket or a network socket.
+And the protocol can be sent over the network or over a local, between a local demon and
+a client.
+But that rules out shared memory, if you need to be able to send it over a network.
+And then the whole protocol becomes much more complicated than it needs to be.
+And you actually get the data from a client to a server, it's very heavy in Pulse Audio.
+So Pulse uses UDP or TCP to transfer the data as possible, so you need to be right?
+TCP.
+Okay.
+Wow.
+No.
+It's TCP.
+And like, for example, what you need to do in an audio server is the audio card needs,
+let's say, 100 samples.
+You need to wake up that client as fast as you can and tell it you need to make 100 samples
+right now.
+And that thing needs to send 100 samples and it needs to go as quickly as possible to the
+hardware card.
+So what happens in Pulse Audio is that it goes to a couple of context switches of threats,
+even over a socket, it gets marshaled in the message, then over a threat, then to
+apply the marshaled back to the threat of the network, back to the other threat and then
+to the card.
+So the path is just very long.
+And you can't make that work reliably with very small buffer, so Pulse Audio can't go
+very low latency for that reason.
+So it's expensive.
+Yes, especially using TCP, because the network stack ends up the kernel with regards to
+TCP is quite heavy in comparison to you to UDP, because the TCP protocol is a kind of
+sequencing all the rest of it, something that you don't necessarily need for audio, right?
+No, right.
+So there have been some changes made to put part of the data into shared memory.
+So that's that speeds up things a bit.
+And it mostly actually reduces the amount of CPU usage, hoping all over sockets and stuff.
+But yeah, it's mostly the threading model that is causing a bottle next in Pulse Audio.
+So if you compare it to Jack, Jack is very simple, card wakes up, it signals a summer forward,
+the client wakes up, writes stuff in a buffer, the buffer is in shared memory, wakes up the
+server again, server reads from the buffer and that's it, so it's very quick.
+And it's very similar in pipe wire now.
+So the path is super simple.
+So with that design, you can send small buffers very quickly between many different applications.
+So this is what you need for Jack-like features, but also for low latency.
+So essentially you took the shared memory approach and implemented this for pop wire.
+Yeah, so if you look at the implementation of pipe wire, it's very, very similar to
+Jack.
+So it uses a bit more modern ways of doing things, like it doesn't use a summer for, but
+it uses an event of these because you can pull those on one thread, many on one thread.
+With the summer for, you actually have to block things like that.
+And Jack has like a huge piece of shared memory, like a hundred megabytes, where everything
+is now.
+Okay.
+So all clients can basically read from all other clients, right?
+Which is what you don't want to have in a flak pack, or in an environment where you
+have to isolate programs from each other.
+So also, the user stuff like app images, apps, whatever, yes, I get it.
+Yeah.
+So you don't want your, I don't know where it comes from app, be able to peek at other
+apps' data, right?
+You want to isolate that from all the other things.
+Which is something that also audio doesn't do, and Jack also doesn't do.
+So the pipe wire is designed to only give the memory to a client that it's allowed to
+see.
+So that's something like security already built in to certain extent?
+Yeah, it's, I mean, these applications were written 15 years ago, nobody was talking
+about flak packs or trying to isolate applications or virtual machines, value existence, on desktops
+in that way.
+So yeah, it's a, it's a little bit of a rethinking of all of these things, how they should work
+in this new world.
+What other differences are there between the traditional approach, like, primarily pulse
+audio, I guess, and pipe wire?
+It sets pipe wire aside with regards to further architecture and implementation differences.
+Yeah, so I think the biggest part is the scheduling bits, which is more like Jack.
+So you have a very short part to waking up clients and getting their moving data around.
+The thing that is used from pulse audio is more like all of the dynamic things and the
+the timer based scheduling, for example, from pulse audio is also in pipe wire.
+So the way that it's built now is you have pipe wire itself, which actually doesn't really
+natively support pulse audio applications.
+There is a demon sitting in between that actually translates pulse audio clients to pulse audio
+to pipe wire messages.
+Okay.
+So, I guess, I guess it's ripped open, pulse audio is ripped open into actually three parts.
+So you have the core part, which is scheduling of the audio samples, how it flows from
+clients to the devices.
+Then you have the policy, which is separated in a session manager, which are all the rules
+like where should audio go, how does it need to be configured, where the volume is stored
+in a database, a lot of these things.
+And then there's the protocol, which is separated in another deal, so it's actually pulled out
+in three parts, pulse audio.
+And the comparison to that pipe wire is different.
+Yeah.
+Yeah.
+I mean, it eventually implements all the features that are in pulse audio, but it's
+located the functionality in different parts, and it's slightly different implementations.
+Okay.
+Okay.
+Just curious, you chose C as the main implementation language, similar parts to pulse audio, I'm
+not going to remind you.
+I think Jack is implemented in C as well.
+C++.
+Okay.
+C++.
+Yeah.
+Jack, what is C?
+Jack 2 is C++.
+I'm just wondering, because whenever I meet some hipster colleagues of mine, where younger
+I might add than me, of course, they talk about Rust and other new foreign languages,
+which have certain advantages in terms of memory safety on the rest of it.
+Did you ever consider using something else than C?
+Yes.
+Yes, I tried to learn Rust, but I couldn't get it, I didn't manage to feel comfortable enough
+to actually implement the Rust.
+Okay.
+So, I mean, for distortion, we did a couple of episodes on Rust, on Rust recently, so
+I'm a little bit of a, a hidden, a closet fanboy, if you want to call it like that, I wouldn't
+consider myself an expert on Rust by no means, but I'm just curious about the language.
+What do you consider as the biggest challenge with us learning curve in Rust, if you took
+a look at it?
+Just curious.
+And nothing in particular, so I think that's part of the problem.
+Okay.
+You really think, and then you're like, oh, yeah, I'm going to do a new tier, and we take
+a rough there.
+But then, I don't know, if you're writing program, it's also kind of like the code.
+It sort of, not so very, it sort of comes automatic, you know, you have an ID, and then you
+say, I need to search in a list like this and that.
+And with the new idioms, in Rust, you need to get like experience with that in order to
+just write the thing that you're thinking, right?
+So in Rust, I can't do that, then it's more, you probably need to start something else
+simple, like do some modifications on something existing, build up your Rust experience.
+I was an experienced enough to be able to build this in Rust, but I take it, but I take
+it, you're coming from a C background, yeah, yeah, very comfortable with C, so very
+enough.
+No, I mean, the one thing, yeah, the one thing that before, when Rust and before the last
+kind of remark a question on this, the one thing that I find very interesting about Rust
+is actually the comprehensive ecosystem that comes with it, starting with the standard
+library, which is really, really rich, never mind the crates ecosystem, where you can
+simply simulate Python or other languages of recent persuasion.
+Let's put it this way, where you can simply put in a pick and choose with regards to functionality
+want to implement, I'm just wondering, what on what shoulders is part by standing with
+regards to certain to third party code, why is it all written right from scratch?
+Mostly written from scratch, yeah, wow, okay, yeah, yeah, there's nothing we used.
+Even the fact that if you describe this as an experiment, quite a few distros and Fedora
+I reckon, it's one of them because 34 picked part, why as opposed to replacements have
+adopted this as the standard audio subsystem, any comments on this?
+No, no comments, so I can say like, I mean, before
+Fedora or before I suggested trying this out in Fedora, I had been running and testing
+the audio server part for like a year and a half probably with some other people, so it's
+not exactly like out of the blue, when it was suggested to be adopted for Fedora, it was
+already working quite well, okay, but what happened this, it accelerated things enormously,
+so it like when it was suggested in Fedora until it was adopted by Fedora, things just got
+rewritten, major subsystems, I think the whole post audio thing was just written in like
+those three months leading up to the release, it was just like, okay, this compiles and it runs
+and it seems to run better than it did before, okay, ship it and literally in Fedora at the last minute
+we patched up stuff, so I'm always sitting there or no, this is never gonna survive the task of Fedora,
+right? I mean, you follow principles to develop these things, you test them, but it's always like,
+whoa, I don't know where this is going, but it spends surprisingly well, until the last minute,
+I was sitting there and something has to go wrong, this is impossible, how can this work so well?
+People you heard adopted, so people you heard it your first, world domination accident, okay,
+by accident, well, accident, it was a lot of hard work, of course,
+but yeah, these things, replacing an audio subsystem is dangerous, you never know where you can
+handle, right? Exactly, I mean, it's not something you that you do over weekend being a distro,
+and if rumor is anything to go by, other distros like commodity goods you're going to,
+are taking a very serious look at this, I mean, Ubuntu has packages as part of their standard
+repo packages, so you can simply install popware within with a few changes, and with your
+system deconfiguration, it's simply replaced as part of audio, as it's a dropout replacement
+for part of audio, nevermind other little distros, so I reckon the acceptance curve is quite
+steep at the moment, with regards to popware. Yeah, yeah, it works out really well apparently,
+I mean, no comments, in general, it's, it works, it works. That's good to hear, just as you're
+the architect, delete architect and you're the main implementer, I suppose. How many other people
+are working on this project, red hat or not? It was in the beginning, just me, we have
+some people from Colabra that were a wire plumber, that's an alternative session manager,
+which is a bit more powerful than the toy session manager that we ship with popware and that is
+currently used, and mostly the Bluetooth stuff was written by other people, by two or three,
+mainly two or three other people. So the court team is a handful of people like two to three
+or something? Yeah, yeah, okay. Yeah, and they are all in plumber at it? No, no, no, it's just me.
+Fair enough, where do you see this project going? Other than what domination that is?
+Yeah, yeah, yeah, yeah, we just keep going. So I think for example, for the moment,
+there is the goal of having feature parity with both audio and jack. Okay.
+So there's a couple of modules that don't really work yet, and a couple of things are
+implementing, so we're going to move to that. But then probably, after that is done,
+we are going to start to think about all the new things we can do and try to redesign
+some of the audio experience, like, I don't know, I don't know exactly, GUIs to configure things
+possibly. There are quite a few nice GUIs for pulse audio. For example, the equalizer comes to mind.
+Any plans for this? Yeah, so feature parity, as I've said, then an equalizer is needed.
+That's how this will be implemented. I don't know exactly yet, or how do we want to do this in
+general? Like, for example, there is now also easy effects, which is native pipe wire. It used
+to be pulse audio. So easy effects actually uses the pipe wire native filter plugins.
+We implement the filter chain, and it wraps like existing plugins.
+That are actually coming from pro audio space, like LV2 plugins, a lot of spot plugins.
+There's going to be a bridging of these things, like pro audio effects that will be used more.
+They also come with a GUI that maybe we don't want to show to regular users. They're very fancy,
+and sometimes complicated. Interesting, because LV2, of course, rings well in the context of say
+something like audacity, where you can get a lot of plugins for audacity coming from LV2 and
+other spaces. So if you plan to integrate this native filter pipe wire, you're seriously taking a
+look at the pro audio space, you know? Yeah, so there's a couple of, like, for example,
+there's an effect chain in the pipe wire that you can load, and you can make like an arbitrary
+graph of lots of plugins currently, so you can build your little effect chain.
+But you can just run any jack application on top of pipe wire.
+natively, wow, okay. So pipe wire is compatible with post audio applications and jack
+applications. So all jack applications are dual. You can run multiple pipe wire,
+the only jack. Okay. Wow. Interesting. That sounds very, very fascinating, especially if you're
+taking a serious look at it, because I see the kind of the Linux audio space dividing into a pro
+sector, and the more consumers oriented stuff like like the like the Windows or the other
+other mince of the world, where simply take, where simply take a USB stick and have a system
+up and running in about 10 to 15 minutes max, whereas a post audio workstation requires a lot of
+more configuration here, and hence the difference between some technical parts audio and jack for that
+matter. Yeah. So if you take a Fedora 34, you can just run Katia or Carla and see the pipe wire
+graph using the jack API and see your post audio apps there and make filters and route signals.
+It's all one big audio thing. So it's it's kind of like a unification. It's not exactly a
+unification, because they're still two different APIs. And they don't exactly know about each other,
+or maybe they shouldn't know about each other, but I think part of the future is also figuring out
+where does this go and how can we bring those close to closer together. These kind of things.
+Interesting. Given the fact that both pulse and jack are heavily tied into Linux systems and
+BSDs use something completely different, I take it pipe wire has been designed in the implemented
+along the same way, or do you for some wild reason could imagine actually a port to another operating
+system outside the Linux space? I would have picked too much effort. I can't imagine it,
+but I'm not interested. If somebody does that, I'm happy to merge pouches.
+Well, the code base is under gpn license, baby BSD. MIT. MIT. Even more liberal. Okay, so
+very liberal. People, people, the BSD people who are out there listening, looking for something
+really extravagant in terms of sound system. The code base is on the T just max is felt out.
+And along with the same. I received lots of me as the pouches.
+Should you do? Okay. So it's part of our already up and running on BSD. It should just be
+Wow. Okay. Out of the box. People you heard in your first. What's next? ZOS or Windows or something?
+When I'm joking. No, I mean, joke aside, given the fact that WSL 2.0 now has a full-blown
+Linux kernel integrated, you could even toy with the idea of running this on Windows, I suppose.
+I think you have BALS audio runs under that system as well. So it shouldn't be a big deal.
+So you can replace the drop-in replacement for BALS audio with power.
+If you choose to do so. Another more philosophical question, because
+it's similar to PULT. You're tying very much into the guts of the system. Do you perceive
+something called system D, especially for example, in a in a norm context as the right approach
+with regards to system management, because system D for those people who do not know listening
+to this podcast system, D started out as a simple in-it demon replacement, but has now
+kept up much, much, much, much more of the user land space, ranging from login session management
+right up to virtual machine management, all the rest of it. So a little bit of more background.
+Noum has, I think a couple of years back, maybe recently decided to tie in more with system D,
+which so far has to say it didn't make VBSD people really that happy, because
+GNOME was kind of a serious contender for, I wouldn't say, a standard desktop and on BSE systems,
+but once used quite a lot, let's put it this way. But given the fact that system D only runs on Linux,
+and if GNOME makes it more dependent, let's put it this way on system D, that makes it
+harder and harder for the BSE people to develop as a standard desktop environment.
+Any comments on this? Any thoughts about system D and the kind of high level of integration
+that this more and more encompassing ecosystem brings with it? Needless to say, there is of
+course a pipeline system D service unit to start up the whole thing. Yeah, we use it to start
+up things. It works for that, I guess. Other people use other systems.
+Yeah, I'm not, I don't know, I don't really have a lot of opinion about these things.
+So what we use in system D, pipeline is very little.
+And I think the stuff that we can use, I think something like login, D, it monitors the
+logins and stuff like that, is handy because in Bluetooth you can only have one user register
+Bluetooth services. So if you switch consoles or switch users, we need to, they register from one
+user and register for the other or else there is no Bluetooth for that user. So I mean, if that
+service is there, we can use it, we can make use of it. So I don't know, if there is another system,
+we can conditionally compile support for that and then it works as well.
+So you perceive system D as that toolbox that it was originally set out to be rather than the
+threat as some people figure it to the whole units philosophy.
+Oh, no, no, I don't, I don't feel threatened or I don't think that the Unix philosophy should
+feel threatened. No, but yeah, I mean, it's getting big, of course, there's a lot of stuff that goes
+in there. As long as it's separated in, in separate modules and you can, we can choose.
+It's a bit like GStreamer, if you look at GStreamer, it's huge, thousands of plugins
+wrapping any library that you can find. So yes, if you pull a GStreamer, you pull in everything,
+almost according to multimedia, I guess. But it's separated in modules, you pick and choose,
+you disable the things you don't want. If you have that flexibility, I don't see a problem really.
+So for pipeline as well, so there is a clear separation of three items. Like for example,
+the actual data transport, it doesn't need system D, it doesn't need any of those services.
+It just shuffles data around. There's nothing there. And then you have the session manager,
+which is probably highly specific to where you're running. So there I can see integrations with
+GNOME specific things to get config files and settings should be used and integrated control
+panels and all of these things. So that's living in a session manager. So the question is,
+how do you build the session manager for your desktop? You have tools to do that. It's a bit like
+like you're making a compositor with Whale and try it. You have toolkits like Sway or
+Mutter or KDE. So you build where you're going to run your stuff in, I guess. So I guess it's the
+same with part wire as well. So I don't really see that we are at some point. We have to choose
+or we have to integrate everything with system D and there's no way around it. I don't see that
+future at all. Interesting perspective. Is there anything that we've missed out on regarding
+part wire so far before we close off the show? No, well, I think you asked about the future of
+I think we've seen one big piece. Oh, let's go ahead. Yeah. So it started out as a video framework
+but we haven't talked about where video is going because audio sort of took over and then it started
+be placing these audio deans. But actually the original goal was to make video processing
+pipelines for VJ purposes. There's a couple of of applications on other platforms that
+that are very impressive to do like this live video combining and mixing and different apps
+working together. So I see something like that also being created in part. So all new thing in Linux
+is there's nothing like it. So I think that's also interesting to see. Yeah.
+So people you already first for the next big thing with regards to audio and video, stay tuned.
+Okay, watch this space and of course the whole code is available on GitHub, I suppose.
+For people who want to check it out, of course the links will be in the show notes,
+we normally at the end of the show we normally have something called the boxes that stands for
+the picks of the week where we discuss anything that comes to mind. So if there's anything that has
+crossed your path, so to speak in the last week or two, that you think worth it would be more
+mentioning now is the time. It can be anything. A movie, a book, something that you rediscovered
+recently, really anything goes. Yeah, I actually learned some new Rubik's cube tricks.
+By all means. Yeah, yeah, yeah. I was frustrated with, well, I learned to solve the Rubik's cube
+when I was like eight years old. Before you continue, sorry, we may have younger listeners among
+the audience who do not know necessarily what Rubik's cube is. How do I explain this cube as six
+sides with six colors and now it's like blocks you, turn them, you twist them and yeah, the colors
+can be mixed up and the purpose is to twist the sides and the middles until all the colors are
+but they're supposed to be one color on each side. It used to be the latest range to be 80s,
+back in the day. Yeah, yeah, yeah, yeah, yeah, yeah. So yeah, I was doing the, there's a technique,
+the C, the C-fold technique, but to the upper layer, I wasn't really good at it. I only knew like two
+tricks. So I actually learned the other, well, I do the two, the two look up method for the orientation,
+the permutation. So I learned, I learned like, I don't know, 16 algorithms is it or maybe, or 20.
+So and now I'm a bit faster, now I'm happy. So yep. So you can solve that puzzle because essentially
+it's a puzzle. Under it with an under minute? Yeah, under minute I can do. Wow, okay. Yeah,
+so next task will be doing the finger tricks so that I can do it under maybe 45 seconds.
+Okay, so it's never learning rust. So Rubik's cubes were all champion chips watch out for
+whim, for Mr. Wimtame, just in case. You heard it here for us people. Okay, my pox of the
+weeks actually make my own cafe. I'm cafe for those people who don't know it is a yogurt like
+milk derivative. It's not the part I'm looking for. It's essentially for multimedia, pretty much like
+your word. You combine the stuff in supermarkets, but if you do it yourself like your word, I'm
+I'm tempted to add, it doesn't even come close to the stuff that you can buy in terms of your
+full control over the process. You can do your own stuff. You can control the level of fermentation.
+The stuff you combine the supermarket just doesn't even come near if you do it by yourself. And
+of course, kefir coming from central Mongolia is probably one of my healthier drinks
+rather than processed milk, but that will be my epochs of the week. Wimt, that has been more
+than interesting. Never mind fascinating. It was a pleasure to have you on the show. I would
+like to thank you for your time and look forward to having you back in a couple of months
+to talk about the latest and greatest about Papua. Absolutely. It's a pleasure to be here.
+Thank you. Thank you. And cut. Wimt, that has been more than interesting. Let's put this way.
+I learned a lot. And this show is of course recorded. It should go out hopefully before the years
+over. We have a little bit of a backlog with episodes. Just we are publishing this on HPR.
+If you take a look at the website, you know where to find us, but if I don't forget it, of course,
+I will send you a mail once it's live. Yeah, great. And thanks again for your time.
+You're welcome. And do you have a link for this Rubik's cube thing?
+Let me see you. I mean, you can send it to me via mail. That's not a big deal.
+If you find it, simply should be a mail that would be great.
+Yeah. Yeah. I'll send you a link to to the one that I used. But I composed my own algorithms from
+different sites, but just not too much. Bim, again, thank you. Well, I know my duchess crap.
+It's very good. And you see worse. So I won't bother with this. And as I said, keep up the good work
+and speak to you soon. Okay, thank you. Okay, thanks. Bye.
+You are currently the...
+This is the Linux in-laws. You come for the knowledge. But stay for the madness.
+Thank you for listening. This podcast is licensed under the latest version of the creative
+commons license tab attribution share like credits for the entry music go to bluesy roosters
+for the song salute margo to twin flames for their peace called the flow used for the segment
+intros and finally to the lesser ground for the songs we just is used by the dark side.
+You find these and other duchess license under creative commons at your mando. The website
+dedicated to liberate the music industry from choking corporate legislation and other crap
+concepts.
+You've been listening to Hacker Public Radio at HackerPublicRadio.org. Today's show was
+contributed by an HBR listener like yourself. If you ever thought of recording a podcast,
+then click on our contributing to find out how easy it really is. Hosting for HBR is kindly
+provided by an honest host.com, the internet archive and our sync.net. Unless otherwise stated,
+today's show is released under a creative commons attribution share like 3.0 license.

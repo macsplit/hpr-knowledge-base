@@ -1,0 +1,435 @@
+Episode: 2909
+Title: HPR2909: ONICS Basics Part 3:  Networking Fundamentals
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2909/hpr2909.mp3
+Transcribed: 2025-10-24 13:07:15
+
+---
+
+This is HBR episode 2999 titled Onix Basic Part 3, Networking Fundamentals, and in part
+on the series, networking, it is hosted by Gabrielle Evenfire, and in about 51 minutes long,
+and Karim a clean flag.
+The summary is, this show discusses basic principles of networks, and how to send later
+using Onix.
+This episode of HBR is brought to you by AnanasThost.com.
+At 15% discount on all shared hosting with the offer code HBR15, that's HBR15.
+Better web hosting that's Honest and Fair, at AnanasThost.com.
+Greetings, you're listening to Hacker Public Radio, and this is Gabrielle Evenfire.
+This is the third episode in my series on command line networking, using the Onix tool
+suite.
+However, in this episode I decided to take a slight diversion into networking fundamentals.
+So I'm going to cover some new Onix commands, just as in previous episodes, but I'm going
+to be focusing mainly on the theories that underpin the modern networking.
+I decided to do this for two reasons.
+First, I don't remember if there are any other episodes in HBR that actually start with
+these fundamentals, and second, I'm going to try to make these episodes on Onix a little
+more broadly accessible.
+As before, if you want to learn more about installing the Onix tool suite, go back and
+listen to HBR episode 2882.
+Alright, let's get started.
+The first thing you need to know is that most modern networks have three characteristics.
+They are digital, they are packet switched, and they are internet worked.
+Digital means that the information exchanged in the network is in the form of signals that
+represent binary digits, discrete numbers in a computer.
+This is in contrast to analog networks, which carry a range of values that are continuous,
+not discrete.
+The smallest quanta of a digital communication is a single one or a zero, a bit.
+By contrast, an analog signal can take on, say, the values between zero and a hundred,
+with any value in between being possible.
+Now digital media can be used for analog communications, and analog media can be used
+for digital communications.
+Digital signals can encode approximation of analog signals, and analog signals can carry
+digital signals and digital information extracted through the processes of sampling and quantization.
+But at the end of the day, what I want you to understand is that modern networks are
+primarily oriented around the exchange of binary digits, that is, their digital.
+Modern networks are also packet switched, which means that the information in the network
+travels in finite-sized blobs of those binary digits.
+In practical terms, most data crosses the internet in units that tend to range in size
+from 64 to 9,000 bytes, plus or minus.
+In packet switched networking, multiple parties can share the same communications medium
+by each taking turns sending their packets over the medium.
+This is contrasted by the notion of a circuit switched network, where given network medium
+gets allocated for the duration of the communication.
+During the lifetime of a connection between, say, Alice and Bob, the resources used to
+exchange data between them cannot be used for other communications.
+Telegraphs and the old analog telephone networks are classic examples of connection-oriented
+networks.
+But we have pretty much abandoned those except maybe at the endpoints.
+Nowadays, almost all our communications happen in packet switched networks, sending little
+blobs of binary digits.
+Finally, most modern communications are internet-worked, which means that they traverse multiple
+independently-managed networks.
+For example, a home user's Wi-Fi access point, or their local area network switch, or both,
+very traffic between devices that they are directly attached to.
+Say, between a laptop and a printer in the same house.
+But one of the devices in the home network, the home router, actually connects to two different
+networks.
+Sometimes the home router is the same device as the Wi-Fi access point or the local switch,
+but it doesn't need to be.
+Here it is, this upstream device that I'm calling the home router is attached both to
+the local network and to the internet service provider's network.
+The internet service provider's network is connected to other internet service provider
+networks, which are in turn connected to other home, business, organization, and government
+networks.
+It is important to understand that each network is only responsible for moving traffic within
+that network.
+However, these days, we use protocols such as the internet protocol to interconnect these
+networks in a common way, so that traffic can flow uniformly from one to the other.
+So three key concepts to start with about modern networks.
+Modern networks are digital.
+They carry bits and bytes.
+They're packets switched.
+They break data into blobs called packets, and they take turns sending and receiving
+those packets with other devices attached to the same network.
+And modern networks are internet work.
+They communicate using a protocol that allows traffic to traverse multiple independently
+managed networks in a uniform way.
+So let's now start diving into how this works in real life with real data.
+We'll do this by sending a blob of data from one computer to another that resides on
+the same network.
+For this example, I'm going to use two laptops that are running Linux on my home Wi-Fi.
+We could do all of this on one computer with virtual machines, or maybe Docker containers,
+or clever switching and bridging commands, but I think the idea of using physical machines
+will make this exercise a little more real.
+Okay, so we're going to have a source computer and a destination computer.
+And we're going to send information from the source computer to the destination computer.
+But first we need a bit of information.
+We need the data that we're going to send, the length of the data that we're going to send,
+the address of the destination computer, and the address of the source computer.
+Let's just send the string, Hello World, followed by a new line.
+We can generate this by running on the command line, echo, space, quote, hello, space,
+world, end quote.
+I'm going to use all the more caps for this Hello World.
+Now this will take up 12 bytes total, five bytes for Hello, five bytes for World, one
+byte for the space, and one byte for the new line.
+So now we've got the length.
+Okay, so we're good so far.
+Now we need the addresses of the two machines, and what is an address?
+An address is basically a number that identifies a particular machine.
+It's actually a bit more subtle than that, because one machine can have multiple addresses,
+because one machine can connect to multiple networks, and each one of those connection
+points can have a unique address.
+But in general, usually think of an address being a number that identifies a particular
+machine.
+Now standard Wi-Fi uses the Ethernet protocol for carrying data between machines.
+And this is the same protocol that is also used to communicate overwired interfaces that
+you connect via hubs and switches with cat5 and cat6 cable or fiber cables.
+So since we are going to be sending using the Ethernet protocol, we need Ethernet addresses
+for the two machines.
+And we can find the Ethernet addresses of the different machines by running the if-config
+command on each laptop.
+That spelled IFCONFIG for interface configuration.
+Now we need to run the if-config command on the Wi-Fi interfaces of the machines, because
+a particular machine may have multiple ways of connecting to networks.
+We want the Wi-Fi way.
+So you can get a list of all the interfaces on a Linux machine by just running if-config
+with no arguments.
+If you are doing this at home and following along, look for an interface that is marked
+as up in all caps and which is not named LO or LO0 or anything like that.
+That is most likely the interface that you are using to connect to your local network.
+It turns out that one of my laptops, the one that is the source, has a Wi-Fi interface
+named WLAN0, WLAN0.
+And the laptop that is going to receive data, the destination, its wireless interface is
+named WL01.
+Okay, so now on my source laptop I run if-config WLAN0.
+And I see on the fourth line, it says it gives me an Ethernet address and that Ethernet
+address is 0, 0, colon 22, colon FA, colon A7, colon 69, colon 90.
+That's what an Ethernet address looks like.
+It's six pairs of hexadecimal digits separated by colons.
+It's basically a six byte number.
+And since each byte has eight bits, it basically means it's a 48 binary digit number.
+So similarly when I run if-config WL01 on the destination machine, I find that the Ethernet
+address of that machine is 6C, colon 8, 8, colon 1, 4, colon 7C, colon 2E, colon 1, 4.
+Okay, so now I have the Ethernet addresses of the two machines, the data to send and
+its length.
+Now we can use Onyx to create an Ethernet packet that can carry the data.
+We do this by sending the output of that echo command, I mentioned earlier, to the Onyx
+command raw packet.
+It's spelled R-A-W-P-K-T.
+And that wraps the raw data into an X packet format so that the other commands understand
+what it means.
+Next we pass the output of raw packet via pipe to the ETH RAP command, which wraps the
+packet in an Ethernet header.
+So here is what the relevant command looks like when you string it all together.
+Okay?
+Oh, I forgot one part.
+When we run the ETH RAP command, we also pass it a few set operations, setting operations
+to configure fields in the Ethernet header.
+And I'm going to explain what I mean by an Ethernet header shortly.
+But let's just, let me just give you the full command and then we'll talk about what
+it means.
+So we have echo, quote, hello, space, world, unquote, pipe, raw P-K-T, pipe, ETH RAP, that's
+T-H-W-R-A-P, space, quote, ETH dot DST equal six C eight colon eight eight colon one four
+colon seven C colon two E colon one four semicolon space ETH dot SRC equal zero zero colon two
+colon FA colon A seven colon six nine colon nine zero semicolon space ETH dot ETH type,
+that's ETH TYPE equals 12 semicolon, end quote, and pipe that to our front, our friendly
+X packet dump command, that's XPKT D-U-M-P, and that will dump the packet that we've just created.
+Okay, so if we run this command, now we'll see a packet, a network packet, and what you're
+going to see now is that that packet starts with an Ethernet header, because the Ethernet
+protocol specifies that every Ethernet packet has to start with 14 bytes laid out in a specific
+way. Six bytes that represent the destination address of the packet, six bytes that represent
+the source address of the packet, and two bytes that represent the type of data that is carried
+in the packet or the length of the data. So if you're looking at the X packet dump output,
+you should see that the first six bytes of the hex dump are 6C88147C2E14. That is the Ethernet
+address of the destination machine. Likewise, the next six bytes are the Ethernet address of the
+source machine. And finally, the last two bytes of that 14 byte header are 0000C, which is basically
+the number 12, which is the length of the payload data that we're putting in there. Now, you may
+have noticed that we set that length by saying eth.ethType equals 12, and the field is named EtherType,
+because most often, that field carries the type of protocol that follows the Ethernet header.
+But when its value is less than 2048, it represents a length and not a type. And we'll come back to
+this a little bit later. Now, the rest of the data in the dump should start 6865, 6C, 6C. These are
+the numbers 104, 101, 108, 108, represented in hexadecimal. And they stand for the lower case
+letters, H, E, L, and L, in ASCII encoding. If you'd like to see how we convert letters to numbers,
+you can look this up on an ASCII table. On most unixes, you can find one by typing man, space,
+ASCII. Okay, so what are we doing here? We've created this packet, but why is it formed the way it is?
+Well, it's like we're taking a letter that we're going to send in the mail, and we're putting it
+in a kind of envelope. The envelope tells who the recipient is and who the sender is. And in the
+case of Ethernet, it also tells how long the letter is inside of it is going to be. Putting the
+letter in the envelope is done by pre-pending the data that we want to deliver with an Ethernet
+header. That's the 14 bytes of data that we just described. So what's going to happen next is
+that the sending computer is going to send this letter to the Wi-Fi switch, the Wi-Fi access point.
+The access point is going to look at the destination address, and it's going to forward this
+letter to the computer that has that address. In the case of the Wi-Fi access point,
+if it actually didn't know which computer had that address, it would send a copy of the letter
+to all of the computers that it's connected to. And just assume that only the computer
+that actually has that address will actually receive the data and process it, and that anybody,
+any other computer that receives the letter but is not the destination of the letter will just
+drop the data on the floor and ignore it. So let's work on sending the letter, this packet.
+But before we do that, first, let's set the receiver up to receive the letter.
+For this, we're going to go to the destination machine and we'll use some Onyx commands to do this
+as well, to look at data coming into the machine. Look at packets coming into the machine.
+So on the receiver, we run sudo pkti n wlu1 pipe to pflt, space quote, not space ip, space and
+space eth.dst, space equal, equal, space, 6c colon, 8, 8 colon, 1, 4 colon, 7c colon, 2e colon,
+1, 4, end quote, pipe to x, 2hpkt. Okay, so what is this command doing? Well, first we're running
+packet n, which I described in previous episodes, which is dumping packets that come in
+on the wlu1 interface. And it just dumps a stream of all of them, all the packets that might
+be coming into this computer. But that laptop could be receiving a lot of different traffic.
+So I use the pflt command, which I described in the second episode on Onyx, to filter out
+any ip traffic and any traffic that was not sent to this computer's ethernet address.
+So it says, I only want non ip traffic and traffic destined to this ethernet address of this
+machine. This will probably remove most of the extra traffic being sent to the machine because
+most of the traffic going to the machine will be ip traffic. Don't worry about what I mean when
+I say ip traffic just yet, we're going to see that shortly. Right now we should have this running.
+We should be watching for packets coming into the machine and on the destination machine.
+And now we can send the packet that we formed earlier. So we're just doing a small modification
+on the previous command. So it'll look like echo hello world, pipe to raw packet, pipe to ether
+wrap, and then pipe that to the command sudo, space pktot, space wlan0. So this whole command line
+is building a packet up from scratch, wrapping it in an ethernet header, and then sending it out
+onto the network. And we're sending it out to the wlan0 interface as I said before because
+that's the sender's interface using the pktot, that is the packet out command.
+Now if we if you've been following along and you do these steps and you use your own mac addresses
+and your own names for the interfaces, sure enough you should see the command that we previously
+saw in the x packet dump command before on the sender machine show up on the at the packet
+in command on the destination machine. And yes, by the way, I really really did run through this
+by hand and it really with these exact values and it does work.
+So yeah, now you've seen how you can send data across an ethernet network.
+That won't let you send data across the internet, just the local Wi-Fi or just the local switch.
+So what about if we want to send data across the internet?
+Well, the principle is very similar to send data across the internet. We wrap our data in another
+envelope by pre-pending it with a header. But in this case, the protocol that we want to wrap it in
+that we want to use to send it is the internet protocol, which we sometimes abbreviate as IP.
+So we need to create an IP header. Now an ethernet header was 14 bytes long and IP header is 20
+bytes long. An IP header also has source and destination addresses just like an ethernet header,
+but IP addresses are 4 bytes long, not 6. Each IP address refers to a unique machine in the entire
+internet, whereas an ethernet address just refers to a unique interface on the local network.
+Now in practice, I said each IP address should be unique in the internet, but that doesn't always
+hold true. To explain why, however, we would have to discuss the concepts of network address
+translation and probably IP version 6, but we'll save that for another episode down the road.
+For now, just again, participate in the fantasy that every machine connected to the internet has
+its own unique 4 byte IP address. So let's now build up a command to build a packet
+to send from one computer to another using the internet protocol. First, we need the IP addresses
+of the two computers, and we can find these using if config as before. An IP address is a series of
+four numbers, each between 0 and 255, separated by dots or periods or full stops, depending on
+where you grew up and learned English. In this case, the source address of the source machine
+on my network is 192.168.0.4, and the destination machine has an address of 192.168.0.248. To send
+raw data over the internet protocol, we have to set the protocol field of the IP header
+with the number 255. The number 255 tells the receiving computer that what follows the IP header
+is just raw data and not another network protocol to be interpreted. Unlike the ethernet protocol,
+the IP header also has a separate field for length as it does for data type. So we'll need to
+fill in the length field as well. Now, the length of the IP portion of the packet will be 32 bytes.
+It will be 12 bytes of data that we're going to send the Hello World plus the 20 bytes of
+IP header. So we're going to set the IP length to 32. Now, this is different than ethernet. In ethernet,
+the length only measures the amount of data that follows the header, whereas the IP length
+includes the header. Now, finally, we need to specify how many devices this packet is allowed
+to traverse before the network gives up on delivering it. The internet protocol designers knew
+that somebody would, at some point, end up misconfiguring the logic of the internet and packets
+could end up spinning around in a loop, bouncing between the same set of routers or gateways,
+which we'll talk about in a second. And if it did that, spinning and setting that same
+traffic in an infinite loop, it would just consume resources forever. So in order to prevent this,
+they added a field to the IP header called time to live. And that time to live in practice
+basically says how many hops can this packet take before the internet devices just give up and say,
+nope, I can't deliver this and drop it on the floor. Okay. Now, we're really only going to need to
+pass this packet through one or two devices, but we'll give it a time to live of 64 just to be
+away on the safe side. And that's pretty typical. TTL of 64 can traverse the entire internet
+from one end to the other very easily. So here is the command to build up an IP datagram, which is
+a datagram is a fancy name for packet when you're talking about the internet protocol.
+So here is the command to build it up using Onyx commands. So you say, echo,
+quote, hello world, pipe raw packet, pipe IP rap. That's IP WRAP, space, and then now a quoted
+string that's going to set the fields of the IP header that we care about. So it goes quote,
+IP dot s adder equals 192.168.0.4 semicolon, space IP dot d adder equals 192.168.0.248 semicolon,
+space IP dot l n equals 32. That's setting semicolon. That's setting the length.
+Space IP dot proto equals 255 semicolon. That's setting the protocol to be raw data.
+And then space IP dot TTL equals 64 semicolon, end quote. And then greater than sign
+to redirect this to a file. Let's redirect this to a file named IP dot XPKT for IP X packet.
+Okay, so now we've stored this IP X packet and you can dump it with X packet dump as before by
+running X packet dump IP dot XPKT. And now you should see a header that is 20 bytes long and has
+the field has all the fields we've just described plus more plus a few more that automatically got
+filled in by the IP wrap command. In fact, we didn't actually have to specify the IP dot length
+field, which gives the length of the the the packet because IP wrap is able to figure out the
+correct value of this field from the length of the data that came from the length of the data
+that it's wrapping. So in the future, I'm going to omit the IP dot length equals 32. You don't need
+to you don't really need to specify that. Okay, so now we have an IP packet. So let's send it,
+right? Well, the problem is we can't a computer can't send a packet like this into the internet
+as it currently is. Computers are connected to other computers or devices by local networks.
+They're not connected by IP networks. And what it what I'm saying is that these local networks
+carry the IP networks, the IP network traffic within them. But they don't speak IP as their
+native protocol. In this case, for our example, the local network is our local Wi-Fi.
+We need to send this packet to another computer via the local network. So to do that,
+we need to take the IP packet that we created and wrap it in an ethernet header.
+So this is like sort of taking the letter that we put in an IP envelope and then putting it in an
+ethernet envelope. So it's like we have our letter and then we have it in one envelope that tells
+it how to go throughout the whole internet. And then that we wrap in an ethernet envelope that
+tells it how to deliver it to the next machine that it's going to be sent to in the local network.
+So we can now take that original packet and wrap it that we've just built and wrap it in an ethernet
+header in almost the same way that we created the ethernet packet before. So our command will now
+look like this. It'll go echo quote hello world and quote pipe to raw packet pipe to IP
+wrap and then the string that specifies the fields for setting the IP header. Now we pipe that
+to ethrap which will have the same mostly the same field setting that we used before. So we'll
+say eth.desk equals the ethernet address of the destination machine, eth.source equals the ethernet
+address of the source machine. But then we will also say eth.ethType equals 0x800 semicolon.
+Okay. So it's almost the same command but we've added one more field to set. Instead of setting
+the eth type to a length we're setting it to the value 0x800 semicolon. And now let's finish off
+the command by using greater than ip-eth.x packet to dump this whole packet to a file named ip-eth.x packet.
+Now strictly speaking I actually you don't need to set the eth type
+when using the etherapp command because similar to how IP wrap would be smart enough to fill in the
+etherapp would be smart enough to fill in the ether type when it realized that the packet that
+it is wrapping is an ip packet. Now about that value 0x800 that's a hexadecimal representation of
+the number 2048. And that is a special value which tells the receiving machine that when it gets
+the ethernet packet the data following the ethernet header is an ip datagram. So what follows the
+ethernet header should be an ip header. And this is sort of just like how the ip proto field tells
+the receiving computer with a value of 255 that the data following the ip header is just raw data.
+But if we put a different value in the ip protocol field we could say that oh the data carried
+in this ip datagram could start with another protocol like TCP or UDP. Now you probably heard of
+those but I'm not going to discuss those today. Okay so now we have an ethernet packet
+that encapsulates an ip packet and we should be able to send it between our computers. So to do that
+let's start up packet in on our receiver by running sudo pkti n wl01 pipe pflt quote ip space and
+space ip dot proto space equal equal 255 end quote and pipe to x2 hp kt. So this is almost the same
+as the packet in command we gave before except we changed the filter expression because now we want
+to actually see ip packets but we don't want to see all of them. We only want to see ones that
+are carrying raw data. So the expression now says only allow through packets that are ip and whose ip
+inner protocol is 255 which as I said means raw data. And see the thing is that sending raw data in
+ip packets is pretty rare in the internet so the only packets you should see coming out of this
+command are the packets we send. Alright finally if you've done all of this you can run the following
+command to send the ip packet over the ethernet to the destination so you can do sudo pack it out
+ip-eeth.x packet wland0 and success I see the packet on the receiver.
+Okay so why would I bother using the ip protocol at all? I mean I could have sent the same exact
+data using ethernet. Well the thing is I could have sent that same packet from the source to the
+destination no matter where that destination was sitting on the internet whether it was on my local
+network or whether it was somewhere on the other end of the world connected to some schools local
+network. I would use the exact same ip header to do that but I wouldn't have sent the packet
+using ethernet to that machine because my local wifi isn't connected to that school that hypothetical
+school on the other on the other side of the world not directly it's only connected to my home
+devices. So I would need instead to send that packet to some device that is my home router which
+knows how to forward it on through the rest of the internet to eventually make it to that destination
+address. So we can still do this even with our setup here at home. So let's just recap here.
+The other way we could have sent this packet to the receiver is kind of what makes the internet
+special and instead of sending directly to the receiver we could send it to a special device
+on the network which is really just a computer that knows how to direct any given packet that it
+receives to any other destination on the internet and we call these devices routers or more
+traditionally we call them gateways if you are reading the original protocol specifications.
+The two terms mean the same thing. Think of sending a packet to a router like dropping a letter
+off at your local post office. You don't know how to get this letter to Las Vegas but the post
+office does and it will handle forwarding it along its merry way. Every computer connected to
+the internet is connected via a local network to one or more of these routers or gateways.
+Now to find out the address of your default gateway for a given computer
+which is sort of like kind of kind of like looking up the address of your local post office in
+the town that you're currently in you can run a command like this. You can run netstat
+space-nr pipe to grip quote carrot 0.0.0.0 end quote. By character circumflex I mean the
+little arrow that is above the six. Now if you run this command the second column of the
+output is the IP address of the computer that is our default gateway. So running that on my
+local machines I see that the IP address is 192 168.0.1. That's fine and good but I can't send
+my packet of data to IP address 192 168.0.1 because that's not where the packet is really
+destined for the packet is really destined for 192 168.0.248 which is the address of the receiver.
+So how do we get this packet to the gateway so that it can send it to the receiver?
+Well that's simple we'll send it over the local network to the gateway and for that we'll just use
+Ethernet. So we need the gateways Ethernet address. Now I use the ifconfig command to find the
+Ethernet addresses of the source the sender and receiver and we could do something similar with
+our local router or wifi access point. I could log into it and I could look at its Ethernet
+addresses but there's a quicker way to find out the Ethernet address of my local router.
+Computers have a protocol called ARP or ARP which stands for address resolution protocol
+and that's a protocol that the computers use to ask each other their Ethernet addresses.
+So we're going to take advantage of that. A given computer will automatically use ARP
+when we try to send something to the gateway. So we're going to cheat and we're going to use a
+pretty standard program that you find in all sorts of machines, all machines called ping
+to trigger our computer using ARP to find the address of the gateway.
+So we run the command ping-c1192.168.0.1.
+This will send a special IP packet to the gateway which will in turn when it receives it echo it
+right back to us. Now we don't really care about that ping packet. We just care that behind the
+scenes the source laptop and the gateway have sent ARP packets so each knows the Ethernet address
+of the other. Now we can learn what they learned by going to the source laptop
+and running the command ARP, space-na, pipe, grip, 192.168.0.1. So this is saying dump the ARP
+tables and look for the entry that matches up the IP address 192.168.01 to an Ethernet address.
+In this case we find that the Ethernet address of the gateway is 00, colon, 0d, colon B9,
+colon 23, colon F2, colon 51. So now we're ready to build and send that same hello world packet
+to from the source to the destination but sending it through the gateway.
+So our command now looks like this echo quote hello world and quote pipe to raw packet pipe to
+IP wrap which takes the same arguments as before to set the fields pipe to eth wrap with these
+arguments quote eth dot dst equals 00, colon 0d, colon B9, colon 23, colon F2, colon 51,
+semicolon that's setting the destination to the the router's ethernet address and then
+a space and then eth dot src equals 00, colon 22, colon FA, colon A7, colon 69, colon 90,
+semicolon, end quote. And so that's saying set the destination to the gateways ethernet address
+and set the source to the source laptops ethernet address. Now pipe that to sudo pktoutwlan0.
+Okay, so if we run this command while we have that same packet in command that we used before
+to dump the incoming raw packets then success yes we see that the receiver receives the IP packet
+with raw data and that has hello world in it. Now if you look closely at the output on the receiver
+you'll notice that the ethernet source address is different than the one that we put in the packet.
+In fact if you look closely you'll find that the ethernet destination address will be the ethernet
+destination of will be the destination machines ethernet address and the source address will be
+the gateway source address. Now what has happened here is that our source machine our source laptop
+transmitted the packet to the gateway and then the gateway transmitted the packet to the destination
+machine. So the ethernet header that the destination gets is the one created by the gateway.
+It's not the same one we created when we sent to the gateway. The gateway gets rid of the ethernet
+header that we put on and creates a new one so to deliver the packet to the destination laptop.
+All right now that covers all the topics that I wanted to hit in this episode but I'm going to
+end it with a little bit of a challenge. There are a few other fields besides the ethernet header
+that changed between what the receiver received when it received the packet from the gateway versus
+received it directly from the source machine. Can you figure out what those fields that differ were?
+So if you are new to networking and you want to follow along try the following.
+Try sending the IP packet directly from source to destination and instead of piping it to
+X packet dump redirect the output to a file. So you'll capture that one packet in one file.
+Now try to run the command to send the packet via the gateway and use the second packet in command
+to grab that packet and dump it to a second file. Finally now you have these two
+files one where we sent the packet directly and one where we sent it via the gateway.
+So now run pdiff on the two files and see which fields are different between the two packets.
+Can you figure out what they are and can you figure out why? Can you maybe you ought to look it
+up online? Let's make it a race. Let's if you're trying to follow along and figure out the
+differences why don't you look up this episode in the comments section at hackerpublicradio.org
+and see who can come up with an explanation for which fields changed and why first.
+For you network ninjas out there you probably already know the answer to this question just
+from listening to my description. It's probably second nature to you. So hopefully we can rely on
+the honor system to let our new and up-and-coming network ninjas try to have a crack at the answer
+first. And if nobody ends up commenting because this is just entirely too boring I'll probably give
+it in the next episode anyways just in case people don't want to be left hanging. All right.
+So in summary hopefully this has been educational for networking beginners out there the key things
+to remember that modern networks are digital packets switched and internet worked. You send data
+between computers by slicing that data up into finite sized blobs called packets and pre-pending the
+data with one or more headers that tell other computers how to forward the data along to its
+destination and how to treat it when it reaches the destination. We saw how we can start crafting
+packets and sending them between computers using a few more onyx tools and there are others in the
+toolbox which are less verbose and even easier to use. If you want to start crafting packets I would
+suggest start with the MKTCP command which will generate TCP packets so look up man MKTCP if you
+want to learn more than a good example and I'll probably come back to that in some future episode.
+This wasn't the episode that I was planning on to talk about pattern matching. I originally
+thought that was going to be next but this seemed like it would be a good idea for an episode
+to make the series a bit more accessible to listeners who don't really know networking.
+Besides, you didn't know it yet but some of the syntax of the commands that we
+saw in this episode will be used when we do talk more about pattern matching and filtering.
+If you want to contact me as always email me at evenfire.stf.org.
+In the meantime, this is Gabriel in even fire signing out. Bye!
+You've been listening to Hacker Public Radio at hackerpublicradio.org. We are a community podcast
+network that releases shows every weekday Monday through Friday. Today's show, like all our shows,
+was contributed by an HPR listener like yourself. If you ever thought of recording a podcast
+then click on our contributing to find out how easy it really is. Hacker Public Radio was
+founded by the digital dog pound and the infonomicon computer club and it's part of the binary
+revolution at binrev.com. If you have comments on today's show, please email the host directly,
+leave a comment on the website or record a follow-up episode yourself. Unless otherwise status,
+today's show is released on the creative comments, attribution, share a life, 3.0 license.

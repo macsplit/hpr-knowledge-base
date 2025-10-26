@@ -1,0 +1,168 @@
+Episode: 441
+Title: HPR0441: Migrating Your GPG Key and Starting GPG-Agent
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0441/hpr0441.mp3
+Transcribed: 2025-10-07 20:38:14
+
+---
+
+Well, here's my continuing saga of how to use GPG with this or that application.
+In this case, it's more of a saga about just how to use GPG.
+GPG, of course, is a new GPG, and it is a new implementation of the privacy, pretty
+good privacy protocol.
+So you've got GPG keys, and you can email people, and you can sign it with your GPG key,
+so they can see that apparently you've got this private key on your system, so you're
+probably really who you say you are.
+To further make things more super spy-like, you can actually encrypt your message via
+the new GPG, so that you've got a message that is completely unreadable to anyone who
+does not have their private key and your public key, because you have their public key
+and your private key, and this is a cool little matching game that just doesn't work
+without, you know, without the proper components.
+Problem I ran into lately was I was migrating from one system to another, and, you know,
+in theory, this shouldn't be a problem at all.
+This is just kind of one of those things that technically speaking should kind of work,
+but for whatever reason, the system I was migrating to didn't have all the proper components
+in it, or something, or I didn't set it up correctly.
+I'm not really sure where the problem started, but the method of migrating your GPG keys
+is kind of important and worthy of note, and then a couple of tweets here and there to
+understand how a certain environment may need to have, you know, different things implemented
+is probably a good idea, too.
+So here's just some random information about GPG.
+Some of it is more random than others, and so here we go.
+So the way that I diagnosed the problem that I was having was that, well, Pine and K-Mail
+were not being able to use my GPG keys.
+This struck me as odd because I'd, well, initially all I did was try, I just kind of copied
+my entire home directory over to this new system, and so I just thought everything should
+kind of fall into place, and in a way it did.
+I mean, the two applications knew that the keys existed, they were there, but they just
+could not use them.
+They kept giving me errors about passphrases.
+When, in fact, I hadn't even been asked for a passphrase, so there was something obviously
+going on, and I thought, well, okay, maybe because this is a new GPG, you know, it's got
+a lot to do with privacy and security and stuff, I have to actually physically export the
+key or actively export the key off of the old system onto the new one.
+So the way to do that is you do GPG, and then you do dash dash armor, and then dash dash
+export, and you direct that into a file called public.clat2.asc, and that simply securely
+transfers your public key into a file called public.clat2.asc, and I dump that maybe onto
+a USB drive or maybe a secure copy that over to the new system.
+And then to get my private key, I need to do a GPG, dash dash armor, space, dash dash
+export, dash secret, dash keys, and then you direct that into a file, maybe called secret.clat2.asc.
+And I would put that over onto my new system.
+And then again, finally, what I want to do is export my trust database, in case I've
+gotten people who have signed off on my key and says, yep, this is really this person,
+I trust them implicitly, ultimately, then you can do a GPG, space, dash dash, export,
+dash owner trust, and you direct that into something, you can call it trust a DB.
+And of course, again, you would get that over to your new system, either secure copy
+it or sneak your net or however you need to do that.
+You can then do a shred dash U on those old files to make sure that they're deleted fairly
+securely from your hard drive and switch over to your new system.
+So on the new system, you need to import all this information, and you can do that with
+two different commands.
+You do a GPG, space, dash dash import, and then you list the two keys that you want to
+import.
+So it's public.clat2.asc and secret.clat2.asc, simple enough that imports both of those
+keys.
+And then you do the second command is GPG, space, dash dash import, dash owner trust,
+space, trust DB.
+And so now you've just imported the trust DB that you had.
+And again, if you want to shred those, you can do the shred, space, dash U on all those
+different files that you've just imported because you no longer need those, you've imported
+them into your system.
+They now exist in the .genu, PG folder in your home directory.
+You don't need them anymore.
+And it would probably be for you to get rid of them, actually, so shred those.
+So technically speaking, you've now correctly exported and correctly imported your .genu
+PG keys, and everything should sort of work, except there's this variable about what environment
+you're using.
+And apparently on a raw, unconfigured KDE system, like the one I had, it's not going to happen
+without a little bit of tweaking.
+Now I went through a lot of reading and confusion about this.
+I read up on this pretty severely and didn't really make any headway.
+I was basically on the wrong track.
+I mean, I thought I was doing the exporting and importing of GPG wrong, even though I was
+actually doing it correctly.
+I mean, I did everything I could think of.
+I removed user IDs from my keys so that I only had a single user and tried that.
+I just, I tried just as much as I could think trying to get it to a point where it would
+really, really recognize that yes, I was the user who owns this key, and it just wasn't
+doing it.
+I also finally got onto this track of the GPG agent, and of course, just like an SSH agent,
+the GPG agent is something that kind of runs in the background and should be kind of incorporated
+into your user environment when you start X.
+If your X environment doesn't know that yes, you do want it to do the whole GPG, or
+rather the GPG agent thing, then you could have some problems with the integration, I guess,
+of GPG with the rest of your system.
+So to fix that, if you're having the problem, I mean, certainly in KDE, that's all I can
+speak of, speak for right now because that was where I was having the issue.
+I didn't, one thing I did not actually try, I guess, was switching to a different X environment.
+But I guess it would be probably fairly similar, you know, it would just be a different set
+of files, but the concepts are going to be the same.
+So in my case, I'm going to go to my home folder and go into my .KDE directory.
+And there ought to be an ENV directory there, an environment directory, I guess is probably
+what that stands for.
+And if it's not there, you can create it, just make your ENV.
+But the point is that you want to get a file in there called GPG agent.sh, and that's
+something you're going to have to create.
+That will not be there, that's part of the problem.
+So GPG agent.sh, and it's a three line, actually, I guess it's technically two lines, but really
+it's three lines.
+Three line little shell script.
+So you do a bin, bash, well, okay, shabang, slash bin, slash bash, and then kill all GPG-agent,
+and then eval, space, single quote, GPG-agent, space, dash, dash, damon, close, single quote.
+Save that, make it executable.
+You're one step closer to running a GPG agent successfully on your system.
+So now you want to make sure that KDE cleans up the whole GPG agent thing when you shut
+down, and that's fairly simple as well.
+So you're back in .KDE directory, you create a shut down directory, that is shut down directory,
+or rather, I'm sorry, it's a directory called shut down, okay, and then you go into that
+and you create a shell script called stop underscore GPG agent.sh, and that is going
+to contain literally two lines, shabang, slash bin, slash bash, second line is kill all,
+space, GPG-agent, simple enough.
+Now if you reboot, I mean rather, log out of, you log out, and then log back in, ditch
+your work, find, and in fact it does.
+And the way that you know it works is because, well, you can start finding and encrypting
+things through it.
+Again, how did I find out that it wasn't working?
+Well in Pine, I was getting a piped command failed, I think that's actually what it said.
+So it was basically just not piping my email through the filter that I had set up.
+And I had set up the sim links that I went through on my episode about using GPG and Pine.
+So I mean, I had everything set up correctly, I just didn't have the agent set up correctly.
+And then in K-mail, I was able to, again, I was able to see the keys, I was able to pick
+one, I think, for signing, although it would never go through the signature because it wasn't
+asking for a passphrase.
+And then I just wouldn't even let me assign the encrypt to myself.
+So that just was really not working.
+And after you get this up and running, after you've included those shell scripts in your
+.kde folder, you've logged out, you've logged back in.
+Next time you try it, well Pine will work, it'll do what it usually does, you know, it'll
+pipe your message through whatever filter you chose to filter it through.
+And in K-mail, you will get a new dialog box that is very old school looking and, you
+know, very ugly.
+It's not using cute or anything.
+It's very GPG agent looking and sure enough it is GPG agent in action, asking you for
+the passphrase for that key that you want to use.
+So it's pretty obvious pretty quickly that it's working and feels great to get that back
+up and working.
+So hopefully this kind of helps someone if you're having trouble with GNU PG migrating
+or maybe setting it up on a new system or something and it's not working the way you
+think it should be working.
+Look into GNU PG, it's more of a tip than a how-to, but that's the best I've got for
+you.
+Still looking into the GNU PG stuff, kind of getting used to how it works and everything.
+I do know for almost a fact that at this year's Ohio Linux Fest, there will be a GNU
+PG finding party, which I think is a lot less festive than it sounds.
+But be sure that if you do use GNU PG to bring your key file with you and you can meet
+other people, look at their credentials, look at their identification, hopefully they
+haven't faked their ID, take their blood test or whatever and then find their key and
+say, yes, I trust this key, this person, I've met this person, I see
+that they possess this key and have full access to this key, so I trust them.
+And they'll find your key and you get trust and so everyone gets levels up on their trust
+levels and that's a good thing because that helps sort of the system of this whole idea
+of private keys being trusted and stuff like that, that makes it more of a trust-based
+system.
+So it's a good thing, it's good for you, it's good for everyone else.
+So if you're going to be there and you do use GNU PG, do that.
+If you don't use GNU PG, feel free to hit me up or I'm sure a lot of other people
+there, I could probably at least show you how to create a key, kind of start to implement
+it within a couple of your applications or whatever, stuff like that.
+So if you want to get started on that, let me know and we can get you started on that.
+So thanks for listening, I will see you next time.

@@ -1,0 +1,206 @@
+Episode: 4053
+Title: HPR4053: Third Party Integrations
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4053/hpr4053.mp3
+Transcribed: 2025-10-25 19:04:00
+
+---
+
+This is Hacker Public Radio episode 4,053 for Wednesday the 14th of February, 2024.
+Today's show is entitled Third Party Integrations.
+It is hosted by Lee and is about 12 minutes long.
+It carries a clean flag.
+The summary is, connecting your application with others.
+Hi, I'm Lee and today I'm going to talk about connecting things.
+Specifically, connecting an application we've developed with some other company's application.
+Although this might be an application made for our own use,
+let's assume it's one that's been provided for other people to use.
+Suppose we've created an application that has a feature that produces invoices.
+But the end users do their company counts in their favourite accounts package
+such as SAGE QuickBooks or ZERO.
+These users will then have to duplicate the effort of producing an invoice in our application
+because they then also have to create the same invoice in their own accounts package
+just to keep their account and happy.
+Wouldn't it be nice if the invoices they've produced in our application
+could at the same time magically appear in the bookkeeping system used by their accountant?
+Well, that's what I'm going to talk about.
+So, how could we go about solving the problem of transferring information from one application to another?
+A simple approach would be to export some kind of data from the source application into a file
+then import this same file into the destination application.
+This would be a good approach but it has some drawbacks.
+Firstly, it's a manual process.
+Every time the user wants to transfer some information they have to go through this process of export and imports.
+Secondly, it only works in one direction at a time.
+An invoice generally contains the contact details of the customer
+but so we don't confuse two people who are both called James Smith.
+The accounts package might give each customer a reference number.
+It would be useful to be able to find out the customer's reference number
+from the accounts package that this could be filled in when exporting the invoice from application.
+But to do that, we'd first have to export the customers from the accounts package into our application
+before exporting the invoices from our program back into the accounts package.
+And that might not be the end of it.
+What if we also wanted to cross-reference part numbers stored in the accounts package?
+This simple process has now become a nightmare of back-and-forth exports.
+It really would be helpful if the transfer of information was a conversation
+rather than the one-way monologue.
+So, instead of doing a simple one-way export,
+there are cases where it would be better to let the two applications talk to each other directly
+using a standard protocol of some kind.
+So let's tell our users to give us the password of their accounts package
+so our application can log into it on their behalf in order to do the transfer.
+How does that sound?
+Well, actually this is horrible for security.
+Even if our users trust us with unrestricted access to every aspect of their finances
+from the payroll details of their employees to whether they've paid their taxes,
+this still means that their password is no longer under their control.
+If we suffer a data breach, so do all our users.
+So how can the user letter application have access to a limited subset of their data
+in a third-party application without giving us their password?
+First, rather than give us their password, instead give us a credential that's unique to us
+and tell the third-party application, which is the accounts package in this example,
+to only let us have access to the particular information we need access to.
+So our application will have scoped a mission.
+This means, for example, our application has access to invoices and customers
+but not payroll or other ledger accounts.
+If they no longer want us to access their data,
+then they do not have to change the password,
+instead they simply tell the accounts package to revive our access.
+So, we've asked the user to get something that stands in place for a password
+from their accounts package.
+This is commonly known as an API key.
+I'll talk more about the meaning of API later.
+This situation is better because now we don't have the user's actual password
+and we have more limited access,
+but still there is a high risk that over a long period of time
+this secret key could get leaked.
+It would be nice if the secret changed often
+and ideally changing the secret
+should be an automated process to avoid hassle to our users.
+So, to reiterate, we want our application to get a temporary token,
+which is like a password, except that it's randomly generated
+and only valid for limited amount of time.
+When it expires, we should have the means to get a new token.
+The process I've described has been standardised
+and is known as OAuth2, that is OAuthH and the number 2.
+What does this look like in practice for the end user?
+Well, the user starts off in our application
+and sees a button that says authorize connection to QuickBooks or Zero or whatever.
+They click it and then they take into their accounts package website.
+They log into their accounts package.
+If you request them, do you want to allow this company to have access to your data?
+And it will list the scope of the access, for example,
+reading right and which data in particular can be accessed?
+Assuming they click OK, they'll be redirected back to our application.
+And how does this actually work?
+Well, we first register our app with the accounts package.
+We tell them which URL we want them to redirect back to
+when one of their users has given us access to their data.
+The accounts package allocates us some credentials to use when we communicate with them.
+We construct a URL that will take the user from our application
+to the accounts package for authorization.
+When the user has clicked on the URL and authenticated with the accounts package
+and authorised our application to access their data,
+then the user's browser redirects back to our website,
+passing a code in the query string of the URL.
+Our application must immediately use this code to request a token
+from the accounts package, which we will then store associated with that user.
+In fact, we get two tokens.
+One of them called the access token is what we'll be using to authenticate
+every request we make to the accounts package.
+The other token is what's called a refresh token.
+This one is only used to get a fresh access token when it expires,
+since typically an access token is only valid for about 24 hours say.
+These tokens are usually very long and apparently random strings of characters.
+They may in fact encode some readable information,
+but for our purposes we should treat them as opaque random blobs of data
+which are needed to authenticate.
+The requests I've mentioned are all standard HTTPS requests,
+which is the same protocol which web browser is used to talk to a web server
+when it downloads web pages.
+HTTPS stands for Hypertext Transfer Protocol.
+The S stands for Secure, which is important as these messages contain secret tokens
+that should be encrypted.
+The format of the data exchange is typically JSON,
+that is JSON, standing for Jar the Script Object notation,
+which is a simple human readable format for encoding data consisting
+of a few primitive data types like strings and numbers,
+as well as arrays and objects that can be nested inside each other.
+Once we have our access token, we can begin making requests to the third party application.
+Again, these are HTTPS requests,
+and the data format is usually JSON,
+or sometimes another human readable format called XML.
+To authenticate these requests, we would include a header with our request
+that says Authorization, colon, space, bearer, then space followed by our token.
+So now we're able to talk to our user's account package.
+But how do we know what to say?
+This is where APIs come in.
+API stands for Application Programming Interface,
+and it's simply a standard set of commands and their parameters
+along with definitions for data structures used to communicate information.
+A common pattern for APIs on the internet is REST,
+the acronym REST stands for Representational State Transfer.
+Basically, all it means is we should use standard HTTP requests for sending
+and receiving data using the same verbs already defined for HTTP,
+which I'd get, post, put, patch, and delete.
+By having a meaningful path in URL,
+we can send requests such as, get forward slash invoices.
+Or post forward slash invoices.
+Or delete forward slash invoices, forward slash 1, 2, 3, 4.
+These requests will get all invoices, add a new invoice,
+or delete a specific invoice respectively.
+Now I've described the what and why of connecting services,
+authenticating with our author and getting two different applications
+to talk to each other.
+What about the how?
+What tools are available to help with this?
+When you're playing around with REST APIs, a good tool to use is Postman.
+This has a nice user interface for putting together requests.
+You can also go old school and use a command line tool like curl
+to send HTTP requests.
+And there are also web-based applications that simplify the process of using APIs
+such as Zapier.
+Most popular applications will have their own plugins for Zapier,
+so integrating two services can be as simple as authenticating with them
+five, then defining what particular information you want to be synchronized.
+Also, lots of vendors that provide an API will also provide code libraries
+for popular languages that can be used to create an integration
+without writing the whole thing from scratch.
+Every vendor who has an API and actually wants people to use it
+will make sure it's documented well on their website.
+There are standard ways of documenting APIs such as open API
+and tools that can interface with this specification format.
+So I've talked about a few approaches for connecting between two web applications
+with an example I'm familiar with, which is accounting packages.
+There are some variations on what I've described.
+For example, if the app is a mobile app with no back end,
+then while still using OAuth2, the flow will be slightly different.
+You'll probably be working with a signed block of data known as the JSON web token.
+Practically this means rather than having what's known as offline access,
+the application will have to ask the user to reauthenticate
+whenever communicating with the third party.
+For more about OAuth2, you can look at OAuth.net or many other online resources.
+So many popular web applications do provide an API,
+and it really is useful being able to work with these.
+If you have some coding skills and want to get started accessing APIs,
+then services that use an API key would probably be the ones to start with.
+Since OAuth2 is somewhat more complicated,
+they're not terrible once you get your head around it.
+If you just want to play around and want to see what public APIs are out there,
+a good place to start is github.com,
+forward slash public hyphen APIs,
+forward slash public hyphen APIs.
+Even if you're not writing your own integration,
+you're likely to already be writing different third party apps
+access to the web-based services you use,
+which you're using OAuth2 behind the scenes whenever you do this.
+Either way, I hope this has been of some interest. Thanks for listening.
+You have been listening to Hacker Public Radio
+at Hacker Public Radio does work.
+Today's show was contributed by a HBR listener like yourself.
+If you ever thought of recording podcasts,
+then click on our contribute link to find out how easy it really is.
+Hosting for HBR has been kindly provided by
+an honesthost.com,
+the internet archive, and our sings.net.
+On the Sadois status,
+today's show is released on our Creative Commons,
+Attribution 4.0 International License.

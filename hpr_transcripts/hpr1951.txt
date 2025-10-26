@@ -1,0 +1,413 @@
+Episode: 1951
+Title: HPR1951: Some additional Bash tips
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1951/hpr1951.mp3
+Transcribed: 2025-10-18 11:46:27
+
+---
+
+This is HPR episode 1951 entitled Sum additional bash tips and is part of the series bash
+cryptying.
+It is hosted by Dave Morris and is about 40 minutes long.
+The summary is more about expansion in bash, this time arithmetic expansion.
+This episode of HPR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15 that's HPR15.
+Get your web hosting that's honest and fair at An Honesthost.com.
+Hello everyone, this is Dave Morris.
+Today's episode is another one in my series bash, continuing the subject of expansion.
+I've called it some additional bash tips.
+I wish now I'd numbered these ones because might have made more sense, but never mind.
+So last episode in this mini series was 1903 and we looked at the various types of expansion
+that occur when a bash script or pipeline on the command line whatever is being executed.
+And I listed all the various types of expansion.
+We got as far as looking at tilde expansion 1903 and then command substitution.
+So today, well before I say that, there are three more, possibly four more items to
+to cover in this list, arithmetic expansion is what I'm looking at today and it might
+take another two episodes to cover the rest.
+I don't know.
+These things tend to be longer than I expect them to be when I come to do them.
+One small note while I'm on the subject of these notes, I've got long show notes for
+this episode of course.
+So my side note is that I have changed the way I'm doing my examples.
+In previous notes, I have indicated the command to type and the result of typing the command
+in a different way.
+The result I've put a minus and a greater than in front of it to show what it is.
+This time around, I'm going to show the command as if it was being typed to a prompt and
+the prompt would be a dollar prompt.
+So if you see a line beginning dollar space and then a command, that's what you would type.
+And the stuff that follows would be what comes back from typing the command.
+In most cases, my examples produce some sort of output because I'm using them to demonstrate
+an idea and so forth.
+I think this method I'm using from now on is probably less ambiguous than the one before.
+It was pointed out to me that the previous way of doing it was a bit hard to follow in
+all cases.
+Anyway, getting on with the actual subject, arithmetic expansion.
+So this is a type of expansion that takes an arithmetic expression and returns the result.
+So you can see, the first example here shows that you need to start such an expansion
+with a dollar sign, two open parentheses, the expression and then two closed parentheses.
+So I've given an actual example which is dollar space, echo, space, dollar, double open
+parentheses, 42 slash five, close parentheses twice.
+What that's doing is it's dividing 42 by five and the answer comes out as eight.
+Now this is integer arithmetic as you will have gathered from that result.
+The fractional part is thrown away.
+I thought it was worth putting in at this point that if you really want to do full fractional
+result to this, then you can use the BC command.
+This was covered in Dan Washco's Linux in the Shell series, which was done as HBR show
+number one, two, two.
+And there's an example showing, I won't read these all out in huge detail, but I'll summarize
+them as I go.
+Essentially you need to use echo to prepare an expression which you then pipe to BC.
+So the example shows echo followed by in quotes, double quotes, scale equals two, semicolon.
+BC can take multiple commands to it, it's a whole language in itself.
+So semicolon, as I said, space 42 slash five, close quote, then a space, not necessarily,
+but that's what I've got, vertical bar, which is the pipe symbol, space, BC.
+So if you do that, it puts that, it sends that expression from which is really a little
+program to BC and you get back 8.40.
+The scale equals two bits says to BC that you want two decimal places in your result,
+but if fault it returns you an integer result.
+In the example I showed, I used echo to report back the result of the expression I just
+explained to you and I put it inside a command substitution.
+That was slightly silly, though it was just to make the point really, if you were doing
+this for real in a script or something, you'd probably set a variable to the result of
+that echo into BC pipeline.
+And I've got an example there that shows how you would do that and then you'd echo that
+variable.
+So when you're doing arithmetic expansion in bash, the expressions that you use don't
+just have to contain numbers, they can also contain bash variables.
+Usually when you do this, you use just the plain name of the variable.
+You don't put a dollar on the front.
+Remember that we looked at this way back in this series where if you put a dollar in
+front of the variable name, that means substitute in the contents of that variable.
+So I've shown in my example X being set to 42, then an echo space dollar to open parentheses
+X slash 5, X divided by 5, close parentheses, close parentheses and the answer comes back
+as 8.
+Now if you put a dollar on front of that egg, you've got the same result.
+There are however potential pitfalls of doing this.
+The expression inside the double parentheses is subject to variable expansion, as you
+might expect.
+So dollar X means expand the contents of X.
+So in the example I've just cited, it would, the contents of 42, so it would have, would
+have substituted 42 in and the result would have been the expression 42 slash 5, 42 divided
+by 5.
+That's okay, but it's, there are some potential pitfalls that I'll come on to a bit later
+on.
+Now if a variable is null or unset and we're back to using it without the leading dollar,
+then it, it value X to 0, it's interpreted as 0 by bash.
+If it was empty and you use the dollar to substitute it, you would end up most likely with an invalid
+expression.
+The value of a variable is always interpreted as an integer.
+If it's not actually an integer but it's say for example a text string, then it's treated
+as 0.
+I didn't find this documented actually, so I'm mentioning it here because this was the
+result of doing a little bit of experimentation.
+I show an example where I set a variable called STR, short for string equal to an A in double
+quotes.
+I echo using arithmetic expansion dollar open parenthesis, open parenthesis, STR times
+2, close parenthesis twice, of course, and the answer comes back as 0.
+So it's taken that letter A has treated it as 2, as 0.
+I mean multiplied it by 2 and of course the answer is 0.
+And the second example in this group is setting it to the string 0X capital A in quotes
+again.
+Now, if you put that into the arithmetic expansion expression, then the answer is 20.
+The reason for that is that 0X capital A is interpreted as a non decimal number.
+So I go on to explain a bit about this now in the notes.
+So there are a whole range of non decimal numerical constants available in bash.
+So any number that begins with a 0 and is followed by digits is taken to be octal.
+Hexed decimal numbers are denoted by a leading 0 lowercase X or 0 capital X.
+So my previous example was hex A, which is 10, multiplying that by 2, gives me 20.
+Be aware that the way in which octal constants are written, that is that leading 0, followed
+by digits.
+It can lead to unexpected outcomes.
+I mention this because I've been bitten by this many times.
+Well, I was anywhere in the early days when it just didn't seem like a logical thing
+to do.
+So my example here is quite long, a bit long to read out, but just to summarize it, I start
+off by setting a variable X to the number 010.
+And then echoing it in a arithmetic expansion expression.
+So dollar, open parenthesis, open parenthesis, X, closed parenthesis, closed parenthesis.
+The answer comes back as 8.
+The reason for that, I'm sure you've worked that out, is that it's interpreted as an
+octal number.
+So an octal 10 is 8 in decimal.
+And it's always reporting these back as decimal, of course.
+So then I show an example where I might have typed the number 018 and set that into a
+variable.
+And then tried to echo it back again as a number using the arithmetic substitution expansion
+thing.
+And I get an error back from bash saying that 018 value 2 great for base.
+So what it's saying is this, I'm interpreting this as an octal number, you kind of 8's in
+octal.
+You only go from 0 to 7 in the digits.
+So I also showed how you could easily fall into that trap by using print f, print f minus
+v, followed by X.
+What that does is it uses print f to format text or a number or whatever and put it into
+the variable X.
+And in the format string, I've got open double quotes, percent 0 3d.
+That's why I'm saying you want to print a number.
+You want it to be three digits wide.
+And you want leading zeros, back size aim for new liner when it's done it.
+And then close double quotes and give it the number 19, decimal 19.
+So processing that, the print f will produce 019 and putting that into an echo followed
+by an arithmetic substitution will produce similar sort of error to the one I just mentioned
+because 019, treated as an octal number is illegal.
+You can see how easy it might be to generate such numbers and then try and process them
+in this way.
+And suddenly you find why is this why is 19 illegal and forget that that leading zero means
+it's interpretive as octal.
+There's also a complete system within bash of defining numbers with bases between 2 and
+64.
+And to do that, you put in a base, a numeric base, followed by a hash mark, followed
+by a number in that base.
+So if the numeric base and then the hash is emitted, then it's assumed that it's a base
+ten number.
+That is a decimal number.
+Or it could also be an octal number if it begins with a zero or a hexadecimal number
+if it begins with zero x.
+The number that follows the base hash sequence is, can use characters to represent the different
+digits that are possible in the different bases.
+And same way as if you're typing in a hexadecimal number, like one we saw before, the hexadecimal
+A is actually representation of decimal ten.
+So the characters that you can use in bash are the letters lowercase A to lowercase Z
+and uppercase A to uppercase Z and the at sign and the underscore sign.
+The reason I've spelled them out so clearly, hopefully anyway, is that they're not sequential
+through the ASCII set, but it makes sense to do it that way.
+Now one of the things I discovered, it's not well documented in the man pages, but messing
+around with it, I discovered that the context in which these number formats with the base
+thingy are understood by bash are a bit limited.
+So I show an example where I'm setting x equal to 16 hash capital F. So that's, that's
+why I'm representing a hexadecimal number F. So I then try and echo that, just echoing
+dollar x. And of course, well, not of course, but what I get back is the number, the sequence,
+the strings 16 hash F. So bash has not converted them or treated it like string.
+There's another example as well which sets x to 0 x F, which is using the other format
+for the representing hexadecimal, echo that and you get 0 x F. So it's treating them
+as string. There are other ways, actually this is quite a big subject, which I'm not covering
+here particularly deeply. There are other cases where you can force bash to actually treat
+these consonants as the numbers they represent. And there's a declare verb, you can, as
+example here, it shows declare minus i, followed by a variable I've called i i with two capital
+i's, and set that to equal to 16 hash F. So what that's actually done is it's declared
+this variable i i, in capitals. Why did I choose this? It's really hard to speak, it's
+a discrapping word. Anyway, I should must remember this in the future. It's declared it
+explicitly. Usually these things are done implicitly. It's declared it and said it's
+an integer. It's only to hold integers. So setting it to that value, 16 hash F says it's
+an integer put this value in which you understand don't you bash. And then if you echo that
+variable you get back the answer 15. So it has in this case interpreted it. I think that's
+because the variable is declared as an integer type variable as opposed to the usual type
+which which are sort of general purpose and don't have any specific attributes to them.
+So bash doesn't know when you're setting them, whether you're trying to set a numeric
+value or a string. There's also a let command, let, which is all can also be used for setting
+variables. So I show an example where I use let space x equals 16 hash F then echo dollar
+x and get back the answer 15. So that's another case where this has interpreted the base hash
+number thing when setting the value. Now these things like declare and let and some other
+things are all part of what tends to be called shallow arithmetic. And although we're we're
+looking at this to some degree in this show, we're not going to go into the into a lot of detail.
+I'm thinking that maybe I need to talk more about this subject later on in the in the series.
+Now if you do the next example here which is setting x to just plain x equals 16 hash F then
+if you echo the the contents of x through the arithmetic expansion syntax dollar open
+parenthesis open parenthesis x close parenthesis close parenthesis you get back 15. So the the
+arithmetic expansion syntax does force the correct interpretation to take place. I digress a little
+bit at this point in my notes to demonstrate a little bit of bash a very small script that
+could be used to examine the decimal values that you get with different sorts of notation.
+I don't did I say the the types of the bases that you're allowed yes I did the bases that you're
+allowed vary from two to 64 and what I thought I'd do is just demonstrate numbers to base 64
+and just just run through them or all the single digit numbers in that in that range just to show
+how you can visualize them. So I've got a for loop what I've done here is I've written it out as if
+it's a the sort of script that you put in a file so it starts with a hash exclamation mark line
+which hopefully you can you can see I won't read it out then there's a for loop which is setting a
+variable x so it's a for x in and then following the inward there are a bunch of expressions and
+these are brace expansions so I've put in there open brace zero dot not nine close brace space open
+brace locate a dot dot z locate z of course close brace space open brace capital A dot dot capital
+z close brace then an at space then an underscore semicolon space do so what that loop is saying is
+that to set x to all of the values from zero through nine locate a through z uppercase a through
+uppercase z at sign and underscore and then the next line says n equals and then in quotes 64 hash
+dollar x close quotes double quotes so what that's done is it's made a base 64 expression constant
+really out of the the variable x then we echo the string in double quotes dollar n so we want
+to see what n is actually set to which will be just be that string that we just used equals dollar
+open parenthesis open parenthesis n close parenthesis close parenthesis close double quotes so
+you should therefore get things like and there's some examples in the notes 64 hash zero equals
+not too surprisingly but more interestingly 64 hash capital Y equals 60 all the way to 64 hash
+underscore equals 63 so a number to base 64 written as 64 hash underscore actually means decimal 63
+so it's actually quite a big subject which I've digressed into here but we could do a lot more about
+this as I've already said I'll stop at this point so let's look at what can actually go in between
+these double parenthesis in an arithmetic expansion it's written down as being an arithmetic
+expression and it's documented in the bash man page under the heading arithmetic evaluation
+partly because the same syntax is used in the whole larger subject of shell shell arithmetic
+so I've included that particular piece of the man page in the notes for for your edification
+it's a big man page so it's quite it takes fabric to scroll to I thought it might be useful if you
+had it in these notes so you can do a lot of quite useful interesting things in an arithmetic
+expression in fact there's a lot to be said here which I could go on and on about but I'm trying
+to restrict myself to a subset of it but I wanted to to cover some of the elements of it just to
+give you a better understanding of it first of all we'll deal with pre and post increment and
+decrement now if you look at the the man page you'll see this heading and they're not really very
+well explained it's assuming what they mean the operators here increment or decrement the
+contents of a variable by one and the pre and post effect remember it's pre and post increment
+pre and post bit says whether the operation is performed before or after the value is used so
+I've listed a bunch of examples hopefully to make this clearer so my example sets a variable which
+I've called vowel the al equal to 87 then is followed by an echo where the echo is a quoted
+double quoted string and inside the string is dollar open parenthesis open parenthesis plus
+plus vowel close parenthesis close parenthesis and then space dollar vowel so the idea was that the
+arithmetic expansion would be used and it would use one of these pre and post things and then you'd
+see the actual value thereafter because it's actually changing this variable okay so take that first
+example where we're using plus plus vowel inside the arithmetic expansion what that saying is
+increment this value before you display it so started out as 87 we incremented and it becomes 88
+we see it in the output from the echo then we look at the contents of vowel after that express
+and spin executed and it's 88 we know that not too surprising so the next example uses a pre
+decrement which is minus minus vowel so it's all right we just said it to 88 so the answer comes
+back as 87 and that that means that the vowel itself has been changed to that value and we show
+that as part of the echo it's the same same line but with different operations inside so the
+third one we're using vowel of course again but this time is a vowel plus plus so that's a
+post decrement the post increment sorry I'm getting confused now so it was 87 so when the result
+of vowel plus plus is we we get back the value of vowel before it was incremented so we see 87
+and then afterwards the variable vowel contains 88 so the result of the echo is 87 followed by 88
+and the last example is similar but we're using a post decrement so we know that vowel is currently
+88 in the example so we do vowel minus minus and then we show the contents of vowel so the answers
+we get back are 88 and 87 so it was 88 when it went into the vowel minus minus post decrement
+and then it was reduced to 87 so I'm showing the contents of vowel results in 87 it's actually
+a bit confusing to hear read out think if you if you can look at the at the example you might
+find that explains things better now the pre and post increment and decrement operators need variables
+not number because it's all about taking a variable doing the thing to it and saving that
+the result so I show another example of how if we set a variable we call in my var equal to 128
+then we echo in dollar open parenthesis open parenthesis plus plus my var closed parenthesis
+closed parenthesis we get back 129 so it's it's incremented the the result and has reported what
+happened now if instead of that we'd put a dollar in front of my var then it would have caused
+the contents of my var to be substituted rather than the name of the variable so that can it's either
+you know that doesn't it's either syntactically invalid to do it to do that or it can lead us to
+weird effect so I show an example where I use echo and then an arithmetic expansion using dollar
+my var minus my and I get back a bash error saying syntax error operand expected and it's saying
+you know what I see is 129 minus minus that means nothing the reason why it can lead to one
+wanted effect is that if you are doing a a pre decrement for example my next example shows
+my var being set to 128 and then we use the expression minus minus dollar my var and the answer
+we get back is 128 so what's happened there is that the substitution has resulted in the sequence
+minus minus 1 2 8 what that actually means is negative 1 2 8 then made negative so in other words
+the two two minus signs cancel one another out so you can see there's loads of scope for a confusion
+if you do this so the reason I'm hammering on about this is because if you if you're into this sort
+of stuff you really need to bear in mind which of the operators work on the variable names and
+which work on or can work on numbers so my examples skip around a bit between the the various
+operators a treat new unreminus neck which is just putting a minus sign in front of the variable
+and it just changes the sign of it so my example shows a minor in being set to 16 and then we use
+minus int and the answer we get is minus 16. Exponentiation is the next example we're assuming
+the int is available throughout all these examples and we use the expression int star star two so
+that means raise the power of two remember int was 16 so 16th power two is 256 16th squared in
+other words 16th squared is 256 now the expressions that you can place inside this dollar open
+parenthesis open parenthesis closed parenthesis closed parenthesis arithmetic expansion thing
+can be any arbitrary of any arbitrary complexity so I show an example next where I'm using int
+to the power of two so it's int star star two plus three then I want to get the remainder after
+division by five so I needed to put the int to the power of two plus three in parenthesis otherwise
+the percent operator the the remainder operator would apply to the three rather than to the
+result of that expression so I needed parenthesis there and that's as you would expect it to be
+I go on to talk about the bitwise shift and bitwise or features operators I guess they would be
+so here my example is using int and then the bitwise shift to the right is two greater than signs
+followed by one which means shift the contents of int by one bit to the right so 16 is shifted to
+the right by one which is the equivalent of division by two the answer is eight and I talk about
+how you would visualize that in binary 16 is binary one zero zero zero zero as one followed by four
+zeros shifting it to the right once returns one zero zero zero one followed by three zero which is
+binary eight decimal eight I mean next one is int shifted to the left one place so shifting
+16 to the left once returns a one in binary turns returns a one followed by five zeros which is
+32 in decimal and I'll see answer you get then I show how you could use bitwise or where take int
+shift it left by one and then or it with eight so 16 shifted left one is 32 binary oring
+eight to it is in binary it is one followed by five zeros or with zero one followed by three zero
+and the answer to that is one zero one zero zero zero which is decimal 40 it's actually 32 plus eight
+I do the same thing using hexadecimal so I've got a print f and the print f is using the percent
+hash x format which says print the number that you've been given in hexadecimal format with a zero
+x on the front of it fact it's a lowercase x means you get zero lowercase x then there's a back
+slash n which causes a new line to be generated and the expression I'm feeding it is another
+arithmetic expansion in fact it's the one we just saw is the one that contains int shift int
+shifted left one place ord with eight and the result you get back is hexadecimal 2828 I
+suppose you'd be best to call it so you can visualize that in binary as zero zero one zero for
+for the two and zero sorry one zero zero zero which represents the eight so it's the same
+as the previous answer it's just that hex is a more helpful way of visualizing it in this list
+there's also a conditional operator and I thought I should have a go at explaining that so
+conditional operator in bash is similar to the sort of things you see in other languages in
+c and so forth but it only operates with integer values its layout is an expression which has
+to return a value which can be interpreted as true or false so zero or one followed by a question
+mark followed by another expression which returns a numeric value a colon and a third expression
+so if the the first expression returns true then the second expression in the list is returned
+if it returns false then third expression in the list is returned so my example is moderately
+complicated what I've got is really a little script except it's not written out as a script it's
+just a bunch of commands a variable my var equal to the result of the expression
+ink shifted left three times three three places and that's in an arithmetic expression
+so what it is it's the same as multiplying it by two three times so the answer will be 128
+that's then followed by an array declaration msg message equals open parenthesis then there are
+three strings separated by spaces close parenthesis and the strings are in single quotes under 100
+between 100 and 200 is the second string and the third string is over 200 third line is range
+equals and here we come to the conditional operator so range is being set to an arithmetic
+expansion expression which is dollar open parenthesis open parenthesis my var greater than 100 so
+that's the first expression of the triple my var greater than 100 and so we're asking is my
+var greater than 100 follow that with the question mark then the first expression that follows that
+the one that will be executed if the if the value is is true is another is another conditional
+operator which I'll come back to in a minute the one that is returned if its false is just a symbol
+playing zero so that's all close with two closing parenthesis so that second internal expression
+second expression in this conditional operator is another arithmetic expansion which is a dollar
+open parenthesis open parenthesis here we have first expression in the triple is my var greater
+than 200 the question mark followed by two colon one so the whole thing is is saying if my var is
+greater than 100 then the second arithmetic expansion is used which then test to see if my
+var is greater than 200 if it is result returned is two otherwise result returned is one and if the
+original thing was less than 100 then zero is returned so the result of all that is that
+range is set to zero meaning that my var is under 100 one means between 102 and two means over
+200 so the echo which follows in this example consists of the string and double quotes my var equals
+dollar my var so we're going to see what what the current value of my var is we comma space
+range equals dollar range I'm going to want to see what range came back from the value came back
+from that that horrible expression finally message colon space and then that's followed by dollar
+open brace msg square brackets dollar range close square brackets close brace close double quotes
+so that you will recall hopefully is the way that you get an array element in bash and we're
+getting an element out of the array msg and we're indexing it by whatever value came back from
+the computation of range so my example I show what actually is returned and we get back my var
+equals 128 not surprisingly we knew that was what was going to be range equals one well 128 is
+between 100 and 200 and the message that's returned the contents of that msg array is the string
+between 100 and 200 so it's quite a contrived example but it um hopefully conveys the sort of
+thing that can be done with this type of type of thing why would you want to do it this way I
+suppose I tend to do this but um but I mean you could make it a lot more explicit by using if then
+type structuring in your script but um it's it's it's it's this thing exists and it's nice to use
+I find anyway I follow this with another example of that sequence of setting my var setting range
+and echoing result of everything but this time I changed my var to int shifted four places to the
+left in other words it's 16 times 2 to the 4 which is 256 then we recalculate range we don't
+need to reset msg because it's already been set previously recalculate range use it in the same
+echo as we did last time we get back my var equals 256 range equals to message over 200 so like I
+said these are these are somewhat contrived and maybe not they're not all that robust it's easy
+to break this but uh you can see the principle you could use this to to make make a script do something
+classifying numbers in various ways all sorts of things you could do I want to look at finally in
+this talk I wanted to look at assignment use of assignment in arithmetic expressions you can set
+variables within these expressions and there are some other assignment operators available to you
+if you do that so I've got things got my first example a group of examples is setting x equal to
+and here's a base expression so one two hash two zero so that's the number two zero in base 12
+and it's in an echo so echoing that back comes back to 24 so two zero to base 12 is decimal 24
+and it's also set x to that value it's set it to it and also returned the value because there was an
+echo then the next echo is x is echoing x star equals two so what that's saying in this assignment
+is set x to the result of multiplying x by two which since it was 24 is 48 and x will now be 48
+the final one do an echo all of these are in arithmetic expansion expressions which I'm not
+reading at all the dollar princess business because I'm sure you're with me so the last one is x
+percent equals five so that's a remainder type thing and it's saying set x to the remainder
+of x divided by five which since it's 48 is three okay so I spelled this out in the in the notes
+x is set to two zero base 12 and so on and so forth then the next example is demonstrating how
+you can set things to binary values if you want to so I'm using b equals two hash one zero zero zero
+so the if you put that into an echo then you get back eight because that's binary one followed
+by zero three zeros is eight so that's one zero zero zero zero to the base two zero expressing it
+then the next echo it uses b vertical bar equals that's that's using a bitwise or assignment so
+what that means is b is it is to be set to itself or with the expression which is two hash one zero
+which is one zero base two which is actually two so doing that you get the answer as being decimal
+if you think about what that is in binary we started off with one zero zero zero we
+ordered one zero into that so that turns that number into one zero one zero which is decimal
+ten there isn't a simple way of printing binary numbers in batch unfortunately if you have
+difficulty visualizing them you can use bc the bc program can display stuff to different
+bases so I shown an example if you echo the result of if you echo the string ob a s e equals two
+o base that means the output base the base to use for output in bc for all that with the semi
+colon dollar b so that echo was a string in double quotes we could put a dollar b inside it
+pipe that into bc so b remember had been turned into the value decimal ten and then we're asking
+bc to print out the contents of b which is just substituted into the string using variable
+substitution so what bc's is c's is ob a equals two semi colon ten sees that in decimal form
+there was a way of feeding it with with other bases in fact but we're feeding it in decimal and
+we've asked it to return its results in base two so we see as a response to that one zero one zero
+so that's um that can be useful if you I used to work in binary quite a lot because I was uh
+I did a quite a bit of machine code programming in my first job but um I have completely forgotten
+I can I used to know that one zero one zero was uh was ten but I've just forgotten it just
+fallen out of my head so if you're having similar difficulties remembering stuff then tricks
+like this can be useful so I thought I'd include it so that's it for today um I thought I was going
+to get further with this but if you if you've stuck with me through to the end of this then you
+can see why I'm leaving it here because there's these these these things are a lot more detailed
+than you think they're going to be okay that's it then see you next time bye
+you've been listening to hecka public radio at hecka public radio dot org we are a community podcast
+network that releases shows every weekday Monday through Friday today's show like all our shows
+was contributed by an hbr listener like yourself if you ever thought of recording a podcast
+then click on our contribute link to find out how easy it really is hecka public radio was found
+by the digital dog pound and the infonomican computer club and it's part of the binary revolution
+at binrev.com if you have comments on today's show please email the host directly leave a comment
+on the website or record a follow-up episode yourself unless otherwise status today's show is
+released on the creative comments attribution share a like three dot org license

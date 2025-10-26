@@ -1,0 +1,169 @@
+Episode: 4327
+Title: HPR4327: Chatting with Sgoti
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4327/hpr4327.mp3
+Transcribed: 2025-10-25 23:07:55
+
+---
+
+This is Hacker Public Radio Episode 4327 for Tuesday the 4th of March 2025.
+Today's show is entitled Chatting with Eskody.
+It is hosted by some guy on the internet and is about 14 minutes long.
+It carries an explicit flag.
+The summary is Eskody talks about SSH and GitHub.
+Let's have a chat, shall we?
+I had a little problem working with GitHub using SSH.
+It wasn't apparent at first what was going wrong.
+I cloned Repo using HTTPS, then found out that GitHub is basically not doing anything
+else with HTTPS, so you can't push or pull or authenticate from the command line anyways
+with HTTPS, so it's just there for you to do it, get cloned, nothing else.
+So obviously that sucks, I can't push pull, marginy, well, you can still do the local
+margin and everything, but can't push or pull, got to use SSH, well that's cool, I'd
+prefer SSH anyway, right?
+That way I don't have to do the username, password, thing.
+We got a public key infrastructure, which is much better, more secure, and I already know
+how to use it, so let's do that.
+So with SSH, I gendered up some basic ED25519 keys, and these are the keys that I use for
+most of my own personal system, GitHub supports this, it's in the documentation, I also have
+a link for that down in the show notes, they also support RSA, but there's some conditions,
+again, show notes, everything's looking good, go ahead and cat that public key out, copy
+it on over to GitHub, drop it in nice and easy, specify that this is going to be an authentication
+key, Bob's your uncle, should work, right?
+GitHub has a little test command that you can run, what they tell you to just SSH using
+git as the user, git hub as the domain, I went ahead and plugged that into my SSH config,
+that way I don't have to type the whole thing out, right?
+You can just, you know, whatever short name you like, that's like the poor man's DNS,
+SSH config, but it's so nice, and you drop down and that config, I pointed to an identity
+file and off we went, in the test example that they point out, they don't mention eight
+config, but, you know, I get the message that I need, which is you successfully authenticated,
+but GitHub does not provide a command like interface or you've been logged out, all right?
+So after being logged out that way, I went ahead and tried to do the push pull, you know,
+everything that you need to do, would not work.
+I tried a few more things, I figured maybe I didn't type my password incorrectly because
+I do save a password onto my SSH keys, I recommend doing that, even if you don't do like
+a full password, even a pen would be better than like absolutely nothing, but never mind,
+you know, you do what you like, could not get authenticated, something, and maybe there's
+something wrong with my key, I'm doing a research, I'm searching around, people are talking
+about all these different things that are not my problem.
+For instance, do you have the proper permissions on your key, which I use a Chomad equal 400?
+So only the owner has read access to the keys, same thing with like the SSH directory,
+you know what permissions you have on that, again, Chomad 700 there.
+I immediately thought, okay, let me go ahead and pack a job, this issue, I want to basically
+build a poor man's ticket and submit it to the community.
+In my poor man's ticket, you know, I'm putting together all of the steps that I've taken
+to build the keys, upload them everything.
+That way the community understands that I know what I'm doing, and I've, you know, we
+can get past the basic gotchas that come with the SSH, I head on over to the chat room,
+drop my nice little package to report in there, and we can you know what the community
+reacted.
+They came back with some information, helping me out, you know, asking a couple of questions,
+trying to go through the usual triage, we eventually bumped into that 24 hour mark.
+So trying to put this issue to bed for today, we'll pick it back up tomorrow.
+We get back into it the next day, and again, I'm testing it out, I'm trying to see if
+it's my system, if there's some sort of config issue or whatever, I'll watch some more
+YouTube videos, scour the web, most of the issues that they point out just aren't my
+issue.
+So I thought, okay, best way to figure this out, I got another system over here, and
+this is a good time to stop and tell you guys a little bit about how, if you have any
+of those other, you know, single board computers lying around.
+For me, I got a laptop that's nearby, so I use that, but if you have one of those single
+board computers, they're great for this kind of stuff, because on your main system, you
+might be facing an issue that you can't solve, but you can set up a similar environment
+onto that single board computer, especially if it has like four gigs or more, you know,
+less than four gigs, well, you know, but what I did here is I set up my environment on
+the other system, I have a fedora laptop over here, blank SSH config, gin, new keys, no
+password, same key algorithm, ED255, yada yada, and I slowly started changing things, right,
+so no password, and I was able to connect, and I thought, okay, so my laptop is able
+to connect to GitHub, meaning I uploaded the key to GitHub, hub from the laptop, and then
+attempted to push pull yada yada, you know, just to make sure that it works, it does.
+GitHub reveals that I am sending and receiving data using that key, now the key is marked
+not safe for work, that way I know not to keep it up there, right, you know to delete
+that, not safe for work, while going through the config, I'm looking at my desktop, I'm
+seeing the config on the desktop, I'm looking at the config on the laptop and line by line,
+I'm just adding things from the desktop to the laptops config until I hit an issue, now
+I'm going to have a sample of what my config looks like now, down in the show notes, but
+the setting I bumped into, they caused all of this issue, right, like we're running
+up on a 48 hour mark, and there's a setting I have down in my global settings in my SSH
+config, it's called Identities Only, now I've been using this for years, I can't remember
+why I selected it and put it into my config, but it's out of there now, that setting was
+causing all of this trouble, and you know how whenever you're trying to find an issue,
+and you're thinking it must be this super massive issue, especially in any kind of coding
+or scripting, how it always turns out to be something like a missing semicolon, you know
+something super small, you know, well here it turns out to be same thing, something super
+small, so I figured you know I took that out now, and I was able to authenticate everything
+is going through nice and smooth again, I thought okay, but now's a good time, let me go
+ahead and clean up the config, I want to add a couple more things and test them out while
+I'm at it, and this might make a good show, so from my preferred authentication setting,
+I usually have that as just public key, but I also added keyboard interaction onto the
+back end of that, almost like a just in case, but really it's going to be only public key,
+I was just thinking about like that initial, you know when you first SSH into a new pie
+or something like that, you know what I'm getting at, there's also the public, it's called
+pub key authentication, I have that as yes, and then the third setting under, remember this
+is on the global properties, and in order to enable a global property, what I've done
+here, my config is at the very bottom of the config, I have host, and instead of typing
+a host name, you just put the asterisk, and that means it will now apply to all hosts,
+and who I added all that stuff down in there, just to beef up the config a little bit more,
+make it look nice, clean it up, trim all the other stuff out of there, some of the old
+service that I don't SSH into anymore, cleaning them out, also one of the things I want
+to point out, which is really cool, I didn't know how to do this, but if you run SSH command
+with the capital Q flag for the host key, for the host key algorithms, it'll give you
+a list of all the support algorithms, so I'm going to hand copy that into my config
+as well, but I comment them out, and they have to bottom down there below global, so I've
+just got a sample of that down there in my, in my sample config, as you can see it, I ran
+a grant across a YouTuber by the name of Lawrence Systems, he's got a nice little site with
+some information on using Ubiqui with their SSH keys, now I've seen this in the past,
+so I never bothered to try, today's different, I want to try, you know, with all this effort
+to get my GitHub interaction centered around SSH, and it turned out to be some small setting,
+I figure while I'm already dealing with this, let's beef things up a little bit more
+right, so I've got Ubiqui's, let's use them with SSH, I've got the fifth series, Ubiqui's
+with the near field communication, yada yada, I'll have links in the description, now
+I'm already using my keys to log in and out of GitHub, which is so good, because I guess
+they count as past keys, right, it's a device you can use as a past key, so you don't even
+have to do user name of a past, where you could just go log in with a past key, and just
+you know, enable your device, what do you call it, touch it, your device, and it'll log
+you in so good, well, if you're doing anything with Ubiqui on Linux, you'll know, especially
+if you're using a Ubiqui authentic error app as well, when you install that, you're going
+to go out, you're going to have to go out and get lib502, but see, in Lore, in Lorentz,
+I think that's his name, yeah, Lorentz systems, like the YouTuber, he points out that you're
+going to need the lib502 slash dev version, right, so I'm going to hit and grab the slash
+dev, I don't know if the regular will work, but I grab the dev just in case, right,
+links are going to be in the show notes, pull that down, gend up some new keys, and you're
+going to be using basically the exact same command, except for your type, instead of using
+just the ED259, you're going to be using ED259-SK, the dash SK stands for security key,
+and he explained it very well, all is doing is in your identity file, part of that file
+is on your security key, and the other part is on the file on the computer, so you need
+them both to, you know, create the full thing or whatever, so I want to hit now gend up
+two new keys, one for both of my keys, I have a type 8, well, I have more than two Ubiqui's,
+the two that I have right here that I'm talking about today, a type C and a type A, I went
+in and gend up a key for each one, of course you've got to go ahead and test them immediately,
+I'm definitely not going to wait, they have another problem, so we're testing them right
+this second, everything worked nice and smooth, and now for my SSH keys, I no longer have
+to put in the password for them, I could just use my Ubiqui, now I still have a pen
+associated, but you know, that's just me, a pen is a lot easier, plus, you know, it's
+just something you have, something you know, multi factor, and all of that built into
+the PKI, so I feel very good about it, I'm happy, one of the other things I'm going to
+point out here, as you can see in my sample, and I left it this way just to show you, I
+have GitHub as two separate hosts, you know, with the exact same host name, so when I was
+testing my first key, it worked, no problem, you know, key zero, key one, which is the
+second key, it threw an error, because the config reads, you know, top down, so it tries
+to do the first entry of GitHub, which uses key zero, which is not plugged in, therefore
+it gives an error, then it reads the second entry of GitHub, which is key one, and then
+it succeeds, what I was thinking about trying, which I'll do later, when I have the heart
+for it, because right now, after all of the failure and everything, I don't have the heart
+for it right now, I'm just in the future, I'm going to try just putting two identity files
+under one profile, so it'll just be one GitHub, and it'll have two identity file, I don't
+know, properties under it, I never done that before, and I don't know what kind of errors
+it might throw, but that's, that's for future Scotty to find, to find out, one way or another,
+from the command line, I can use Git, and interact with GitHub, which is what I wanted, I figured
+a few of you hackers are out there, are going to want to know about this, if you've got
+UB keys and you're not using them for your SSH keys, give it a try, you'll love it, I'm
+telling you, no more passwords or anything like that, or if you're already not using passwords,
+and you have a UB key, I mean, why not, and this is for your job, and you're going to
+go through all these bunch of steps to get new keys, put in or whatever, yada, and who
+I hope you guys enjoyed the episode, let me know what you think, or you're using UB keys
+with your SSH keys, if not, why not, get you in the next one.
+You have been listening to Hacker Public Radio, as Hacker Public Radio does work, today's
+show was contributed by a HBR listener like yourself, if you ever thought of recording
+broadcast, you click on our contribute link to find out how easy it really is.
+Hosting for HBR has been kindly provided by an honesthost.com, the Internet Archive
+and R-Sync.net.
+On the Sadois status, today's show is released under Creative Commons, Attribution 4.0 International

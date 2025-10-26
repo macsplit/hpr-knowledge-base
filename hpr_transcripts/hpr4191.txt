@@ -1,0 +1,191 @@
+Episode: 4191
+Title: HPR4191: rkvm software KVM
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4191/hpr4191.mp3
+Transcribed: 2025-10-25 21:03:58
+
+---
+
+This is Hacker Public Radio Episode 4191 from Monday the 26th of August 2024.
+Today's show is entitled, Arc from Software KVM.
+It is hosted by Windigo and is about 18 minutes long.
+It carries a clean flag.
+The summary is, a brief in reduction to the work of software KVM.
+Hello Hacker Public Radio.
+I couldn't help but find myself with two dilemmas, dilemma, I don't know.
+The first being that my distribution of choice was upgrading and was going to be supporting
+WALENT.
+Which is a good thing, I've had very good experiences fooling around with WALENT.
+However, the one tool that I use that isn't supported is Barrier.
+The software KVM that I did an episode on a little while back.
+I use that pretty regularly in my day-to-day life, I use it to share a keyboard and mouse
+across from my personal computer to the work computer that is situated next to it.
+So while I do want to upgrade to WALENT, not having that KVM software was going to
+be a problem.
+My second dilemma is that I was checking the HPR website and my last episode was uploaded
+in April of 2022 and as I record this, it is August of 2024, which makes me a delinquent.
+So in an effort to fix all of my problems, I decided to check out RKVM, which is a lower
+level KVM software and do this episode on it.
+So the first thing to know about RKVM is it works slightly different than Barrier and
+some of the other applications I've used.
+The other software KVM's I use apparently rely on the X Window Manager, they rely on
+the X server to communicate their mouse movements to the other clients and that functionality
+doesn't work in WALENT.
+WALENT has security built into it that isolates different applications from one another.
+So if you have your mouse moving in one application, it won't be detected by Barrier or whatever
+X KVM you're used to using.
+So I looked around for some alternatives and there's a couple in the works that I wasn't
+able to check out, but I did find this RKVM software and it uses a pretty clever method
+of getting around that.
+RKVM doesn't communicate with X at all, it doesn't communicate with WALENT at all.
+RKVM binds directly to your input devices and handles them at a lower level.
+What this means is it's completely unaffected by display server software.
+In fact, I'm fairly certain you don't even need to be running a display server.
+You could use this on a headless machine, although I don't know how well that would work.
+That seems like it'd be a strange choice, but in theory it's there.
+So seeing as how this would fix my problem and get around the accelerations of my current
+KVM software, I went ahead and tried it.
+So the first thing to know about RKVM is I believe the R stands for Rust.
+So it's our utility written in Rust, which I don't have a problem with.
+You might have strong feelings about Rust either way, but I'm perfectly fine with that.
+The second thing is that it didn't really have any Debian or Ubuntu packages, at least
+not in the distributions that I was using.
+I'm using ironically, I'm using a distribution from 2022.
+So apparently that's when I stopped putting in efforts.
+So it might have been packaged since then, but I went the manual route and compiled it
+myself.
+So as a requirement, I had to install lib-ev-dev.
+I had to install the Clang compiler, and I also had to install cargo.
+I'm not sure if I installed it for this, or I had installed other Rust utilities, but
+you have to have cargo the Rust compiler as well.
+Once you have those installed, the compilation went pretty smoothly.
+It's just a cargo build-dash release.
+Once you're in the source directory, oh, I should probably say that I cloned it straight
+from the GitHub repository, and I stayed on the master branch.
+That seemed like a stable option.
+There's a link in the show notes to the repository for RKVM that you can clone, and if you jump
+into that repository and run cargo space build-dash release, it will spin up its threads and
+compile your software for you.
+Now the documentation I'm reading, I'm reading right from the readme, it's very well written.
+I'm under the header manual install, and they are not fooling around because the next
+step is just to use copy to move the right binaries into the right folders.
+So there's two roles for the computer's running RKVM.
+There is the server, which is the machine that is connected to your keyboard and mouse,
+and then there's the client, that's the other computers, or computer, that you want to
+send your keystrokes and mouse movement to.
+In the documentation, they have you copy the binaries for both client and server to the
+usr-slashbin folder.
+I just copied the client or the server depending on which machine I was on, but it's not going
+to hurt to copy them both if you wanted to follow their directions.
+There's also a certificate-gen binary that you need to run on the server, I believe, and
+then you need to copy the certificates over to the client machines before you run everything.
+But they get into that a little bit later in the readme.
+So once it's compiled and you've copied over the binaries, the next step is confirmed
+configuration.
+On the server, I did it on the server, but somewhere you have to generate a certificate, which
+is an encryption key that will encrypt your traffic between the client and server machines,
+using this RKVM-certificate-gen utility.
+It says you can provide your own from other sources, but it also does not give us a ton
+of information on these keys.
+It's a .pm file, which I've seen in some other like SSH utilities, but I just stuck
+with their key-gen program to make sure that it was compatible.
+And they have instructions for copying the certificate and private key on the server,
+and then copying just the certificate to the client machines so that they don't have
+to do any key exchange themselves.
+It's just encrypted as soon as they connect.
+Once you have the certificate and the private keys copied where they're supposed to be,
+they have you copy an example configuration file, which is a Tommel file.
+I'm not sure how to pronounce that exactly.
+I've never really set it out loud before, but it's just a flavor of YAML, which is also
+fun to say, but it's very easy to edit and insert your values into.
+So they have you copy the example server config on the server, and the example client config
+on the client.
+I should add, I don't think it's explicitly mentioned, but I had to create the directory
+that these files reside in on each machine server and client.
+These configurations are very brief on the server.
+It lets you configure which port the KVM software is listening on, which interface as well.
+You can specify which IP address, which will let you restrict it to a certain interface
+if you'd like.
+You can specify the switch keys, and I'll get into those later.
+It lets you specify these certificates that you've generated in the previous step and
+a password so that you can also make sure you're not having other random clients connect
+if somehow they got that certificate, the public certificate.
+The client configuration is even briefer.
+You specify the address of the server, including the port that you specified in your server config.
+You can configure the path to the certificate that you've copied over, and that same password.
+I'm assuming those have to match.
+I haven't tried it without, but yeah, it's a pretty safe assumption.
+They also include instructions on how to run a test instance of the server, which they
+say is a good idea because it grabs your input, so it could steal your mouse and keyboard
+and cause a problem, but they have a command line switch that shuts down the utility after
+so many seconds, so that if it is stealing all your input, it will safely shut itself
+down after a small period.
+They also have instructions on setting up system D units for the server and client, depending
+on which machine you're on, so that if you want to, you can have it start automatically.
+I did enable this because I use this almost every day and have not regretted it yet.
+It doesn't seem to affect anything while I'm not connected with the client machine, so
+having it running in the background doesn't seem to be too much of an issue.
+One of the reasons for that is the switch keys configuration.
+Barrier, the software KVM I'm used to using, worked off of edge detection.
+When it detected you running off the edge of your screen, as soon as you hit the edge,
+it would transport your mouse cursor to another client that's configured to be on that edge.
+I configured it so that my host machine, or the server, if I move my mouse all the way over
+to the right-hand edge and kept going, kept pushing my mouse, it would automatically appear
+on the left edge of my work machine, which is sitting to the left of it.
+It was a really neat trick, and I miss it a little bit because RKVM uses a different approach.
+Because they don't detect the edge of your screen, because they don't know anything about your
+screen, they're grabbing the inputs directly. They have these switch keys that you can figure,
+and they default to left alt and left control. So if you press left alt and left control, it triggers
+the switch. So when you press those keys, your mouse and keyboard input jumps to the next machine,
+the next client that's connected. That client has its own mouse location, its own
+keyboard state. So wherever you're focused, you're focused. And then when you want to switch back
+to the server, or at least the next client, I've never tried it with more than two machines at once,
+but I assume it just does it in kind of a round robin. If you hit those switch keys again,
+it will switch back, or switch to the next client in line, and eventually it will get back to the
+server. So like I said, the default switch keys are left alt and left control, and I ran into a lot
+of trouble with those, because that's what Nome uses to switch around workspaces and windows and
+things. So I quickly had to switch those. I picked an artifact from an old hardware KVM I used to
+use. I used the scroll lock key. So if I press scroll lock, it swaps over to the next device,
+the next client in line, or back to the server. After using RKVM for quite a while, I think I might
+add a second key in that combination, maybe F12 and scroll lock, or shift and scroll lock,
+something that I don't hit regularly, because I find I accidentally hit scroll lock while I'm
+hitting the print screen key or vice versa. So I feel like I need to switch that to something else,
+maybe another key combination entirely, and get away from the scroll lock, but RKVM has support
+for a wide variety of those kind of special function keys. If your keyboard has application keys
+or special symbol keys, there's a chance that they support it as well.
+There's a markdown file in the root of their folder called switch-keys.md,
+and that contains all of the special supported keys that you can choose that will let you switch
+back and forth, and they have a lot of them here. Let's see, if I scroll down randomly, there's an
+address book, option, battery key. There's braille.keys, which I'm assuming there must be a braille
+keyboard for typing in braille symbols. That's a new one to me. You can press the camera,
+keys, all of the F keys are supported up to F24, possibly even further. So if you have some special
+keys or have a device that can be bound to special keys, like with, I don't know what utility does
+it in Whalen, but I know there's X utilities where you can rebind keyboard input to do different
+keyboard symbols. You can bind your cap slot to a control or something like those. You could even
+have a special RKVM symbol that you press that'll swap your configurations around. Or
+if you're feeling a little mischievous, you could bind it to the Q key or something on somebody else's
+computer and just have their keyboard input disappear every once in a while while they're typing words.
+I do not advocate these kind of actions, but it's supported.
+So I think that covers the basic functionality of RKVM that kind of uses it has.
+It looks like there's a limitation section that says it's Linux only. So if you're looking for
+something that's cross-platform, maybe you have to stick with barrier and other alternatives for
+now because I know that they support multiple platforms for myself. Linux only is not
+a limitation, that's just fine. And I have to say, I've used a lot of these kind of software
+KVMs before and this has been a pretty smooth one considering I had to compile it myself.
+After the minimal configuration that they cover in their documentation,
+I wasn't expecting a lot because you never know what you're getting into when you have to hunt down
+and compile your own software. But as soon as I copied those configuration files over
+and ran their utility, it instantly worked. I had a great experience. I enabled the system
+D units, everything's been working flawlessly and I have a strange setup. I use USB-C docs,
+so I've got a network card that's connected via USB-C and sometimes addresses change and everything
+just works. I don't know if I've just been very lucky in my use case, but if you do need this
+kind of functionality and wanted to try something that's very low level that you can mix and match
+display servers with, I would highly recommend RKVM. I supported the developer on coffee,
+co-fi. I think it's supposed to be pronounced coffee, but they spell it with k-o-fi
+because yeah, it's quickly become one of the tools I can't live without. So I hope they
+enjoy developing it and are rewarded for doing so. So yeah, check it out. If that's something
+interest you, I would give it a shot. You have been listening to Hacker Public Radio
+at HackerPublicRadio.org. Today's show was contributed by a HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contribute link to find out how
+easy it really is. Hosting for HPR has been kindly provided by an onsthost.com, the internet
+archive and rsync.net. On the Sadois status, today's show is released under Creative Commons
+Attribution 4.0 International License.

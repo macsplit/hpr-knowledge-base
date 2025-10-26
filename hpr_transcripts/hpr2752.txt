@@ -1,0 +1,199 @@
+Episode: 2752
+Title: HPR2752: XSV for fast CSV manipulations - Part 2
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2752/hpr2752.mp3
+Transcribed: 2025-10-19 16:20:51
+
+---
+
+This is HPR Episode 2007-152 entitled XSV-4 Fast CSV Manipulation Part 2.
+It is hosted by being it and in about 23 minutes long and carrying a clean flag.
+The summary is part 2 of my introduction to the XSV tool.
+This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+Support universal access to all knowledge by heading over to archive.org.
+Support universal access to all knowledge by heading over to archive.org.
+Support universal access to all knowledge by heading over to archive.org.
+Support universal access to all knowledge by heading over to archive.org.
+Support universal access to all knowledge by heading over to archive.org.
+Hello hacker public radio fans. This is B easy once again.
+Coming with at you one more time with an episode about XSV.
+The extremely fast CSV Manipulation tool written in rust.
+This time I'm going to go over a couple of the other,
+basically the rest of the commands that are in the documentation with the exception of one,
+which is the reverse command, because although it is in the documentation,
+it is not yet in the actual binary that's provided on the GitHub link.
+I contacted the repo manager, Burnt Sushi, and he said that he knows,
+and he releases his binaries at a separate canis as he updates the docs,
+so whenever he updates the binaries, it'll be in there.
+But you can build a from source and get the reverse command that you if you really want it.
+I find that using the sort command is all I really need.
+But with any further ado, let's go.
+So we're going to go back to that original file that we're using,
+which was this world city's pop CSV file that had, let me count it again,
+xsv, count, world city's pop, that's CSV, that has 2,699,354 records in it.
+So it's big file and we have a lot of cool commands that we're going to go over to show what we
+can do with it. So the first set of commands I'm going to talk about are different ways that you
+can mess with the way that the file is formatted. The first one being xsv fixed lengths.
+And that is not what I first originally thought it was, which was, I thought it was going to be
+something that was going to make every length of every column certain with, but what it's actually
+doing is it's fixing the length of all the columns so that every row will have the right amount
+of columns. So what it'll do, if you don't give it any parameters, it'll read the entire file,
+find out how many columns is supposed to be in every line. And whichever one the widest one is,
+it'll spit out an output of a file that has that many columns in every line. So for instance,
+every line except for one has 30 lines on it, have 30 columns in it, and one of them has
+29. It will fix that one record to have 30 so that if you are using this csc file and some other
+for some other program that doesn't have that capability, it won't throw an error and say, hey,
+I don't have enough records in this row. And in conversely, if there's one that has one more
+record, it'll make every other record longer to fit it. But you can also say how many
+columns that you wanted to have. So if you use the dash L and then the number, that will say,
+I want to fix it to make it so that it's always going to be an amount of columns. So
+if I know that there might be one that has 31 and the rest has 30, if I say dash,
+dash L, 30, it'll clip off that last column in the one that is extra. So it's a way that you
+can fix a csc file. So for instance, it was apple here, xsv, if I just go xsv headers for that file,
+I can see that there's seven columns. But that's just reading the top of the file. It does, I don't
+think it reads the entire file to get that number. And so say that there was one that was more than
+and when I do it, xsv, fixlinks, dash L, seven, world city's pop, that's going to mandate that
+every line is seven. Basically, everyone has six columns in it. So that's a really useful command
+and you can see why if you're working with data where you don't know what the source is, you need
+to clean it up. It works really well for that. And it's really scalable for that. Another command
+is the FMT standing for format. So it's a way that you can reformat a file. The biggest use case
+I find for that is the option for changing the delimiter. So I sometimes is better to use
+TSP files instead of CSV files because if the data has commas in it, it can cause some programs
+to have an issue. So if I look at xsv, FMT, dash dash help, I can see that there are a lot of
+different things you can do. One is the dash T command or dash dash out delimiter. And that is
+the way that you change the file, the separator. So if you want to change it from CSV to TSP,
+you can do dash T space back slash T, which is the tab character. Another one that you can do,
+or you can do dash T and then the pipe so you can make a pipe delimiter. Anything you want to
+read with that. The default obviously is comma. So another thing you can do is you can do a dash
+dash CRLF, which is going to make a dash R dash N style line ending, which is I think the default
+for Mac. I don't know what it will do if you want the windows line ending. I haven't had a
+use case for that, but maybe the CRLF does the same for that. Someone wants to write the comments
+or make a file episode about CRLF. I'd love to hear about it, but I always try to make everything
+the Linux file ending once I get a file. The next one is dash dash ASCII, and that says to use
+ASCII field and record separators. So if I go just to that same file, and I do XSVFNT dash dash
+ASCII, which is ASCII. Both cities pop. It's going to put in the ASCII line and the ASCII row
+delivers. So you can't really see it in the output, but if you open it with a ASCII parser, you'll see
+that it's parsed correctly. All right, so the dash dash quote is a way that you can change the
+quote character. So by default, it is the double quote. So for times when, if you,
+so if you've ever seen an Excel, for instance, you know that if there's a comma inside of one of
+the cells and you convert it to CSV, it's going to put double quotes around that record so that it
+knows to not escape that, to not make that comma be a line separator, but I mean, a column
+separator, but it says it kind of is a part of the string in the same column. So you can change that
+to a different character. If you want you can make single quote, you can make a pipe you can make.
+I've seen the pipe before. There's another one that people use for a quote character.
+You can do dash dash quote dash always, and that's a way to put a quote around every value so
+that you never have to worry about. If there is a quote character inside of the line separating
+column separating, oh my goodness, it's late at night, a column separating character inside of the
+file. Next one is dash dash escape in the argument, and that is a way to choose a different escape
+character. When not specified, it used the quote to quotes are escaped by doubling them. So
+if you are using a quote character and you want to use that quote, you'll have to use quote, quote
+to escape it. Otherwise, you can put an escape character. You might want to make backslash
+this game character, but that's just one of the things I've seen. So that's what FNT command does.
+It does a lot of things to change how you can make the how it looks. Another one is input. So the
+input command. Let's look at it again. The input command is used for reading a CSV with an
+exotic quote character or escape characters. So just as you can change the quote characters and escape
+characters, you can, if you want to ingest a file that's prepared like that, you can use
+XSV input dash as quote and use what this custom quote character is, or dash escape, and whatever
+that custom escape character is, and the output will be in a format that is what a normal quote unquote
+normal CSV file looks like. So it's another way of just rapidly cleaning a file to be in a standard
+format. So the next couple of commands we're going to talk about are ways to separate or join
+a CSV files together or take them apart. The first one is I'll do split first because it's
+the easiest one. So XSV split is a way that you can, like it says, split a file into multiple
+files. Very much very similar to the split command in the shell, but the difference is that it puts
+the header on every line on every file so that you don't have to worry about having to go back
+into the files and put the header on there, which is really convenient. So if you look at
+XSV split, you can see that the first option is dash S or dash S size. You can say how
+how many lines you want in each chunk. By default, it puts in the 500. So if you don't,
+if you just say XSV split and then the file name it'll put it into 500 line chunks,
+you can do dash J for jobs and you can say that's the way of saying how many CPUs you want to use.
+By default, it uses all, but you don't have to use all. Dash, dash file name and then the
+file name is a way that you can say what you want the output string to look like. So the example
+that I use is XSV split dash S, let's go 10,000 and then dash, so dash dash file name,
+I guess I make a folder called World Cities Pop first and say dash dash file name World Cities Pop
+slash World Cities Pop and then inside of curly brackets, nothing. So empty curly brackets,
+that's CSV and what that will do is it'll put it'll make up for every 500 or 10,000 lines, it'll
+do it'll put a file inside of World Cities Pop that's called World Cities Pop. One, I think it
+starts at zero, zero, one, two, three, four, five, all they have to 9,999. So I could put it
+underscore in front of that so that it'll say World Cities Pop underscore one, zero, one, two, three,
+so it's an easy way to get the files to come out separated just by a really simple way,
+by line number. Now, what if you want to do something a little bit more useful like split it out
+by a specific character, so say in this file for instance, the first column is the country,
+what if you want to put every country in its own file? Well, for that you use the partition
+command. So World Cities Pop partition, so make another, make it clear out that directory
+and use the partition command or XSV partition. And for the help for that, we have, you want
+to do partition and then the column name that you want to partition by and then the output
+directory and then the input file. So it's a little bit different. It's not quite a fluent API.
+I think it's something that could be improved where the split you have to say the path
+and here you just put the output door. So that's a little bit inconsistent. But
+if you can get used to that, if you read the docs, it's okay because this is a really useful
+command. So if you do XSV partition World Cities Pop, the directory and then, oh no, first I want
+to do XSV partition country because the name of the column and then World Cities Pop is the
+directory and the World Cities Pop, that CSV, that's going to create files with the name of that,
+whatever in that field of country, that CSV. So I end up getting a file for every country.
+So there's one of the US.csv at UK.csv and so on. I think it's GB.csv.
+So that's very useful. You can probably think of lots of ways you could use that.
+On the other side of that is
+cat. So the cat command is a way that you can join CSV files together. So if I take that same,
+if I CD into that directory and then do CSV cat, now XSV cat, rows, start at CSV,
+it's going to concatenate by row all the CSV files in that World Cities Pop directory and put
+it back together into one file. So if all those files have the same length, then it'll do it
+perfectly. If you look at the documentation, if they don't have the same length,
+let's see, let's get it right. If you look at the help, it says if you make a cat name by
+columns, the columns will be written in the same order that the inputs were given and the number
+of rows in the result is always equivalent to the minimum number of rows across all CSV data.
+This can be reverse using the pad flag. And so the pad flag will say it's kind of like what we
+use in the fixed length command to say concatenate columns. When you concatenate the columns,
+it will pad each row with this number of column columns. So what you can see how that can be useful.
+Another thing that it evaluates you to do is that you can use XSV fixed lengths and then
+or XSV select to get the columns that you want. So you know the exact number of columns
+before and then pipe the output into cat so that you know the right number of columns that you
+want to work with. Now, so you can do it by rows, you can also do it by columns. So if you know,
+so say both records have 92 lines in it and they have similar data, it'll just it'll do like a
+stack. It'll just take all those columns and put them right next to the other columns
+and just make it the the output wide. And if there's extra records in one, it'll just have
+blank blank rows in there. Just commas until it gets to the to the spot where the extended data is.
+So you can cat by row cat by column and then you can pad if you're using the columns.
+And then the last command to go over is the sample. And this is something really useful for
+a file that's this big. So this file has, what I say, several million records in it. Take
+us six million records in it. And it might be too big to do analysis on. And so I could do a head
+and use that because sometimes you don't want to do a full analysis. You might have like a local
+machine where you want to just look at the data. You want to get a good idea of what it looks like
+first. And if you do a head, you might not get a good representation of what the data looks like.
+So the sample command will allow you to take a sample or quasi or pseudo random sample of the data
+with a fixed amount of records to be returned.
+If you index the file first, so remember in the last episode we talked about indexing. You just
+do XSV index in the file name, which makes a little index file a binary file that references every
+makes some references to every line in the file in a short format.
+If you run that first and then run the sample command, it runs almost as detainless
+on this, even on this big file because it knows whatever record is and it can go through it
+really fast. If you don't want to index it first, you can use the slice command that we went over
+last time and slice the file. Like you can say, I don't want the entire file. I want the middle
+third of the file and then just give me a sample of that. But but to go back to what the the file
+the command actually looks like for sample, it's XSV sample. Let me go to help and you can do XSV sample
+and then the sample size and then the input file. So let me just do XSV. So I'm going to do,
+I'm going to use the time command. So I'm going to do time XSV sample. Let's get a sample of
+100,000, let's go 10,000 records out of world cities, pop. And oh, it's actually pretty fast.
+Well, I am on my beef use computer. So it did it in a half a second. If I first go and
+index that file first, XSV, index, world cities, pop. And then run that same time to command again.
+Now it does it in .09 seconds. So if I was on my little adam computer, it would probably take
+20 times that, maybe 100 times that, but so you can see how that could be a benefit to index the
+file first. So that's the final command to go over. So just to recap, the XSV command,
+this utility has become really handy for me. And since I found it, I've actually looked for
+some other utilities written in rust I found FD, which is like the fine command written rust
+and RG, which is like the silver searcher AG or ACC written in rust. And maybe I'll do episodes
+on those later. But just the idea of being able to use such a programming language that's so
+close to them to the metal is really great. And it's so fast and it's really changed the way
+I look at CSV files. Before I would either use AUC or just head. And then if I had to do a little
+more fancy stuff, I would open up Python interpreter or R and and just the file that way,
+just so I can look at it or just so I can do some basic manipulations. And now I don't have to do
+that for a lot of use cases because the XSV command is so powerful and so fast. So thank you for
+listening to another episode of Hacker Public Radio. And as always, keep hacking.
+You've been listening to Hacker Public Radio at Hacker Public Radio.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HBR listener like yourself.
+If you ever thought of recording a podcast and click on our contributing,
+to find out how easy it really is. Hacker Public Radio was founded by the Digital Dog
+Pound and the Infonomicon Computer Club. And it's part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website
+or record a follow-up episode yourself. Unless otherwise status, today's show is released under
+Creative Commons, Attribution, ShareLife, 3.0 license.

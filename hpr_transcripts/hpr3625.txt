@@ -1,0 +1,150 @@
+Episode: 3625
+Title: HPR3625: Shell Tips and Snippets - Collaborative Effort
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3625/hpr3625.mp3
+Transcribed: 2025-10-25 02:21:46
+
+---
+
+This is Hacker Public Radio Episode 3625 for Friday the 24th of June 2022.
+Today's show is entitled, Shell Tips and Snippets Collaborative Effort.
+It is hosted by Carl, and is about 20 minutes long.
+It carries a clean flag.
+The summary is, Carl and special guests provide some shell tips and examples.
+Hello HPR, this is Carl.
+I solicited the mailing list for audio contributions about shell scripting.
+So I could then add my own and stitch them all together into a single collaborative show.
+This is that show.
+I'll go first by discussing the snippet that I put in the mailing list post,
+which is kind of a silly example of wondering if you could do something and then figuring out a way to do it.
+In this case, I wanted to see if there was a way to move function definitions to the end of the script rather than having them at the beginning.
+And it's really not so much that they have to be at the beginning, but they just have to be defined prior to being called,
+which does usually put them closer to the top of the script.
+And I think common convention is that you take all your function definitions and you group them together close to the top of the script.
+So the solution I came up with was to use the said command at the beginning of the script, and it reads,
+in order space, less than open parentheses, said space single quote,
+one comma forward slash carrot exit forward slash space D single quote space dollar sign zero closed parentheses.
+Probably 99% of the time you'll see a period also called a dot used in place of the full word source that I used.
+The dot is posics compliant, whereas I don't think the full word source is.
+And if it is present, I think it's just an alias to dot anyway, so they do the same thing, which is to read a specified file into the current environment as if it was just all one script.
+The less than sign with the parentheses construct is a form of process substitution that makes the output of the command that's enclosed by the parentheses accessible to the source command
+as if it was a file, which is what we need here.
+The dollar sign zero at the end is a variable for the file name of the executing script.
+So what said does is read in the script, starts at line one and deletes everything until it hits the word exit or a line beginning with the word exit.
+And then it outputs the rest.
+It said output then is everything after exit, which is all the function definitions.
+Those get read in by source so that they're defined before the functions are called.
+So that's my non portable solution to the non problem of moving functions to the end of a script without further ado.
+Let's move on to the first community submission.
+Hey, this is DNT. My snippet is about the shift command and bash.
+I first saw this on todo.sh, which is the to do text command line interface.
+And so what it does is it shifts the arguments that are given to your script by one.
+So all the arguments are available as like a dollar sign one, dollar sign two, dollar sign three, and so on.
+So the shift command will drop dollar sign one and it'll move dollar sign one into dollar sign excuse me, it'll move dollar sign two into dollar sign one, dollar sign three into dollar sign two, and so on.
+In my snippet, I used it within a loop and it was a script that I would run it followed by the times I was supposed to come in at work on some consecutive days.
+I would run it with a sequence of times and then it would loop through those arguments and create events starting at that time.
+So kind of interesting. I thought seems a bit unusual to me this shift command. That's what it does.
+This is coral again. I'm glad DNT picked the shift command to talk about because it's one of the ones that's like not really obvious just by the name of it what it's doing.
+And I tend to trip over it every time I'm reading through a script, but I think I'll remember it from now on.
+And also I'm not sure if he did it on purpose, but choosing a work example to illustrate the shift command was very appropriate, I thought.
+Now let's move on to our next contributor.
+Hey everybody, this is Clat 2. I want to talk to you about variables in shell scripts and how you can protect yourself from them.
+Well, I mean, they're not dangerous as such, but they can be. They can be surprisingly dangerous. And here's why.
+So for instance, let's say in a shell script you have a variable Foo and it is set to blah. Foo equals blah reasonable enough.
+So I'm going to do echo quote. Well, actually, you know what I'm going to do? I'm going to do echo dollar sign Foo.
+Pretty simple shell script. I'm going to save it. I'm going to run it. And I get just of course the word blah in my terminal.
+That's what I expected. So now I'm going to open that back up though. And I'm going to set Foo to blah space blah.
+So blah blah, but with a space between the two. And again run the show not run Emax again run the shell script.
+And this time I get an error. There's an error telling me that blah is not a valid command command is not found blah.
+Well, the reason for that of course, as you probably picked up possibly when I was saying it out loud, is that Foo equal blah.
+That's a valid statement. And then the space between blah and blah is telling the interpreter that of the code of the shell command that that's the end of that command.
+Foo equals blah was the end of that statement. And now there's a new statement, which is just the word blah.
+So white space is an important delimiter in shells. So you know, there's there are lots of different ways around that like one of the ways is just to do Foo equals quote blah space blah.
+And that gets you what you expect back out on the terminal. But the this is it's less about that as it is it's being indicative of the fact that sometimes the values of variables.
+The contents of those values can can throw things off a little bit. So I'm just going to set Foo back to blah just a single blah.
+And so to get around that a very common thing to do is to wrap your usage of the variable once you've declared it you wrap your variable in quotes.
+And then to further insulate your variable believe it or not you can also wrap your just the variable part in curly braces curly brackets.
+So that looks like echo space quote dollar sign curly brace Foo close curly brace close quote that is a pretty tightly bound variable.
+And it is relatively difficult actually let's not say relatively difficult let's say it's a little bit harder to sort of mess up the contents of something wrapped in so many layers.
+So that's the first sort of tip right there is to wrap your variables in a shell script in quotes and curly braces it's just it's a little bit more safer and it's also a little bit more consistent by which I mean once you start using fancy things fancy constructs like arrays.
+Then those braces are basically required you just have to have the braces around the array name when you start referencing components of that array.
+So it's a good it's just it's for consistency it's it's nice to have. But what I really wanted to talk about and that was just kind of a lead into it.
+What I really want to talk about are the the things that your variables get set to or or don't get set to this is a tip I picked up and I learned pretty early on from slack builds.
+And it is the colon. I think it's called a variable variable like testing or something like that variable was it variable.
+I don't know there's a term that I'm not remembering but like verification or whatever of of of a variable of a value.
+So colon and then there's a couple of things that you could remove that you could place after a colon when when you're talking about setting a variable.
+So for instance here's a cool trick and you'll see this in slack build scripts a lot or in every slack build script from slack builds or anyway.
+So for instance, let's say that I do something like food equals blah. But then again, I also kind of want to make sure that my user could I mean or or maybe this the user's system could set food if that had been set as an environment variable.
+For instance, maybe my user has food already set. I don't know what food is but pretend like it's like editor or or visual or or pager.
+You know any of the comments or if user level environment variables that a lot of people do actually customize in their dot bash RC file.
+Well, you might want your script to preserve that and if you just do something like food equals blah.
+Then you're you're insisting in your shell script that food is going to equal blah and if the user has something already set in their shell environment food equals them.
+Well, now you've just said food equals blah and you've ignored their preference. That's not very nice.
+So what I'm going to do is do a food equals dollar sign curly brace food colon dash and then some value for let's say blah again and then close curly brace.
+Now what what does that do? Well, let's just find out what that does and just in case it's not clear food must be the same.
+So when you're doing food equals dollar sign curly brace food those two foods have to match if it's a capital F O O then it has to be capital F O O in the second time.
+If it's all capitals and it needs to be all capitals all lowercase all lowercase so food equals dollar sign curly brace food again colon dash and then blah curly brace and then I'm going to say echo food.
+So now if I if I run this script as is I get blah as expected because that was the sort of the default value was blah.
+But watch what happens if I do something like food equals hello and then S H dot slash food dot S H. So I've just defined food in my in the environment that this shell is going to run in.
+I've just defined it so food equals hello S H dot slash food dot S H and now instead of blah in my terminal I get hello back because food was set just for this one command.
+I said a little environment variable temporary environment variable called food and I said it to hello my shell script because I used the syntax dollar sign curly brace food colon dash blah.
+What I'm saying is to set food to food unless food hasn't been set in which case said it to block that's what that that construct indicates.
+There are other ways of setting what food is in your in your terminal you don't have to do it on the same sort of as part of the command I could do export food equals world.
+Okay I just hit return so that's that's now an environment variable floating around in this shell session.
+And so if I do an S H dot slash food dot S H I get world back because I exported this new variable called food now I could unset food unset space food and then do S H dot slash food dot S H and I'm back to blah the old default value.
+So that's a helpful little construct when you're doing a shell script to ensure that a variable gets set to either what you think it should be or to trust the user and to let them set it themselves in their bash environment or in their shell environment.
+Okay one more way to test the validity of a variable and that is another colon something syntax and what I'm going to do is I'm going to come up with a scenario that could be a little bit dangerous.
+So I'm going to do food equals dollar sign curly brace food colon dash Bloss so Michael or curly brace and then I'm going to echo food but then I'm going to throw a wrench in it and do food equals quote quote.
+Okay so this is going to this is essentially unsetting food right and in fact I could just do that I could just say unset food in fact I'll do that okay unset food next I'm going to do an echo dollar sign no quote dollar sign curly brace food.
+Food close curly brace slash quote now this is pretty common in shell scripts where you're defining a path you might have a variable that gets set to some location on a hard drive where you want to install something or you want to
+write a file out to it or something like that and so because you don't want a hard code all the paths you make those paths consist largely of variables and that's I mean that's really common because something like let's say dollar sign
+yeah dollar sign home I mean that's an invaluable variable to be using in a shell script because that way you don't have to come up with your own you don't have to detect things
+yourself you just let the user's environment inform your shell script where home is and and home is often sometimes followed by a slash because then maybe you're
+descending into some other location within home what we don't think about sometimes though is what happens if one of those variables especially the first one is not set for some
+reason or it's set to an empty string or whatever well let's find out what what our little shell script does here so I'm going to do
+sh dot slash food it echoes out blah first but then remember after it does that I unset food to to nothing and now my second echo of food which should
+have been blah slash is just slash and you can imagine the kind of havoc that can reek on a system if you're writing a file out to dollar sign home slash
+dot local slash share slash config or something now suddenly you're writing it out to slash dot com dot local so a hidden directory at your root partition like what good is
+that going to do anyone not only is that annoying but it will also probably prompt the user for a root permission or or it will say
+that it's not able to write to the destination or whatever and of course there's the nightmare scenario where you do some kind of like I don't
+know really complex are in command to unprotected your root partition and remove all of the you know whatever like point is you probably
+didn't mean to set your variable to just slash or to just slash and then some other path you want a way to ensure that that
+doesn't happen even by accident so in your shell script after I unset food so I've got food equals blah echo food just to confirm
+that it's there and then unset food okay it's gone and then echo food slash to confirm that it's gone and I only have a slash now I'm going to do my final
+little demonstration here and that is going to be echo quote dollar sign curly quote food colon question mark curly brace slash
+close quote so I'm using the variable colon something notation again but instead of this time I'm not using a dash I'm using a question mark the
+question mark tests whether that variable has a value here's here's what that looks like if I run it I get blah so that was the test case that works
+and then I get slash so that's the unset food with just a slash and then I get an error online 10 food parameter is null or not set that's
+because the colon question mark detected that my attempted use of food in that play in that at that time was going to
+result in in something that I did not want I didn't want to allow the use of an empty variable and so my colon question mark protected me
+from that I mean it errors out which you know a lot of people kind of associate that with a problem but it's a lot better
+to error out then to say overwrite an important file at slash or to dump a bunch of unwanted files at slash or in the wrong
+path or whatever the situation would be when you have like an empty and unexpectedly empty variable and you can use both
+of those constructs the colon dash and the colon question mark I mean you can use that whenever you want to use it like it doesn't have to
+be just when setting a variable or something like that like you can use that that syntax anytime you use the variable where it's
+appropriate for you to either need a default value or you need to make sure that there is a value and that it's not
+unset or null those are my variable tips for shell scripts I hope they help you Carl here again that was all
+awesome information but there was one specific thing that I wanted to comment on because it ties in with the other topic
+I wanted to cover which also involves the colon but when it's used by itself outside of the curly braces that
+the colon when it's used as a command is a shell built in that is often used when you need to return a zero exit code meaning success
+I was already familiar with using the colon as sort of like a stand-in for true for example when you want to create an endless loop
+you might start it with while colon meaning while true or successful which would always evaluate to true and would always enter the do loop
+however I recently saw the colon used in a way that I wasn't as familiar with in tattoos segment he used the example
+foo equals dollar sign curly brace foo colon dash blah curly brace which sets the variable foo to blah only a foo is unset or set but null
+you can use the colon in place of foo equals to accomplish the same thing though note that it also requires a change to the syntax inside the curly braces
+so instead of foo equals you could put colon space dollar sign curly brace foo colon equals blah close curly brace
+the colon command decides always returning true or successful also has parameter expansion done on any arguments that are passed to it
+so in tattoos example by using the foo equals syntax he was explicitly stating that foo will either be assigned the value of foo
+provided foo already had a non null value and if it didn't if foo wasn't set or it was null foo would be assigned the value block
+if you have variation using the colon command inside the curly braces you have to change colon dash to colon equals so that when parameter expansion is performed it assigns the value of blah to foo rather than substituting the value of blah
+on pubs.opengroup.org there's a table under the parameter expansion section that lists all the different variations and conditions when a value gets assigned versus when a value is substituted
+I didn't quite get the difference between assignment and substitution in this context until I started putting this show together
+when using the colon command in this way just remember that parameter expansion has to do in assignment or it won't work
+you can use the colon to do arithmetic expansion also for example to increment a counter variable you could do colon space dollar sign open parent open parent
+i plus plus close parent close parent and that would increment the very the counter variable i by one
+that concludes the collaborative show on shell snippets I'd like to thank dnt and cla2 for their great submissions and this is Carl
+I'll see you next time
+you have been listening to hacker public radio at hacker public radio does work today show was contributed by a hbr listener like yourself
+if you ever thought of recording podcast and click on our contribute link to find out how easy it leads
+hosting for hbr has been kindly provided by an honest host.com, the internet archive and our syncs.net
+on this address status today show is released under creative commons
+attribution 4.0 international license

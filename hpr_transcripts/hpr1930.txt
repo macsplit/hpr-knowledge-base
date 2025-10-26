@@ -1,0 +1,116 @@
+Episode: 1930
+Title: HPR1930: A systemd primer
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1930/hpr1930.mp3
+Transcribed: 2025-10-18 11:16:16
+
+---
+
+This is HPR episode 1930 entitled, A System D Primer.
+It is hosted by Clinton Roy and is about 9 minutes long.
+The summary is an introduction to the modern Linux in its system.
+This episode of HPR is brought to you by AnanasThost.com.
+Get 15% discount on all shared hosting with the offer code HPR15.
+That's HPR15.
+Better web hosting that's honest and fair at AnanasThost.com.
+Hello everyone. My name is Clinton Roy. Recently, one of my work tasks has been converting our
+Sysv unit system to System D. I've come to really appreciate System D and
+gave a talk about it recently at my local user group. Humbok.
+Based in Brisbane, Queensland, Australia. The slides of this talk are linked from the show notes.
+System D is an init system for Linux services. When you boot a Linux system with System D installed,
+the first process will be System D. All other processes will be spawned underneath this process.
+At a slightly higher level, System D is the dependency system for Linux services.
+For example, if you've got a server hosting a website, you need your database to be started and
+ready for queries before your web server is started. At a slightly higher level, System D is a
+suite of basic Unix services that make a Linux system usable, services like virtual console
+management. At an even higher level, System D is starting to implement more basic user level
+services, like an NTP client, network management, timers and container management.
+Other Unix and Unix-like systems have their own init systems that can handle service dependencies.
+Solaris has the service management facility. MacOS X has launched D and until recently,
+Ubuntu had upstart. It's fair to say that Linux has been playing catch-up in this area until
+System D came along. I'm now fairly comfortable in saying that System D is a fair bit ahead of
+the alternatives that other operating systems currently have. Speaking just about the Linux world now,
+System D is replacing System D init, which models a Linux system as a ladder. At each
+rung of the ladder, more services are started, and the result of the booting process is declined
+at the top of the ladder. Each one of the services is started by a shell script, which means that
+each server script can easily do anything it likes. This also means that the init system is very
+constrained, as it is no proper way of determining what each shell script is doing.
+Linux Standard's base, or LSB, added some dependency management on top of this system,
+but oddly enough, System D is the first init system to properly implement LSB dependency
+management. Upstart is, at a distance, reasonably similar to System D, but it still allows
+configuration to be done by a scripting, and it still treats the system as a ladder.
+When talking about System D, it is possible to quickly overdo the terminology.
+The most important concept is that of the unit, which can be thought of as the atom of the
+System D world. The most common type of unit that we'll interact with is that of a service,
+like our database service or web service service. But there are units that describe mount points,
+network sockets, timers, and system resources. A usable Linux system will have hundreds of units,
+all activated because a dependency requires that unit to be activated. In order to group these
+units together in logical ways, one type of unit is the target, which is really just a collection
+of units. System D targets are the equivalent of the rungs on the sysv init ladder. The typical
+target that a Linux desktop machine boots to will be the graphical target, which will start GDM
+or KDM or something similar. The graphical target will depend on the multi-user target,
+which will start all the services to allow virtual consoles and login sessions.
+The multi-user target in turn relies on the basic target, which makes sure all the file systems
+are mounted and checked. The basic target relies on the sys init target, which does low-level
+things like mounting slash proc and starting new dev. From a design point of view, there are many
+advantages to System D over sysv init. System D uses plain text files to configure each unit,
+and simlinks to place units in targets. System D forces us to have explicit dependencies between
+our services, so you can think of System D like a make file, and every time you're booting,
+every dependency is being checked that it's up to date. So the entire boot system is being
+checked every boot. Because the dependencies between units are explicit, System D can start all units
+that don't have clashing dependencies in parallel, leading to very quick boot times.
+In these days, where every computer has multiple cores, starting everything serially is a waste of
+resources and your time. By requiring all configuration to be done by configuration files and not
+shell code, all the concerns are properly separated. It's really easy to tell what units have certain
+configuration settings applied. It's clear that System D has been used in a wide variety of
+use cases. There are a ton of options for tweaking service units start up. One of the interesting
+design decisions from System D is that every user that logs in gets their own System D service
+to manage their login session. From a sys admin point of view, there are a number of immediate
+advantages. If this sys admin wishes to tweak the startup configuration of a particular service,
+instead of modifying the upstream configuration, a shadow configuration file can be created.
+This shadow configuration file can inherit the upstream configuration file and add tweaks,
+or completely override it. Using this shadowing technique, it is trivial to ask System D to watch
+dog certain services. That is, to get System D to restart a service if it crashes. Once all the
+required changes are made, the administrator can use the System D Delta tool to quickly see what
+changes have been made from upstream. System D makes full use of Linux control groups, which gives
+the administrator full process and resource control. From a programming perspective, there are certain
+benefits. If a service is designed with System D in mind, it is possible to get System D to do a
+lot of error-prone work, particularly around binding to a privileged port, like a web server,
+and then changing the running user from root. It's easy to get System D to bind to the port,
+run our service as a non-root user, and pass the port along as a command line argument.
+It is also really easy to notify System D that your service has started and finished initialisation,
+and also to add a heartbeat to your service so that System D will restart it if it hangs.
+When it comes to provisioning virtual machines, System D has done a lot of base work for containers.
+It's almost trivial to turn a minimal setup, like the one you'd get from running the bootstrap,
+into a fully formed container with System D and spawn. I particularly like the System D will
+mount all the dev proc and sys file systems for you. For users, the main advantage System D gives
+is the fast boot up times. Once more services are designed with System D in mind, it'll be possible
+to start and stop more services on demand. For example, the printer service, CupsD,
+under System D will only be started once the user requests printing.
+Then, after a certain amount of time of not doing any printing, it can be turned off.
+As for disadvantages, the main one I come across is the fact that System D is still under heavy
+development, and long-term support releases necessarily have older out-of-date versions of System D,
+and are missing features I really want to have. Sentos 7, for example, has around 200 patches on
+their chosen version of System D. In my experience, the System D journal is rather slow and buggy.
+It's very nice in theory, but not so good in practice. There is a convenience
+target for internet access being available, but as this is actually external to the system,
+this is not a solid target that can be relied on, like other targets can be. System D uses
+D bus as its chosen form of inter-process communication. Unix is a graveyard of poor IPC mechanisms,
+and I don't think D bus is much better than what has gone before. The current moves to include
+D bus into the kernel probably mean we'll be stuck with it however. System D does make me feel
+uncomfortable with some stances I've taken previously, such that all projects should be portable
+to different Unix systems. System D is heavily reliant on many Linux kernel features.
+There are some very nice System D features that are reliant on having snapshotable file systems,
+specifically butter refits. One part of System D that I haven't played with much yet
+is network D, which brings the same clear configuration model to network and setup.
+I'm very much looking forward to it. In summary, the clear configuration model of System D
+is a big win for everyone, and I strongly encourage everyone to accept there will be a learning curve
+to anything new about your service. We'll thank you for it.
+You've been listening to HeccupublicRadio at HeccupublicRadio.org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HBR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing
+to find out how easy it really is. HeccupublicRadio was founded by the digital
+dog pound and the infonomican computer club, and is part of the binary revolution at binref.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website
+or record a follow-up episode yourself. Unless otherwise status, today's show is released under
+Creative Commons, Attribution, ShareLite, 3.0 license.

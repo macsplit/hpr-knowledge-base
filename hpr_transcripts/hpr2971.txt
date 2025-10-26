@@ -1,0 +1,488 @@
+Episode: 2971
+Title: HPR2971: World of Commodore 2019 Episode 2: Hacking GeckOS
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2971/hpr2971.mp3
+Transcribed: 2025-10-24 14:05:59
+
+---
+
+This is HPR episode 2,971 for Monday the 23rd of December 2019.
+Today's show is entitled, World of Commodore 2019 Episode 2, Hacking Geckos,
+and as part of the series, Hobby Electronics, it is hosted by Paul Quirk,
+and is about 49 minutes long, and carries a clean flag. The summer is. Glenn Holner explains
+how he got Linux running on a Commodore 64.
+This episode of HPR is brought to you by Ananasthos.com. Get 15% discount on all shared hosting
+with the offer code HPR15, that's HPR15.
+Better web hosting that's honest and fair, at Ananasthos.com.
+Hello, good people of Hacker Public Radio. This is Paul Quirk, and I've returned with my
+second episode of my World of Commodore mini-series. This episode features a presentation by Glenn
+Holmer, a retired Java programmer in Linux Amin, who lives in Milwaukee, Wisconsin, USA.
+He has a web page at lionlabs.org, and on December 7th, 2019, he was at World of Commodore
+to tell us how he got Linux running on a Commodore 64. Pictures of this presentation
+are available at my non-commercial, personal website at peakwork.com. This presentation
+included visuals that are not available in this audio podcast. If you'd like to see
+and hear this and other World of Commodore presentations, I recommend you go to the Toronto
+Pet Users Group YouTube page. That's Toronto Pet Users Group, spelt as one word without
+spaces, and the word users is plural. A link to this YouTube channel will be available
+in the show notes. And so, with no further ado, I present you Hacking Gecko S by Glenn
+Holmer. Hi, all. I'm Glenn, and I'm going to talk about Gecko S, which is the Unix
+like operating system for Commodore 64, and a couple of the other Commodore machines. I'm
+a 64 guy, and my interest is programming languages and operating systems. I've got a
+good collection, a lot of it's on my website there. And I've talked a lot of the Commodore
+shorts. I talk every year at DCF Midwest, and I've spoken at the Las Vegas, one of
+Las Vegas shows, the old C4 show. And of course, I've spoken at the premier Commodore
+conference, which is of course World of Commodore here in Toronto. Although I do have to say,
+Father, forgive me, it has been five years since my last World of Commodore. So I don't
+know how many Hail Jack Travelles, I'll have to say for that. And most of the talks
+I've given have been about programming languages. Although I've talked a couple of times about
+operating systems, but it's always been GS. So I said to myself, you know, there are other
+operating systems out there for the Commodore 64, and I should probably learn one and share
+some knowledge about it. And so I looked through my collection and I decided I was going
+to talk about GACO-S, which turned out to be a really good choice because of course this
+year is the 50th anniversary of Unix, which of course is like Annis rich and Gantan
+Thompson, the party hats on. And nice machine, PDP 11 Model 20. It's a pretty big honking machine
+there even for the early versions of Unix, right? So if you look at that, and then you
+think to yourself, if Unix on a Commodore 64, well, you might be forgiven if you had a reaction
+like this. But let's stop and think about it. Is it really that crazy? Let's, you know,
+you're not, you're, let's face, you're not going to get salirous or linux or BSD or anything
+like that running out of Commodore 64. But you might get something like the earlier Unix
+is that weren't quite as large as the modern ones are. So let's look at the machines that
+the early versions of Unix ran out. And by the way, these numbers come from Brian
+Kernahan's new book on the history of Unix, and Betty Redden had. Yeah, if you haven't
+read it, go out and get it. It's a great book. But the first version of Unix was written
+on a PDP 7. I think it's 16 kilobytes of memory. Now that's not exactly the exact number
+because the machine had 18 bit words and so forth. But I didn't think about that for a
+second, right? And then about a year later, they ported it to C-Langwoods and they ran
+it on that big conkin PDP 11 you just saw was 24 K. Good Lord. Wow. On a Commodore 64, we have,
+well, 64 K. Yeah, okay. We're covered in the memory department, right? How about processor speed?
+Well, that's a little harder to compare because the machines are really very different than
+there's, it's, you can't really make an Apple's to Apple's comparisons. But from the research I
+did, I got the impression that they really are comparable in speed between a Commodore 64 and
+PDP 11, but somebody by contradicting online, I'm sure, but at least it's in the ballpark, right? So
+memory, processor speed? Yeah, not that far away. However, the CPU itself, that's where the comparison
+kind of falls down because there are three big differences between the PDP 11 and a 6510.
+First of all, the PDP 11 had a user mode and a kernel mode. So there was some protection when
+the kernel was running that user programs couldn't stop all over it. And of course, there's nothing
+like that on a 65 or two. We don't have, you know, ring zero or ring three or anything like that.
+And second of all, the PDP 11 had eight 16-bit general registers.
+Okay, what do we got on a 65 or two? We have these three little tiny 8-bit registers, right?
+A cumulative X index, Y index, and those are not general registers. They all answered
+the different instructions, right? So yeah, the code is going to be difficult. And the third thing
+of course is the stack. PDP 11 had a register that said where the stack is. Which is what you
+need for multitasking because of course, that three program has to have its own stack.
+So it's a simple matter to change the value in that register and say, oh, well, now the stack is
+over here. Let's go over and run this program, right? Nothing like that on the 65 or two. Of course,
+where the stack is always at 0100 and there's no way to change it. So the coding is going to be
+a lot more complicated. But as far as resources are concerned, it's not that crazy. It's not that
+crazy an idea. So let's talk a little bit about the ECHO-S starting with this history. How many
+people here know who Andre Fushat is? He's the guy who wrote ECHO-S. I see a few pants going up.
+I would expect more. But Andre of course is known particularly as an expert on the older
+machines like the pets and so forth. And I would expect that at the Toronto pet users group,
+there would be people to know who he is. But anyway, Andre works for IBM over in Germany.
+And he originally wrote ECHO-S to run on a machine that he built himself. He built a 65 or two
+machine. And that machine had a memory management unit and supported up to a megabyte of memory.
+So it didn't have quite the restrictions that you would see on, for example, a Commodore 64.
+But he did later port it to run on some of the Commodore machines. It'll run on a pet,
+even a 32k pet. It'll run on an 82.96, which of course is the most beautiful machine ever created.
+And it'll run on a Commodore 64, which is what I'm going to talk about. So as I talk about the
+details of this, just bear in mind that they might be slightly different from one version to another.
+Now, development on ECHO-S is extremely actively, especially within the last month or so.
+And I think it might be partly my fault that this happened because as I was studying ECHO-S and
+learning it and preparing for the first presentation I gave at BCF Midwest in Chicago, I was corresponding
+with Andre. And I was asking questions and stuff. And every so often he'd say, well, I really
+should get back into ECHO-S. Well, he has. And everything is changing really fast. If you look at
+the commits on GitHub, there's just this long list of the things that have been changed and improved
+and added. So the source is GPL. It's freely available. It's on GitHub. The other coordinates
+on it is repo. So if you want, you can check out the latest branch or the latest stable release
+and build it yourself and run it on your own machine. It's trivially easy to build,
+well, the serving Linux it is, but it's really not hard to build it at all. In fact, when I do my
+demo, I'm going to do a clean and build with the entire operating system before and you won't
+believe what fast it is. So let's, oh yes, I have one more picture here. This is one version of
+the machine that Gekos originally was written to run on. Wouldn't you love that or something
+that looked like that? I love that picture. And this is the one with the MMU and supporting
+megabyte of memory. Anyway, let's now talk about the features of Gekos. Now, looking at all the
+stuff on this list, again, you might be forgiven. If your mind goes back to that other slide and you
+start thinking, are you crazy? But honestly, God, it's got all these things and I'll be
+demoing most of them in just a minute. First of all, Gekos is a preemptively multi-passing operating
+system. It really is. It's not a, you know, it's not some trick or anything. It's really
+preemptively multi-passing. It's got a scheduler that runs at interrupt time based on a timer interrupt.
+In fact, not only is it multi-tasking, preemptively multi-tasking, but it's got task priorities.
+The kernel has a nice API so that you can drop your priority and let somebody else run more.
+It's even got multi-threading. It's a, by default, every thread, every process, every task that is
+has one active thread, but you can start other threads, or you can just fork into tasks.
+It's got virtual consoles. Now, Linux users are probably familiar with this. On Linux, if you
+were to control all DEF1, it drops you down to a full-screen console and you can go control all DEF2 and
+so on. Linux users usually ships with a half a dozen consoles. There are four on Gekos and you
+can just tap F1 to cycle between it. It's got signals. One process can send a signal to another
+process. It's got semaphores, which are very important in Gekos because of the lack of hardware
+protection. So you'd have semaphores that are defined by the operating system that refer to,
+for example, a certain area of memory, or a certain device, or the serial lesson general. A lot
+of the kernel APIs require you to lock a certain semaphore first before you call an API so that nobody
+gets, nobody else gets in there and does something you shouldn't do. Again, that's because there's
+just no protection against this kind of thing on the 65-2. The shell has both background and
+redirection. I'll be showing those. It's got piping. Piping as far as I can tell was broke for a long
+time and I'm really just submitted some patches to get it to work again, but that was like literally
+within the past couple days and I think it still has an issue with certain programs, so I won't
+be showing that, but I'm sure it'll get fixed within the next few days. It's got environmental
+variables. I'm not going to show that either, but there's a single environment on the commoner 64
+version as opposed to an environment per task. And then it has a relocatable file format, which is
+something that Audrey came up with. And of course, that's very important in a multitasking operating
+system because you don't know where your program is going to load. Your program might load here
+here today and tomorrow there might be something else running there and it loads over here.
+So you can't have any absolute addresses and you're executable. What happens is when the system
+loads a program into memory before it runs it, it does an address fix up based on the load address
+so that all the addresses match up. So that's very important and that'll come up again later in the
+discussion. So having set all this wonderful stuff and brag about all the stuff that Gedguis can do,
+I guess I better put my money where my mom is to do a demo. So I hope you don't mind,
+I'm going to do the demo using rice, but Leap and I worked it out so that we're going to have a
+describe sound. So it's going to be close, but not a real machine. The thing is if you're doing
+operating system work on a commoner 64, you're pretty well going to have to use cross-evolvement
+tools and amulators any week because it's just too unvealed the other ways. I'm normally very
+disapproving of that sort of thing but you know all bets are off of the operating system.
+So here's what I'm going to be showing and like I say this is a very recent build of Gedguis,
+it's not the most recent build because I had to cut it off. I think Monday or so
+because things were changing so fast I could just need this. I needed to know what version I was
+going to be running. Yeah and here's all this stuff I'm going to be showing. The highlight is going
+to be most of this stuff has been in Gedguis for years now, but the highlight is going to be the
+new PS and kill commands and I'll show how those were developed and how they weren't about that.
+So let's go over here and I've got vice running. So I'm going to actually
+know I said I was going to build it from scratch didn't I? So let's do this and then let's do this.
+I've got a little script I use and I'm going to do a complete clean and build of the operating
+system and then bring it up in the vice monitor. That should take a long time, right?
+Or not. That was it. Now when you start get OS there's a basic loader that loads a large
+kernel image and then it loads a little tiny machine language like you're like this. Then it loads
+a little tiny machine language stuff and passes control to it and that little stub disperses the
+kernel image into upper memory above below the IO layer and then it starts it up and the magic
+begins. Here we go. There is our boot screen so now we have a real a for really real
+unique slight operating system running on a pretend Commodore 64. Notice when it starts up that
+there are five things starting. There is init. There are two file system device drivers. There's
+one that controls the devices and one that's specific with the IEC bus and then there are two
+shelves. The one says shell and the second one says LSH which stands for library shell because it's
+as a standard library. That older shell is considered more or less obsolete and it's not really
+supported anymore but it still has for a tad until the features that weren't in the new shell
+which is the one that we're looking at now. So that stuff is gradually being ported over to
+the new shell and I think at some point that over one is going to be deprecated. But where is
+that older shell? We're only seeing one of course. I don't remember I said it has virtual
+consoles right so if I tap F1 there it is. There's the other shell. That's the old one. Nothing
+on three, nothing on four so let's go back to one. And then older shell they're both loaded
+at boot time and that older shell actually includes a built-in machine language. You can imagine
+that it's using a lot of memory. So that's not a small piece of code name.
+But let's go back to that first shell and I want to show you that GECOS has a lot of the things
+you would expect in a Linux-like operating system starting with a real and of course you can do
+something like this. And there you go. The file sizes of course are actual number of bytes used
+on the disk, not the file size itself. It's a number of sectors used times 256. And you know it even
+has, I'm not sure I'm going to device this would be applicable but it's got you can put more
+else on it and get a display with more stuff. And this is kind of like the full-mod
+version of LS and we'll see if yeah. I'm a 1540 watercolor so this doesn't even apply.
+So you can also do something like for example this does what you would expect.
+Okay, so those are going to be missing my cat. He's the best cat a boy ever had. He's never ever
+known. And remember I said it has a redirectional whistleboard.
+Okay, you hear the disk drive running because it's ready to file out. Nothing came out on
+standard output. And of course if we want to see where the output went we can count that file.
+And the output wouldn't exactly where we would expect it to go. So you know you can look through
+the directory and play around with some of the other things it's got. As of very recently we
+like the past few weeks it's now got a more command. It's got a WC command word count. So there's
+a lot of other stuff. But I'd like to show some demo programs that I wrote for Gekos that are
+showing the more internal features of it that I was described before. And there are three little
+demos all of which involve two programs. The first program is going to fork a second program
+when it starts and then there's going to be some interaction between those two programs.
+So the first one demonstrates forking and multitasking. So I have these two programs.
+This program when it starts up is going to fork a second program and then second program being
+forked. It's going to start flashing the border slowly. Well you see the first program is still running.
+Eventually the first program ends, second program is still running and eventually the second
+program ends. So you can see that the multitasking is very smooth. We had a constant pulsing of the
+border when it was changing colors and everything. So everything the multitasking works extremely well.
+Second demo is signal passing, sending a signal from one process to another.
+So this first program, the two programs are six send and six receive. The first program
+works the second program and when the second program starts, he's going to register a signal hand
+alert. It says setting mask there and it just goes off the top. But the first program mean title
+printed a message saying hit a key when you want me to send a signal. And then that second program
+he's just going in the timer loop waiting for that signal to be sent. So if I hit a key,
+that first program sent sig user one and then ended and the second program received the signal.
+So that has all kinds of interesting possibilities. There was a guy at the Chicago store who said,
+I'm going to write a battleship, he uses signal passing to get to do the stuff.
+Then there are the third demo is the semiforce and I talk about the importance of semiforce. So
+here's an example of that. First program, when he starts up, he's going to lock an arbitrary
+semiforce named sendem. Then he's going to report that second program called sem wait.
+And of course, the first program says, by the way, hit a key when you want me to free it. But meanwhile,
+he's got a lock on that semiforce. And the second program says, well, okay, I'm waiting because the
+second program is trying to do the same thing. He's trying to lock that same semiforce. But of course,
+he's going to get an error message saying, you know, that semiforce is in use. So when I hit a key,
+the first program frees that semiforce and then ends. And when the second program comes up and gets
+his slice and gets a chance to run again, he's going to try again. And this time he did acquire the
+lock. And of course, when he's done, he's reased the semiforce and ends. So if you're writing programs
+for gecoest that involves semiforce locking, make sure you release the semiforce afterwards. Otherwise,
+there will be pain and suffering. So those are the demos that I wanted to show, except that there's
+one more demo. That forking and multitasking demo, there's another version of that demo. Because
+when I first got that running, I was so excited that I actually made a video of it. I posted a link
+to the video at IRC and leaves all that video. And he said, well, it's all well and good. But
+you really want to do his background, the whole demo, and then take a directory listing while it
+was running, right? And my reaction was basically, you know, are you crazy? But I thought, you know,
+what's the cap, and I should try it, right? And with gecoest, you'll see that it happened over
+and over again. You might come up with some crazy idea, think, well, I wouldn't work, but you try
+it, and it does work. It happens all the time. So I'm going to do a slightly different version of
+what I call the schema demo. And instead of taking a directory listing, I'm going to ask for a
+process list, which is a good segue into this new PS token that we have. So here's the forking
+demo again. And this time, I'm going to background it. And when I get my cursor back,
+I'm going to ask for a process list. So they're forking is running, the second program is flashing
+the board, and we have a process listing, and then one by one, the other programs they have.
+This guy's still running. All right, so we had, and I don't know what the error message is,
+something that came up recently. It doesn't hurt anything right now, but I'll figure it out.
+And anyway, look at this process list. This is a thing of beauty right here.
+We have on the left-hand column, the PID, the process ID, and as it turns out, the process ID is
+actually an index into the task table. So by looking at it, we can see that the task table has 12
+by entries, because it goes up to 12 every time. And then in the second column, of course,
+we have the name of the process, which you need to know. And then you have, and by the way,
+that name is new that didn't used to be there, then there's the exact address, which is also new,
+and you have to go to the exact address of the program to debug it. Because remember before,
+I was talking about how you have relocatable programs, and you don't know what the addresses
+of your routines are until the program gets loaded and relocated. So you might have, you know,
+say you have a routine called, you know, my Groovy routine, and you want to put a break point on it.
+And you assemble your program, and you look at the listing, and it says, well, my Groovy routine is
+at 0100. Well, it's not at 0100. It's at offset 0100 from the beginning of the program.
+So you have to take the loaded address of the program, add the offset, and that's where you
+sit at break point. So you need to know the exact address. And again, that's something new.
+Next column is a number of active threads. A number of body fault. I said that every cast has one
+active thread. And then that next one is really interesting. I love that next column. It's
+parent PID. So the first one in it, of course, is me, it was the primary processes. And he really
+has no panic. He gets started up by the kernel in root time. So he's got a parent of FF.
+And remember when we saw Gecko as starting, and there were five things that started up in it,
+two file system device drivers and two shells. So we can see that those are the first five entries.
+And those second four all have a parent of 0, which means they were started in turn by in it.
+Now we see that 3-0 is the shell, the one we're looking at. And I started forking from the
+command line. So forking has a parent of 3-0, which is the shell. And forking, forked, forked,
+and forked therefore has a parent PID of 3 Charlie. That makes sense. And then when I got my cursor
+I typed PS at the command line. So PS has a parent of 3, the shell, not 3-0. So that is very
+interesting information to have. SM is the signal mask for passing signals. So it's what signals
+of program is prepared to respond to. And SIG A is the signal handler address,
+another is the address that gets jumped to when the signal was received. Those last four are
+all the same because, and I just learned this, the standard library actually multiplexes those,
+and they all go to the same place and the fans off from there. And then of course we have the input
+output in there. So I'm going to talk the deck of the last part of this talk is how we got the name
+and the executive address in there, which didn't used to be in there before. And I'm going to take
+a one-slade detour to show you the kill program, which was in the old shell too, but it's got a
+few more features now, and I know what I'm going to do before it. And I got it accepted into the
+kernel, into the master branch, and I'm very excited about that. So what I'm going to do is,
+I'm going to go over here, and I'm going to start up the second half of that signal passing
+bell. This is the program that sits here waiting for somebody to send to the signal and just goes
+on the loop going, I'm here, I'm here, I'm waiting, I'm waiting, let's go back here. Now who knows
+what the kill command does? Yes sir, kills a process. And put in the dumps cap and go sit by the
+principal's office, sir. Sends a signal exactly. Now by default it sends a signal that will probably
+kill the process that's receiving the signal. It sends by default a signal. And that may not kill
+the process, depending on if it's going wild, it may not kill it. So in that case you might want
+to send a signal kill, which of course is signal number nine, which is where we get the expression kill
+dash nine, which even little girls who go to Jurassic Park know how to use. So I, the original
+version of kill in Gecko has just did a kill, and I changed it so that it could send any arbitrary
+process. So let's go over here and look. Oh, yep, still waiting to go. So let's send him a signal,
+but first we need to know what his PID is. So we'll take a process listening.
+And we'll see that there is Sig received. He's had three Charlie. So I'm going to send
+it. I'm going to set a sig break signal to process three Charlie.
+Well, let's get over there and watch this happen. I think those consoles wonderful.
+And we'll see that, in fact, he did receive a signal one zero, which happens to be sig break.
+Great, work as expected. Now I'm going to start him up one more time.
+And this time, and he's going to have the same PID. He'll get the same slot over again.
+And now I'm going to send him a kill dash nine. Now, as it happens, nine is not the number for
+sig kill in Gecko's. In fact, sig kill is not as implemented in Gecko's, but that's okay.
+Kill dash nine is tradition, right? So yeah. If you send him a kill dash nine,
+well, let's watch and see what happens.
+Boom. He's got a fork and he never even prints a message saying I got a signal because he
+didn't get a signal. We just got his head chopped off. So that's the new stuff that's in
+Gecko's. This PS and kill man. And now comes the kind of heavy duty part of the talk where I
+talked about how we got there, how we got those, those new fields. So to understand how the name
+and the process, the name and the exact address were added, we have to understand first how the
+PS command works in Gecko's. So here's the old one, first of all. This is from the old shell,
+and this is an earlier build of Gecko SS 2.09 release that came out in 2013, I think.
+What's wrong with this picture? Well, first of all, we don't have any names. Well, you have one
+name, but what's at PID zero? I guarantee you it's a net. I guarantee you it's a net, right? It's
+not, it's not the challenge in it. So there's something there that could be improved and we don't have
+the start address of each process. Like I said, if you want to the start address,
+you can't really do meaningful debugging. There are other ways around that, but they're a little
+quite big. So let's talk first about how the PS command works. Now, all this information that
+PS printed out comes from the kernel's task table, but it's really not appropriate for an end user
+program like PS to go stickiness fingers in the task table. That's kind of forbidden fruit,
+doesn't work. The kernel shouldn't, you know, you should, you shouldn't be sticking your fingers
+in the kernel's data structure, basically. But on a 6502, there's no way to prevent that.
+Your program could, by adding a right include files, figure out fairly easy where the task
+table is, but you shouldn't do it. You can't prevent it, but you shouldn't do it. So what happens
+is that there's a kernel API called GetInfo, and that's what PS calls. PS calls into the kernel,
+and he calls GetInfo, and GetInfo says, okay, I'm going to look at my little task table here. He
+grabs information and he builds a table someplace for PS to read. Well, that's part of the story.
+The place he builds that table is called the program communication buffer or PC buff for short.
+Remember what I said about semaphores? You could have other processes that are, that are making
+kernel calls that use that PC buff at the same time. That would be a bad thing, right? So what
+really happens is the first thing PS does, he locks the semaphore that refers to the PC buff.
+Then he calls into the kernel, he calls GetInfo, the kernel looks in his task table,
+builds a table in the PC buff, PS reads it, and prints the results for screen. So that's the way it
+works. Now, how do we get the name and the start address from the task table into the PC buff?
+Well, I looked at this, and I thought to myself, I bet I can call it that. You know what? I like to do
+this, but I'm still pretty leery of the Gekos kernel, because it's quite complex. It's really
+quite complex, and so I thought to myself, maybe I could add this stuff by just changing GetInfo
+and the way it gets in forward, and not actually touching the rest of the kernel itself.
+And that would make it easier, right? So if you've ever done any amount of program,
+you know that that kind of thinking invariably ends up with something that's 10 times as complicated
+as what you originally wanted to do. But that's what I did. So I thought to myself, okay, I've got
+two classes of programs I want to get the name for. One is the standard library programs that are
+started by the shell, and the one is those five programs that we saw started by the kernel
+when it started up, the voice drivers, the shells, and the end. So for the standard library programs
+I did little digging, and I found that in the task table, one of the entries is a pointer to another
+table. It's a per-processed table that's used by the standard library, and it contains them on
+other things the name of the program. So I'm like, God, wow, that was easy. I'm all free.
+All you got to do is when you call Gekos, he follows that link to the standard library's table,
+he pulls up the name, plops it in the new field, and the task table, and we're all good, right?
+Well, not really, because just like user programs shouldn't be sticking their fingers in the
+kernel's data structure, the kernel shouldn't be sticking to his fingers in the standard library's
+data structure either. And that's one of the things about Gekos. It's written properly. Everything
+is done right. You know, you could clutch your way around this like I was trying to do, but it's
+not the right way to do it. The kernel, I mean there's a reason we call it the kernel, right? The
+kernel means like the core, the seed of something, and it should be an entity unto itself and not
+even care or even know about the standard library. It shouldn't even have to know there is a standard
+library. So that's not a good idea. It works, but it's not the right way to do it. All right,
+shot down on that one. Then we have, where we really went off the rails, we have in it,
+and the device drivers and the stuff that gets started at boot time. Well, I had a look at how
+the operating system starts. And the way it starts is that you have this big kernel image in
+memory. And at the beginning, there's a header followed by one of these programs. Then there's
+another header somewhere else followed by a program and another header somewhere else. And
+they're in any arbitrary order. You can't control it order, they're in the end. But each one of
+those headers points to the next one. It's a linked list, right? So I thought, well,
+looking at those headers, I see that just what the name is in the header, FSDab, FSIEC,
+and whatever. So I thought, well, if I walk through those tables, I can just grab the name out of
+there and I'll be good, right? It doesn't work. It doesn't work. And the reason it doesn't work
+is that the kernel has a, well, it works, but the kernel has a fairly complicated way of going
+through things. The question is, how do you get the right one of these programs with the right
+process ID? And the only way I could think of to do it was to walk through those tables in the same
+order that the kernel does when it starts up. Now, one of the things in the header is a program type
+byte, which is a bitmap, bitmap. And what the kernel does is it walks through there and it starts
+certain programs in a certain order. I want to look, I want to start for a program that's of type
+in it. I want to start a program that's of type file system, right? And it makes multiple
+passes going through all these programs. So what you'd have to do is you'd have to go through
+there the exact same order that the kernel start up does and make multiple passes, but if you do
+it exactly the right order, the names you come up with will match up one to one with the process
+ID. Oh, boy. Okay. At this point, I really off the rails because this is just not something
+you should do. Andre looked at that code and he said, I can't look at that for quite some time
+to figure out what you're even trying to do. So yeah, that works, but it's a filthy clutch.
+Apart from which, if the way the kernel starts changes even slightly, that whole thing's
+going to fall down on the space. So, okay, both types of programs that I was looking for the names
+where I came up with solutions that actually worked or seemed to work, but it was just a completely
+wrong way to go about it. And as it turns out, going about at the right way by making subtle changes
+to the kernel, turns out to be much easier. And these are the patches that Andre did. And this is
+what's in GeckoS right now. So, as it turns out, of course, every single process that starts on
+GeckoS has to go through the kernel for API. Fork is what starts a new process. It allocates another
+entry in the task table. It creates a stack. It does all this other kind of housekeeping and then
+it passes control to the new process. And guess what? What are the parameters you passed a fork
+among other things? A name and an executive rest. So, it's already there. The kernels already got it.
+So, all the kernels got to do is plug that value into the new fields in the task table.
+When it starts a program, right? Easy. It should be easy, right? No. And the reason that's not easy
+is because standard library programs pull a little trick. They put a stream number in the first
+bite of the file name field and the file name actually starts in the second place. So, if you let
+that go, every standard library program would have an unpredictable character at the beginning of
+the file name. But as it turns out, there's a very easy, and by the way, more on that
+stream number, it's passing that way later. But as it turns out, there's a very easy fix to that
+because the standard library was not using all the possible parameters that the fork routine takes
+when you call it. And you could use one of those parameters to pass that stream number. So,
+that works out okay. That was just all fairly straightforward. I looked at the code when it was
+committed, and I was like, oh, why did I think of that? And then adding the ones for the kernel
+programs, that's simple because they're already there, and they're already perfect. The only
+exception being that in it originally actually went out of its way to put a null wipe in the
+name field. But there's no reason to mention pipes in the world. Now, adding the exact address,
+we've got the name thing solved. Adding the exact address, let's see. The exact address is also
+passed to fork. So again, you could just plop it right in and it would work. All for the program
+started by the kernel, that's true. But again, we have an issue with the standard library. Now,
+this one's really crazy. Yes, the reason it doesn't, the reason it's not quite going to work with
+the standard library is that the way the standard library starts a program is that it does the
+little housekeeping stuff. It calls for it to create a new process. And then after that call,
+it lobes the program from disk and path and relocates it and passes control to it.
+What's wrong with that picture? How can it load and run the program if it's already called fork,
+which starts the process? It hasn't even been loaded from disk yet. But here's how that's done.
+Here's the code that in the standard library, which is set everything up and called fork. And as
+a started address, he passes the code a little bit further out in the standard library, which does
+the loading and the relocation. So he calls for fork sets up a new process and everything and then
+passes control to it with the address given, but the address given is within the standard library,
+which is the routine that does the loading and the relocating. But as far as the kernel is concerned,
+the new process is already running except that it isn't because it's the standard library. But once
+he loads the program, relocates it, now he knows the started address, he passes control to it,
+boom, here we go. Oh, what this is great. How wonderful he went, he was some code, right at that point
+when he's done loading and he's about to pass control because now he knows the started address.
+Fine, plug it right into the pass table. No, the standard library mustn't stick his fingers into
+the kernel's task table, right? Again, we have that problem. So the solution to that one turn out
+to be that Andre added a new API to the kernel called setinfo. Now we have to get info and we have setinfo
+and setinfo allows the active task to set its own started address in the task table.
+And remember, the active process at that point was really not the process that's going to start.
+It's still the standard library which is loading because it's called fork with its own address and fork
+thinks the new process is starting and it gets this far, it knows the address, it plugs it in and then
+it jumps to the program so it all works out anyways. I don't know if I explained that well or not but
+this is pretty crazy stuff but this is the kind of stuff that you experience when you're when you're
+dealing with something on the operating system. And even something like EchoS that runs on a fairly
+small machine, there's a lot of complexity there but it was a lot of fun and there's the solution
+we have a setinfo. So this is great stuff. This is wonderful stuff. And now that we have this PS
+and kill, we can do almost anything because we can debug our programs beautifully. In fact,
+it's a new goal to me into EchoS I think to call it because now all the things that have been on
+a list can be moved forward. First of all, I think there's a little of anything that's still in
+the old shell that's not in the new shell so it could probably be deprecated pretty soon. You just
+have the new shell. You might still want to have two of them running, right? But you wouldn't have
+to have that old shell with the machine language modern ability which by the way you can load from
+disk even now. Another thing, what are some things we could do with EchoS? We could have better
+support for CMD hard drive. So remember that long listing I showed you with the file timestamp
+and everything? Well, CMD hard drive has a timestamp but get West doesn't know where to find it so
+that would be interesting. The one that interests me most is imagine how many people are familiar with
+the 50-41 ultimate? Two plus a lot of hands go on. Okay. That machine, as you know, has an ethernet port
+and what might be a little less well known is that there is an API that you can call you,
+you can push some registers and stuff and you can actually open a socket and talk to another
+machine and you can write your own networking programs. Imagine a vice driver for the 50-41
+ultimate networking capabilities within the EchoS. I don't know if I have the chops to do that
+but I like to try. Another thing you may have noticed that the disk access is not particularly fast
+in the EchoS. It doesn't of course have GIF you do have less but maybe there's a way to speed
+that up and there are some other things involved to involve in buffering and those are known
+issues that might get worked out later on. It's a big deal. And of course your project here,
+what I found when I gave a talk on the EchoS in Chicago was that all these people can have
+coming up to my table and say, oh wow, I could do that. You don't like the guy who said he wanted
+around writing a battleship program. Imagine all the different stuff you could do.
+So if you're interested in working with EchoS and writing your own programs for it,
+if you know 65 or something, 65 or two assembly, it's not hard at all. If you look at those
+demo programs I showed, all of the stuff that actually was happening in those like the forking
+and the signal sending and the cell four locking and all that stuff, it's all just a few lines of
+code and most of those programs are like waiting on a timer loop, printing stuff to the screen,
+error hand learning all it's like 90% fluff and just a few lines of code. So it's really
+easier write programs for GIF if you're interested. Have a look at it.
+Here's the resources slide and I'm going to post these slides on my website right after you
+back to my table. But the bottom one is interesting and that is the commentary that I wrote on the
+internals of GIF which is not finished and will never be finished because there's so much to learn.
+But this the name of course is a play on words from Professor Lyon's commentary on women's
+right. So I wrote this commentary and it's a very detailed description of the internals of
+GIF. Tell us about what happens when the operating system is started. It talks yeah I'll post this
+on my site. It starts it talks about what happens when the operating system is started, how the
+scheduler works, how programs get loaded by the shell and all those different stuff in
+men's detail of file names are nine authors. So if you're interested in learning the internals
+of GIFs, have a look at my commentary and that'll help you get a leg up and learn where wrongs
+and probably go further back. Okay having said all that we come to a slide that says questions.
+Does anybody have any questions about GIFs? Yes. Would it be even hypothetically possible to get
+something like CC6502 building GIFs like relocatable images? Are you like the sea compiler?
+You're talking about doing it in the sea. Yeah. The question was is it possible to write
+programs in sea for GIFs using CC65? I guess all I can say is good luck with that.
+It would require it would require CC65 to know how to generate an executable in that relocatable
+format. That would be the main time. I guess it would. I don't know. The answer I gave
+to Chicago. I got the same question to Chicago and the answer I gave is well real men quote me
+somewhere. But yeah it's theoretically possible. Anybody else have a question?
+What's the role of that? I see 128 portability there. Yeah that's another question that came up
+and somebody asked about Atari and that and all this other stuff. Theoretically you could write
+it for almost any 6502 program and if you look at the source code there's a directly called
+ARCH. So there's ARCH C64 and ARCH PET and ARCH 8296 or whatever. There's also an ARCH
+proto-sub directory that has basically like a clean slate version of what you would need to do
+to port to a new architecture. But I don't want you to have any false hopes about that because
+it would not be straightforward. It's certainly doable. But I have by the way complete
+printout of the Ganko S source code back up my table heavily highlighted and penciled in with
+markings and stuff like that. And if you have a look at that you'll see that it's just littered
+with a lot of defines and if deaths and so on and so forth. So it's already fairly complicated
+adding additional architectures while certainly possible. It would not be a small undertaking.
+But yeah it's certainly possible. You could write a version for the 128 or whatever
+machine is author. Anybody else? All right. In that case thank you very much for your kind of
+tension ladies and gentlemen. I hope you enjoyed Glenn's presentation as much as I did.
+Please tune in next week to hear Dr. Richard Emmer's presentation entitled Life After Commodore.
+Until then, please drive safe and make sure to have fun.
+You've been listening to Hecker Public Radio at Hecker Public Radio dot org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HBR listener like yourself.
+If you ever thought of recording a podcast then click on our contributing to find out
+how easy it really is. Hecker Public Radio was founded by the digital dog pound and the
+infonomican computer club and is part of the binary revolution at binwreff.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website
+or record a follow-up episode yourself. Unless otherwise stated, today's show is released on
+creative comments, attribution, share a light, 3.0 license.

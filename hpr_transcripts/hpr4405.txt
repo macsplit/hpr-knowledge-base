@@ -1,0 +1,568 @@
+Episode: 4405
+Title: HPR4405: What did I do at work today?
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4405/hpr4405.mp3
+Transcribed: 2025-10-26 00:20:53
+
+---
+
+This is Hacker Public Radio Episode 4405 for Friday the 20th of June 2025.
+Today's show is entitled, What did I do at work today?
+It is hosted by Lee and is about 70 minutes long.
+It carries an explicit flag.
+The summary is, Lee does some coding and testing for a class library that accesses a database.
+You are listening to a show from the Reserve Q. We are airing it now because we had free
+slots that were not filled.
+This is a community project that needs listeners to contribute shows in order to survive.
+Please consider recording a show for Hacker Public Radio.
+Hello, I'm Lee.
+Today I'll be developing software for my employer.
+I'll go through in real time each of the stages in a typical session.
+These will include writing the software, writing tests, testing and committing changes to
+a remote repository.
+The context of this software is that it's a web application which acts as a database
+for multiple mechanics within this system.
+I'll be looking at creating code that handles aspects of resource allocation.
+Okay folks, here we are.
+We've just lit up a virtual machine.
+It's got Windows 1124H2.
+There's this app called Virtual Machine Manager running on KDE.
+There's a QMU strobe KVM instance of a machine called Win11 and that's running.
+This is all running through the wonders of LibFur.
+I would say LibFur is the thing for doing virtual machine stuff on Linux.
+You can install it on physical Linux machines to create a virtual machine.
+What I reckon is KVM is a hypervisor, QMU quick emulator.
+This opens all software for creating emulation and virtual machine environments.
+KVM is a type 1 hypervisor, QMU is an emulator, KVM does the CPU virtualization and QMU emulates
+other hardware devices.
+It's a bit like the GNU Linux, where Linux is the kernel and GNU is everything else.
+In this case, KVM is the kernel and QMU is everything else.
+So here's Windows 11, I've powered up Visual Studio and here on my right you see it's
+two monitors here and by some miracle, the virtual machine is running on both of them because
+hey, we've set up two different virtual displays, one for each monitor.
+So I'm viewing this thing at not through virtual machine manager, instead I've run
+VRT Viewer.
+So VRT Viewer is allowing us to see what's going on in this Windows virtual machine and
+just for ships and giggles, let's run task manager.
+It records it's an AMD Ryzen 3950X 16 core processor, which it is.
+It records it's got two sockets and two virtual processors, which is bullshit, but that's
+what it thinks it's got and that's what it's got.
+So the CPU is supposedly running a 3.5 gigahertz, it's supposedly got 16 gigabytes of memory
+and that's the fact this machine has got 64.
+This seems to be an SSD on DriveC, capacity is 500 gigabytes, I happen to know that the
+real SSD is one terabyte if I recall correctly.
+So obviously half of that is allocated to this virtual disk and just so runs as best it
+can, this is actually a reward, this skim itch, it's not a QK or anything like that.
+And then there's FNAT and I have it to have a zero tier running as well and it records
+my IP addresses, some weird friggin thing like 19216812255.
+I know this machine is 192168.180, the actual real machine.
+On the right screen I have my tests and on the left screen, so this is my class library
+on the left.
+These are just two solutions in Visual Studio and recently I've added on this class library
+a class called staff and a class called role and a class called resource.
+I reckon we should have a resource type class, class for types of resource.
+I were really going to explaining the domain of this, really what it's all about is to
+do with an auto garage, it's a generic set of classes for an auto garage, it's not
+so hypothetical, there are hundreds of them using the software apparently or so I've
+been told.
+So add a new item and this will be a visual basic class because all the cool kids program
+still in Visual Basic and not even on net core on net framework, just to explain that
+everyone for the last 10 years I guess it's been using net core and some reason I'm using
+net framework.
+And everyone for the last 10 years I've been using C-sharp longer than 10 years, some
+reason I'm using Visual Basic, it will compile down to the same bytecode so half a dozen
+of one and so many of another.
+Right, that's probably a class called resource type and let's give it some properties,
+let's refer to the actual database to see what it is that we're creating in a more abstract
+programmatic representation of.
+So I'm running up Microsoft SQL Server Management Studio and because it's got Red Gate
+Tool Belt it means that the thing takes forever to load as coffee is still hot.
+Looking at the databases, looking at the name, the database, looking at the tables and
+would you know there is a table called resource type and it has columns, it's got an amazing
+number of columns, it's got resource type ID and resource type and score name, so obviously
+this is the most complex data structure ever invented, it's got a key and a value.
+Now what we're using Mongo for this, let's create a stored procedure though.
+We don't want our program to access the database table directly because that would be terrible
+for security I guess, it creates an extra layer of abstraction away from the raw data
+to have the class library accessing a stored procedure and then a stored procedure accessing
+the database table and what I'm going to do is just get another stored procedure and
+basically copy what's in there and just change the names, I mean this is 2000 and what
+24 at the time we're recording and you know but back in 1995 we had a talk called Case
+Computer 8 did software engineering that actually did all of this for you, it's like 2024
+and I'm doing all of this by hand converting a data model into a programmatic data access
+class, right so because I did staff recently I have got staff ad and staff get so I'm
+just going to script the stored procedure as a create my staff ad and I'm going to change
+it to a resource type ad and stuff ad and just rename it, stuff underscore ad and renaming
+it to resource type underscore ad and as for fields we have a resource type, by the way
+we're creating a stored procedure so the SQL is St. Crake procedure, dbo.resource type underscore
+all these tables are in the dbo namespace prefix or parameters with an ad sign because
+how big is this filled resource name or it can it's an nvarchile 100, it's 100 characters of
+is it a varchile would be just ask it but I reckon this is 100 unicode characters that it can
+contain right and clean this field resource type name and I'm not giving it an underscore
+somehow I've understood that there's convention in the software that our stored procedure
+filter we don't give underscores but our table columns we give underscores and anyway we've got
+an output parameter new resource type id and that's an integer that outputs so if we've supplied
+the resource type id then we just want to update what's there but if we haven't we want it's
+creating a one so we're saying if I mean this is all in the procedures main block which is
+got begin and end at the beginning and at the end and we're saying if resource type id prefix
+with an ad sign is zero so i will not supply one then we want to insert it to dbo dot resource
+type and what we're going to insert is one lowly little field which is going to be called resource
+type underscore name that's what it is in the table that's the list of fields and then with
+the list of values we just give it resource type name prefix with an ad symbol and because we
+want to return the resource type id we're saying set new resource type id equals scope underscore
+identity that covers the case that we're inserting a new resource type but we might be updating it
+so here's our else clause with a beginning in the end if we're updating we say update dbo dot resource
+type and set the list of fields that we're updating and actually we're only going to be updating one
+field to such a set resource type underscore name equals add symbol resource type not
+domain and we've got the where clause the where the where clause and the where clause is where
+resource type id equals add symbol resource type id and then we've set what we've set we've
+updated what we've updated and now we're setting a parameter called new resource type id is equal to
+resource type id prefix by that symbol okay it's now it's now a bit upset because it doesn't
+like the word resource type underscore name why doesn't it like that invalid column name
+yeah because I've spelled it wrong there's another thing spelled it right is happy with that
+and for a caution to the wind and I'll execute this statement and yet come on complete successfully
+we just added a stored procedure called resource type underscore add so let's
+do another stored procedure called resource type get so I'm just going to script a
+staff get and just copy that change was there dbo staff get script stored procedure as a create
+there's a comment there maybe I should delete in the comment maybe I should delete it before
+put it on comment it's an auto generate comment I'm not sure but I think that the stored procedure
+actually saves the comments but I don't know I never bother checking so create procedure dbo dot
+resource type and what we're passing in we're passing um nothing actually I'm not passing
+anything in we just want to get all resource types because it's a global thing it's not it's not
+for a particular user so select resource type id as guess what resource type id and we're also
+going to select resource type underscore main as resource type not underscore main
+and just delete the rest of the fields because it's not useful
+or tell it what table we want so it's ain't from dbo dot resource type and we're going to have
+a wear clause no we're not because we're just getting all of them there's no wear clause so let's
+execute this and just for the head of things should we have a resource type delete I mean this is
+going to play hell with the database because I haven't set any foreign key constraints that there
+may be resources with a resource type and then we're just going to go and delete it but hey we can
+deal with our higher level of abstraction maybe in the program code I mean you should really deal
+with it at all levels kind of going by the idiom of what the other programmer has done so where should
+I get a template for delete I think I had a table called roll that I had it and roll is not a
+million miles away from resource type I'll but roll didn't have a delete either so resources had
+a delete actually let's think about this if roll did not have a delete should should we let
+resource have a delete you know what have it sort of resource type have it should we let resource
+type have a delete where roll doesn't have a delete basically a roll and a resource that just
+a roll is for a member of staff as a resource type is for a resource so I'm I'm making a
+executive decision here seen as roll does not have a delete function I'm not giving resource type
+a delete function someone can just then we'll go into the database and delete it there's
+laziness at work all right so we've created some stored procedures I'll just minimise that rather
+than close it now we're back in Visual Studio I've just noticed this is still called class
+one dot vb I'd rather it was called resource type dot vb so it's rename
+users type dot vb okay um let's give it some private variables private m underscore cases
+id as integer well you know what the idiom is that they call it in 32 but Visual Studio
+prefers that we call it integer so we're going to call it integer the two are the same
+we also have the private so resource ideas wrong it should be called resource type id
+and now I'm worrying that I've coded the wrong thing in my stored procedure so let's have a
+look at the stored procedure again do you ever have that you only realise you've made a mistake
+you think you've made a mistake sometime later with something that's still in your head
+you leave the house and you think did I leave the gas or something didn't leave the fridge door
+open now I call it resource type id in the add stored procedure and get stored procedure
+yeah I call it resource type id there you go it was worrying about absolutely nothing
+so it's minimise that private resource type name and string I call it streak let's call it string
+and then we'll create a property property in property
+these do get first and then set right so get resource type id equals m underscore resource type
+id so when we get we're getting that property and we're setting value as in 32 which make m underscore
+resource type id equal that value yeah I can see the benefit of having explicit properties
+at the same time how often are we ever not going to use the boilerplate why don't we just not
+have the private variables and why don't we just use public properties that are self defining
+that you just access them directly I mean yeah there's a case that maybe when you're setting one
+of these parameters you want it to do some sort of food do or when you're getting it you want to
+do something or when you're getting it you want it to calculate some value but for a lot of
+what I see to be doing at the moment is boilerplate it's just a complete waste of text in the code
+base and but you know by the way when when you find yourself doing stuff that you just think this is
+bad coding and then you think well maybe it's good coding but when you think it's bad and you're
+doing it just because this is how you've seen it done and you do is it's something called a cargo
+you've just seen it done and so you just copy it that's an even a graphic thing and it's not
+necessarily politically right to call it that but it's in terms of political greatness of the
+original derivation of that word you can look it up but it's just you see you see it being done
+that you have you have your get and your set for a property and you think why do I have the get
+and the set is probably I just declare the goddamn property anyway so end of rant property resource
+type name a string get resource why it's not end of rant it's when you think something you're
+doing is wrong it like weighs down on you I'm not I actually feel that this is kind of doing
+things the right way so it doesn't it doesn't drag me down too much it's probably a but it's
+probably a good way to do things but when you're doing when you're deliberately seem to be applying
+bats or for engineer practice and you just do it because that's what you're observing in the code
+base already and the things that they teach you when you're studying software engineering
+those things aren't on being done as such it this isn't a bit of a newer diverse thing
+new divergent thing that it just creates overtighted crews are kind of straining on you
+but anyway as I was saying this is not a perfect example of that this is this is where actually
+I feel it so it's a reasonable software engineering practice to explicitly define your properties
+I mean what does it cost it cost me like five minutes and it costs me ten minutes to worry about
+it right start again property resource type name a string get resource type name equals M
+underscore resource type name and then set value as string underscore resource type
+and why am I not copying and pasting this why am I typing it resource type name equals value
+and again something to all my keyboard and my fingers because I've called it a streak rather than string
+this this keyboard is one that you really have to push down on the keys is it a mechanical keyboard
+I don't know can you judge by the sound I know people go gooey about mechanical keyboards I
+don't honestly don't know the difference it's good enough it works but as I say you have to play
+definite force and pressure to the keys otherwise it's normally the first key that you press
+it may it loses or maybe the last one see when you're doing this your mind has no sense of time
+but you can judge the passage of time by how warm your coffee is still that's true okay so let's just
+copy the get procedure from staff since I did staff recently so add so in opera stored
+procedures is now a class library function a class library function and recently I wrote some
+helper functions to make this a lot less verbose so public function add as in 32 dim return value
+as in 32 try return value equals stored proc out int as my recent helper function I wrote
+and we're passing a connection string in the name of the stored procedure which will be resource type
+add underscore add resource type underscore add pass it the object which is just the word me
+it's got to be the coolest key word in any program language for in this in Visual Basic and it's
+the word me just rather than this in other languages and then data fields an object field so yeah
+I forgot to define those I don't add to the top so try to read only data fields as new list of
+string equal sorry with curly brackets double quotes resource type the comma double quotes
+resource type name without an underscore and then for the private
+read it only object fields and because the object fields are the same as the data fields I'll just
+set that equal to a reference to the data fields saves typing things twice
+back in my add function is unhappy with connection string I've got a feeling
+and we should have defined connection string so go back to the staff and oh yeah dim object globals
+is new globals dim connection string as string equals object globals dot get connection string
+so stick that in our resource type class all right so let's go back to add class library function
+return value equals stdproc out int this is just a helper function I wrote myself to save
+having to retype tons of stuff over and over pass a connection string pass a dbo resource type
+underscore add which in double quotes which is the name of the std procedure with pass it me which
+is an instance of the class passing it list of strings data fields and a list of strings object
+and we pass it the name of the parameter for what it's going to get out of this std procedure so
+we need resource type id and then that's all in a tri block and we catch an exception and we're
+sending it to a function called error recorder which is helper function and we just pass that the
+parameter name of the class library function which is resource dot add and also we're passing it
+the exception method data as it were that x dot message and x dot data to string
+and if there was an exception returning and return value of zero just to tell anyone calling
+this function or we were not able to add a resource type or update a resource type it was
+there as I returned zero right so that's what I add now I'll get I'm going to copy this from
+resource dot vb since that seems to be open at the moment so copy in that so and I'm changing it
+as a go public function get resource types and it will just pass it in no parameters whatsoever
+and it will bring back a list of resource type and then we'll define an object object resource type
+of just resource types as new list of resource type and then we're going to have a tri block
+and we're calling stored procedure so this is my help function I call it stored
+proc in int well actually it's not the right one to use is it because we're not passing it in the
+integer so let's go to help functions find out what we should be calling so I'm looking at
+module one of vb as where help functions are and would you know a stored proc in int we haven't
+done a help function called stored proc so this is the wire work as soon as you know you never
+write something in anticipation you always just wait until you actually need it then at that point
+write it I think that's as part of the adgeon methodology so I'm going to just copy my function
+stored proc in int and just call it stored proc and I'll take out the in parameter
+so it's stored proc of t of type t so it's a template team is Stan could stand for any class
+and in the case I was talking about it stands for resource type
+and the parameters are connection string proc a string it's a name stored procedure the in-param
+and the in-vow so they get rid of those so we're not passing it anything in and then we're passing
+the data fields and the object fields and we get result so all we have to do is just get rid of
+any references that are in-param some adding into a value so just get rid of that
+and just checking over then that's okay looks good to me
+not going to too much because I'm sure it'll get revealed in my tests if I've made them
+a fuck up there so we're not calling stored procedure in int we're calling stored proc
+sort of resource type and let's take out our in-parameters because then they're longer there
+for this version of the function all right still unhappy what's wrong stored proc is not declared
+isn't it I'll call it stored proc fair enough all right stored proc if looks happier
+just go to the right name of the variables data fields and object fields and pass it object resource
+pipes and actually then call the stored procedure and we've got catch blocking case there's an error
+and we'll just let the error handler know that the name of the function that's gone wrong is
+resource type dot get resource types I mean you could rewrite this error handler to use what's
+called reflection to find out what the name of the function is that's gone wrong but I didn't write
+this one so I'll just use the convention that there already is we've got rather than going modifying
+someone else's helper function and we just want to return this list that we've set all right so I
+think we're done just build a rebuild this class library look for any errors say echo we've got
+name of filter property being initialized in an object is later each lies a must start with a dot
+you know what I've called I've used the weave rather than from all right I think it's happier now
+so that's my data fields I was using the wrong keyword all right that's happy all right now I'm
+going to take a toilet break and when I come back I will be writing some tests to test what we've
+just written and I know the big boys are supposed to write the test first but no no it's
+please just give me the benefit of the doubt I know what I'm doing I'm going to write the test
+afterwards okay they're not automated tests to just test to see if the thing even bloody can run
+without fraying in an exception you know we're not we're not advanced software engineering here we're
+not devops we're pretty book standard basic coding you know as it was several decades ago we haven't
+quite caught up with things not automated tests around here right so we're over
+and string this coffee focus completely cold it's a hell of a mark from my friend Beno
+it's just be happy on it are you going to be more wrong all right so we're going to put the
+class library window on the right monitor and the tests on the left monitor because
+the left monitor is in front of the keyboard and in front of the chair we're facing the right
+monitor is over on one side so I have to move my head to the right one so I should try to spend
+my time working on the left monitor and just use the right one as like an adjacent area for whatever
+I'm not concentrating on at the moment so we've already got staff tests roll tests and resource
+tests so I'm adding a function to call resource type tests
+type
+in the context of this is a console app you see in a module called tests and sub main is where
+they've been run from and just add some resource type tests and some brackets
+and then all right two tests now all right resource type and test
+and use this type get test
+now if that kind of product subs for those it's a modularity
+private sub resource type and test
+and private sub
+sub
+and when to private sub and you resource
+and it's amazing to give me the end sub that has now thank you so I'm just going to copy
+some my other tests because my other tests weren't that bad choose one to get a copy resource get test
+just adapt it some inside resource type get test I'm saying console right line
+fetching resource types double quotes and in brackets and console right lines again new line
+dim object resource types as new resource type yeah so actually we call it dim object resource
+type as new resource type dim resource type list as list of resource type equals object resource type
+dot get resource types with no practice it's just open closed brackets so now we go
+through each one so for each resource type as resource type in resource type list output resource type
+in brackets resource type so this point let's create a procedure to output a resource type
+so private output resource type and parameter resource type
+what isn't like that
+and so we didn't call it a sub private sub yeah in C in C you know you don't have to say for sub or
+function in all layers of other language you do have to say sub or function so let's say
+right console right line in cell dot and in double quotes resource type ID
+and space and after the double quotes of ampersand resource type dot resource type ID
+and you know what it's going to get cast thoroughly to string and let's say console right line
+resource type name ampersand resource type dot guess what resource type name
+and let's just have an extra console right line so it leaves a space at the end of it a new line
+at the end of it okay so that's our get test now we should do our add test we're to do
+with this run or get test and let's do that I'm going to come in out all the other tests
+coming out staff test coming out roll test coming out resource tests so just got resource type
+tests that's all that's going to run and that's going to run resource type add test resource type
+get test but add test hasn't been it's just an empty sub at the moment so any run resource type
+get test so let's start that it's building it it's running the xc and we've got an exception
+we always do without exception you always get an exception the first time you run a test
+so it expects a parameter garage ID idea I've I've missed applied the stored procedure I've given
+the parameter that didn't need right so let's go into my software SQL Server Management Studio
+that's script resource type get as an auto statement and then the white's complaining about
+resource type get because this is an auto statement or create a statement so select resource type
+ID as resource type ID resource type I don't see that I've declared a parameter in this stored
+procedure so maybe I've declared in this yeah I'm looking in the wrong place I've declared
+in the class library have I maybe I'm calling the wrong thing there you go I'm calling resources get
+this is what I'm doing wrong I should be calling resource types get so let's go back into editing
+the class library so I'm dragging my tests on the left to the right and SQL Server Management
+we started for some reason and it's taking forever about to happen so I just minimize that
+minimize my console output drag my class library onto the left close down the helper functions
+close down staff close down resources tab now in resource tab I'm looking at resource
+resources get and this is running stored procedure this is running stored proc so this is my
+problem isn't it I've obviously done something wrong in my stored procedure stored procedure
+where am I supplying it a parameter I've just realized I'm calling a stored procedure called
+resources underscore get so it isn't there's not a problem with my help function the problem is
+in the class library the problem is with the get resource types function is calling stored procedure
+resources get when it should be calling resource types get so rebuild that see if it will rebuild
+of our errors should be a problem and then let's go get my tests and drag them back over to the left
+I'll stop that I'll rebuild it so it should pick up the latest version of the class library
+and I'll rerun it and what's happened now could not find stored procedure resource types get
+okay I probably called it resource type get just confirm that it's got server management studio
+go to database is go to name the database go to program ability go to stored procedures
+and these stored procedures that I've recently added are called resource type underscore add
+and resource type underscore get so they're not plural so I've just called them the wrong
+things I need to get my class library back for that I put that it's minimized just unminimize it
+and why just change the name of the procedure being called to resource type underscore get
+and I did get it right for the add one it's got resource type underscore add so now rebuild the class
+library we know what's that and I've got my tests I'll just stop for that executing and start the
+test running again okay what's happened right we have something it says oh the name the application
+class library tests and it says fetching resource types first resource type ideas one
+and resource type name is workshop resource type ID two resource type name is vehicle left
+is this type ID three resource type name is air compressor all right it goes all the way up to resource
+ID 18 just press any key it closes that down so that work now we want to do my add test so I'm
+just going to copy another add test I'll copy my resource add test quite a number of lines of code
+so I'm like 20 lines of code so I have to go for it carefully and adapt to look copy and pace going
+on so the first line is dimfake as new fake that's just fake is just a class that I created that
+produces some test data and then console right by and then in brackets in double quotes adding resource
+or make it say adding resource type and that's all there's no parameters so we don't need to tell
+it any context which is adding a resource type an extra console right line so we get a new line
+dim object resource type as new resource type with resource ID called resource type ID equals
+all right so that's telling it that we're just adding a new one we're not modifying one and then
+a resource type name we're going to name a resource type name equals fake dot noun search pick a random
+noun concrete noun like I don't know an apple this is going to be our resource type and that's it
+I mean there's two literally two fields in this class resource type ID resource type name
+so now we're saying output resource type so you can see what we're adding and they're giving
+that a parameter of object resource type dim a resource type ID as an in thirty two
+deciding what color I think to do from now on just say visual studio is happy
+we're calling object resource type dot add and then we're console right by
+calling added resource type ID and resource object resource type dot ID object resource type dot resource type ID
+and we're just producing a new line now modify the thing that was added so modifying resource with
+modifying resource type with ID oh you know well we've already said resource type ID is
+it's same variable so we do need to be accessing it in the way that we were so it just can
+only change support which is right to console right line added resource type ID double quotes and
+percent resource type ID you know we're saying modifying resource type ID console right line modifying
+resource type ID ampersand resource type ID in an extra line console dot right line and then we're
+saying fake it's new fake which will get some new test data we're saying with object resource type
+resource type dot resource type ID equals resource type ID and the name as well dot resource
+type name equals we'll just give it a fake noun hopefully a bit different fake noun to the
+previous one so some modification going on and say hopefully there's a one I think there's a
+one in a hundred chance or something like that one in a thousand chance that it'll be the same
+but for most of the tests it'll be something different and I'm not checking the results of the
+test how many visually checking the results of the tests so it's not going to throw some exception
+or error console right line modification in brackets and quotes output resource object resource
+type dim new resource type ID as integer equals object resource type and and then let's just
+output our ID so console right line modified resource ID modified sorry resource type ID ampersand
+new resource type ID and then we'll just output an extra line on the console with console right line
+when they get that's that's the tests done so let's just run that see if it actually works we've
+got build errors this is having a problem with in the resource type add test with dimension object
+resource type as new resource type with dot resource type ID equals zero comma dot resource type name
+equals fake oh you know what I've put an extra comma after fake dot noun okay so I've just
+got rid of that comma a bit less optimistic and rebuild it before to have running it it did build
+a code for errors now so I've run it so it's done the same as before and that's not so it's starting
+off with the add test so it's said the name the app class library tests adding resource type
+resource type ID zero resource type name tongue it's funny name for a resource type there you go
+and it says added resource type ID 19 then it says modifying resource type with ID 19
+modification resource type ID 19 resource type name pasta so it's renamed tongue to pasta
+so now it's doing the get test in this fetching resource type so hopefully if I scroll down to
+the bottom of the list yeah there's resource type ID 19 with resource type name pasta say it's
+worked all right that that more or less is it folks um much as I'd like to commit these changes
+it's not very much of a change and it is a bit of a rig moral because I have to copy from
+drop box into a temporary folder just to change files I have to default compare and then I have to
+do get add and then I have to do a get commit and then I have to do a get push to the right branch
+so it's a bit of a rig moral no no I'm not going to do that now I'm happy before I've got
+it saved in drop box I'm not too worried about losing it I mean what is it in house work all right
+close that down yeah that's it I finished my coffee no finish last little sip um check that drop
+box is synced those files blocks is actually busy at the moment syncing files so wait shut down
+the virtual machine yet then they have me other people keep their code in drop box but for me
+I always do because it's got a nice version history you need to go back to a previous
+version with a very granular you go back to any version this is what I had back in 1995
+with a fax BMS every single version of a file had its own version and then every operating system
+since then lost that ability and then you've got yeah I think you've got new this storage
+things like butter FS and a ZFS that have regained that functionality but literally folks we had
+that functionality in 1995 on a fax BMS terminal and then we lost that functionality but thankfully
+I emulate it by having drop box having my files in drop box which just keeps a copy of every
+single time you save the file you know why is drop box stalling it's still saying syncing
+147 files just let it get on with it goodness knows what it's doing I keep trying to break out of this
+I'm here in the wrong case control is it shift F12 yeah can I look down the work that I've done
+I'm going to look at a look down a hour I mean pathetic little bit of functionality I've added
+but I'm going to look that I've done an hour where do I keep my locks if I work in job line of course
+where else I mean I could use a spreadsheet but now I'm using some strange bizarre
+recent amazing job line so I've got a folder called log and or a notebook I should say could log
+I've got a notebook with the month to a two four twelve and I've got a notebook with
+weak ending to a four twelve fourteen such I've already done something earlier today so I've
+already got today's date there so just at the end of this note I've had a class and test
+for a class and test for resource types and I'll show it down to an hour and I'll synchronise
+that and close that down that's everything right I've changed my mind I'm actually going to commit
+this stuff to the repository and that's a bit of a chore so I can see the drop box now I'm back
+on Linux I'm outside of my virtual machine now see drop box is up to date now just pop back into
+the virtual machine check what drop box is dang it still apparently is syncing 36 files
+I don't know it's not completely up to date right so drop box hasn't finished syncing on the
+virtual machine but it's in sync on the Linux box so let's just assume that the files I've saved
+I'll go into a nice little folk parasite program called meld I want a kd plasma desktop
+actually on kd plasma five because all hell happened when I went to version six I was running
+arch Linux then and I had to give up on arch Linux I tried Fedora and then I had to give up on
+that and I ended up on Ubuntu seeing really 80 as it sounds that's where I'm on Ubuntu now
+and there's nothing wrong with Ubuntu really do you see why arch people should stick up their
+noses at it and after all they're all pretty much the same and I'd say Ubuntu is not without
+his problems it's just a different set of problems than you had with arch like Ubuntu seems to be
+a bit more stable state wind terms of not so up to date right so the first comparison and I've
+got these comparisons saved in the history I'm comparing the class library so I've now got two
+pains of left pain in the right pain and I'm scrolling down the list of files to see what's
+altered here I can see the module one dot vb has changed so I'm copying that to the right
+and I can also see the resource type dot vb wasn't added so I'm copying that to the right that's
+all I've done to the class library so now go in the history and go to my tests and after I could
+ignore these but there's the bin folder the object folder and the res folder I always have to just
+close those because they're just in the way so I just test dot vb that's the only thing that's
+changed some copy in that to the right so it's going in my my work my git working copy directory
+and then I've just realized I have not updated database schema when you stored procedures
+so let's pop back into the virtual machine for run for viewer and I'm using a tool called SQL
+compare now compare she's provided by red gate and this is the only bit of software I have mainly
+that I can't get any dogmaid for so now I have to go and find my advisor
+and I'm not anymore wearing noise canceling your phones I'm also wearing now a blue visor
+so I'm moving from my local database which is on 1921168 north of 180 I've got the credentials
+and already chosen the name of the database and that is then going to compare it with a script's
+folder which is a load of creation scripts and here it's come up with dialog it's comparing the
+databases since it's connected to the server what it has done all right it's come up with comparison
+and there's seven things they're in both but different 199 objects only on my local server and
+1987 identical so don't have to worry about the identical ones the ones that are on both
+but different they're actually only different because of a user name being used so I'm ignoring
+those so I'm only going to look at the comparison results that are only on my local machine
+and almost all of those in a owned by TSQLT or SQLCOP so the ones I'm interested in are owned by DBO
+and there's resource type unscalate and resource type unscalate so I've just picked those two
+objects and I'm deploying those into the scripts folder some reason this dialog box goes off the
+bottom of the screen after moving onto the other monitor before I can then click the next button
+and then I say update scripts so that's updated database schema scripts so this is used so we
+conversion control our database and then it's decided to recompare things afterwards which just
+taking time you said there's a TCP era good knows why that is but anyway it doesn't matter as far
+as I know it's done this job so now close down shift of 12 get out for viewer and now I can go back
+towards doing an open mail to the file comparison thing I'll go to a comparison of the database scripts
+folders they're saying there's no difference obviously that didn't work or Dropbox hasn't copied
+across the files yet so then go back into ver viewer click on Dropbox as it copied the files
+still thinking eight files whether I look in the actual folder so I'm looking
+I've opened up a little finder explorer it's called explorer and windows I've opened up a file
+window Dropbox and I'm looking in the name the application in my repose folder in my database
+scripts dev folder I'm looking under stored procedures sort by date modified yeah I can see resource
+type add and resource type get so they work correctly generated is just Dropbox hasn't uploaded
+them yet and I could just see Dropbox has has just this second upload of them so I'll as I did
+before close down the virtual machine back to my file comparison program can I rerun this comparison
+I'll tell what I just go to history and just click on it again right as it's done the comparison
+I already know it's only the stored procedures are different someone can install procedures folder
+scrolling down and there's dbo.resource type underscore add.sql and dbo.resource type and
+underscore get.sql so copy I'll select both of those and copy if I can and it actually doesn't seem
+to light meet selecting both of those so just copy do that one at a time copy to the right
+and the other one copy to the right and I can you select multiple yeah you can select multiple
+things it's just I was getting confused with the highlighting it didn't seem to want to select both
+for once it's public see you're hovering your mouse it makes it different color but yeah you can
+shift click and then shift click below and it highlights a range of files some opening console
+going into my 10 folder which is working my get repose this is quite a laborious procedure
+I'm copying from one place to another in like three stages and also there are three different
+repository involved here normally I would only do this once in a while once a week and I did it
+earlier today but I'm just doing it again just for demonstration purposes I guess so let's go
+to the class library and get status and yeah the module one of vb has been changed and resource
+typed of vb has been added because I get and hyphen hyphen all get status again by the way
+came up with messages about CRLF about carriage return line feeds will be replaced by line feed
+because obviously I've been working on these files in windows and now I'm working on them
+in Linux and it has a different way of representing the end of line characters or character
+but luckily git the version control software is happy with that and allows for that so now git
+commit and as m I think for commit message so what have I actually done I've added class library
+or add added class for these types and add function for stored procedure without
+and that's committed to git log and I can see that is there I'm going to copy the long
+what it looks like an md5 some sort of sequence of hexadecimal which uniquely identifies
+the commit log just done and same git push for a chin and I'm pasting my hash and then colon diary
+because diary is the name of the branch in return no I never seem to have luck using
+the word h capital H E A D which is supposed to represent the top of your git history I always
+seem to find I'm doing better to actually explicitly pasting the explicitly pasting the identifier
+for the latest commit so now I'll do the same for the other repose I'm going into the test repo
+and I'm doing this git status and it shows one modification test stuff it is being modified
+so git add my hyphen hyphen all status you can see that's been staged staged the right word
+so now git commit minus m and then single quotes added test for intrus type class
+let's commit it git log copying the latest commit just like git push push pasting in the commit
+and colon name the branch it return let's push that
+and then I'm going into the sql scripts repo the development version and git status and so there's
+dbo dot resource type and score add dot sql and dbo dot resource type and score get dot sql and they're
+both in a stored procedure direct triage so git add hyphen hyphen all status and again I'm ignoring
+the crlf message because it deals with that it deals with the line endings git commit minus m you know
+it's a lot of audience that's very laborious but sometimes that's helpful to do things in a
+laborious way because then it is kind of psychologically helpful sometimes and then there are times when
+you make things more efficient and so you get things done quicker in particular just writing
+some helper functions so that which I haven't really gone into today but I did end up writing
+helper functions to actually make this process a lot smoother it was even more laborious before
+before now and as I said I wouldn't normally commit this often the changes I would know it might
+be do more changes in one session rather than a fairly limited session just implementing one change
+and though I git commit minus m add it stored proceed for two tools types
+what a lot more previous commit message was yeah it's about the test so this one was about
+stored procedures and git status that's committed so still git log just to see that last commit is
+in the history and I've copied the identifier and git push origin paste in the identifier and name
+the branch after a colon and that's on its way and something I just did for fun will be to go to
+GitHub and actually see the repositories actually reflect change if Firefox all day into launch
+which Firefox is deciding not to for some reason I'm running console queue all Firefox
+no no process yes point is EF Firefox
+grip sorry grip Firefox quite good Firefox no Firefox from me come on it's better yeah sometimes
+when Firefox hasn't closed down you just can't run it again I mean yeah it's showing us closed in
+kd plasma but it's still running there somewhere and I think I'm using a snap for Firefox
+yeah I'm using a snap for Firefox isn't it great Ubuntu you've got like several different ways
+of installing software like and I just can't remember which I've used for various software like
+OBS obvious standard APT package manager for Firefox I've used a snap and I think I've used flat
+pack for something else so yeah we think like well birds and Skype type or speech note discord
+use flat pack flat pack is what I prefer but if I can help it I'd use APT over everything else then
+flat pack and snap as a last resort there was some reason why the Firefox snap was somewhat
+better than the other different methods of installing Firefox in my for my particular use case
+not necessarily better for everyone okay so I've got to get up and I'll just go to the scripts
+repository and look at the latest commit and it says the name of the branch diary had recent pushes
+two minutes ago so I click on the name of that branch and it's got my commit added stored
+procedures for resource types and go to the other repositories and GitHub that related to this
+organization that is not my not my personal GitHub repositories so although actually the test
+one is in my personal is it they're all private repositories not public and the test repo is in
+my account whereas the class library itself is in the organization account so I'm looking
+at the class library and it says yeah the branch had pushed seven minutes ago and I just
+click on that click on the branch and it says added class for resource types and helper function
+for stored procedures so I need to go to my repositories to look for the tests the class library
+tests and it's yeah only has one branch actually because these tests and you relate to the work
+I created specifically for the work I'm doing at the moment it doesn't have a main branch it only
+has a diary branch and I can see the latest commit was added test for resource type class
+so there you are and none of this is actually added I've not even opened the actual application
+I've really just been developing I've really just developed a class for the class library
+it has no place in the application at the moment and I've created a number of classes in this way
+over the last few days over the last week I say so I've created staff roles resources and resource
+types so it's full classes and they're in the tests but none of them are actually in the application
+yet and in the application I've like sketched out some approach I'll take to user interface but
+beyond that this code is not yet part of the application but it's part of the class library which
+is used by the application so that's that's the level that I'm working at the moment not actually
+adding directly adding functionality but adding a set of classes because this is a new feature
+of the application diary feature or calendar feature and so several classes are being added to
+the application although at the same time so I'm finding it better to develop the classes and test
+the classes as units and only then when I've got all of them because they're interlinked in terms
+of the functionality of the application only then when I start linking it into the user interface
+of the application okay that's about all I think definitely there won't be any more now
+you have been listening to Hacker Public Radio at Hacker Public Radio does work today's show was
+contributed by a HBR listener like yourself if you ever thought of recording a podcast and click
+on our contribute link to find out how easy it leads hosting for HBR has been kindly provided
+and onesthost.com the internet archive and our syncs.net on this otherwise stated today's show
+is released under creative comments attribution 4.0 international license

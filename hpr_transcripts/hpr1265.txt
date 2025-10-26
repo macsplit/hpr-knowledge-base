@@ -1,0 +1,67 @@
+Episode: 1265
+Title: HPR1265: Mitigating SQL Injection And Other Message Protocol Attacks Through Compiler Signatures
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1265/hpr1265.mp3
+Transcribed: 2025-10-17 22:38:24
+
+---
+
+Hello everybody, my name is Sig Flips and a Slavell, and today it's going to be a fun
+one.
+Today we're talking about attack mitigation, specifically SQL injection mitigation.
+In addition to this, the theory that goes on behind what I'm going to be talking about
+is perfectly valid for other message protocols, not just SQL.
+I know what you're thinking, Sig Flip, SQL isn't a message protocol, it's a fancy
+pants database query language.
+That may be so, but it's also a message protocol, you still have a query or a message traveling
+between one host and another host, the database server.
+I'm going to break this up into three parts, concept, proof of concept and theory.
+The concept is you have a message between two hosts.
+This message by its nature has a protocol to it.
+We want to know if there's such a way to figure out if the message within the constraints
+of its protocol is attack code or a normal message.
+We do this by comparison.
+We compare one message that's known to be a normal safe message, the answer one that's
+unknown to be safe.
+If the unknown message stays too far away from the protocol usage of the safe message,
+we decide that the unknown message isn't safe.
+For example, take the SQL message, select hash from users, where name equals user name.
+User name being user input.
+Now compare this against the SQL injected message, select hash from users, where name equals
+bob or x equals x.
+We can see by looking at these two messages that the SQL injected message is straight
+to too far away from the protocol usage of the safe message.
+We decide that the SQL message is on SQL message is unsafe.
+It stays too far away from the safe message because it uses an OR statement, for example.
+So how do we do this automatically?
+Well this is the proof of concept.
+I have written a small utility called SQL sig that does this.
+It works by consuming an SQL statement in its standard input and outputting a signature
+based on its protocol usage.
+For example, the input select hash from users, where name equals bob, has the same output
+signature as select hash from users, where name equals Susan.
+It does not have the same output signature as select hash from users, where name equals
+bob or x equals x.
+The theory is really simple.
+What you do is look at a protocol, the protocol that a message follows as a language.
+If you do this, you can write a compiler that compiles a message based on its protocol.
+There is no output to this compiler really.
+What we're doing in the proof of concept is compiling a signature.
+What we do is follow the parse tree creation and enumerate each leaf into a signature file
+as the compilation goes by.
+In each leaf, we omit the token value information.
+So what we're doing is we ignore the actual content of a message and we just look at its
+protocol usage.
+Thank you for listening, everyone, and take care.
+Happy hacking.
+You have been listening to Hacker Public Radio, where Hacker Public Radio does our.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by a HPR listener like yourself.
+If you ever consider recording a podcast, then visit our website to find out how easy
+it really is.
+Hacker Public Radio was founded by the Digital.Pound and the Infonomicom Computer Club.
+HPR is funded by the binary revolution at binref.com, all binref projects are crowd-responsive
+by lunar pages.
+From shared hosting to custom private clouds, go to lunarpages.com for all your hosting
+needs.
+Unless otherwise stasis, today's show is released under a creative commons, attribution, share
+a life, lead us our lives.

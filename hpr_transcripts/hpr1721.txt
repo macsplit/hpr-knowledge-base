@@ -1,0 +1,167 @@
+Episode: 1721
+Title: HPR1721: Cross-compilers Part 2
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1721/hpr1721.mp3
+Transcribed: 2025-10-18 08:15:30
+
+---
+
+This is HPR Episode 1,721 Entitled Cross Compilers Part 2.
+It is hosted by Mike Ray and is about 47 minutes long.
+The summary is, using one of our cross-compilers to compile a Raspberry Pi kernel.
+This episode of HPR is brought to you by an honesthost.com.
+It 15% discount on all shared hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's honest and fair at An honesthost.com.
+Hello and welcome to Hacker Public Radio.
+My name is Mike Ray.
+This is going to be part 2 of cross-compilers.
+In part 1, I described what cross-compiling actually is and why you may want to do it or even have to do it.
+In this part we're going to use one of the cross-compilers we created in the first part to actually cross-compile a Raspberry Pi kernel.
+But before we do that, I should say a few things about HPR because I noticed listening back to some of my shows that I've been a bit lacks in actually doing this.
+It's about time that I put that right.
+Hacker Public Radio is a resource which depends entirely upon contributions from its listeners, which means me and you.
+If you've been listening to HPR for a while now and have enjoyed what you've heard, then it's time maybe for you to create a show.
+Now this can be a very, if you've never actually created a podcast before, this can be a very daunting prospect.
+I know this because I had to make the first step and do the first one and it is difficult.
+And in fact, every time I come to a recording show pressing the record button to start things off is difficult.
+And it's something that I put off and I put off but I eventually get around to doing it.
+Now out there in podcasting world there are lots of superb quality podcasts which are very slickly produced, very slickly recorded and edited and actually sound every bit as though they've been produced by professionals and with audio quality which would not be out of place from the BBC.
+But HPR podcasts don't have to be like that.
+In fact, one of the things I like about HPR is the sort of regular-yass nature of some of what you hear.
+The record quality really doesn't matter too much.
+We have podcasts from people who clip a recorder onto the sun visor of their car and then record something on the way home from work or we have interviews from people using all kinds of different recording devices that expose and things or people in their workshops, all kinds of different ranges of audio quality.
+So if you think that audio quality is something which might stop you from recording a show for HPR then don't let that get in the way because any audio is better than no audio and in fact the mixed bag nature of HPR is part of its character, at least as far as I'm concerned.
+And I like to hear a wide range of stuff and it's kind of makes a nice change from the slickly produced and very professional sounding podcasts which are the norm, I suppose.
+If you need more information about how to produce a podcast for HPR go to the website hackapublicradio.org or send an email to admin at hackapublicradio.org and you'll get all the information and all the help that you need.
+You could even phone in a podcast and there are actually telephone lines for the state side and also for the UK. You could even put it onto a maybe a CD and send it to Ken.
+There's a number of ways of doing it but it really is quite easy.
+So if you have a pet subject you want to tell us how you've used a Raspberry Pi to feed your cat while you're on holiday or something similar then press the record button and go for it.
+Anyway on with cross compilers part two.
+Now as I said in part one I described cross compiling and actually we talked about how to produce a cross compiler with a tool called cross tool NG.
+And we actually detailed how to produce two different cross compilers one for the first version of the Raspberry Pi, ARM Cortex A6 and one for the new version 2 Raspberry Pi, ARM Cortex A7.
+And it's the second of those that we're going to use today to compile a Raspberry Pi kernel.
+Now this is a very good illustration of the advantages of cross compiling because as I said in the previous podcast I did it on a Raspberry Pi once and it took 15 hours.
+Using a cross compiler on my quad core desktop Linux machine it takes 15 minutes so that's a perfect illustration of why cross compiling is important.
+So what do we need to do the make file and the method of configuring when we want to prepare to do a kernel compile is a little complex and we need to maybe remind ourselves of how a make file is structured.
+Before we go on and talk about the steps that we need to go through to actually do a kernel compile.
+A make file typically contains what's known as targets and these are the labels that you see in a make file which come before a colon.
+And after the colon is the sort of recipe if you like which fits with that target and the things that get executed when you pick that target by typing make and the name of the target like for example make install or make all or something.
+You'll be familiar with the dot slash configure make pseudo make install sequence and in the middle of those three make that illustrates the fact that make by default picks the first target in a make file and that is typically for most software.
+The target which actually compiles everything into an executable or into a library or perhaps even more than one executable prior to running we install target in a kernel compile a kernel make file there are multiple targets which we will come on to as we prepare for and perform our kernel compile.
+The first thing we need to do is we need to get the raspberry we need to get the Linux kernel source code.
+Now there are two ways to do this for a desktop machine you would probably typically get the kernel source from kernel.org
+Or it may be provided as a package by your distro for example Debian provides a kernel source package but for a raspberry pi because it's a different platform and because it has a number of modules which are particular to it we need to get the source code is best to get the source code from the raspberry pi foundations own.
+Get repository and we can do this by executing a get clone now before we do that we need to set up the path where we're going to put our kernel source and I like to put kernel source into slash OPT slash Linux
+and then under slash Linux I've got RPI because I've also got under there BPI for banana pi source code. So under slash OPT slash Linux slash RPI we're going to exercise get clone HTTPS colon slash slash get hub.com slash raspberry pi slash Linux dot get
+and then at this point I always give a second argument to get clone which is the directory I wanted to put the kernel source into by default it would put into a directory called Linux but we're going to put into src.
+So after the get clone and URL we put space src and what we will have after that will be slash OPT slash Linux slash RPI slash src which is where we have our kernel source.
+Now we're actually going I'm actually going to do because I like doing it this way we're going to do what's called an out of tree build which is that all of the files that are created during the build of the kernel are in a different place to the their outside of the kernel source tree.
+So under OPT Linux RPI we're going to create two other directories and they're going to be build and modules.
+All of this stuff is in great detail in the HTML version of the show notes which company this show so don't worry too much about following the what I'm saying about paths and directories and places you put things or command lines because it's all in the show notes.
+Now one of the things I do on my Debian machine is I create a group called developers and I make myself a member of the developers group and then I make sure that everything under slash OPT Linux is owned by root user developers group and then I make everything readable writable and executable by the developers group.
+So it's basically 775 so that I can access everything in there as me and not have to do pseudo.
+So now we have the kernel source in OPT Linux RPI SRC and we have two other directories OPT Linux RPI build and OPT Linux RPI modules.
+At this point we need to set a couple of environment variables which are going to help us to identify the path to the Linux source and also the prefix of the cross compiler versions of GCC, LD and other tools which belong to the tool chain which we created.
+And these two variables are all in uppercase kernel underscore root and CC prefix kernel underscore root is going to be slash OPT slash Linux slash RPI and CC prefix which I won't actually say is very long.
+It's in the show notes. It's the path to the GCC executable which is part of our tool chain plus the prefix and actually the executable name is ARM dash unknown dash Linux dash GNU eABI HF dash GCC.
+And that's a long name but it makes perfect sense ARM because it's the ARM processor unknown because I didn't specify a name for the you know for my I'm not a company.
+So you know I'm not specified a vendor that's the word I was looking for vendor name for the tool chain so it's put unknown in their body for this Linux of course and it's GNU and the eABI HF part stands for embedded application binary interface hard float because this is a hard float cross compiler as opposed to a soft float which does float.
+So those are the two variables that we need to set when you set those either externally or in a script which we can use to run our build.
+To talking about the kernel configuration and its connection with kernel make file targets.
+The kernel configuration is extremely complicated. You need to specify what kind of platform it is processor what facilities the processor has hard float etc.
+What modules you want to compile in compile and or not include basically there are dozens and dozens and dozens and dozens of options and all of these configuration options are stored in a config file.
+The structure of which is is controlled by what's called the K config system and this is you will find in the kernel source tree a bunch of files there's lots of files called K config uppercase K lowercase config and also other files which end in config dot i n.
+These are sprinkled throughout the source tree and in each case they control the options which are selectable relating to things that are in that part of the source tree.
+There are a number of targets in the kernel make file which control how that configuration is managed.
+And those are things like defconfig which will give you a default configuration file menu config which will give you an encurses screen application which you can use to make kernel configuration choices.
+An old config which will run a check against a pre-existing config file make sure that nothing has changed in the K config structure since the last time since the existing config was used last and a number of other targets like modules to build the modules modules install for a bit for actually installing modules and a number of other things which
+we can talk about as we go along. Now all of these kernel configuration options depending on how no matter how you actually set up the configuration finish up in a file called dot config.
+So bearing in mind that it starts with a dot you won't see the file unless you use the minus a flag with a list to actually be able to see that file.
+There are a number of ways of getting a dot config file to start with by far the longest method is to run a config target let's make with the config target specified but that's not recommended because what that does is to ask you hundreds and hundreds of questions about how you want to configure the kernel.
+It's an interactive process but it is a serial interactive process you know we ask your question you answer the question goes on to the next question etc and it's extremely tedious extremely error prone and unless you know loads about what you're doing it's easy to make a complete mess of creating a dot config in that way.
+You could also grab a default configuration file by using the defconfig target in the make file and what this does is it uses a couple of other variables that you provide one of which is the architecture which in our case is arm.
+And a platform prefix platform variable which you sent to a value and then those two things as well as the build pass.
+Now actually ignore that the build pass is not involved in at the moment the build pass only comes into play where it places the file but with the architecture and the platform set to arm for architecture and BCM RPI for the platform you can grab for the raspberry pi from the raspberry pi foundation supplied source files a file called BCM underscore config.
+Which is a default raspberry pi kernel configuration file now this if you use that and there are command lines in the show notes which show you how to do that you will get a very fast kernel compile you'll get a very box standard kernel but it probably won't match very closely.
+The configuration of your raspberry pi as it is currently so we can actually take the configuration rather than starting with a default configuration we can start with a dot config file which we will take from a running raspberry pi.
+And how we do this is to look to log into a raspberry pi and look in slash proc slash config dot gz this is a compressed file which contains the currently running configuration as a compressed dot config file.
+So using zcat zcat slash proc slash config dot gz we can redirect the output from the zcat to a dot config and place it where we need it in our build pass so that we can start with the configuration as it was when we actually
+as it was in the pie which we were ultimately going to put our kind of newly compiled kernel back into.
+So where are we going to put that file right I mentioned before about what's called an out of build out of tree build and this is where the build direct sub directory of our kernel root pass comes in.
+We need to put the dot config file which we grabbed by using zcat in the build directory and then we can run another target called menu config which will give us an encurses screen which we can use to make other adjustments to the configuration.
+Now one of the things that I've had to do in the past you might remember that I can't see so i've been mucking about accessibility tools and the raspberry pi and one of the things I've had to do in the past for arch Linux was to recompile the kernel and include the speak up console mode screen reader modules because they weren't previously included they aren't actually now included as part of the build which.
+You grab if you download the root file system from arch Linux ARM dog website so it's not necessary to do that anymore.
+So you can when you run menu config you get your encurses screen you can then look down all of the options it's hierarchical you select an option presenter it goes into another menu you can select.
+Sort of Boolean values values which are either on or off you can select whether modules are built into the kernel or as kernel modules or not included at all and then you can exit from that with escape until you escape from the top level menu and save your file and it will give you a dot config file which you have made your choices and.
+Change in some way.
+Then after that you need to run something called old config and what old config is it and again it's a make file target so it will be make.
+An old config and i'm being very very brief here because in the in the show notes there are details about some other variables which you name.
+On the command line when you run the make and will come onto those in a moment.
+But if you run old config what that does is to restart the configuration the interactive line at a time style configuration if any change has occurred since.
+To the configuration structure since the last time that configuration file was used when I did a Raspberry Pi compile.
+At the in the middle towards the end of February when I was preparing show notes for this I.
+Took a dot config from the raspberry the raspberry image published on the 31st of January.
+And running old config asked me to confirm just one setting which was something to do with led torch triggers module something I didn't really know about but it prompted me to answer m to make it a kernel module so that's what I did that was the only question they asked me when I ran the old config target.
+You have to use that target to to confirm that the configuration file has got answers to all of the questions which are asked by the K config and config dot in files sprinkled through the kernel source tree because the kernel source tree may have changed since the last time the.
+You know when the when the dot config was created.
+Okay so we've we've got a dot config file now we've done is a def config always grabbed a kernel config from a running pie.
+And we have optionally run menu config to have a look at the options and make changes and we've run old config.
+And we're now ready to do a build at this point it might be better for me to actually point out some of the command line variables that we need to include there they are all in the show notes and the show notes are huge there's an HTML version so it's all in there but we need to maybe run down one or two of these to actually do a kernel build we're not going to specify a target.
+Because as mentioned before the norm for a GNU make file is for the default target to be the one that does the build and when you type make without a target name it does the default target usually the first target in the in the file.
+And it's all it will always pick the first target in the file which is usually the build target.
+So what we type is make space uppercase our arch equals low case a rm so that's uppercase arch equals low case a rm with no spaces and that's specifying that the architecture is a rm.
+And then we're going to type another space and then uppercase o equals and then a pass to our build directory which is our out of tree build pass so we set the kernel root variable earlier on so o equals dollar left brace kernel underscore root right brace slash build.
+We'll point the out of tree build towards our build directory and the next one is very important it's the cross compiler prefix we need to type cross underscore compile and that's all in uppercase equals dollar left brace cc prefix uppercase right brace.
+Now there is an argument which you can use to make the build run a lot faster by specifying the number of jobs that you want to run.
+On my quad core, obviously the quad core PC it's got four CPU cores so we can specify four jobs at typing dash J4 or in the show notes there is a way a detailed away of actually getting the number of cores from slash prox slash CPU info.
+I won't describe it here because it's complicated come online but it's in there and like I said we don't specify a target and there's another argument which I usually use which is v uppercase v equals and then a number from zero I think to six which changes the verbosity of the not of the messages that you see zero being the lowest verbosity and I think six is the highest.
+I always set it to one so we kick off the make and it will go off and if it all works correctly after about 15 minutes or so we will have a raspberry pie kernel.
+Okay so where is it actually put the kernel what's the name of the file?
+You remember that we specified that we were doing an out of tree build and at the place we were going to put everything was kernel root slash build which in our case is slash OPT slash RPI slash build and we also specified the architecture as ARM.
+So under the build path under the build directory there is a directory called arch for architecture under that directory there is an directory called ARM which obviously means ARM architecture under that directory there is a subdirectory called boot and if we go into there we will find a number of files one of which is just called image.
+With an uppercase I and that is our kernel image file which we are going to move to the boot sector of our raspberry pie and call it kernel diemg after saving the current kernel so that's where our builders actually put the kernel but there are still some tasks to run.
+We need to we've built the kernel the next thing we need to do is to actually build the modules.
+This is a separate task and here we are going to specify the modules target so again it's make and then our other variables cross compile equals CC prefix etc and modules and what that will do is
+we'll go off and it will compile all of the modules now that's a much quicker process because it's not it's not doing quite as much work as it's doing when it's actually building the kernel after the modules have all been compiled.
+The next task is to do a modules install and this is where all of our modules will be written to the modules subdirectory of our kernel root and unsurprisingly the target is called modules underscore install.
+So it will be make blah blah blah cross compile equals CC prefix modules underscore install and that will move will actually do a move exercise and create a directory called lib in our modules directory and under the lib directory there will be firmware and modules.
+And under the modules directory there will be a directory which is named with the version of the kernel that we have just compiled and I just realized that I should have said something about the kernel version because it's higher up the kernel as the show notes but I'll talk about that in a moment.
+So for example if we're compiling version 3.18.7 of the kernel there will be a directory called kernel root slash modules slash lib slash modules slash 3.18.7.
+And then possibly another bit of a prefix which will it will come to in a moment and under that directory are all our all of our kernel modules now there's also in there a couple of other part a couple of other director is one called build and one called source we need to delete those because they just contain the source code and we don't want to move that to our Raspberry Pi because there will be big.
+It's nearly two gigabytes of data and it's going to use up valuable space on our SD card.
+The kernel version numbers if you look in the top of the make file in the top level directory in the kernel source tree you will see the three numbers which make up the kernel version number.
+I can't remember exactly what they're called something like version revision and something else but there are three variables that one is currently set to something like you set to three the next one we set to 18 probably if you do a build very soon and then another number.
+If we go to our Raspberry Pi and do you name dash R if it's particularly if it's an arch Linux Pi it will come back with something like 3.18.7 dash something else dash something else so where does the stuff after seven come from because it's not contained in the make file at the top of the make file where we found where we found three 18
+18 and seven when it's in the configuration file the dot config file has got a variable called config local version config underscore local version and that's where we can set a suffix to the version number and on arch Linux it's typically something like dash another number dash arch uppercase.
+And now sometimes the kernel comes out with a plus on the end of the version version name now I'm not sure I know this is something to do with get and the level of commits or the current state of the commit of the current source tree it will either have a plus or it won't
+it's checked and sent by a script in the kernel source tree called set local version but I don't fully understand why sometimes it comes out with plus something is it like I say it's something to do with the stand the status of the commit of the kernel source in the get repository.
+It's important for the modules to have the same version as the kernel because there is something called a version magic number in each of the modules or shorten to ver magic and this needs to to match the version of the kernel for them to work correctly there may be a way of actually changing
+manipulating kernel version kernel module version numbers but I don't know what that is and if somebody understands it if they can explain it to me it would be very useful.
+So what have we done we've built our kernel we built the modules we've moved the modules to the modules directory we've got two directories firm under lib called firmware and modules we need to zip those up and move those to the slash lib directory on the raspberry pi
+and the easiest way to do that is to take the card out of the pie after shutting it down mount it on the next machine and move it that way and hopefully once we've moved the kernel and the modules to the pie card plug the card back into the pie and boot it it will start and we will have a shiny new kernel.
+We will probably have to run something called depth mod now depth mod I think is short for dependency modules or module dependency I don't I don't fully know it's something to do with telling the kernel what modules it's got and where they are it's some kind of event dependency map manipulation program again which I fully don't understand but it always works if you compile a module
+which the kernel didn't previously have you will need to run depth mod before it will recognize that it is there.
+For example if you compile a speak up soft software speech synthesis module and it wasn't previously there until you run depth mod it won't recognize that it exists.
+Now I've run through all of this pretty quickly and it is quite a complex task and some of the command lines are quite complex.
+The show notes are very comprehensive there's something like 16k before I converted it into HTML so it's probably about 20k of HTML so there's an HTML version of the show notes because they far exceed the maximum size for the text show notes.
+So have a look at those and they should explain about how to do it there's also a script which I wrote in bash which I've called KCC for a short for kernel cross compile and that is a simple bash script which sets up all your variables and stuff and allows you to specify a number of arguments on the command line.
+Build, Defconfig, Menuconfig, Oldconfig, there's another target called MR proper which is to do with doing a clean you know cleaning up similar to typing make clean in another piece of software.
+I've not covered that because doing an outer build tree it's easy to clean up just by deleting the build directory and recreating it.
+So have a look at the show notes I'm very conscious of the fact that I've sort of skipped over lots of the command lines very quickly but they are far too complex too and you'll get very thorough you know very thoroughly bored just by me chanting command lines at you and it's far more important that you have them in front of you.
+There's also a link to elinux which has got an excellent article about cross compiling for the Raspberry Pi.
+There's a couple of other links on there as well I think I want to W and because I used a W and machine.
+Basically it's all there so having done that you've now got a kernel on the modules for the ARM Cortex A7 using our ARM version 7 cross compiler that we built in the last show.
+Now I had intended this to be only a two part but I may well do a part three because one of the things I've been missing about is cross compiling something that we all know and love.
+And that is eSpeak. Now eSpeak as we know is the world's best software speech synthesizer. It's well loved particularly by certain individuals just across the English channel and I've been working on trying to cross compile it for no other reason.
+I wanted to learn how to do it because it involves lots of dependencies so I had to go right down through all of the dependencies and sort of backwards work backwards from the lowest dependency up to eSpeak itself and cross compile all of the dependencies of dependencies all the way up to eSpeak.
+To install them into the sys route and you'll remember we discussed sys routes in the last show so that everything was in place for me to do a cross compile of eSpeak itself.
+One of the dependencies was SQLite, SQLite, because SQLite is used by, I think by asound, also sound, label something. One of the dependencies uses SQLite so I may do another show which is basically how to do the typical.slashconfigure make.
+Make install trio of things which we all know and love but doing them in a way we need to do them as a cross compile exercise because you know dot just dot sysconfigure make.
+Make install that's not a cross compile that will pick the native compiler and do the native compile on the platform you're running on.
+So that's a potential part three but it's going to be a while before I do that because otherwise everybody's going to get thoroughly bored with cross compiling and I wouldn't want that to happen.
+So I think that's about it. I can't think of anything I haven't mentioned. Like I say the show notes very comprehensive. This actual audio has been very quick, probably quite tedious.
+I didn't want to make it more tedious by chanting lots of command lines at you but cross compiling a Raspberry Pi kernel really isn't that complex once you follow the steps and understand the steps it is really quite straightforward.
+So this is Mike Ray signing off remember if you haven't done any HPR shows and you listen to HPR on a regular basis it's about time you but bit the bullet and recorded something.
+You've been listening to hecka public radio at hecka public radio dot org. We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show like all our shows was contributed by an HPR listener like yourself. If you ever thought of recording a podcast and click on our contributing to find out how easy it really is.
+Hecka public radio was founded by the digital dog pound and the infonomicon computer club and it's part of the binary revolution at binwreff.com. If you have comments on today's show please email the host directly leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise status today's show is released on the creative comments, attribution, share a light 3.0 license.

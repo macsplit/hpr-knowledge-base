@@ -1,0 +1,168 @@
+Episode: 1313
+Title: HPR1313: How I Manage Contacts
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1313/hpr1313.mp3
+Transcribed: 2025-10-17 23:25:08
+
+---
+
+Hey everybody, John Culp here in Lafayette, Louisiana, and today's episode is about contact
+maintenance.
+It was maybe a year ago, possibly longer ago, I don't really remember when, but at some
+point, I finally got fed up with the state of my contact list, or lists I should say.
+That was part of the problem.
+After several years of importing and exporting and then re-importing through different computers
+and phones and different email applications and so forth, my contacts were a complete
+mess.
+This was also across different platforms, either on Windows or Mac or Linux, Android.
+My contacts were a complete disaster.
+I had duplicates all over the place.
+There were hundreds and hundreds of contacts that I didn't even remember putting in there,
+and that would be because I didn't put them in there.
+This was because, at the time, I was using Gmail as the interface for all of my email.
+And I was even pulling my work email through my Gmail account from the pop servers and so
+forth.
+And by default, Gmail was adding every sender of every email that I got to my contact list.
+And I didn't know this until I started looking around.
+I would look at my contacts list and realize I had, I think by the time I decided to do something
+about it, I had more than 1200 people in my contacts list, an insane number.
+And I probably needed only three or four hundred of those.
+So anyway, I decided that what I wanted was one set of contacts across all platforms
+that arose from a single source file that I could edit in a text editor.
+I didn't want to have to use any program to edit the contacts, like even Thunderbird.
+I didn't want to have to use the GUI to edit those.
+I wanted to be able to do it in a text editor because I felt like I would have a little
+bit more control over it that way.
+So I wanted one source file for all of my contacts that was in a plain text format that was
+easy to use with scripting and a text editor.
+Get rid of all duplicates, all of the cruft that it built up, and it needed to be easy
+to maintain import and export in the various applications that I use, such as Thunderbird
+for email, own cloud for my cloud storage of contacts, and I needed to be able to sync
+them with my phone, you know, the usual things.
+So I began a process that required several steps.
+The first thing I did was to turn off Gmail's default setting that saved every incoming
+sender's address to my contacts list.
+So that was easy.
+Stop the flow.
+I then deleted all of the extraneous contacts and went from about 1200 down to about 400.
+The reason I had so many was because I teach at a university and I teach large classes
+sometimes, and I get emails all the time from my students, and Gmail was just logging
+every single one of those as a potential contact.
+And so I deleted almost all of those and got down to about 400 contacts, which I think
+is probably about right.
+Now this is where it got a little bit tedious, where I had to compare all of the duplicates
+and consolidate information between the various versions.
+For example, for someone like my father, I would have two, three, maybe even four different
+entries.
+One of them would have his cell phone, another would have his work email address, and another
+would have his home email, and then one would have his home phone number.
+And so the task was to have a single card from my dad that would have all of that information
+in it.
+And I had to do that for everyone in my contact list.
+So that was a little bit tedious.
+I have since discovered a tool that would have helped enormously in that process.
+And it's a little add-on for Thunderbird called Duplicate Contact Manager.
+And I highly recommend that if you are at this stage right now where you've been putting
+off trying to clean up your contacts just because you know it's going to be such a pain,
+go ahead and get that duplicate contact manager add-on for Thunderbird.
+Well, at least if you already use Thunderbird for email.
+And what it does is it goes through and finds everything that looks to it like it's a duplicate
+and it will display them side by side and you can easily consolidate information between
+the two contacts and then have one discarded and the other saved.
+So that took quite a while.
+What I did was I would work on that for 15 or 20 minutes every day.
+And after about a week I got it down where I felt like I had a good base of contacts.
+So the next thing to do was to decide what was going to be the source file format.
+And I considered V-card, I considered comma-separated value, I also considered LDIF format.
+And I decided ultimately to use LDIF as my source file format because there was a script
+that was pretty good at converting LDIF format into V-card.
+So you can't import V-cards to Thunderbird but you can import LDIF formats.
+On the other hand, you cannot import LDIF to own cloud, you can only import VCF or V-card format.
+So I found a Perl script online and I will include a link in the show notes to the Perl script.
+And that script was designed to convert LDIF contacts into V-cards.
+And it worked pretty well.
+It was missing a few fields that Thunderbird had.
+And so I edited it some and added some stuff so that it would include all of the stuff I needed
+when converting from LDIF over to V-card.
+And so my master file was going to be context.ldif.
+And then I would use the Perl script to convert all of them to V-card.
+And I would use that V-card file to import them into own cloud.
+And then from there, I use the card DAV sync application on Android
+to sync up the context from own cloud to my phone.
+And I choose to do a one-way sync where the server is the authoritative version.
+And so if I need to add another contact to my phone, normally I will just do it
+in the LDIF file and then export it to V-card, put it on own cloud,
+and then sync it up with my phone.
+That's basically how I've decided to handle it.
+And it's working pretty well.
+I've been doing it this way for about a year.
+And I don't have to add all that many contacts.
+Thunderbird does keep track of incoming email addresses,
+but it does not by default add them to your main contacts list.
+It puts them in the collected addresses area.
+And so when you choose to export your contacts from Thunderbird,
+it only exports the ones in the address book that you choose.
+It doesn't export everything.
+And so I let it do its thing as far as keeping track of the casual email correspondence
+and the people that I write to.
+So it can auto-complete quite a lot of addresses,
+even though they are not in my main context file list.
+But if I need to have a certain contact added to all of the various places,
+I will go through that process of creating an LDIF card converting to V-card
+and then importing to own cloud and then over to my phone.
+And I've written a bash script that helps ease the process of creating new LDIF cards
+where I run the script with up to four command line arguments.
+The first argument is the given name of the person,
+John, for example, the second argument would be the last name,
+Doe, so it would be script name, John Doe, then email address,
+and then finally, I think cell phone number,
+maybe up to five command line arguments.
+I think I've included cell phone and work phone.
+And if I don't have all of those things,
+I will just use the word none in place of the argument
+so that they end up in the right position.
+And then it will populate an LDIF template with the correct information
+and then we'll also go ahead and convert to V-card all in one command.
+And so that works pretty well.
+On my wish list for contact management,
+I wish that T-bird or Thunderbird would sync up with own cloud.
+And it seems like it used to, but the extension that allowed it to do that
+is broken as of last time I checked, which was a couple of days ago.
+There was a SOGO extension, SOGO,
+and that extension used to allow syncing up with card DAV file formats
+or servers, and it doesn't appear to work anymore.
+It would also really like for there to be a command line API
+to be able to update own cloud contacts,
+so I would not have to go to the web interface
+to import new contacts to my own cloud instance.
+I would much rather be able to do that by way of a script,
+but so far there is not a way to do that.
+But anyway, if you're in the same situation that I was,
+I would encourage you to go ahead and clean everything up.
+It takes a while, but it really is worth it.
+Because now I know that if my phone's system gets hosed
+or if I do something stupid to my computer
+and I lose all of my contacts, I have backups here and there,
+and I can within a minute or two have everything restored
+exactly the way it was with no duplicates
+and anything annoying like that.
+So that's it.
+That's how I manage contacts.
+I will talk to you guys later.
+Bye.
+You have been listening to Hacker Public Radio
+at Hacker Public Radio.
+We are a community podcast network that releases shows
+every weekday on day through Friday.
+Today's show, like all our shows,
+was contributed by an HPR listener by yourself.
+If you ever consider recording a podcast,
+then visit our website to find out how easy it really is.
+Hacker Public Radio was founded by the digital dog pound
+near the Phonomicom Computer Club.
+HPR is funded by the binary revolution at binref.com.
+All binref projects are crowd-sponsored by linear pages.
+From shared hosting to custom private clouds,
+go to lunarpages.com for all your hosting needs.
+Unless otherwise stasis, today's show is released
+under a creative commons, attribution, share a like,
+free those own license.

@@ -1,0 +1,290 @@
+Episode: 2356
+Title: HPR2356: Safely enabling ssh in the default Raspbian Image
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2356/hpr2356.mp3
+Transcribed: 2025-10-19 01:39:12
+
+---
+
+This in HPR episode 2,356 entitled, safely enabling SSH in the default Russian image.
+It is posted by Ken Fallen and in about 33 minutes long and Karima next visit flag.
+The summary is, Ken walks us through the crypt to secure the most Russian pixel image.
+This episode of HPR is brought to you by Ananasthos.com.
+Get 15% discount on all shared hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's honest and fair at Ananasthos.com.
+Hi everybody, my name is Ken Fallen and you're listening to another episode of Hacker Public Radio.
+Today I want to talk to you about re-enabling SSH on the default Razbian image.
+Recently they've disabled us because having SSH enabled by default, having a known username of Pi with a known password of Raspberry.
+And having that in the hands of 11 million of these devices in the hands of people who by definition are beginners as computing is probably not a good idea.
+So they've rightly disabled that.
+You can enable it, of course, quite easily via the GUI preferences, interfaces SSH enabled or via Raz being config,
+in face options SSH, yes, and okay, finish.
+There is however a third option.
+So when you're burning the image itself, you can either put it into a Pi and then log in with a keyboard video and a keyboard,
+it should be my screen and mouse, and then create a file called SSH on the boot partition.
+You can shortcut this by when you're burning the image you can eject us and then re-inject us, re-insert it into your computer,
+open it up the boot image and then create a file called SSH in the boot directory.
+It actually doesn't matter what's in there, couldn't contain text or nothing at all, and that will enable SSH by default.
+Or you could actually go into the configuration and turn it on manually.
+Boss, I want to do another of these things because in that amount of time that I basically want it
+coming out of the box already enabled with SSH enabled in multiple images and I want to enable it as soon as it downloads.
+So basically that will involve mounting the image, writing that file, but I want to do a few other things as well
+with the image. I want to change the root password and change the Pi password to something very very long
+and on Wheel D. And then I also want to make a few settings to the SSH server that's going to be running on the Pi image
+that's the one that listens for your incoming connections when you SSH to my Pi at my Pi.
+That's the one that's listening over there. And that will forbid the Roosh user from ever logging in via SSH.
+And we also are going to prevent any user logging in unless they're using SSH keys.
+What are SSH keys can? Well, they're a cool thing that is asynchronous.
+You get a public in a private key, your public key is secreting, you keep it and your private key,
+you put it onto the Pi. And that means once you have unlocked your public key, you can type SSH Pi at Pi
+and it will do the key exchange, confirm that you are who you say you are and allow you access
+without a username and password. Surely that's more insecure. Actually, it's not. So that's what we're
+going to do. For those of you who don't want to stick around for the long excruciating
+explanation of what I'm doing, there is a bash script in the show notes and there are details
+show notes available to explain how to do this using with step-by-step instructions. So if you
+just want to have a look at that bash script, feel free to do so. I've deliberately met it so
+that you need to edit it. But the steps are kind of obvious. I don't go into massive
+customizations. There's loads of stuff I could do. I could change the background. I could create
+other users. I could do all sorts of stuff like that. But I want to not do that because experience,
+a lot of experience has shown that that's not a good thing. You should use automation tools
+like Ansible Chef Puppet or CF Engine or something like that and manage your Raspberry Pi
+with those tools if you've got a lot of them or if you've only got one or two then do it however
+you want to do it yourself but using SSH keys. If you have a lot of Raspberry Pi's and don't like
+this image thing, another approach is to use the network boot option linked in the show notes,
+which will allow you to do what's similar to a pixie boot in the past where you mount an NFS mount
+immediately so that the Raspberry image boots up, connects to the network and then mounts
+its home directory, kernel image, everything comes across in the network. In that situation,
+there's very little read and writes on the SD card, very little chance that it will get damaged
+and you can probably use a smaller SD card or something like that. But then those units just become
+quite easy and replaceable. So the rest of the show will basically be describing how I don't
+know the image, how I verify it's intact, extracting the image, enabling SSH, changing the
+username and password and securing the SSH server for the Pi. So the first thing that we need to do
+is download the image from the Raspberry and Website. They're using a show once on to confirm that
+the file is intact, that has actually been shown to be compromised. So this should be used in show
+256 so you can expect that change coming soon, I guess. I personally use, I get the show one
+sum from the Website and then I show one sum and then the image zip file name and I pipe that to
+grep with the show one sum coming out and that way if grep is able to find it, then I know that
+the show one has passed, which is one way to do this. I use seven zip, which is usually not installed
+by default as my extraction tool of choice, largely because I use quite a lot of seven zip files,
+they're the highest compression method for large XML files, taking in my experience a 1.5 gig file
+down to something like 35 megabytes, 1.5 gig XML file. So good compression. Nice thing about it is
+you can throw zip files at it, you can throw B, you can do files at it and it's free and opens
+or software as well, available in all repositories. So I'm doing LS here and the show one sums,
+which you can, which I'm going to use for later. So that, after unzipping the file, we're left with
+an image file and some of you may be asking, while you hear this term, I've gotten, download this
+image for this and download this image for that. So what exactly is an image file? And it's kind of
+important to understand. In our case, an image file is a bit by bit copy of what the developer has
+on their desk. So they have a SD card and a position one, second one, blah one, there's a number
+and that's either one or zero. And after finishing this, the position, the position one will be the
+same position two will be the same position three and so forth right through so that you will have
+an identical copy of your SD card, including all empty space and everything will be on your SD card.
+Now to make it transporter of that as efficient as possible, the first thing you usually do in
+your Raspberry Pi is you extend those partitions to take in the additional space that's going to be
+on yours, so you're not transporting four gigabytes of empty zeros at the end of their disk. But
+what you're doing when you get an image file, be it an image file of a CD or DVD or in fact,
+Raspberry an image, you're getting a bit by bit copy of their file. Okay, so you can mount that
+using the Raspberry or the Linux mount command and that has supported the loop option for years
+and probably lots of you have mounted CDs and DVD images using the loop option in the past.
+But the first thing I would like you to do is nip over to have a look at what the boot sequence is
+for for a Raspberry and pixel just desktop. What is the boot sequence and it gives you
+the basics which is absolutely great infographic. I won't go through here, it tells you the names
+of all the files where they're located on the boot partition of the SD card and what's loaded,
+what file name is loaded and that file loads the next one and that file loads the next one.
+Very good infographic, so you can have a look at that. So down to the nuts and bolts, we now have
+the image and in order to enable SSH, we need to write a file into the boot directory of this SD card
+and how we can do that is we can mount the image. No problem there, we've all mounted DVDs and stuff.
+Well, there kind of is. Thanks to that too, coffee.
+In this case, unlike a CD image, this SD card has got two partitions. One is a small boot partition
+and the other is a larger Linux partition. At the beginning, there is partition information
+to tell you where the boot partition is and the root partition or the Linux partition is.
+So how do we find out that? So I have a link there to an Ask Ubuntu question that will show you
+the answer to this and that is using fdisk with the dash dash list and the dash dash units option.
+So the list shows you the list partition table and the units shows you the size in sectors or
+cylinders of that. So when we run fdisk space dash dash list, space dash dash units on 2017, 06,
+21 runs been jesse.image in our case. We see the second line has unit sectors of one multiple by
+252 bytes, which is the important one, blah, blah, blah, blah, blah, device, boot, start, and thingy.
+And then we see there are two images in there, two partitions. One of type win 95, fat 32,
+LBA and the other of type Linux. One is 41.7 meg and the other is 4.3 megabit. And we also see
+a start and then section. So it's the start that we're interested in. That is 8192. So essentially,
+what that does is it gives you that is the number of units from the start that that partition begins.
+So the units, kids are home, next door. So we can multiply 8192 by 512 and we will get an answer
+for exactly how many bytes from the very first byte we need to start in order to access and mount
+this partition. And we can get that by running that command and using Oc and using this slash slash
+parameter with the character sign units showing sort of grip as in filter out the units,
+something beginning with units. And then I want you to print me the second to last
+piece of information in which case in our case, that's 512, give us backs with the number of
+units. And we can do the same thing for the start value. And we're in that case, we're
+awking and we're filtering for win 95, fat 32 and we're printing the second value, which is
+the start value 8192 comes back. That's wonderful. And because we've all spent time listening to Dave
+Morris, we know that we can multiply two numbers together by using the dollar, echo, dollar,
+open bracket, open bracket, one number multiplied by the other number, close bracket, close bracket.
+In our case, 8192 by 512 will give you 4194304. And if we use that with mount space dash O, space loop
+comma offset 4194304 and then the image and then slash mount SD card, which is where we're going to
+mount it on our local machine, then we will find that our disk mounts. And then in the show notes,
+I give you instructions on how to do all of that in the script. So if you do LS slash MNT slash SD
+card, you get a whole go of, you basically get the boot device where you can see config.text
+and I don't know, kernel.image and license broadcom license article blah blah blah and all the files for
+they and for the mounting the rasbin boot image. Now you could use a text editor at this point,
+we're doing a script. So I'm just going to touch the command using create the file using the touch
+command slash mount slash SD card slash SSH and that creates a zero byte file in the in that location.
+So what we're going to do now is on mount the slash mount SD card. So we're finished with the
+root partition because we don't want to do we will now enable SSH. You could
+take the image, put it into your Raspberry Pi and boot it up and you're back into the exact
+same position you're listening, your computer will be listening on an open port 22 and the
+username Raspberry, username Pi and Rasp, username Pi password Raspberry and you'll be able to log in.
+That's not really what we want to do. What we want to do is generate some SSH keys here.
+If you are not familiar with SSH keys and give me a link in the show notes to a good overview of
+SSH keys, why, what are the advantages? Your password is never sent over the network,
+eliminates brutes, risks of brute force attack and that's a lot more convenient,
+couldn't agree more. If you've never generated SSH keys, the best SSH key to use nowadays is
+ED25519 and you can generate those using SSH-keygen space-t which will determine the type ED25519
+space-f which will specify the file name and my guess I'm just going to pick the default in the
+look wherever it happened to be, ID ED25519 and dash c and put it in Raspberry Pi keys for Ansible
+and that will create two keys for your public key which has got a dot pub and a private key which
+has got which is slightly larger file 111 for the dot pub and 419 bytes for the private file.
+Your private file cannot stress enough, you will be asked to put in a username and password,
+you should do that, cannot stress enough that you keep the private key very, very safe,
+make sure you've got copies of it because you will need to be able to get access to it again.
+The public key, you don't really care what it is. Now if you don't understand the reason why
+there is an excellent video released by the CAN Academy and it's released under CC by SA.
+I believe NC perhaps and it's been stitched together the various different sections of a
+by Brick Crew, it's originally a Brick Crews video and goes to an absolutely excellent description
+of how where SSH keys come from, why they were needed, why they were developed and the advantage
+of them, essentially it boils down to mixing two different colors of paint. So you share the same
+color so you're going to mix it with red and you have one color green and the other person has
+some other color and by mixing the two colors with red you pass the the outcome of that to them
+and they pass the outcome of theirs to you and you mix your color, secret color with their mix
+colors that will give their other color, very, very good. If that doesn't make a lot of sense,
+have a look at the video, it's well worth the watch. So I show out here what they, what's the
+contents of the two key files, obviously, you keep your private key very private and you can
+copy it into your own SSH directory and that will allow you to, that's where your system will be
+expecting to find us. So this is the SSH directory and your computer not on the pie unless you
+happen to be, your computer is a pie in this case. So the one that you are going to be connecting from,
+that's where you put your public key in. You can, by the way, use the dash i command to specify
+a different location but that's outside the confines of this. Anyway, onto the next step,
+what we want to do is do the same thing as we did with the mount in the boot directory. We want
+mount the root directory which is Linux. So we're going to do exactly the same commands that we did
+before. We're going to mount the image. We're going to use och to look for units and we're instead
+of having och look for win 30 win 95. It's going to look for Linux. It's going to multiply the sizes
+out and it's going to mount them in an SD card. So then at the end of this, we will have the SD card
+slash mount slash SD card will mount the root directory. So for example, slash home slash pie
+will be available. So the eventual home slash home slash pie directory where you would be when
+your pie boots up is now available on your other master computer under slash mount slash SD card
+slash home slash pie. Clear, clear as well. Okay, so now what we want to do is we want to copy over
+your public key to the image so that when the pie boots up, it knows where to find a list of
+keys that are authorized to log into the it's computer. And those are kept in a hidden directory.
+Hidden is denoted by a any directory starting with a period of full stop followed by in this case
+SSH. So in a dot SSH directory in your home directory, if there's a file called authorized
+underscore keys, that will contain a list of public keys. They're in the in the files, all the
+public keys that are allowed. So you your friends, whoever needs taxes, this pie, each of you have
+got your own public key for your own private key. So for example, those three of you and you would
+have a text file with three keys one after the other underneath there. And that's in your slash
+home slash pie dot SSH slash authorized underscore keys file, which of course is mounted on slash mount
+slash SD card slash home slash pie slash dot SSH slash authorized keys. Yeah, so all we need to do is
+cat our ID underscore ED25519 dot pop into that file link in the show notes. And as you can
+see in the show notes, we copy that file over. Unfortunately, it's not as simple as that before
+we do that, we actually need to make the directory because the dust SSH directory does not exist.
+So we can we use the make your command. Now SSH is absolutely paranoid about any changes on
+this. If the on these directories and these files, if the files are not formatted correctly, if they
+don't have the right permissions, if they're in the wrong location, it will not allow somebody to
+log in, which is right and correct. So we have a series of commands that we need to do three.
+In fact, first one is we need to make a directory. The second one is we need to
+change
+mod on that, change the mod on it. So it's 700 allowing the
+user to read, write and execute and the execute from the directory being the ability to change into
+the directory. And then we change the ownership to 1000, 1000, which I'll get to in a minute.
+So SSH is very paranoid about that. So where does the 1000, 1000 come from for the permissions?
+Well, if you are on this computer here, for example, that isn't a pie. It isn't going to have a
+pie username created. It's going to have your username, Joe or Bob or whatever, BLZBub.
+And that will have a user ID. So normally, when I wanted to change permissions, I can go change
+owner, can, call on, can. So it's the group. It's a user called can and the group called can. But as
+this doesn't exist on this image, we need to find out what that is. So how we do that is we
+check GREP for the lines beginning with pi on slash mount slash SD card slash ETC slash pass WD,
+P-A-S-S-W-D. And that will show pi, call on X, call on 1000, call on 1000. And then come, come,
+come, come, come. And then home, pi, call on. And that basically is the line that tells the system
+what user ID number, what the user name is and what the ID is of the user. And we do the same
+thing. EGREP lines beginning with pi, a charat symbol, like a hat or shift six on the US keyboard.
+slash mount slash SD card ETC in groups. And we see that the pi group has got an ID of 1000.
+So in both cases, we can use change on 1000, call on 1000. Because even though 1000, 1000 is
+probably the user that you are using on your own laptop right at the minute, because you're
+more than likely the first and only user create there, that's going to be the user of the pi over
+over there. So we change the ownership of the authorized key file to be what will be the
+pi user when we boot that machine up. And we change the octop permissions on that file to 600,
+which is read and write. We don't need execute on this. Execute on the file means this file is
+allowed to load runtime code into the processor. As in, it is a program. So that prevents some
+malicious attacker getting access to this file and using it as a way to run code on the machine.
+So that's the that's the authorized keys part done. Excellent. Now what we need to do is restrict
+the route and require keys for the pi's SSH server. So in order to do that, we need to
+tell us they file SSHD underscore config, which is kept in the slash ETC file of the pi, which in
+our case would be slash mount slash SD card slash ETC and then SSHD underscore config. And there are
+two parameters that we want to change. One is permit route login. If this option is set to know,
+route is not allowed to login. Just for clarity, I put in via SSH. And then password authentication
+specifies whether password authentication is allowed. The default is yes. And what we're going to do
+is we're going to change password authentication to know and permit route login to know. And I'm not
+going to tell you how to do that. It's using said, if you want to know more about said, look
+update morse show, which is linked in the show notes. So the next thing we're going to do is we need
+to change the route and pi user password. Now this one is a little bit more complicated. So you can
+check for I'm using eGrip called route pi called slash mount slash SD card slash ETC slash password.
+And I see that there's a route user and a pi user in there and both have X in the second column,
+which means that their encrypted password is installed in the slash ETC shadow file. And if we
+look in their slash mount SD card ETC, we see that the route has got an asterisk, meaning there is
+no password session. It's not allowed to log in. And the pi has a password and it begins with dollar
+six. And a dollar six is tells a system that is a show 512 hashed password. And normally if you're
+doing this trick of generating passwords, you get a dollar five, which is an empty five password,
+which is not secure anymore. So you're looking for a show six. Now the best option I could come
+across to do that was a link for how to over its server fault.com. And the answer was given by
+Davy, how do I create a show 25512 hashed password for shadow. And here she uses a inline python
+three script to import crypt and then print crypt dot crypt and then correct hard spot tree stable
+and then add some salt to the end of that file. And basically creating a root password
+in a root password variable. And I do the same thing for the pi user. And then I use said again
+to replace to find the root user and then change their password and find the bio user and change
+the password. And we can confirm that those are changed. So those are all three things that we need
+to do. So what we can do now is on mount the SD card using you mount space slash mount slash SD card.
+And I'm going to rename the files. So I just rename them dash SSH enabled. And then when we do an
+LS of the images, we see that the images that we have just created are I've got the same file size
+as the images that we downloaded from the Raspberry and website, which is kind of strange.
+And but if we do a show one some, we find that the images the check sums have in fact changed.
+So there you go. That is because the file size did not change because we were just changing
+ones and zeros that were already there. Two different ones and zeros. But they show some will look
+at those order of ones and zeros and say, are they the same or not? And we'll give you a hash of those.
+So then we have an image that we're ready to burn. And burn is a traditional term coming from
+taking an ISO image and putting a seat on to a CD. And the laser literally burns with a coating on
+the CD or DVD cover. And we're going to use the normal way of doing this, which is DD space BS equals
+for M. So for Meg, I think by sector, don't know what that sensor didn't look it up. And there's a
+cool new option in the recent versions of DD to give you a status equal progress. And that
+you know, prints out some progress. Don't know how useful it is, but at least you know that
+their program is doing something. And then the IF file infile equals the image file with SSH enabled.
+And the OF is slash dev slash MMCBLK zero in my case. How you can check to see if that's
+the same for your case is first extract the SD card. Do an LSBLK
+and see the list. Insert the card again and do an LSBLK. And then you will see the differences
+between the two outputs will more than likely be yours. Just to be sure, I tend to eject all other
+things, my phone, my sensor tip, everything so that I know 100% sure that what I'm burning the
+images on to is what I'm burning the image on to. You need to be very, very careful. Be awake,
+engage brain folks, engage brain. Okay, so now what we have is a regular old Raspberry image,
+which during the course of researching this and writing it up, they actually changed and
+updated the image. So I am able to confirm that it still works. And when I put it into my pie,
+I was able to do SSH space dash i and then the ID underscore ed25519 space pie at and then the
+IP address in my pie and then boom, I'm logged in without using the password. If I try to log in
+in as root, it says reject it. If I try and log in with pie without a key, it says reject it.
+But that's not really very handy because every time I do that, I need to add the password.
+And now you might be tempted to put in the password like that we've generated before
+in the script area on, but that is not the password that's been asked for. You've been asked for
+the password of your SSH key. So what I have in the morning is first thing I do, a boot off my machine,
+I grab my cup of coffee and I type SSH dash agent. Actually, we all know I don't do that. I type
+a shorter key sequence that does a load of other things, one of which is running SSH dash agent.
+I enter my very long password and I do mean very long password and I press enter and then for
+the rest of the day, I can then SSH into any server, any server that I should make use on it,
+any server that has my SSH public key on it in the authorized key file, I will be able to log
+into that without being challenged for using it or password. And that is it. That is how you enable SSH
+securely on a Raspbian image. I think I have managed to make it a lot more complicated than
+it actually is. Download the script, have a look at it, modify it for your needs, and you can even like,
+I don't know, change the fault using name and password to some random strings or whatever,
+because you probably won't be needing them. All right, tune in tomorrow for another exciting
+episode of Hacker Public Radio.
+You've been listening to Hacker Public Radio at Hacker Public Radio.org. We are a community
+podcast network that releases shows every weekday Monday through Friday. Today's show, like all our
+shows, was contributed by an HBR listener like yourself. If you ever thought of recording a
+podcast, then click on our contributing to find out how easy it really is. Hacker Public Radio was
+founded by the digital dog pound and the infonomicon computer club and is part of the binary revolution
+at binrev.com. If you have comments on today's show, please email the host directly, leave a comment
+on the website or record a follow-up episode yourself. Unless otherwise status, today's show is
+released on the creative comments, attribution, share a life, 3.0 license.

@@ -1,0 +1,569 @@
+Episode: 2811
+Title: HPR2811: Interview with Alan Pope
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2811/hpr2811.mp3
+Transcribed: 2025-10-19 17:13:09
+
+---
+
+This episode of HBR is brought to you by AnanasThost.com, get 15% discount on all shared hosting
+with the offer code HBR15, that's HBR15, better web hosting that's honest and fair at AnanasThost.com
+Hello and welcome to Hacker Public Radio, my name is Janik and I'm the French guy from Switzerland.
+And in this episode I'm going to talk with Alan Pope from Canonical about SNAP, SNAP craft and everything related. Let's go!
+A few years ago when you wanted to build a package on your Linux distribution, you had to go grab the sources and the nightmare to begin.
+But nowadays this is over, you have deb files, you have SNAP files, you have flatbacks and other universal packages.
+So to talk about one of them in particular, the SNAPs and everything that's around SNAPs, I have with me Alan Pope from Canonical, good evening Alan.
+Alan? Hello Janik, how are you? I'm fine, thank you. How are you? I'm very well. So Alan, for the two or three people in the dark corners of the internet, I don't know you yet, which you are going to do in a small introduction?
+I'm Alan Pope, I am often known as Pope E online and I've worked for Canonical for seven or so years, maybe eight years now. And I've worked on various projects including Ubuntu Desktop and I've worked in the Ubuntu community and more recently my role has changed to become a developer advocate for SNAPs and SNAP craft.
+Nice, you're also host of the Ubuntu podcast. Yeah, I started the Ubuntu podcast with some friends 11 years ago now and we initially started just doing a few episodes were not sure how long it would last.
+And someone wrote in and mentioned that our season numbers were prefixed with a zero like season zero one and they the person who wrote in thought that was extremely arrogant of us thinking that we would ever get to 10 seasons and we've got to the 12th season starts this year.
+So it's far more episodes than we ever thought we'd make, but it's enjoyable. It's good fun. It's a few people sitting down. We talk about Ubuntu obviously because it's a Ubuntu podcast, but we also talk about general Linux things and other tech things and what we've been up to.
+It's good fun. Yeah, nice podcast and.
+Thank you. Yeah, really enjoyed it. So let's talk about the subject to this subject, SNAPs, SNAP craft and everything around that.
+Let's start with what are SNAPs on on they like zip file on steroids?
+Yeah, kind of. I mean, you could think of them just as software packages really much like on a Android phone, you have APKs that contain your software and you grab that from a store.
+It's very, very similar. It's a software store for the Linux market. So it's not specific to desktop. There are server packages in that store. There are packages for raspberry pies and there are big desktop applications in there as well.
+So you can think of it as an app store for Linux very much like Google Play Store or Windows Store or any store you get on any other platform really.
+Yeah. What pushed canonical to make SNAPs? I mean, there was already other packages that obviously dev phase. Why why make SNAPs?
+Yeah, that's a good question. And it's it's an evolution of work we did on a bunch of phone. So we worked on a mobile platform, which is commonly referred to as a bunch of touch.
+And we figured out that it doesn't really work to have the traditional well, the traditional packaging systems like Debs on a phone don't work particularly well, especially when you've got a device that's very constrained in terms of resources like disk disk space and a matter of memory and the CPU there very much limited compared to a desktop machine, modern desktop machine.
+There's also the problems that the power often just gets turned off and the network is unreliable, you know, with the battery dies. So when we were looking into really kicking off the phone project way back in 2011, 2012, we looked at the various ways we could deliver software and we decided not to use Debs for applications, the applications that developers will create.
+Instead, we created something called click packages and click packages were our way of delivering software to open to phone so that it would work reliably and atomically when delivered over a dodgy network connection where there's limited power and limited resources.
+And you could roll them back if they went wrong and so on and so on. And we learned a lot from doing that and the phone project got shut down in 2017.
+But we learned a lot from it in terms of how software could be delivered and how it can be made easier for users to discover it because the phone had a built in app store, even to one store where you could discover new applications and developers could publish their applications as these click packages.
+And it made it a lot easier for people to find software on their mobile device on their Ubuntu touch device. And so we wanted to bring what we'd learned there to the desktop and server and IoT and snaps are a kind of evolution of click packages similar kind of thing that atomic packages they have some of the same attributes as click packages.
+So there's this lineage of, you know, we worked on Debs back in the day, then we moved on to clicks for the phone and now we've moved on to snaps. So that's kind of the history of where snaps came from really.
+So natural evolution then right exactly. And and it's, you know, often people wonder, you know, why we did it? What was the point of this? Why are you why are you reinventing the wheel? And there's some solid reasons why and, you know,
+the one of them is that discovery. It's very difficult for developers to get their software in front of users, especially with traditional Linux desktops where software is packaged as RPMs and Debs packaging software in that way is not straightforward, even for an experienced developer for a developer who's not wanting to really get engaged in the minutia of detail of how a Linux
+distribution is built. They just want to deliver their application to those users. They don't really particularly care about all the processes and all the rules about how the distribution is made.
+They just want their software in front of users. And from a user perspective, the user just wants a new software and they want to find that new and interesting software. And we found making Debs and having Debs be the foundation of the app store was really limiting for both of those problems.
+And so snaps solve the problem from both sides. They make it easier for developers to create the package in the first place. And they make it easier for users to find the packages.
+Okay, so talking about developers building their packages, how can one build a snap of their own app? Is it really different from building a Deb or is there any tools available for that?
+Yeah, so we created a tool called SnapCraft. But if we take a step back and think about what a snap actually is, it's an atomic compressed file.
+I mean, you said it's like a zip file on steroids. It kind of is really technically all the snap packages is a bunch of files compressed as a squash FS file with a tiny bit of metadata in there.
+And that's it. And you could actually create a snap package by just dumping a bunch of files in a directory, put the metadata file in there and then compress it with MK squash FS.
+That's that's all you need in order to make a snap. So if you're, you know, that that kind of person and technically competent, you could make a snap with MK squash FS and not need any other software.
+But typically developers don't want to do that, you know, hard core ones and zeros way of making packages. They want tools that will do it for them.
+And so we created a tool called SnapCraft. And SnapCraft is written in Python and it understands how to build software. It has a system of plugins. So it knows if your project is built using CMake, it knows how to build a CMake project.
+And if your project is built with rust, then written a rust, then SnapCraft knows how to use cargo and the other tools that are around rust.
+And the idea of that is SnapCraft can compile your software into a snap more easily than you could develop the Debian packaging or the RPM spec file or whatever it is you need for these other packaging formats.
+The idea is to make it easier. And we provide a bunch of documentations and tutorials and videos that, you know, let people know how to package their software.
+And you don't actually, I've mentioned building from source, you know, CMake and rust and cargo and all that kind of stuff.
+But SnapCraft is actually more flexible than that in that you can take a pre-built binary and just jam it into a snap.
+And SnapCraft has a plugin called dump. And with the plugin dump, you can just point SnapCraft at your already built application, which could even be a deb, in fact, and just ingest that file that you're already creating and drop it into the snap and that will work.
+So we try and make it as easy as possible. Software packaging is hard. It's not straightforward, but we've tried to make it as easy as possible.
+And we're always looking for developers who want to get the software out there to try using SnapCraft and let us know if you get stuck.
+We have a forum where people can ask questions. And, you know, if there are bugs in the process, you know, we want to fix them.
+Okay. You said that SnapCraft knows how to build the standard languages and stuff like that.
+But if I have my own very, very carefully crafted bit script, can I still use SnapCraft to build my app?
+Yeah, totally. There's a concept in the SnapCraft. SnapCraft is driven with a YAML file. And the YAML file has a few sections. There's a bit of metadata at the top, which describes your application, like the name, version, summary, and description.
+And then the bits that make up your software, all the component parts are called parts. And you list those out and specify which plugin you're going to use, whether it's CMake or Rust or whatever.
+But what you can also do within those parts is override the defaults.
+So, for example, with auto tools, the typical configure make, make install, you might have extra steps you need to do in between those that, you know, is part of your build process.
+And SnapCraft doesn't know what they are. So you can do what's called an override build where you explicitly specify the bits where you're deviating from what would be the standard way to build software.
+So, yeah, you can override it. You can do it all completely manually if you want to. You could just basically insert the lines of your build script directly into the SnapCraft YAML and have it build via whatever method you choose.
+You don't have to use the pre-built plugins. They're just there as a convenience, really.
+So, powerful and flexible.
+That's the goal.
+You mentioned that it's a snap is actually a squash FS file system. So that means if I have dependencies and I need that that library and that config file and etc. It's all in the snap.
+To a large degree, yeah, there are some exceptions to that. So, for example, if you've got an application that depends on a very specific version of Python.
+The goal of SnapCraft is that they can run on any Linux distribution. And as a developer, you have no idea what version of Python exists on the end user customer systems.
+And so you bundle whatever version of Python you know your application works with inside the snap.
+And whatever other libraries that you need, you bundle those inside this compressed file. And then you've got the same snap will work on lots of different Linux distributions.
+And you don't have to worry about the underlying libraries that may or may not be present because while one person has a traditional Linux desktop system like Ubuntu or Fedora that has a lot of these things pre-installed.
+Someone else might have a super minimal Linux distribution that doesn't have the things that you're expecting. And so you bundle those into the snap.
+And then you guarantee that the way it works on your machine is the way work on another machine. And if it doesn't work the same on every machine, then that's a bug in probably SnapCraft or SnapD or one of the components that we look after and we need to fix that.
+All right. So if it's not working, it's your fault. Basically, the sweat sweat sweat sweat. I develop it somewhere. Yeah, somewhere.
+All right. Isn't there a risk here to see like I installed five snaps and five of them bundle Python. And then I end up with five, five times the same version of Python.
+That's possible. It's certainly possible that there might be components in your snap that are the same as components in another snap, but you don't necessarily talk to that other developer.
+And so they might one day decide to move to a newer version of Python, but you don't want to. And so each snap has its own independent version of Python.
+It's just using Python as an example, but it could be something as simple as LibBNG or LibJPEG, you know, it could be anything.
+And so you're not tied to what the distribution ships and you're not tied to moving forward just because another package has moved forward.
+And so yes, there may be some duplication on disk. And that's mitigated slightly by the fact that these are compressed. They don't actually get uncompressed on your system.
+So when you install a snap, it stays compressed all the time. And at the point when you run the application is reading the uncompressed files dynamically while it's loading.
+There are a couple of other things we can do to mitigate that. We have a concept of what are called content snaps and a content snap is a snap that might contain a lot of very common things.
+And I'll give you two examples of a content snap and why that might be useful.
+Let's say you're a GTK developer and you're creating an awesome new gnome application.
+Chances are you're using a whole load of GTK and gnome libraries that every other GTK application uses.
+And so there is a gnome platform snap, which you can depend on or you can reuse rather.
+And so when your application is built, you don't need to bundle those libraries in your snap because they're already in the gnome platform snap. And similarly, there's a KDE framework snap, which contains the typical KDE libraries.
+If you're building a cute application that's using common KDE libraries, then there's no point you bundling them because you can just reuse this KDE framework's content snap.
+And there are a whole bunch of gnome snaps and there are a whole bunch of KDE snaps and they reuse these platform snaps so that you don't have that duplication.
+But if you did need to go off piece and your application is using brand new bleeding edge versions of GTK libraries or some part of the gnome stack that you need that's newer than is in the platform snap.
+Then sure you bundle it in and it will override whatever's in the these content snaps.
+So it's a trade off between making sure that there's exactly what I need on my system and the size of the snap.
+Yeah, and we're certainly conscious of the fact that snaps can contain duplication across multiple snaps.
+And that can be a problem for some people who don't like the idea that you've got multiple copies of Python, but equally from a developer's perspective, they want to know that this application is going to work.
+They tested it, they worked with the version of Python they were using.
+And there's an additional support button that they have to deal with when a user on some random distro somewhere says, hey, it doesn't work here because I've got Python XYZ or I've got my own home built version of Python and it doesn't work.
+And you know, developers got to figure out some way of supporting that or not.
+And with a snap, they don't have to worry about it because it's the same package on every distro.
+I think personally, I think that the advantage is a lot bigger than the inconvenience of having multiple copies, but that's my own point of view.
+I believe that snaps when they run in the in the strict strict mode, I think it's it is or a sandbox it.
+So what does that mean exactly can can can snaps do whatever they want on the system or that's a good question.
+So this is one of the things that snaps introduced that the other traditional packaging systems don't have is a concept of confinement.
+So for example, if you've got a application that does some kind of address book and you've got another application that is like a photo booth application.
+You don't want the photo booth application going and scrubbing around finding your address book and then uploading it to the internet and equally you don't want your address book application randomly turning on your webcam and being able to take photos.
+So with snaps, we have some control over the access to the system that they have and each snap can have a different profile of what they can see.
+So the strictly confined snap by default has access to very little and it has a kind of fake view of the world when the application starts up.
+It can see a root file system and it can see some readable areas to writable areas and it can see all its binaries and all its libraries and it can run.
+But if it tries to connect to the network, it will fail by default.
+And if it tries to play a sound, it will fail because it won't be able to connect to the audio system subsystem and it won't be able to open the camera and so on and so on.
+And on a Raspberry Pi, it wouldn't be able to connect to the GPIO pins and so on.
+And the goal of this is to have limits to what an application can do so that it can't reach outside what would be normally expected for that application to do.
+And so with strict confinement, we build on top of that that view of the world with what are called interfaces and these interfaces grant access broad access to particular parts of the system.
+So it might give access to the network or it might give access to the camera or to the pulse audio or to the GPIO pins or whatever it might be.
+And this list of interfaces is growing over time as we discover more applications that need access to strange and esoteric parts of the system.
+We create interfaces for them and those interfaces will then be specified by the developer and the user can see which interfaces each application is connected to and can optionally disconnect them or connect them if they're not automatically connected.
+So it gives the developer the capability to list the resources that it will be reasonably expected for the application to use and it gives the user visibility of what they can expect that application will want to be able to do.
+Okay, I have now a personal question. I'm very interested in is the connector with Alza actually working now.
+I was building an app last year and I had lots of trouble connecting to Alza.
+So there are some, should we kindly call them legacy technologies in Linux, which are a little bit more difficult to confine and this is, this is a problem with many old any vertical as applications.
+These are pretty existing applications like any binary if you imagine yourself as a as a Linux binary somewhere on the file system.
+You have some expectations of where you can read and write and the devices you can talk to and those expectations are broken slightly by strict confinement because an application will just expect to be able to write to a particular place or connect to a particular device.
+And if it can't do that, then the program may crash or it may not operate correctly.
+And so it can be troublesome when we've got applications that use some of these older technologies where they don't behave particularly well when they're told, no, you can't access all Alza devices.
+We do have workarounds for that. Alza is a particularly gnarly one and Dan Lewell in a member of the SnapGraph community came up with some reusable parts that you could just paste into your SnapGraph YAML that will give it access to Alza.
+Unfortunately, Alza has a bunch of hard coded paths in it, so you have to kind of build parts of Alza yourself, but it's really copy and pasteable.
+Okay, I'm going to give it another try then.
+My next question is now obsolete.
+We are on the 29th of March 2019 and yesterday evening, the Twitter and the whole internet went crazy when the SnapGraph team announced that the problems, the starter problems of Snap have been resolved.
+Is that correct? Yeah, I saw that blog post as well. That blog post was written by a colleague of mine, Eagle.
+And so some back history, Snap's have over the last year or so had a reputation among some people that they are innovative commas slow to start.
+And it turns out in certain circumstances, some applications when snapped might be slower to start up than if they've been traditionally packaged.
+And the developers spent a lot of time looking into this and trying to figure out exactly what it was and some of the problems were particularly obtuse to do with font caching and date stamps and the way that one date stamp is.
+Of one second granularity and another date stamp is nanosecond granularity and how they don't match and that causes fonts to be rebuild font caches to be rebuild those kind of things can slow down application start up.
+And I think we've nailed those issues.
+There may be other issues as well.
+The goal of snaps isn't that the application should be slow and you should just suck it up right if there is a problem if it is slow.
+We want to know why and we've started building additional tracing tools into snap itself snap D itself so that we can debug these kind of things.
+So for example if you type snap run VLC for example if you've got the VLC snap installed then that would just run the VLC snap.
+But there's an additional parameter called trace exec and if you do snap run VLC dash dash trace hyphen exec it will run the snap.
+But then afterwards it will print out a list of the top 10 syscalls that were made during that application starting up.
+And so you can learn to identify what the bottlenecks were that were causing the application to start slowly.
+So it's not that snaps are slow to start.
+It's that in some circumstances some applications might be slow and we need to identify why and fix it and we fixed at least a couple of those issues.
+And you know we're very mindful of this because we hear this all the time and we want to fix it you know so if you if you do if any listeners are encountering issues where a particular application is slow come and join us on the forum.
+You know let us know which application it is what environment you're running on and we'll try and reproduce it we have tons of VMs of every single Linux distribution and we.
+We enjoy investigating these things and we do we will dedicate developer time to identifying these things because it shouldn't be the case.
+It should it should just start in the same way as it does in traditional packaging.
+So if it doesn't it's a bug and we need to fix it and developers themselves can use this option.
+I mean it should be it should be fixed if possible by the the maintenance of the project.
+Well I mean if it's our fault you know if it's something that snap D is doing or something that you know and we need to do the investigation either way right and that's on us you know if the developers coded in a loop that sits around spins for 10 seconds and there's not a lot we could do about that but you know if it's if it's on us then sure we want to look into it and we want to fix it.
+We totally do.
+So if I find my snaps is slow to start and just do the tracing and send that to you and then you can.
+Not me directly.
+That doesn't scale but yeah on the forum.
+The forum.stapcraft.io and the developers are very friendly and you know especially if we get multiple corroborated reports of like you know multiple people running the same application in different places and being able to show.
+Look it starts in this amount of time here and it takes longer there and it's noticeable.
+Then sure we're going to we're going to look into it.
+So create 15 email addresses and post notifications.
+So back to the fact that snaps are squash FS file systems.
+When a snap is installed or mountain I don't know how do you actually name that there's there's a lot of moon points on on the system.
+Does that use resources I mean if I have like I don't know six sixty five thousand snaps will I run out of five descriptors.
+If you've got sixty five thousand snaps that's a lot of snaps installed at once.
+But seriously I don't I don't know of any additional resource that that's taking up having an extra mount point.
+These are standard kernel features having additional mount points on the system it's entirely possible.
+I personally haven't benchmarked having you know one snap versus ten snaps versus a hundred snaps.
+My system I actually do have about two hundred and fifty snaps installed on my system so.
+You know I am the worst case scenario and when these things go wrong I am the first one to complain I probably have more snaps installed than anyone else on the planet so.
+I am you know patient zero when these things care and I do report these kind of issues but I'm I'm happy to hear from anyone who.
+Has a notable performance problem as a result I started a thread recently on the forum.
+Because I noticed that boot time was possibly affected and the developers are on that and they're looking into it right now.
+Like I say I'm an outlier with two hundred and fifty odd snaps installed on my system which is a little bit you know a little bit over the top.
+I know some people don't like the fact that because they mounted squash affairs files the output from some terminal commands can be a bit cluttered like df for example if you.
+You know people commonly type df to see how much space they've got on their route partition or their home partition and then that's all clouded out by all these.
+Snaps that go scrolling by and that can be frustrating so one tip I would give you is what I have is in my bash rc an alias.
+For df that uses df dash dash exclude and you can do exclude equals squash of s and by doing that every time I df it only shows me everything that's not a squash
+fs file which is basically every other partition which I do on all my systems and I'm lobbying the Ubuntu desktop team to make that the default in Ubuntu so that everyone gets that but that's you know one line to add to your bash rc to make that problem go away.
+There you go deep on tricks of the episode absolutely.
+If I was to start building a nap for Ubuntu today I should even bother but deb finds.
+It depends depends what type of application it is really.
+If it's a open source and it's a library of some kind maybe it's not a full what we call leaf application if it's a library of some kind that might be useful in lots of different Linux distributions then maybe that makes sense to package it as a deb and get it into Debian not directly into Ubuntu but get it into Debian then.
+All of the many derivatives of Debian and Debian itself will benefit.
+So I still think there's value in creating debs for system level components and system libraries and utilities that would be beneficial to the wider Linux ecosystem but I think there's certainly a space for snaps which allow a developer to very quickly iterate.
+If you're moving fast on an application and you're iterating really quickly and you're doing releases every couple of weeks or every couple of months then maybe a deb is not the right idea because once you get it into Debian or even into Ubuntu and that release of Debian goes out or that release of Ubuntu goes out.
+It's kind of frozen you can you can push updates and bug fixes but the whole process for getting Debs into Debian and Ubuntu and other distributions.
+It can slow you down as a developer and one of the things we want with snaps is to speed developers up so they know that if they've got a new release they can just push it to the snap store and everyone gets the update because they auto refresh.
+Whereas that that that we found in the past.
+Develop getting developers to create Debs a is hard and but b is it slow the whole process of getting your application into the Debian archives is slow because it's dependent upon Debian developers and maintainers and archive administrator you've got all these people in the way between you and users.
+Whereas with snaps you push it to the store it's immediately available for users to install.
+There's nobody in the way saying well we've got a release coming you can't put it in that release of Ubuntu or that release of Debian you're going to wait for the next one which is what used to happen.
+With snaps you're in control there's the developer you push it to the store if you want to push an update you push an update there's no there's no maintainer sitting in between you and your users.
+Talking about the store it's the store is open I mean I can push my own snap on the store as you said earlier but what stops me from publishing a snap of let's say game poor open shot and pretend I'm the maintainer of that snap.
+That's a good question so we anticipated this when the store was first set up and we pre-registered the name of every application that's in the Ubuntu archive.
+And we also pre-registered a whole bunch of other popular open source and non open source applications to prevent this or reduce the chance of this happening so that you're less likely to get someone saying hey I am the Gimp developer and here is my copy of the Gimp and it's got malware in it or it's just buggy and you know it doesn't necessarily have to have malware it could just be that it's not updated very often.
+And then users install it thinking it's official and they get frustrated because it doesn't get updated or it's buggy or you know it doesn't look right.
+So we pre-registered them and if a developer who is a legitimate like Gimp developer in this particular example or whatever tries to register the application name in the store the store will tell you that's already registered meaning we pre-registered.
+Or it could be somebody else already has it and then offers for you to go through a process to request a discussion with a store admin.
+And so at that point you can say no I'm the Gimp developer I would like that name and you could put a comment in there and put some text in there that corroborates your story maybe your email comes from the domain you know gimp.org or whatever.
+But provide additional evidence that says you are the rightful owner of that application name and then the store admins and that includes my team will read those and arbitrate that.
+And maybe we'll contact the other person who has that name or if it's just one we pre-registered we release it and you have it.
+So we've tried to make sure that that doesn't happen so often it still can happen because we haven't registered every possible application name in the world.
+We haven't pre-registered them so it can still happen and has happened and we do arbitrate and you know we get on phone calls with developers and try to mediate between them and decide who's the right person to own the application name because what we want is for users to have confidence that when they go to the store.
+And they see Gimp or Bitcoin or whatever it is that they know that that's coming from where they expected to come from just the same as any other store you know if you go to Android play store and there's an application in there like a VPN client for example you want to be sure that that VPN client came from the vendor of that VPN and not from some random dude on the internet right.
+Yeah especially for a VPN exactly and and so there are certain classes of application that we're very keen to make sure that the right person has access to it equally we also have to be mindful that many of these applications are open source and have wide and diverse communities and it's not always the lead developer or the maintainer of the application who anybody comes owns the application in the store.
+And so maybe it's an enthusiastic community person who their contribution to that application is to package it up as a staff and put it in the store and that's perfectly valid as well and so we have to balance the you know does someone have this under the right name along with making sure it's possible for open source software developers to claim a name even if they aren't the central call responsible person you would expect for that application.
+That sounds like it's a lot of work actually it doesn't it doesn't amount to a huge amount of work right now we've got a fair size team of people who can who are able to reply to those those requests and we don't get a huge number of them to be honest the other thing that we have in the store is a concept of verified developers so you'll notice some of the applications in the store have a little tick much like a Twitter verified emblem.
+Just to give the user a little more confidence that the VLC snap does indeed come from the VLC developers and the Skype snap definitely does come from Microsoft and all these jet brain snaps actually come from jet brains themselves and so all of these little things we do are all to try and ensure that developers have control of their own software and users have the confidence that that software came from where it says it came from.
+And just just for my information you said you pre-registered non open source apps can I publish a photoshop snap you can try so happens yeah snaps exist in multiple Linux distributions not only deviant derivatives right at and probably many other than I don't know of does that really means that I can build once and it runs everywhere.
+I mean we would it run exactly the same way on Ubuntu and Federer.
+That's the goal so what what we're aiming for is that you as a developer don't have to worry about all the different Linux distributions you as the developer of the application you make snap you put it in the store and if it doesn't work correctly on Fedora and you've done all the right things and you packaged it up correctly and it's a valid snap but it doesn't work on Fedora and does work on Ubuntu.
+Or vice versa then that's something we need to address we deal with the problem of making sure snap D and therefore snaps run on these different distros and it's up to us working with those distros to make sure that stuff continues to work.
+So for example we have people in the open Susan community and people in the Fedora community and people in the Menjaro community who help keep these snap D packages of to date in those various distributions.
+So you know we're we're keen for everything to work the same everywhere and as I said earlier we have a whole bunch of VMs and we periodically try out we don't we don't formally test other people's applications.
+But like now and then we'll spin up some applications in in VMs to make sure that it's working as we expect it to and then you know we report to developers when when things don't work correctly so a good example of that is when a when a Linux distribution has a different set of defaults for example.
+So one Linux distribution might have Wayland by default and another one might have Xorg and the person who made the snap the developer was running on a system used Xorg and never tested it on Wayland and so it might be that they didn't do the necessary bits in their snap graph YAML to enable their snap to work on both Xorg and Wayland.
+And so that's the responsibility of the developer to fix but then there might be parts that we need to fix as well so it's a collaborative process we work together to make stuff work everywhere and I think I think at the moment we've got something like 40 41 or so Linux distributions listed.
+If you want to see how diverse the support for snaps is if you go to the snap graph store you're going to snap graph.io slash core CORE and core is like the minimal runtime that gets installed the first time you install a snap.
+And this is like there's not much in there is libc and a few other libraries and not much else and this is like the thin runtime.
+And in the on the bottom of that web page snap graph.io slash core is a list of distributions with a logarithmic graph showing you where the core snap is in store see that and it's quite a big list.
+There are some obviously at the top there are some familiar names like Ubuntu and elementary and mint but the more you scroll down there are Linux distributions we've never targeted we've never specifically said we support this Linux distribution.
+But there are people on those Linux distributions who have installed snap support and having stored snaps and so we know that snaps work on all of those distros otherwise core wouldn't be installed on all those distros.
+So yeah there's quite a lot of I think I think you could say we've covered like 90 something percent of the user base with 60 something percent of the Linux distributions that exist.
+There's some elusive ones that we don't support yet or that we have not very good support for and you know one day maybe we'll hit every single Linux distribution but I think we've covered a significant number of people.
+So that means I build an app that I snap and I can reach a very very huge number of person.
+Yeah millions.
+There are millions of people right now who have snaps installed.
+In fact I'll give you a funny story I was at conference last month scale Southern California Linux Expo and we had a snap graph stand.
+And myself and a couple of colleagues had a little table and we had some t-shirts and some leaflets to give away and we were answering questions from people.
+And it was surprising how many people would come up and say what are what are snaps I've heard of this what is it.
+And we'd ask them questions like you know what Linux distribution you're using and you get all kinds of answers but often they'd say Ubuntu and we'd say okay do what software do you have into what do you use on a daily basis and they'd say Spotify or Slack or whatever they use for their work or whatever they use for leisure.
+How did you get that oh in the Ubuntu software store okay well you're using snaps then oh am I and so it's got to that point where so many people using it without even knowing they're using it.
+And that's good because that's kind of the point it's just a snaps are just a vehicle for developers to get their software in the hands of users and from a user point of view they just want to open a software store search for the thing they want whether it or browse for the thing they want.
+Install it and then carry on with their day right they don't want to be going and getting like normal users you and I might but most normal users don't want to go and get a table and then unpack it and then configure and make.
+There and make and act install some library and then make again and then act install some other library and some developer library and then make again and then make install and then never get an update to that application ever again that's not a use case that most people want right.
+That's the good little times well yeah yeah it's nerdy and I enjoy doing that I've been doing that today but that's not like if we if we ever want to reach more people more normals.
+Then you've got to make it easy for people to get software and got to make it easy for developers to share this off when that's the goal.
+Yeah and I think you you reached that goal with naps really when well just looking at this list of distribution of that that are accessible that's absolutely awesome.
+So that's that's for the Linux world but could snap exist for other OS is like BSD's for example.
+So there are some core technologies that snaps use which would either need to exist for this to happen or snap D would need to grow support for whatever the equivalent technologies are on those other platforms.
+So we make use of system D for example and we make use of app armor and set comp to do the security confinement in the Linux kernel.
+If there were like almost one-to-one mappings of those technologies in the BSD world I don't know BSD have not used it for a very long time.
+If there were mappings in that in that world then yeah potentially that could happen.
+But there would need to be a significant advantage to doing that like the developers of snap D and the developers of snap craft have as with any project a huge list of things to do they're not they're not sitting staring out the window wondering.
+What should I do today I know I'll port to BSD right that that's not the way it goes there's going to be some useful rationale for that and there may well be one that I just don't know of like there may be some embedded device somewhere which is like deployed in a million locations and is crying out for an operating system with automatically updated snaps right maybe and it runs BSD maybe.
+But someone would need to do that work and those technologies would need to exist on the other side and I think that's that's the main blocker is the fact that we use a lot of Linux specific technologies that make that a hard problem to solve.
+I don't think it's an impossible problem to solve and I've certainly sat in a bar with our developers where we've spitballed the idea of making snaps work on other platforms like windows and macos and BSD and you know we'll chat about it over a bit but it's not on anyone's to do list right now that I'm aware of.
+Okay talking about IoT devices and things like that and what's the tradition between snaps and Ubuntu go.
+Oh that's a good question.
+So snaps are originally when they first started we envisaged them as being used on IoT devices and things like a gateway in a building a gateway machine that has access to a bunch of sensors and can sense the environment in the building and sense like the elevators when they're working and when they're failing and that that
+that edge gateway can then report upstream to some you know network operation center or whatever that this building is on fire or you know the doors are all open or the conditioning is broken or whatever it's going to report right and we envisage that those devices would be in a possibly remotely inaccessible location not just in a building but they could be in a remote telecom base station or some
+thing they could be anywhere and that the the people who deploy those systems would want a way to keep them up to date.
+So so long as they had an internet connection they could keep up to date but not just the applications keep up to date but the OS keep up to date as well because over the years we've heard plenty of stories of devices that are in people's homes be they routers or routers for your American audience or baby monitors or you know web
+cams all these devices that ship it to consumers and they never get a software update right that that's a problem or machines that have baked in default passwords you know these are problems that need solving and yeah
+that was like I mean for example yeah exactly and so one of the things as part of this strategy one of the things we create it was a bunch of core.
+Now a bunch of core is a very slim down version of a bunch of designed for these kind of use cases it's not redesigned for your desktop or your home server.
+Now you could crowbar into doing that but that's not what it's designed for the primary design goal for for a bunch of core is to have this thin a bunch of base on which you can install snaps where the OS itself a bunch of core is snapped as well.
+So the kernel is a snap and the driver layer is a snap and the OS which I've already mentioned called core is a snap and then your applications on top and so long as that thing has an internet access it will get updates periodically which you can control.
+You could defer updates and only do them on a weekend or only do them on the third Tuesday or you know defer them for a month or whatever but it can have automatic updates so we don't get in this situation where there are devices out in the field that never get updated and have default passwords and those are two things that we don't allow in a bunch of core.
+It's always updated it's like defaults to check the store four times a day but you can change that you know if it's in a remote location connected via 3g you can reduce the frequency with which it checks the store but also it doesn't ship with any default passwords you have to set it up on first run.
+So that was the goal is to have an operating system that works on these kind of devices and that was the goal from day one with a bunch of core and snaps.
+And snaps have evolved to be able to package anything you know initially we envisaged a home gateway or something and there are now people in some parts of the world that have home gateways which are running up into core and have snaps installed on top and so their internet connection is thrown up into call router.
+But they've evolved beyond that and now you can get Spotify as a snap and you know slack as a snap of VLC so it's it's grown to be able to service any kind of application delivered to any kind of device where initially started off being like IOT style devices.
+Yeah you said that you could crowbar in the Ubuntu core on the machine didn't you have a laptop running in Ubuntu core at a complex tier.
+Yeah I do and I actually just as a bit of fun I have a ThinkPad X61s it's a little bit old but I love it and it's running in Ubuntu core and part of the reason for that is I have far too many Thinkpads and part is just for a bit of fun really.
+And some of my colleagues are creating interesting snaps that are not designed for for desktop.
+We're not we're not trying to replace the Debian based classic desktop with an entirely snap based classic a snap based desktop that's not the goal.
+But there are certain things that you can do with this like you can create a digital signage system or one of those smart mirrors or something like that where it's a fixed single use device.
+Yeah it does one thing I'm just playing with those apps on a machine because I like playing with stuff really.
+Okay we've been at this for about almost an hour and I still have a lot of question about the snap store and everything I think maybe we can keep that for another another interview we have you and I we have sent a call out for questions on the internet and on our different telegram groups so.
+I think we will we'll go over those questions now and well I guess we're going to have to record another interview about the snap store another day awesome yeah let's go with the questions from the internet and I've read the questions you haven't all of them surprise me I haven't seen any of them so I understand most of them but I hope some of them will make more sense for you than for me.
+Okay so first question from either green at either green it on Twitter inspired by a recent tweet about finger box using snaps and wound to core I'd been interesting to hear poppy talk about the security implications of snack packages.
+I love the convenience aspect and find snaps superior to ppa's but I also find auto updates for IoT device a bit scary and it goes on talking about the problem that as is as a few what days
+weeks ago where some malicious code was inserted in the in the update process so what do you have to answer so there's a few things there I mean I talked before about the fact that you can defer updates so you don't you don't have to take
+updates straight away you can so for example your organization may have machines in a lab that update more frequently and allow you to do QA to make sure that there are no problems with the
+packages that you're getting and then machines that are out in the field can have their updates deferred to a week later or a month later so you can mitigate those kind of things.
+Now I'm not a security expert so you take anything I say about security with a pinch of salt because that's not my area of expertise but as we discussed previously the whole problem of having machines out there that don't update that never update is a massive problem and our strategy for solving that is we provide regular updates to those devices
+and application developers provide regular updates to their applications to ensure that kind of problem doesn't occur now there may be other problems that occur and sure you've got to do your risk analysis of what the impact of that might be and one of
+the solutions might be to have a QA network and deferred updates out in the field but that's that's one for each individual organization to figure out but I think the strategy
+we've got is certainly way better than the existing model of ship a device to a customer and then leave it and never software update it and leave it with default passwords is just untenable and even in some countries they're starting to legislate against that as a result of the fact of all these these compromises that have happened
+over the years so it's certainly a problem that people are aware of.
+Okay, from MG, MG celebs, at MG celebs on Twitter can we use ZFS on Ubuntu Core?
+Huh, I don't know, that's a good question.
+You know what, you're going to get some information about that and we'll come back to that on the next episode, next interview.
+Maybe, yeah, I've never tried it. I mean, that would be interesting. I've, I've never tried it. I don't, I don't see why not. I have a feeling.
+It should be possible. I don't see any reason why it shouldn't be possible. That would be fun.
+Yeah, a way to go. There was someone said there's a nap for that and soon we're going to say there's a snap for that.
+Absolutely. Yeah, I completely agree.
+I also want to hear about snap security. So we talked about that already.
+Do snaps include a log of the changes they've made to the system, not just being explicit about what it can do in interfaces, but what it has done.
+Actually, what files have been changed and so on.
+But so because snaps are not unpacked on your system, they're atomic. So if you snap install VLC and then snap remove VLC, it's gone.
+So the files, the files that were changed were a few metadata files and the snap.
+So when you remove it, the snap is gone. So there isn't a very, there isn't like a change log as such because it's just replacing a file with another file.
+Now inside that, obviously, there's a whole bunch of files and there could be a significant number of changes between one version of VLC and another version of VLC.
+I think we need to improve the way in which we expose the change logs in the store because at the moment, it's not tremendous, tremendously good experience for users to see what the changes were. So yes, that's something we do need to change.
+And I will bring that up with the store team the next time I see them.
+Would you say Ubuntu core is there for servers or Kubernetes use?
+For more for single use devices, not really, Ubuntu core is not really meant for servers like it's more for, as I said previously, like an edge gateway or a router or a device that's in a remote location that's that humans almost never go to, you know, we get we get
+people telling us how they're using Ubuntu core and it's often on a very small low power device that's at the end of a very slow 3G connection if that.
+And nobody ever visits the thing, you know, it's unusual. So that that's more likely when we see a device with Ubuntu core and the moon.
+Because you're talking about somewhere someplace where no one's no one goes to 3G on the moon.
+I don't know.
+Still from MTG say labs because you had like seven questions.
+Do you see Ubuntu core getting to the point of being a Chrome OS replacement?
+That's interesting.
+So on my think pad that I've got Ubuntu core installed, I've been playing with various graphical applications because Ubuntu core is not a like a traditional Linux distribution that has X installed.
+It's it's very lean and there's no graphical environment at all.
+And the mere developers have created some example snaps in the store where they've bundled mere and some graphical application.
+For example, Chromium.
+And so the Chromium browser can run on Ubuntu core.
+I think the use case is really to have like a web page open as a like a digital signage thing, maybe a big TV that you might see at the reception desk in an office building.
+You know, Raspberry Pi is strapped to the back of the TV with the Ubuntu core on it.
+And it's just showing a web page that's got, you know, who's visiting today or what's on the menu in the restaurant back kind of stuff and someone else edits the web page.
+And that just refreshes.
+And that would auto update the Ubuntu core would stay nice and secure so you don't have to really worry about it.
+You just attach it to the back of the TV and forget all about it.
+Those kind of use cases.
+Yes, whether we could get it to the point where you have all of the window management and being able to do things like print and suspend properly.
+There's an awful lot of work there to do.
+I know that the guys in the mere team are working with Martin Winpress to get the Marta desktop available as a snap.
+And I know the KDE guys worked on a prototype of having the plasma desktop available as a snap.
+And so I could see someone in the community could hack together.
+And Ubuntu core set up with one of these desktops, whether it's a single application with mere or with plasma or with Ubuntu Marta or some other popular desktop.
+Put those things together and create something that behaves very like Chrome OS for sure.
+It's not something we're like actively working on right now.
+It's not on our roadmap.
+But the tools are all out there. Someone could build that kind of thing themselves for sure.
+Yeah, it seems like you could use a Ubuntu core to do something like a Chromecast more than a Chrome OS.
+Next question was any progress on getting snaps working on Red Hat?
+I want to build snaps, but our company uses centers.
+Yes, there are.
+We have support for installing snaps on rail and centers.
+Cool.
+So that's that's done.
+And last question from GC devs.
+Is any sort of self-healing in the cards for the future?
+I know snaps can be a roll the back, but can a non-ta your snap base system say this can a discount on snapbox rollback until a new one is waitlisted?
+Well, that's effectively what it does because you as a developer of a snap, you can add health checks and hooks that run when the snap is installed.
+And you could do check, sanity checks on the system and say, OK, everything is good.
+We'll proceed or everything is bad.
+Let's stop.
+And then the snap doesn't get updated and rolls back to the last known good.
+That's exactly what it does right now.
+And that works for kernel snaps and application snaps.
+So we kind of we kind of have that already.
+And that was something we promised from the beginning was the ability to.
+So there's there's two things that there's one is automatic rollback when something goes wrong.
+So for some reason, the application can't install.
+Maybe the snap is malformed and maybe the system ran out of disk space who knows, you know, some adverse situation occurred and the snap didn't update.
+So rolls back to the last known good, the previous version, which is one of the reasons why we keep multiple copies of the snap on disk.
+So when you run your df command and you see lots of squash of s files, sometimes you see what look like duplicates.
+And that's because we keep the current version of the snap that you're running plus the two previous ones.
+You can change it so it only keeps current and the previous one.
+And you can also remove all the unused ones if you want to.
+Those are both possible.
+But that's the reason why we do that is so that you can.
+The developer can detect an adverse situation and roll the snap back.
+But equally, the user might update the snap and then find the latest build is broken.
+And so they can just type snap revert and then the name of the snap and it will roll it back.
+So you got control from both sides of the developer, all the user can do rollbacks very, very interesting.
+I didn't know that you could as a developer put some some fail safe in the.
+And this is kind of.
+These are like the all the little additional things we've added that you just don't get in traditional package managers and.
+And you know, some Linux distributions have tried to add things like, you know, Susa has this concept where it uses butter FS to take snapshots of the system so that when you're doing updates, if it fails, it can roll back.
+We baked it into the packaging system rather than adding a layer on top to do all of that.
+It's baked into each individual package to be able to do that.
+And I think that's one of the things that people.
+May not appreciate when taking a first cursory look at snaps is, oh, it's just another packaging system, but there's a whole load of other and silvery stuff around that.
+That maybe we don't talk about too much or maybe it's only like an expert feature in inverted commas.
+So simple useful stuff that builds upon and improves upon the packaging systems we had in the past.
+Yeah, I think that brings peace of mind when you when you have to update a software.
+Well, actually, you don't have to have the snubs because they have themselves.
+But I mean, it's always scary when I do an app update of one particular software and I see a list of 35 days that needs to be updated for just this one.
+Yeah, often I say, well, no, not this time.
+While with a snap is just installed a new snap on if it's not working and roll back and everything's back to right.
+All right, next question from Simon Betcher.
+Is there a process that will allow stuff that I have built in a Docker container to be built as a snap?
+Or is it too simplistic view?
+So I think what Simon's asking there is about is it possible to migrate from an existing packaging system or a Docker container into stat.
+We don't really have tools to do that to migrate from one to the other.
+When you build a snap, it can certainly ingest Debs as parts and it can ingest lots of other things like zip files and it can build components.
+So you could build up a snap that contained the same things that you were running in your Docker container.
+But there are there are there are there are architecturally very different animals.
+So you can think of it like a Docker container as the entire machine in which all your applications and processes run.
+Whereas a snap is just a process running on your machine. It runs on the bare metal. It's not in a VM. It's not in a container.
+It's confined, but it's not in a container or a VM.
+So it has it doesn't have like a separate netted IP address or anything like that.
+It doesn't have like a second ethernet adapter or anything that you might see if you look inside a queue in you or KVM VM or anything like that.
+So they're slightly different and your application might work slightly differently when it's a snap than when it's Docker.
+When it's inside Docker also when it's inside Docker, it basically has full access to the system inside that container.
+Whereas the snap would should expect to be confined.
+And so if you were migrating something from being in Docker to being in a snap, you'd have to take account of the fact that it would be confined.
+And so that's actually one of the bigger tasks like actually building your software in a snap is generally not the hard thing.
+The hard thing is more often the fact that applications expect to be able to write to all over the file system and expect to be able to just drop files in ETC and write to VAR lib and stuff like that.
+So that's usually where the problems occur, not in any other part.
+Two different beasts, so nothing straight from one to the other.
+Okay, Michael Vash, Michael Vash 7886 on Telegram asks, is it true Ubuntu is switching entirely to snaps?
+And this is mainly at the end of that because it was meant as a joke.
+But is it something that's ever going to happen or is it not possible to have the entire Ubuntu distro
+as a snap?
+So way back at the start of our conversation, I talked about some things don't really make sense to be snaps.
+So like lib JPEG and lib PNG and things like that, that doesn't make sense really to be a snap.
+It makes sense to be delivered as a deb on the system as a library that's used by other applications.
+So, you know, it's not something we're planning for.
+It's not something we're trying to do.
+We're not trying to replace every deb with snaps.
+It's not something that's on our road map.
+And equally, it's funny, whenever this comes up, we get asked about this all the time to the point where internally we have conversations,
+well, how would we even do that if we wanted to?
+And we start thinking about how hard it would be to do, even if that was on the road map.
+Like, you know, I think it's difficult sometimes for people outside the bubble to comprehend the impact of the suggestions that they're making.
+And so when people are saying they're going to switch completely from devs to snaps.
+If you took a step back and understood how devs work and how snaps work, you'd realize how insane that sounds because it's such a lot of work and such a lot of pointless work.
+Because this stuff is all those libraries are already packages dead.
+Why would we want to go through and boil the ocean and rebuild everything as a snap?
+It actually doesn't make any sense.
+The second question from Michael is also obsolete because he wanted to know if there were any insight on what's happening on the startup times of snaps.
+And we already talked about that.
+That's clear.
+There's been fixed partially fixed and work is in progress.
+Prophetic at prophetic777 on telegram says, what about snaps on mobile?
+Flatbacks look like they will find their way there.
+So on mobile, I guess what they're talking about there is the various open source projects to build.
+Open source mobile platforms like plasma and pure OS.
+I imagine.
+And I can.
+I haven't really looked into them when when the Ubuntu touch project finished in 2017.
+I was moved off that project because I worked on it very closely.
+So I have quite a fondness for Ubuntu touch.
+And that was handed over to the UB ports team who have done brilliant work with Ubuntu touch on various devices and keeping it up to date and migrating it from one release to another.
+I don't really keep a close eye on KV plasma and pure OS and other open source Linux phones.
+Mostly because I've been a little bit burned by this having worked on it for like four or five years myself full time.
+And I know how hard it is.
+I'm deeply skeptical that any of these projects will see anything other than something as a tinker as toy.
+Like we got it to the point where we had actual phones shipping.
+You could buy physical phones.
+Okay, you couldn't walk into Walmart in the US and buy one.
+You know, he had to order it from some strange Chinese website or a Spanish website fair enough.
+But we did get devices shipping and I'm skeptical whether many devices will shit.
+And so if they choose to use flat pack on those devices, fair enough.
+That's, you know, it's an interesting technical choice for a platform that I think won't necessarily get huge adoption.
+All right.
+Next question comes from edfg at edfg and winter.
+I understand an upgrade can be rolled back if technical issues are discovered in the new build.
+Can you dive into the canary concept where issues may be algorithmically detected?
+Is this like a failed live unit test in build?
+So there's a few things there, right?
+There is the capability for the developers to do checks and roll back.
+In addition, something we have in the snap store that traditional packaging doesn't have is we have a concept of channels.
+And the snap store has four default channels, which are stable candidate, beta and edge.
+And the idea behind this is a developer can push constantly updated builds to the edge channel.
+The users who are excited about that application, I want to test out the very latest bleeding edge builds.
+Yeah, your typical art user might want to subscribe to the edge channel for that application.
+Whereas more conservative users, someone who typically uses an LTS Ubuntu distribution or a devian distribution might choose the stable channel because they want the stable releases only that have been q8.
+And so we provide the facility there for developers to push multiple different versions of their application to the store to service different types of users, the conservative users who want the stable version and the more excitable users who like edge builds.
+So that's another option.
+In fact, if you look at a good example of this is VLC, if you get a snap craft.io slash VLC in the top right hand corner, there's an install button.
+If you click that, a pop down box appears and it lists the channels and VLC upstream VLC developers use this feature so that they can have the current stable release of VLC in the stable channel.
+In the edge channel, they've got the builds of 4.0 and in between there are other versions that they're currently in beta or currently in candidate ready to go to the stable channel.
+So that's another feature that allows developers to get their early builds out to users Skype do the same thing.
+If you get a snap craft.io slash Skype and click the button, this is slightly different in that they have a stable channel, but they also have something called a track track.
+I think it is an insider's track and so this is a build of Skype that they test internally before they push it to the stable channel.
+So when someone reports a bug with Skype and says, hey, on Linux, Skype does this thing and is broken.
+The Skype developers can say, we think we fix that, refresh to the insiders track and so all they have to do is snap refresh Skype.
+Dash dash channel equals insiders slash stable.
+And they will get that newer build of Skype that they can test out and report back to Microsoft and say, yes, I've tested that.
+It now works and they can either stay on that release or go back to the stable release and wait for that insiders build to become the stable release in however many days, weeks or months that it takes to do that.
+We have these capabilities there in the store that enable developers to more richly deliver different versions of their applications for different types of users and going back to the original question.
+The store does actually do canary in that it it drips out updates to a small percentage which then grows and grows and grows and in fact, that's something that we had all the way back on the bunch of phone, the bunch of phone did updates as a canary.
+So it would send out like to 1% of the user base and then 10% of the user base and then like 20% and it would grow and grow and grow and if we saw that there was a massive problem, we'd hold it so that it didn't go out to 100% of the users.
+And we've inherited that in the snap store.
+Nice, but didn't know that I'm learning things. That's nice.
+Another question from Eddie snaps, I believe, can contain different components of a complex solution. They can interact with one another on a single device or across an enterprise.
+Is that correct? Can you provide some some produce case for this?
+So I mean, if you think about a snap just being a software package, it's just a package of software that's really all it is.
+And it can contain anything that any other software package can contain really. So if you think of VLC, for example, VLC snap contains obviously VLC itself, the popular video player.
+But also contains a bunch of libraries that are required by VLC in order to render the various types of video and audio and codecs and all that kind of stuff that make a VLC work.
+And wrapper scripts that set up the environment and make sure that hardware accelerated video decoding works and all that kind of stuff.
+So at a simple level, like even a moderately complex desktop application like VLC contains a whole bunch of components.
+If you think of on the server side, that's similar to something like next cloud, where the next cloud snap is similar in that it contains multiple components, but they're all interlocking very closely related components.
+So the next cloud snap will contain a web server database, the PHP runtime stuff, and then next cloud itself and any other support libraries that next cloud needs.
+So yes, a snap can contain a whole bunch of components all bundled together to make it easy for users to install and deploy software. So like the easiest way to install next cloud is snap install next cloud, like without a doubt, this is like a million different guides of his how to install next cloud.
+But being able to do it with one line is for many people quite compelling, right.
+And there are other applications in the store that are similar, like equally complicated applications.
+And it's no different than any other packaging system in that yes, you could deploy them on multiple hosts in your organization and they may talk to each other no differently than any other software package.
+In the same way that if you spun up 10 machines or with a patchy on and they're all and or engine X and they're all proxying a machine behind them, it's no different than like snap installing multiple things on a on a host and doing the same thing.
+Next from from SMCB on telegram as there being any discussion about doing something like snap hold package to block upgrading of a specific snap package.
+I guess that's also what we talk earlier about dealing and that can use can you stop a snap all together from bidding kind of can.
+So one one way that as a byproduct will stop a snap updating is if you manually install the snap without getting it from the store.
+So when you when you do the command snapping store VLC.
+The snap command will talk to the snap demon and the snap demon will talk to the store and it will go and get VLC.
+And along with the snap will come a thing called an assert file and that assertion contains some metadata like the fact that the VLC snap needs to be connected to certain interfaces.
+And whatever those default interfaces are for the VLC snap.
+Now you could and and if you do that and if you install that snap the default snap demon will auto refresh VLC.
+However, if you were to I'm not recommending you do this, but if you were to snap download VLC instead of snapping store you do snap download VLC.
+It would download the dot snap file and it would download the dot assert file the assertion file and you could snap install that snap file and dot slash VLC underscore AMD 64 dot snap.
+And then you add dash dash dangerous on the end and if you do that what you're saying is someone gave me this snap file.
+They could have given it to you on a USB stick or you happen to get it from the snap store, but you could have got it from anywhere.
+I want to jam this snap onto my system.
+And because you're doing it with this dash dash dangerous flag that means that the assertion isn't loaded.
+And therefore snap D won't bother checking the store because as far as snap D is concerned it didn't come from the store you any vertical must side loaded the application on your system.
+And the byproduct of that is it will never get updated.
+So it's it's a bit of a long winded answer and quite quite a work around and I don't recommend you do it, but it yeah it's possible.
+And that's the way to install snaps from snap crevices are you.
+Yes, yes.
+Right, the last question, the very, very hard question from Ken felon from Hackerberg radio.
+By the way, that's because of Ken that we're doing this interview.
+He challenged me to do an episode about snaps and I figured yeah, instead of talking about something I know a little bit of.
+Let's talk to someone who knows a lot more than me about that.
+So Ken asks and you answer only if you want to answer why not just use black tax.
+That's a great question.
+So we're always in the.
+Our policy is we've made some technology that we think developers will like and that we think users will like.
+If users choose to use something else or developers choose to use something else, so be it.
+If a developer wants to make a snap and they also want to make a flat pack, that's fine as well.
+We don't mind.
+It's not like we have some exclusivity agreement with anyone to say you will only make snaps.
+If you make snaps and you make flat packs, that's great.
+No problem at all.
+What I would say is for some applications, you may well get better support by having the snap.
+Now, it depends on the application, but one thing that we really try and do with snaps is try and get the upstream developer to own the snap as in they publish it to the store.
+And that's sometimes difficult because, you know, developers are often not time rich.
+They don't have money time to fritter away on new and interesting packaging formats.
+So we try and help them to package a software, but we want them to own it.
+We want them to publish it in the store.
+So my canonical example that I use all the time is VLC.
+I worked with one of the VLC developers in order to make the VLC snap work well and I then handed it over to them.
+And it's now building inside the video LAN projects, CI system and publishing to the snap store directly from their infrastructure.
+And so if you have a problem with that snap, if it's a problem with snap D or snap graph, then sure come to us.
+If it's a problem with VLC, the snap, then you should be confident that you can go to the VLC developers themselves.
+And the VLC developers themselves are empowered to be able to fix those problems themselves and deliver updates directly to the snap store.
+One of the things I've noticed with many flat packs is, and I don't have a bad word to say about flat packs.
+I'm just pointing out that a lot of flat packs are made by enthusiastic members of the community.
+And so the upstream developer may not even know that that flat pack exists.
+And so the first time they hear about it might be when someone files an issue on their issue tracker saying, hey, I've installed your flat pack of food bar bars and it doesn't work.
+And that's for some developers, an unwelcome surprise. They don't necessarily want to be bothered by support tickets for a package that they didn't make.
+And I think that's one fundamental difference is that we try where possible to talk to upstream developers and have them own the application.
+So that users can be confident the application came from the right people. So you've got that confidence.
+But also the developers that are confident that they're empowered to manage their application delivery to users.
+So also there's no flat pack of next cloud.
+All right, on those words, I think we've been recording for an hour and a half.
+And yeah, awesome. Yeah, we're going to stop there. And as I said earlier, we're going to have to do that again, because I still have more questions about the snap store.
+And the tools used to be the snaps. Where can people find more information about you and about snaps and snap crafts and snaps and store and everything?
+And snap, snap, snap.
+So I'm Popeye pretty much everywhere. You can find me on IRC. I'm Popeye. I'm on Twitter is at Popeye. I'm on mastodon Popeye at Ubuntu.social.
+And for the day job stuff, you'll find everything you need to know about snap craft at snapcraft.io.
+There are everything all the links I've mentioned. They're all linked off the top of that website. There's a link to the store where you can browse snaps.
+There's a link to documentation where you can find a how to build them. There's a link to the forum where you can discuss with other people.
+We also have a YouTube channel, which is snap craft I owe. If you just search for snap craft I owe and YouTube, you'll find it.
+I've done a few videos detailing how to get started. If you look through those dating from the beginning of February this year.
+If you're interested in learning more about how to build snaps, then that's a good way to learn because well, if you like learning from watching some guy do it on a video screen rather than reading documentation, that's an alternative way to learn anyway.
+Thank you very much, Shannon, for joining me today on this episode of Hacker Public Radio.
+Thank you, Yannick. I really appreciate it. I'm sorry to take up so much in that time.
+No, no, no, that's awesome. That's awesome. No problem. I could talk about that for hours. I guess I will see you at Occump next October.
+Yeah, in October. Yeah, look forward to it.
+Right. Thank you everyone for listening to this episode of Hacker Public Radio. I will be back soon with another interview.
+Well, one with Alan and I already have something else in the in the in my planning. So I will definitely be back with more interviews in the meantime.
+Take care of yourselves. Ciao, ciao.
+This episode of HPR is released under a creative commons non-commercial biotribution license.
+The sound used in the opening and closing sequence is Speaker X Clash by Daniel H.
+Release under a creative commons non-commercial biotribution license and available on Javendo.
+You've been listening to Hacker Public Radio at Hacker Public Radio.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out how easy it really is.
+Hacker Public Radio was founded by the digital dog pound and the Infonomicon Computer Club and is part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise status, today's show is released under a creative commons, attribution, share a light, 3.0 license.
+You can find out more about Hacker Public Radio at Hacker Public Radio.

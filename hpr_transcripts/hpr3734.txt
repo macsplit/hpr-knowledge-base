@@ -1,0 +1,203 @@
+Episode: 3734
+Title: HPR3734: Inetd: the internet super-server
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3734/hpr3734.mp3
+Transcribed: 2025-10-25 04:47:24
+
+---
+
+This is Hacker Public Radio Episode 3,734 for Thursday the 24th of November 2022.
+Today's show is entitled, I NETD the Internet Super Server.
+It is hosted by BinRC and is about 17 minutes long.
+It carries an explicit flag.
+The summary is I talk about I NETD and give an example of how to write a service for it.
+How's it going, Hacker Public Radio?
+I'm your host BinRC for today.
+Today I'm going to talk about I NETD, the Internet Super Server.
+I NETD is a classic Unix Damon.
+It's slowly becoming one of my favorite Damon's because it makes writing programs that talk over the network super easy.
+I NETD handles all of the hard-socket stuff and it allows admins to write really simple Unixi programs.
+I NETD is also useful because it allows us to write services that only run when they are requested.
+And this reduces the overall system load.
+So how does I NETD work?
+I sort of think of I NETD as sort of a wrapper Damon.
+I NETD is always running despite the fact that many, if not all of its subservices, are not always running.
+They only run when they are requested.
+I NETD listens on a specific port or multiple ports.
+When it gets a request, it handles all of the hard-socket parts that we don't want to write the code for.
+This request is then passed to one of our I NETD services.
+In this example, I'm going to use a really simple server.
+This server is going to echo back whatever request the user sends.
+I'm going to call this service, echoD.
+So I NETD will pass the request to echoD.
+As text, echoD will read that request from standard in and write its response to standard out.
+Everything written to standard out, I NETD passes that to the client, echoD then exits.
+A good I NETD service does not stay running forever in the background because a new process is spawned typically every time.
+I NETD is invoked.
+So the example for an echo server.
+I use OpenBSD on my web server.
+Sadly, it seems like SystemD sockets have replaced I NETD on many, if not all, Linux systems.
+I've tried to use SystemD sockets there, incredibly painful, incredibly difficult,
+and even if you have a perfect configuration, oftentimes they seem to not want to work.
+So I can't verify that these examples exactly will work on a non-OpenBSD system.
+But if you're on a Debianoid, you can install the OpenBSD-I NETD package.
+I also believe this package comes on freeBSD, although they may ship their own.
+I can't exactly remember.
+So let's write out our echoD service and the configuration file required to get it working.
+So I NETD's configuration file is in slash Etsy slash I NETD.com.
+If you're on an OpenBSD system, you can read slash Etsy slash examples slash I NETD.com.
+And it's a good example file.
+Most of it's commented out because a lot of those services are not secure.
+For example, you don't want to run an Echo server in production.
+You don't want to run a finger server in production, right?
+So the format for an I NETD configuration file is port, socket type, protocol.
+You can tell it to either wait or no wait.
+For a lot of these smaller services, no wait is a better option.
+If you have something big like HTTP, you probably want to wait.
+Then you specify which user you want the I NETD service to run as.
+Don't run it as root.
+Okay, there's a Damon user for a reason.
+Run it as a Damon user or make a specific user restrict his discretionary access control
+to where he someone can't send a request to the system.
+And now they have a way to get a remote shell.
+Then you specify the server program and any server arguments which are optional.
+Those are like flags you would pass to the service because I NETD reads from standard in.
+Oftentimes you can do arguments that way.
+But if you have some sort of hard coded value, you can pass them through flags in the last field.
+So the example for the finger D service.
+It's listening on port 999 with some light space stream space TCP space no wait space Damon slash opt slash echo D slash echo D dot S H.
+I like to put a lot of the programs I write in slash opt because I don't like when I compile a program from source and it
+letters files all over my slash user directory that are impossible.
+It's impossible to find them all.
+So because I don't like programs that do that I typically try to make all of my programs sit inside of slash opt.
+That's what that directory is for.
+It's for optional things you install that are not part of the base system and are also not part of your package manager.
+And then I try to make sure these files don't expand outside of their directory.
+So that way, for example, you're done with the echo D service.
+You want to get rid of all the files.
+All you have to do is rm-rf slash opt slash echo D and guess what?
+You no longer have those files on your system.
+So our echo D service.
+So actually I net D.
+I net D is listening on port 99999.
+When it gets a request on this port, it will run the command slash opt slash echo D slash echo D dot S H.
+As the Damon user.
+What does our echo D dot S H look like?
+This is our service file, if you will.
+This is just a shell script.
+It's hash bang bin S H while read L do echo dollar L done exit zero.
+So what this shell script is going to do is read from standard in.
+It's going to write exactly what it read from standard in to standard out.
+And then it's going to exit.
+Be sure to Chamod plus X this file.
+You also need to, if you're on open BSD, rcctl enable i net D and rcctl start i net D.
+Or your service won't run.
+How you start and stop services will vary.
+I've never used i net D on a system D system that I can remember.
+So your service arguments will probably be different.
+How you can test your i net D service.
+Sometimes you can use curl.
+Often times I don't like to use curl because curl assumes HTTP.
+So I'm going to use net cat because net cat.
+It's a lot smaller than curl.
+I think of it as a cat command that runs over the network hence the name net cat.
+So how I'm going to test our i net D echo server.
+I echo fubar pipe nc-n local host 9999.
+And then the response I get is fubar.
+So I said hey server fubar and the server says fubar.
+That's what it does.
+It echoes back exactly what I told it.
+The net cat flags dash n means exit.
+After you get a response and then it's server host.
+Server host name and then port I should say.
+You can also use telnet to test this echo service.
+So how you do that is telnet local host 99999.
+And then everything you type followed by a new line is echoed back to you.
+So I write fubar the server says fubar.
+I write echo back the server says echo back.
+I then close the connection.
+And another server I wrote for i net D was a finger server.
+This was many months ago.
+It might have actually been last year and I thought I think about it.
+I wrote this finger server to learn more about how i net D works.
+And to write a finger name and that doesn't allow for enumerating, I guess, non-regular users, non-login users.
+I have a link to my GitLab where you can download finger D.
+It's fairly simple.
+It's pretty much a glorified cat program that looks for the user that you requested.
+The finger D says is this a subdirectory?
+For example, is user binrc a subdirectory in slash home if not print nothing in exit?
+If yes, you need to open up binrc.plan.
+What are the other ones for finger?
+I haven't looked into finger for a while.
+You need to open up binrc.plan.project.mail.er and .pgpq files
+and then print them to standard out.
+The reason I wrote this, it wasn't because I wanted to run a finger server.
+It's because I was playing with the normal finger server.
+And I guess the standard finger server on OpenBSD will allow you to finger users like root or HTTPD.
+Those are not the types of users you want your finger server saying,
+oh yeah, the last time the root user logged in was this date.
+Here's the last time someone logged in as the HTTPD user.
+You generally don't want that type of information.
+It's just easily accessible with a single request for anybody in the world.
+So I just wrote a simple finger server.
+All it does is essentially say, here's the user at the hostname.
+Here's what is contained in their files.
+I also am currently working on a go for server that runs through INEDD.
+This is largely to learn more about how go for works.
+To write a go for server that doesn't allow for path traversal.
+And to do some MIME type stuff in C programming for auto index purposes.
+I haven't completed the auto index component yet because go first kind of messy.
+And so are MIME types.
+But I included this anyway, even though it's incomplete,
+because it's a really simple example of what an INEDD service can be.
+I have a link to this go for server source code.
+It's on my Git lab.
+You can download and compile it and play with it.
+Instructions for both the finger server and the go for server are self contained in the repository.
+But how this go for server works is it reads the request from standard
+and put the request is just a path to a file.
+It then reads that file into memory and then prints that to standard out.
+Writing an INEDD service is almost easier than writing a cat program.
+I like to think of a lot of these INEDD services as an application specific version of the cat command.
+Another thing you can do if you're on OpenBSD is you can make a lot of these services actually run with SSL
+by pairing INEDD with Relady.
+On OpenBSD, the OpenBSD HTTP server, it's not a relay.
+It's strictly an HTTP server.
+So if you want to do something like create a reverse proxy to your Python test server running as a privileged user,
+you know that type of bad idea stuff you see a lot of people using engine X4.
+Instead, you should use Relady on OpenBSD. That's what it's for. It's for relaying traffic.
+So Relady is kind of strange, but in my example, I'm sim linking hypothetical existing HTTP
+D-searchs that I obtained with Acme.sh. This is as simple as ln-s.
+Etsy slash SSL slash example.com.fullchain.pem slash Etsy slash SSL slash example.com.
+Backslash, colon, port, dot, cert, and then you do the same thing.
+For the key, you have to include the port in the name INEDD looks for, or not INEDD, Relady looks for.
+Certs based on their name, and the name has to include the port.
+Sample Relady configuration looks like log, connection, TCP protocol, echoD, TLS, key pair, example.com, colon, 9998.
+Relay, echoD, listen on example.com, port 9998, TLS, protocol, echoD, forward to localhost port 9999.
+So after you enable and start Relady, it will now be listening on port 9998.
+So in Relady receives traffic on port 9998, it'll do all of the hard cryptography stuff, all of the hard SSL stuff.
+And then it will pass that request to localhost 9999.
+Guess what's listening on localhost 9999? Remember, it's Relady.
+So Relady will listen on 9999.
+It'll pass all of those requests to our echo server, and then it'll pass that back to Relady, which passes it back to the client.
+Now we have an echo server that runs with SSL, and we didn't even have to learn socket programming in C.
+We didn't even have to learn how to do TLS in C, or we didn't have to learn how to do sockets in Shell, or TLS in the Shell, to be able to accomplish a fairly simple server.
+We can offload a lot of the hard parts onto existing damons.
+So my conclusion, do I run INETD in production? I not really know.
+I have ran INETD in the past, but I haven't seen a need for it, especially since finger, echo, and go for our basically dead protocols.
+Nobody uses these anymore, except hipsters.
+I think even if INETD is largely useless, it's still really fun to play with.
+I think Relady is probably more useful than INETD in a modern context.
+But I still have a lot of fun writing these services, essentially writing small unixi programs that read from standard in and write to standard out.
+And when we tape them together with the right service, we now have a network application. I think it's fun anyway.
+Thanks for listening to Hacker Public Radio.
+I'm your host, Ben RC. This show has been about INETD.
+If you have any questions about INETD or even open BSD, you can send me an email or leave a comment.
+If you've ever thought about recording a podcast, Hacker Public Radio is a great podcast community.
+And I think a lot of the people here are very helpful, so even if you've never recorded a podcast before, never even so much recorded audio before.
+I think a lot of people here are glad to help. It's a great community to be a part of.
+Thanks for listening.
+You have been listening to Hacker Public Radio at HackerPublicRadio.org.
+Today's show was contributed by a HBR listener like yourself.
+If you ever thought of recording a podcast, then click on our contribute link to find out how easy it really is.
+Hosting for HBR has been kindly provided by an honesthost.com, the internet archive and our syncs.net.
+On this advice status, today's show is released under Creative Commons Attribution 4.0 International License.

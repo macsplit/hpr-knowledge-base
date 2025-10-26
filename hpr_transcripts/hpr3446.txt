@@ -1,0 +1,225 @@
+Episode: 3446
+Title: HPR3446: Speech To Text
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3446/hpr3446.mp3
+Transcribed: 2025-10-24 23:35:03
+
+---
+
+This is Hacker Public Radio Episode 3446 for Mundy, the 18th of October 2021.
+Tid's show is entitled, Speech to Text. It is hosted by operator and is about 23 minutes long
+and carries a clean flag. The summary is, I talk about converting HPR, audio to text and tagging.
+This episode of HPR is brought to you by archive.org. Support universal access to all knowledge
+by heading over to archive.org forward slash donate.
+Hello, everyone. Welcome to another episode of Hacker Public Radio with your host operator.
+Today I'm going to be talking about analyzing audio and extracting text out of the audio
+and creating sort of a keyword database. The idea behind this is to have transcribed
+audio from HPR episodes, for example, hearing impaired, whatever, and then also for metadata
+and or tagging. The idea here is to eventually use natural language processing,
+which is this sort of AI-driven artificial intelligence or whatever you want to call it,
+way to analyze audio and pull key terms out of it. So I'll go over some examples in my approach.
+This probably spent maybe an hour, an hour, and 30 minutes piecing this all together
+and a quick little hacked up batch job or whatever. The first step is obviously
+downloading the audio file itself. The second step is pulling that audio in to VOSC, VOSK,
+and from what I understand these are all open source tools. I don't know what their licenses are
+or whatever, but this is a proof of concept. We could kind of use anything. There's probably
+better things for other stuff, and I'll go into that a little bit more. But I'm just merely
+scratching the surface of all this. So the second step is, you know, after you've downloaded the
+file, I'm using YouTube BL, converting that to WAVE and letting embedded YouTube BL FFN
+pick, I think that's embedded inside of it or some magic to convert that to a WAVE file.
+Now after that WAVE file is, the MB3 is downloaded and converted to a WAVE file. It passes through
+this Python script called VOSK VOSK. And I'm just using the defaults now.
+From what I can tell, it's built on like an input word list. So if the word is not in the word list,
+it's not going to pull it out as a word. So for example, we got fight covert viruses instead of
+fight COVID viruses. So what I'd like to see is it's actually recognizing words based on
+not a word list. So we can't possibly put in every single word that's ever going to speak
+been spoken in the English language. We need to pull out words that are made up, for example,
+Carolina Con or Poned. And there should be a minimal effort around training the speech,
+or speech recognition to pick up new words or get really close to those words.
+So I don't know what that approach is going to look like. And I'll take any suggestions around
+that space. But for this example, it looks like the way that VOSK works is that it's using like
+an input word list. So if it's not in the word list, it gets something whatever closest to the
+word. So the closest word to COVID is covert. Now, with the sample test sample python script,
+you could probably just have it open ended and not import, you know, the word list and have it
+kind of make up its own words. So phonetically typing words out. I'm not sure exactly how text
+to speech or speech to text works in the in the event that the word doesn't exist. You know,
+it's a made up word or it's a word that's not a common dictionary word, right? So that's the first
+struggle or point I'd like to make that, you know, I need a way to extract the the words out of
+the audio. And it's those words might be made up in some cases. So for example, maybe I don't know
+what the match threshold is. You could say, okay, if the threshold is doesn't match to 60% or
+greater, then use the word that you think phonetically is being said. So COVID might be
+spelled incorrectly, but it might be at least close enough to where you could run that through
+a spell check program. And then maybe it would spell auto correct it to to to COVID. So it doesn't
+have necessarily have to be perfect. But from this, you know, from the standpoint of words that
+don't exist, if you ran that through like a, for example, Google word lists or spell check algorithm
+that was cloud based, that would have every single word in. Then we could take that word that
+looks like COVID phonetically and it would auto correct to COVID. So that's how we could get around
+the words that aren't words situation. So that next step is normalizing the output and removing
+common beginning phrases, right? So in the beginning of every episode, you have the, you know,
+the prologue and the whatever, whatever. So you have the impart in the beginning part.
+We want to trim that out. We don't need the, you know, this episode and tonight's shows entitled
+or brought to you by. We want to filter those out because we don't want those keywords popping up
+when we do the analysts later. So we kind of don't realize this this output. It's in like a JSON or
+XML. Once that output is normalized, it's then passed through the YAK, YAK, it's like yet another
+something engine, whatever. So that part, you can set the number of, excuse me, kind of terms
+to reply back to. And I set it to 100. It defaults to, I want to say 10. So I'll give you some example
+words here. Let's see if I can find. Now, an episode about the latest episode as of today or whatever,
+normal layer modes, erase merge and split. Look at layers, models, and gimp. So this is by Huga, I think
+who am I looking at? Bobbie, Bob, Bob, yeah, Huga is going over some gimp stuff. And this is
+episode 3, 4, 2, 0. So we can go in here, find our 3, 4, 2, 0, 3, 4, 2, 0, YAK out.
+And for our words, we get 82 words or 82 phrases or whatever. And some of these phrases are
+toy image layer, top layer transparent, remaining layers, modes, undocumented layer modes, layer
+mode set, normal layer mask, open font license, layer mask effect, layer mask worked, layer group
+move, layer mask situations, layer group put, layer completely transparent, layer windows maker.
+So you're sort of building a multi word keywords list in here. So it's not exact transcribe.
+It's a pulling out what they'll call keywords is it a keyword extraction, which may include one
+word, it may include multiple words. And I'm sure how to break that up either. So there's the
+detecting the actual words part that needs to be ironed out. And then there's the keyword
+extraction, which I'm thinking I need to move away from keyword extraction using this method
+and move something to text classification, which means I'm thinking it's just
+categorizing text into key thematic things, the idea being that would be the tags for the show.
+So we would get the text and we would run it through maybe a spell checker and it would
+you know create a nice clean output or transcription of the of the episode. Then that gets run
+through this AI thing and it spits out tags or one letter one word tags or maybe multiple word tags,
+whatever we decide on. But the key there is getting this keyword extraction right or what I'm
+thinking we actually need text classification. So given a group of words or sentences or text,
+we want to pull out the classification. What is the theme? What is what is what are we talking
+about? What is the classification? So I'm thinking text classification might be where we want to go.
+But like again, just barely scratching the surface of the stuff, there's a couple of pieces of
+software that are open-source that I've been looking at. And they're fairly complicated. You know,
+when you start getting to machine learning and all this AI, whatever, and training, I don't want
+to have to train it. I want to use existing modules or whatever. But at the end of the day,
+I'd like to have a group of words that will basically make the episode have its own tags.
+So for this episode, you know, it doesn't have the word gimp in it. But it does have, you know,
+layer group out, layer completely transparent. You've got stuff like layer masks. You've got words like,
+let's see, picked full saturation, full saturation spectrum, normal layer, image layer,
+layer transparent, layer opaque, layer completely. So there's keywords in here that would aim you
+towards the theme of the episode. But this doesn't tell me that this episode is about gimp and
+whatever. Now that's what the title does, right? So we have at a high level what the title is.
+We have a high level of what the notes are because usually people put something in the show notes
+section that indicates what's going on, but usually it's links or whatever. For me, at least, I don't
+put a whole lot in there. To be honest, my episodes don't stay down their own because they're
+generally time sensitive. So, you know, in 15 years episode about whatever program is not really
+going to matter all that much as far as, you know, the usefulness of that information. So
+the idea there is, I feel like if we can get it to a point where it's giving us, you know,
+a set of 10 words or key phrases that will kind of automate the show notes part of it. So,
+show notes don't exist or maybe we add kind of a metadata field and attach that to each episode.
+We could have more of a searching index where, okay, you've got the output. You can search just the
+straight up transcribe output of the episode. And again, that's can be like for the hearing impaired
+or whatever. You can download the text and yeah, it's not going to be 100%. But it'll get you,
+you know, 99% the way there. And then the second piece is, you know, if the show notes are lacking or if,
+you know, you want tags, we can use some AI and some stuff like that to bring it into, you know,
+maybe a sort of a hodgepodge of show notes that would just have a bunch of phrases of words.
+And that would help you identify, okay, well, yes, this is about Gimp, but it's about, you know,
+compiling your own Gimp and you'll see the word compile and you'll see the word download and you'll
+see the word Linux and you'll see the word, you know, cross compile and you'll see the word make,
+right? And you'll be able to look at those words and understand that it's not about using Gimp. It's
+about programming in Gimp or compiling Gimp or writing Gimp plugins, right? So, the idea there is
+that, you know, you have just transcribe pull transcribe. Once we go from transcribe, we're going to
+marinate that and basically have a list of 10 words. What I want is what I imagine future state
+is a list of 10 words that describe the podcast by itself that will give you an idea of what
+that podcast is about. So, that's like the second layer and then the third layer is create
+automating that creation of tags. So, once we get kind of those key words or key phrases
+into the mix, we can take those key words key phrases and maybe compare them to maybe Google
+searches or compare them to something else and then the results based on that search will give us
+potentially a key single keyword words to go through. So, for example, if we get feed it a list of
+10 key words like layer mask worked, layer group move, layer mask situation, you know,
+saturation, layer group put, layers window make and we put that all of kind of in quotes and we've
+sent it to Google and maybe we pulled the top 10 results from that. Then we use keyword extraction
+based on that to say, okay, these words are only found in, you know, out of all these search results,
+the key words that come out are word gimp. So, this must be about gimp and maybe some,
+maybe we can use some other search pattern recognition, you know, here's a list of things.
+What am I talking about? And that's what we want to, we want to answer programmatically and say,
+okay, here's a list of phrases or a list of words. What am I actually talking about without,
+without having to read the whole transcription, the reader or the listener should be able to
+look at the kind of keywords or tags and tell what it's about. So, again, oh, I'm going off
+here. So, once we've got the keywords in those tags, then we can kind of where people haven't
+provided tags, we can provide our own tags in our own keywords or key phrases. So, at the very
+least, I should be able to convert all HPR episodes and to transcribe them pretty successfully,
+probably to, you know, a 95% or 98% accuracy. So, I can do that right now with something else.
+I don't know if this is not the right, this vask or vask or whatever, it's not the right tool
+for that or how to configure it differently. But at the very least, I can transcribe, get us
+transcriptions. What I want to do is, again, add, you know, keyword phrases and then eventually add
+tags and have that all automated. So, if someone does provide tags or they would like, you know,
+the option to have automated tags and then they click next and then maybe they get an email that says,
+please review your tags. You know, what do you, you know, if you think, you know, if this is great,
+click yes, if they know or something. Or you can just have it, you know, done off line somehow
+and I can provide a single binary. I don't know, there's ways to do it. But the idea there is,
+you can use, well, a lot of these, especially these deep learning apparatuses and these
+artificial intelligence things, you can use GPU. So that's also an option. The reason I say that is
+an hour of audio takes about 20, 30 minutes to be analyzed. Two minutes of audio takes about 10
+minutes or sorry, 10 minutes takes about two minutes to kind of analyze. So there is a time,
+there is a time factor there. So each episode is going to be about 10 minutes or about two minutes
+to analyze. And then you have your longer episodes that are, you know, like an hour or even, you know,
+these giant six hour ones or two hour ones. There's a time element involved, but we can use GPU
+for that if we need to use to do that later. But I don't think that's going to be a problem because
+they trickle in, right? We only have one every day and if it takes, you know, it takes two hours to scan
+one, one file who really cares. So the aspect from the speed perspective, I'm not too concerned.
+But if we need speed, we can utilize GPU. We can utilize multithreaded downloads. We can
+utilize the server itself, right? For running or maybe remotely mounting the audio files so that
+we don't have to download them in text, you know, archive that org and HPR site itself, whatever.
+So that's one thing. I already talked about the word input word stuff. So, you know, it said the word
+COVID was covert and that's something, you know, I can work through. But I just wanted to get you all
+thoughts. What you think has anybody approached this? I know I've talked about it before and I brought
+it up before and I don't know if I followed the thread or if anybody answered, but really, for me,
+at the very end of the, at the very least, I would like, I would like to help provide
+transcriptions for episodes. And that's the biggest thing for me. The second thing would be to
+help with tagging keywords with automation, right? So here's an example. I'll provide links in
+the show notes to episode text and examples. And again, this is this is proof of concept stuff.
+This is just an example and all of this can be tuned. We can use different software.
+If you, if we find out that you guys like it, feel free to let me know. It's free load,
+if I read L-O-A-D-101 at Yahoo.com. And you can also reach me at 404-647-425-0 if you want to hit me up.
+Again, this is a very quick, quick and dirty, you know, proof of concept for what I'm doing.
+What I'd like is to again, you know, have, have these episodes, have them so tagging automated
+as much as possible and then have like keyword stuff. So when you can, you can search the full text
+or you can search kind of keywords key, key phrases, which would be like a not as deep search
+or you can search just based on, you know, automated tags. So there's kind of three levels of
+of search there. Now at the end of the day, maybe we don't need any of that. Maybe we just need
+the transcription. And that might be good enough for the listeners. It might be even good enough for
+people trying to write show notes and stuff like that. We might even be able to use the output,
+right, of some of these scripts to help generate show notes for, generate show notes and tags. So,
+you know, instead of having to listen to the entire episode, we use machine learning to
+pull phrases out, keyword out, we review those keywords and say, okay, well, obviously this
+episode is about Gimp, but I don't want the word, you know, banana in there because the whole
+episode is about photoshopping or excuse me, gimping a banana, right, using Gimp on a picture of a banana.
+So if the speaker uses the, you know, keyword a bunch of times or key phrase and it's not
+what the episode's about, right, we can filter that out. So that might be kind of some way we could
+use, you know, machine learning way, whatever to help with show notes and tagging. Maybe make it,
+you know, halfway there. Maybe, right, this is some other features thinking just off the top of my
+head. Maybe the transcribe comes in, the transcribes gets analyzed and it creates key words and tags.
+And then those go to what do we call janitors to approve or disprove, right? So instead of, you know,
+the janitors haven't listened to every single episode. I mean, as much as I want to hear other
+people's voices in my own voice, it can be, it can be kind of hard to go through some of these episodes
+that are hours long or 30 minutes long that has, it's on a topic that you're not really passionate about.
+So having to mentally listen, right, even out of 2x, haven't to mentally listen and retain that
+knowledge. Yeah, you can probably listen to the first 5 minutes and get an idea about what the
+episode's about. And maybe we use machine learning for that piece too. Maybe we analyze the first 5 minutes,
+pull out the key phrases, those get pushed into a queue for janitors to approve kind of automated
+show notes and or automated tagging. And they can say, okay, well, based on the transcription,
+yeah, I'll approve these four keywords or these four tags. And these other three are just stupid
+and they need to be filtered out. And, you know, we can kind of have a white list and a black list
+of keywords and phrases so that, you know, instead of managing and having to like uncheck free
+software every time, then you can kind of highlight that and filter it in or out based on, you know,
+based on things like that. So just basic filtering, basic, basic stuff like that.
+Other than that, I can't really think of anything else off the top of my head.
+If you all have any comments, suggestions, ideas, you know, there's, there's the, you know,
+10,000 ways to skin this cat. But at the end of the day, I can probably provide, give it enough
+time and maybe a little bit of help with some people. I could probably automate tagging.
+Which is kind of scary with machine learning. So just keep that in mind. If, and if we were,
+you know, we're against the robots and we think that the human touch is important, whatever. But
+I'm a big scripter. I'm a bit of automator and I definitely don't want you guys getting burned out.
+And, you know, if I can help with manual tagging, I probably should. Instead of doing episodes about,
+you know, automating something that doesn't need to be automated. But anyways, hope that helps you
+guys out. Feel free to pass off any other ideas or anything or provide comments. I've, I've really
+thought about this for several years and finally broke down and said, you know what? I, you know,
+I'm, I'm, I've hear so many, so many talking about, you know, tagging and having to do this and
+having to do that. Well, if we can, at the very least, transcribe, right? These episodes, then
+that makes that can cut down on a lot of the work having to do, having to be done. Anyways,
+you all have a good one and peace out.
+You've been listening to Hacker Public Radio at HackerPublicRadio.org. We are a community podcast
+network that releases shows every weekday, Monday through Friday. Today's show, like all our shows,
+was contributed by an HBR listener like yourself. If you ever thought of recording a podcast,
+then click on our contributing to find out how easy it really is. Hacker Public Radio was found
+by the digital dog pound and the infonomican computer club and is part of the binary revolution
+at binrev.com. If you have comments on today's show, please email the host directly, leave a comment
+on the website or record a follow-up episode yourself. Unless otherwise stated, today's show is
+released on the creative comments, attribution, share a live 3.0 license.

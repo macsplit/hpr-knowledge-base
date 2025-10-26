@@ -1,0 +1,522 @@
+Episode: 4353
+Title: HPR4353: diff and patch
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4353/hpr4353.mp3
+Transcribed: 2025-10-25 23:32:41
+
+---
+
+This is Hacker Public Radio episode 4353 for Wednesday 9th of April 2025.
+Today's show is entitled Diff and Patch.
+It is part of the series' bash scripting.
+It is the 290th show of Clotu and is about 30 minutes long.
+It carries a clean flag.
+The summary is, learn how to use Diff and Patch.
+Hey everybody, this is Clotu talking about Diff and Patch.
+What are Diff and Patch?
+Well there are two different commands.
+Diff is one, Patch is the other.
+Diff can look at two files or several files in two different directories and generate
+a report on how those files differ from one another.
+So Diff creates a differential between two files, two sets of files.
+Patch uses a differential to make one file identical to another file.
+So Diff and Patch, they are separate commands, but it just so happens that they work harmoniously.
+The output of Diff can be used or some output from Diff rather, can be used as input for patch.
+Tutorials that you see online, including this one, treat Diff and Patch as if though you
+are going to use both.
+And it's realistic that you would possibly use both.
+You would use maybe Diff to generate a Diff file or a patch file.
+And then you would send it to someone else so that they could then feed that file into
+their patch command.
+So you're each only using either Diff or Patch, you're not using both.
+Now that that other person might generate a Diff file later after making more changes.
+And send you that file and then you would use it as the input for your patch file.
+So again, you're using one, but not the other.
+It's very rare, I think, that you use Diff and then immediately use Patch yourself because
+that's just not the workflow usually.
+But they are treated kind of like as a pair because usually one is only being used because
+someone else somewhere has used the other or is going to use the other.
+And this kind of betrays what Diff and Patch are.
+They're collaborative tools.
+They're tools for collaboration.
+And on the modern internet, of course, we have a lot of tools that do this already or
+rather that have sort of succeeded in this role that Diff and Patch used to play.
+By which I mean, Diff and Patch were created for collaboration.
+So if you and I were collaborating on a project, then I could get a copy of your files of the
+files that you want me to collaborate with you on.
+I could get a copy of those files and make changes to those files and then use Diff to
+create a report of what changes I have I have made.
+I could send you that report and you could use that report as input for Patch so that your
+files would now look like my files.
+Now modern online tools functionally do the same thing but drastically different, sometimes
+instantaneously.
+There are collaborative tools out there on the internet right now.
+You've probably used some of them where you can go into a document and start typing and
+a friend of yours could go into that same document while you are typing and also type
+or delete or change words after you've typed them and so on.
+That's the kind of hyper speed, like modern way of collaborating on a file and all the
+changes they get incorporated literally instantly while you type, like it's happening right
+now.
+There are variations on that as well, like maybe you don't type together literally at
+the same time but you've made a document, you share it with your friend, they go into
+that file and they make changes, maybe they make suggestions and you have to accept the
+suggestions to incorporate those changes into the file or maybe they just make comments
+and sort of vague suggestions so you can see the comments and then you can either follow
+up on those comments and make some changes or ignore the comments or whatever you want
+to do or maybe they've made changes and they've accepted them themselves but you could go
+back in history of that document and look and see what changes got made, what got crossed
+out, what got added.
+You see these features in office tools, in wiki software, in content management, like WordPress
+and Drupal, it's all over the place and I think a lot of us are very used to interacting
+with that kind of collaborative tool.
+Now if you're in programming or IT, like DevOps, then you might have a variation yet again
+on top of that, such as Git, either Git itself or one of the front ends, like Git Lab,
+GitHub, whatever, those provide like Diff files, use Git Diff and you can see like the
+changes from one commit to another commit and Git Blame, you can see who made the changes
+and so on.
+So you've got a lot of different sort of collaborative software on the internet where
+the workflow is quite different but the process, like the function is exactly the same to
+Diff and Patch.
+But Diff and Patch are just commands, that's all they really require is a text file and
+then the two commands, Diff and Patch, and like I say you're probably not going to be using
+both Diff and Patch all in one sitting, you'll either be the one generating the Diff or
+you'll be the one accepting Diff with Patch.
+So that's the software stack of Diff and Patch, it's a text file and a Unix command,
+that's all, that's pretty lightweight as things go.
+The workflow is different as we'll talk about in a bit but it's still a functional means
+of accepting changes, reviewing changes and then applying those changes and it's kind
+of empowering to be able to do that without a big heavy software stack on top of everything.
+And I think at the very least, like in the worst case scenario, I think it's kind of useful
+to understand the process that something like Git or Git Lab or GitHub or Codeberg or
+whatever, whatever in you might be using, it's kind of interesting to see the process
+that they're going through.
+Like what exactly is happening when you do a Git cherry pick or what's really happening
+when you're doing a Git merge and then there's a conflict or just to get merged and there's
+no conflict.
+Well, Diff and Patch can give you a little bit of insight into the process behind that.
+So let's talk about how to use those.
+I'll do it through an example initially and that is first I'm going to create an example
+file containing, I'll do every other line just at the first few stanzas of William Blake's
+poem Tiger, which you can find on wikipedia.org slash wiki slash the with a capital T underscore
+tiger with a capital T and a Y instead of an I T Y G E R. So every other line starting
+with a second one is in the forests of the night could frame the fearful symmetry and then
+a blank line, which actually I guess well, who cares, I'll put a blank line in what
+distant deeps or skies on what wings dare he aspire.
+It's just for well five, including the blank line.
+It's just five lines and we'll fill in the other lines using using a Diff and a patch.
+Okay.
+And then actually for a little bit of extra fun, I'm going to misspell the word night
+on the first line instead of night as in day or night, I'm going to put night like
+a night in shining, shining army, what is it shining armor?
+Yeah, shining armor night K N I G H T. Okay.
+So I've got a little typo and I've got and I'm missing lines from this from this famous
+public domain poem.
+So I'm going to save this file as poem dot TXT in a directory called Blake, because again,
+the poem is by William Blake and all of these names are kind of important to consider.
+So if you're going to follow along, use the same names because it will come in sort of,
+it will be a component of this lesson momentarily.
+Okay.
+So the first thing we'll do is role play as the person who is going to make the updates.
+So someone, not you or me, someone else has has has transcribed this poem, but they accidentally
+somehow left out the first and the third and the whatever and the whatever.
+So every other line, they've just, they've accidentally forgotten, I don't know how they
+did it.
+Maybe they ran an errant, awk command that skipped every line when they were making a copy
+of the file or something, whatever happened, it's missing lines.
+So you and me, we're going to correct this poem and then submit a patch back to this,
+to the originator of this file.
+So the first thing you do, and this usually happens kind of inherently, but I'm going to make
+it into a manual step, the first thing you have to do is make a copy of the project
+directory.
+In other words, you get the directory somehow, right?
+It's on a server, someone's emailed it to you as a tarball, something.
+You've gotten it onto your computer, stop, don't change that file yet.
+This isn't get, right?
+We're doing this manually.
+So you need the file to exist in its current form before you've applied corrections.
+In other words, you need a baseline, off of which you can base your diff.
+So make a copy of the project directory.
+I do a copy, dash R, Blake to Blake dash revision, and I'm going to work in Blake revision.
+Again, the reason you don't think to do that is because normally in real life, some
+other system is doing that for you.
+When you go and change a Libre office document, like a word document, a word, whatever they
+call it, what's it called?
+A word processing file, a document, I guess, a Libre office document.
+When you, if you have tracking, you know, tracking changes is turned on, then technically
+speaking, like, you know, secretly in the background, Libre office is retaining a copy.
+I mean, it's not because it's all in that one big document, which is actually a zip file,
+but it's essentially it's making a copy of the original and then allowing your changes
+to be integrated into that original.
+But if someone wants to, you know, undo a change that you've done, they can do that because
+the original exists.
+Or if they just want you to see the change that you've made, they can see the difference
+because Libre office has preserved what it was before you changed it.
+So it's making the copies same with Git.
+The only reason that Git Diff works is because there was a previous commit that Git could
+compare what you've done to.
+Okay.
+So now we're going to add the missing lines of the poem.
+Now, we're going to CD into Blake revision.
+So this is our new, this is still poem dot TXT, but it's in a different directory and
+it's in our our private revision directory, Blake revision, or rather our local, it's
+not private, but it is local.
+It's this is the one that, that, that we claim for ourselves.
+This is our version.
+So I'm going to put in the first line.
+So now my, I've got tiger, tiger burning bright in the forests of the night.
+What a mortal hand or eye could frame thy fearful symmetry.
+So the sounding better already helps, I guess, when you don't skip every other line of
+a poem.
+What distant deeps or skies burnt the fire of thine eyes?
+On what wings dare he aspire?
+What the hand dare sees the fire?
+No idea what any of that means, but it's very pretty and it's got the rhyming things at
+the end.
+So there's the, the first two stanzas of the poem.
+You can read the whole thing on Wikipedia or on Tangerine Dream's album Tiger.
+You can hear it sung with some synth music in the background.
+So that's, that's the, that's the correction and I'll save that as poem.
+TXT.
+Again, this isn't Blake dash revision.
+So it's in its, it's its own independent file.
+It doesn't care that the incorrect version exists, but we have corrected it now.
+Now it's time to create the diff.
+You can create a diff of either a single file, which in this case would be appropriate,
+but you can also do an entire directory and I'm going to say that it's probably better
+generally or easiest to just make a diff of an entire directory.
+And I'm saying that because for this example, yeah, you could just do a single file.
+But in a lot of projects, you're not just changing one file, are you?
+You're changing a bunch of files.
+You're changing at least one file and then the, you know, a document about the release
+notes or the, you know, the changes that you've made or something.
+You're updating something somewhere and sometimes it's a lot more than that, you're changing.
+One file and then you have to go back over to the function where that, that, that, that
+sends information to this file.
+So let's go back over there and, and add a parameter to that.
+And then of course, because that's changed, we're going to have to include a different library.
+You know, so you're, you're like making changes all over the place.
+So I'm going to just say more often than not, just make a diff of the entire directory.
+And the way you do that is diff dash dash unified dash dash unified is the thing that makes
+this a valid input for patch.
+If you don't do dash dash unified, then you do get a report about the changes, but it's
+just a report about the changes.
+It's not a patch input.
+It is just, hey, here's the differences thought you might like to know.
+It's, it's informative, but it's, it's, it's not, it isn't super useful or at least
+it's not, not useful in like an automated process.
+So dash dash unified dash dash recursive, that of course, make sure that you're, you're
+getting a diff for any sub directory in here as well.
+And then dash dash new dash file, which treats, and it treats, if there is no file, then
+it will create the file.
+That's, that's what it does.
+So if you have had to generate a new file to which there would be no comparison in the
+original, well, then the whole file is counted as a new file.
+And then the source, so that's Blake.
+And then the, or rather the, the original, that's Blake, and then the revision, which in
+this case is Blake dash revision.
+And I'm going to redirect the output of that to my dot patch.
+It doesn't have to be called dot patch.
+It could be my dot diff, my dot, my, my changes dot TXT, you know, whatever.
+But my dot patch seems to make sense to me because it is going to be used as a patch.
+Now one of the nice things about a patch file is that it is human readable.
+The recipient doesn't technically need to use the patch command, like, especially in
+this case where, where it's, we've only added like what, four lines to the file.
+So like, I could just, I could just send this to the, the person, they could open it in
+a text editor, see the changes and make them manually.
+It would be as fast as patching, but I mean, it, it, it, it is an option.
+I mean, that, that could get pretty confusing if it's a lot of changes, but it's, it's kind
+of cool to know that the, the, the report is, it's just, it's not a, it's not a binary.
+It's not incomprehensible.
+It is just plain text.
+And in fact, you can look at it.
+You just do cat, my dot patch shows you the command used to produce this file.
+It shows you the original dash, dash, dash, Blake slash poem dot TXT.
+And it tells you the revision plus, plus, plus Blake dash revision poem dot TXT.
+It gives a header line, which is the unified header line.
+And it's at symbol at symbol, in this case, minus four comma four plus one comma nine at
+at.
+And there is an explanation of what that means.
+And it is on Gnu dot org documentation.
+And it does make zero sense.
+But the cool thing about this is that if you use Gnu Emax to look at a patch file and
+then you change the patch file, Gnu Emax actually updates that line.
+It's very cool.
+It updates it automatically for you to adjust for what you're doing.
+So you don't actually under, under the right circumstances, you don't even have to understand
+what that unified header is.
+It does have something to do with like the, the point at which a matching line has been
+found and then how many changes are made or something like that.
+But it just, it doesn't really make a whole lot of sense to me.
+And I couldn't, I played around with it.
+And finally, I just decided that I didn't need to know because Emax was going to do it
+all for me.
+So it didn't really matter.
+And in, and in either case, I mean, it's either Emax doing it for you.
+And that's really if you're getting fancy and trying to change things.
+But I mean, honestly, patch is going to interpret it for you anyway.
+So it truly, generally speaking, you don't need to know this like what this is.
+That said, yeah, that said, actually, no, no, yeah, no, I don't know, yeah, I don't,
+I'm going to stop.
+I've been guessing at what, like, how to conceptualize it in my mind for most of the day.
+And I just couldn't.
+So I'm not going to try now, or I could try it publicly, you know, for, for posterity
+on the internet, just sit here and struggle with it for the next four hours and get nowhere.
+But I'm not going to.
+So you can see in the text of the file, minus, as you can guess, that means that line is
+going away.
+It's going to just get deleted, removed, minus in the forests of the Knight.
+That's wrong.
+But then we're going to add tiger tiger burning bright because there's a plus sign plus
+tiger tiger burning bright, cool.
+And then we're going to add plus in the forests of the night spelled correctly.
+And then plus what a mortal hand or eye and then nothing, no plus, no minus, could frame
+thy fearful symmetry.
+So that's, that's the line.
+That's the one line that's like correct.
+And so we don't need to change it like that.
+That was kind of the, the, the, the, the contextual line that we're using.
+This is a chunk.
+And that line is kind of like the, the basis for, for, for those changes above it.
+Okay.
+Next is a plus a plus a blank line.
+And then in what distant deeps or skies, that's not changed.
+And then plus burnt the fire of the line eyes on what wings dare.
+He aspired.
+That's not changed.
+And then plus what the hand dare sees the fire.
+That's it.
+That's the patch file.
+So I think technically speaking, you can kind of see, again, it, it would get complicated.
+I, I imagine with a lot of changes.
+But when it's like properly divided into like lines, like when, when, when the files actually
+respect like lines and they don't have a bunch of sentences all in the same line that
+are completely unrelated, it, it, it is, it's pretty straightforward.
+It's like either it's removed, either it's added or it's unchanged.
+Those are the three states.
+It's not that hard to, to just kind of look at.
+Okay.
+So that's the patch file.
+It's completely linear.
+It either removes or adds or nothing.
+And you could send that to someone and they could run it through patch.
+And then their file would look exactly like your file.
+So now let's roleplay as the other person.
+No longer are we the person who have, who has made the changes.
+We are now the person with the file we sent it to our friend and said, Hey, could you look
+this over?
+I just want to make sure it's right before I send it off.
+Well, they've sent us pack a patch file because oops, we had made a mistake.
+Okay.
+So in real life, if you've made a Blake revision directory with your changes, you can,
+you can delete that now.
+You've got a patch file.
+You can delete the Blake revision.
+That's all preserved in the patch file.
+This is a diff that you've got the diff, you've got everything you need.
+So, um, so I've got my dot patch.
+And if I want to apply it unilaterally to my Blake directory with the incorrect poem.txt
+in there, I can run patch.
+Well, actually, you know what?
+Let's run the command that won't work first and that's going to be patch redirect, um,
+to the left.
+So that's what's a less than symbol.
+I think patch redirect my dot patch.
+So we're, we're piping my dot patch over to patch.
+We're telling patch to use my dot patch as input.
+That's the, the format of the patch command.
+The problem is in this case, it won't be able, and this is pretty common.
+That's why I want to, want to do it wrong at first.
+In this case, it can't find something, it, it, it, it, it produces an error.
+It says, it's a nonfatal error, don't worry.
+It says, can't find file to patch at input line four.
+Perhaps you should have used the dash P or dash dash strip option.
+The text leading up to this was, and it gives you the command, the diff command that
+produced this file and then dash dash dash Blake slash poem dot txt.
+That's, of course, the original thing that is on our system.
+And then plus plus plus Blake dash revision slash poem dot txt, uh, which was the, the,
+the file that our friend had on their system that they used to produce this, this diff
+with. And then it says file to patch.
+So you could, you could technically tell it which file to patch, but I mean, I'm just
+going to, let's control C out of that for a minute to cancel.
+And, um, the, the root of this problem is that so Blake slash poem dot txt is on our
+system. That is a valid location on our system.
+But Blake dash revision slash poem dot txt.
+That's not on our system.
+It's, it is not, uh, it is not the same as Blake slash poem dot txt.
+So, so patch is confused as to what it's looking for here.
+So what we need to do is tell patch to strip out the base directory name, the base
+directory, we don't need to worry about that.
+We just want to affect the, the files within Blake dash revision.
+It doesn't matter what Blake revision is called.
+Just we're, we're doing this for the, the poem dot txt file, whether it's in
+Blake or Blake revision, it doesn't matter.
+We're stripping that base directory name off and just looking at the files.
+Confusingly patch starts counting is zero.
+So in order to strip the first directory from the path, you have to strip the zero
+is directory from the path.
+So patch space dash dash strip zero redirect my dot patch.
+And then it's patching, it returns that it's patching file Blake poem dot txt.
+And sure enough, if you look at the file, now what used to be every other line of
+William Blake's famous poem are all of the lines of Blake's famous poem.
+It's at least up to the second stanza.
+And that's it.
+That's how you diff and then that's how you patch.
+And like I say, if we had more files in that directory, then the diff, like the
+patch file, the diff report would have contained a bunch more information about
+files to patch.
+And so then you get really great stuff like a bunch of files being updated just
+with one patch command.
+It's it's pretty amazing to witness.
+It's really cool.
+I mean, it is no more amazing than to get pool.
+Honestly, but I mean, that in itself is amazing and doing that without get is
+kind of interesting.
+And that's what you're doing here.
+Let's talk about workflow because if you're used to just working in a word
+processor online or doing a get pool or something like that, then this might
+seem kind of complex.
+Like this might feel a little like, why am I doing all of these steps?
+Well, first of all, again, it is not all of these steps.
+You're going to be doing either the diff, diff dash, dash, unified, dash, dash,
+recursive dash, dash, new, dash, file, you know, original revision,
+redirect my dot patch, like that's that that's the step.
+And it's someone else's problem to do the patch dash p zero, redirect my dot
+patch. That's actually in terms of workflows.
+That's not actually that big of a deal.
+It's like literally one command each.
+It's really actually quite convenient.
+And it sure beats emailing a copy of a file back with file names like my
+version, my version, dash, final, my version plus your version, dash, final,
+plus really final dot TXT.
+You know, it's just like it, it, that sort of thing is too much work.
+Now, I realize I'm comparing this to online stuff where it just all sort of
+invisibly happens.
+And, and yeah, this is a little bit more work than that.
+However, there are some times where I think, you know, I mean,
+I'm willing to sacrifice the bloat of those online tools and the reliance
+upon a very, very specific software stack.
+Like if you ever leave that software stack, then your changes go away or,
+or maybe not, you know, you can download so you can convert some things into like
+a dot ODT file and get all of those changes sometimes.
+But there is, there's a lot of bloat there.
+There's a lot of sort of reliance upon a very specific set of tools.
+Whereas this literally, it's the text editor of your choice.
+And then the diff and the, well, either the diff or the patch command,
+probably both, but at separate times.
+Okay. So here's how I can real life.
+I use this.
+First of all, you should write in common mark or mark down or asky doc or
+some format that is, you know, mildly structured and that does not involve word
+processing.
+It's just a text editor.
+You just want to produce plain text files.
+Now, I use asky doc a lot.
+You can use things like asky doctor to convert those into any variety of,
+of formats where you could use markdown combined with like pan doc.
+You can get a lot even more formats.
+So with that, with that kind of tooling, I just, I don't see the point of word
+processing in real life.
+But I mean, I'm not, I'm not saying that it never happens.
+I'm just saying like sometimes a text editor really is quite liberating.
+And then using structured, some kind of structured format makes it just as
+flexible. So no worries there.
+So do that.
+Write and mark down, write and asky doc, whatever.
+And then even though it's going to feel so to tip number two, it's going to
+feel strange at first, but write each sentence.
+If you're doing pros, not code, I mean code, yeah, but either way, every
+line is an atom, meaning every single line should have one element on it where,
+where the smallest element in pros in, in, you know, in, in, in England,
+natural language document is a sentence.
+And in code, every line is a statement.
+If you do that in, like I say, it will feel weird, especially when you're
+writing like plain text, like a natural language, you're, you're writing a
+document and you're hitting return after every single line.
+Doesn't that feel weird?
+Yeah, it'll feel weird.
+And you do two lines after each paragraph.
+So there's a, there's a single blank line between paragraphs, but, but a, a,
+a return, like a carriage return at the end of every sentence.
+It'll feel weird, but trust me, all, all common, um, formats out there,
+like HTML and, and everything else, XML, they're going to eat that new line.
+Anyway, it's, it's not going to care about the new line.
+So once you render this as a document for other people, it'll all look like
+normal. It'll be in paragraphs and stuff.
+But your, your source code is one sentence per line.
+And what that does for you is that when you make a diff of something, diff can
+focus, you know, if there's a typo in a sentence, then diff only sees a typo
+in a sentence.
+If you make everything run on to a big paragraph, then diff sees a typo in an
+entire paragraph.
+So you really, because diff sees every line, that's what it sees.
+It doesn't care how long that line goes.
+If it's 80 characters, if it's 100 characters, if it's a thousand characters,
+it doesn't care.
+That's one line.
+So you want to try to make each line significant.
+Tip three, make a working copy early.
+I've definitely been guilty of opening a project directory with the intent to make
+no changes, but that never happens.
+I mean, there's always a mistake somewhere and I just can't consciously let that
+go.
+So I make the correction.
+And now I've got a change that I need to register with the, the, the project
+owner and how are you going to do that?
+Well, I should have made a copy.
+So then I have to go back up to the server or something and get the copy so I can
+make a diff and it's just stupid.
+Make a copy early.
+And then tip number four is honestly use a source control management tool like
+Git or fossil or whatever you, you prefer.
+I mean, really, I mean, in real life, I have to be honest.
+That's the way to do it because then you don't, you're not juggling patch files and
+things like that.
+You're just making commits and letting Git sort everything out for you.
+So in real life, I think that's probably how you're going to interact with
+diff and patch more often than not.
+But that wasn't the point of this episode.
+This episode is honestly to say, different patch, you can use them as, as tools.
+You can make use of them.
+So the daily workflow, honestly, make a copy of what you're working off of,
+make your changes and then make a diff.
+That's it.
+That's the workflow.
+It's, it is that simple.
+It really is.
+It is that easy.
+Now, there have been times when I've received a proposed patch for a project
+that's like 90% good, 10% not something I want to emerge.
+Like I say, I use GNU EMAX.
+I open the patch file.
+I make the changes that I want.
+GNU EMAX updates the patch header for me.
+And then I apply the patch to the file.
+It is very much like get cherry picking, except I'm just doing it kind of manually.
+So if you are tired of overhead, of the overhead of tracking changes with whatever
+current collaborative solution you're using, consider using diff and patch.
+It's there.
+It has worked for a very long time.
+It is still from what I understand what the kernel team uses.
+That's what I've heard.
+I heard that probably 10 years ago.
+Maybe they've, maybe they've just switched to an all get solution.
+Now, but I heard that you email your diffs.
+That's what I heard.
+And then they apply the patches.
+And honestly, in many, many, many cases, that's my preferred method.
+Like if someone submitting a patch, just something on get lab,
+I very frequently just download the patch and look at that first and then choose
+whether I'm going to merge it or whether I need to adjust it because I just
+like kind of seeing it all in one document.
+That's it.
+That's diff.
+That's patch.
+I hope this has been informative.
+Thanks for listening.
+You have been listening to Hacker Public Radio at Hacker Public Radio does work.
+Today's show was contributed by a HBR listening like yourself.
+If you ever thought of recording podcasts,
+and click on our contribute link to find out how easy it leads.
+Hosting for HBR has been kindly provided by an honesthost.com,
+the internet archive and our sings.net.
+On this advice status, today's show is released under Creative Commons
+Attribution 4.0 International License.

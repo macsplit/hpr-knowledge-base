@@ -1,0 +1,282 @@
+Episode: 1462
+Title: HPR1462: Encryption and Email with Thunderbird
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1462/hpr1462.mp3
+Transcribed: 2025-10-18 03:31:40
+
+---
+
+
+Hello, this is Ahuka, and welcome to Hecker Public Radio for another exciting episode.
+And this is a continuation of our security and privacy series.
+Now we have done some general looks at some of the issues around security and privacy,
+and then we've gotten into how you can create a key pair, as it's called, public and private
+key.
+And it seems like it could be a good time to start talking about how you use this stuff.
+And we're going to take a look at this one and the next episode in this series.
+We will take a look at how to practically put this information to use.
+So I'm going to start with Thunderbird.
+Now Thunderbird is an email client that is very popular.
+It is cross-platform, it is free, it is open source.
+So it seems like a pretty good place to start this, all right?
+Now encrypted communication via email is very desirable if you wish to keep a secret.
+In the US, the current legal precedents say that any email left on a server is not protected
+since you would have no expectation of privacy.
+This precedent was set many years ago when Pop 3 was the standard for all email, and people
+did not usually leave email on a server.
+These days, many people use web-based email, or use a newer standard called IMAP, which
+by default stores everything on the server, perhaps you are one of these people.
+People thought that you had a right to expect privacy, but in the United States you don't,
+and I would expect it in many other countries the situation is no better.
+Now there have been attempts to provide encrypted email service from a service provider, but
+the problem here is that the provider usually has to have the key in order to encrypt the
+email.
+And if they have the key, they can be compelled to give it up.
+Finally in the United States, there was a case involving a gentleman named Ladar Levison,
+who ran such a service called Lavabit.
+Lavabit encrypted mail and transit using TLS encryption, its transport layer security,
+and he had the keys.
+When his service was used by Edward Snowden, the government came to get the keys.
+Now Levison would have given them the key for Snowden's email if he had been served
+a warrant, as he always made clear to his customers that he would obey proper legal demands.
+But in this case, the government demanded that he turn over all of the keys for all of
+his customers, and this was too far for Levison.
+He shut down his service rather than cooperate and is a bit of a hero for that.
+And it illustrates that you are at the mercy of the service provider.
+If the government made this demand to Lavabit, you are safe and presuming they had made
+the same demand to other providers and that they all cooperated with the government and
+said nothing to their customers.
+So it would be a mistake to rely on third-party mail service providers to give you privacy
+you need to control it yourself.
+But of course, after the last few lessons we've done, you know how to do that, you know
+how to create secure keys, so put them to use.
+Now generally, there are two uses of encryption in email.
+One of them is signing, and the other is encrypting the message.
+Signing does not encrypt the message, but what it does is provide authenticity.
+When you sign an email with your key, also referred to as a digital signature, you are making
+a hash of the actual message, then encrypting that hash with your key in such a way that
+it can be validated is coming from you.
+This accomplishes two desirable things.
+First, it guarantees the integrity of the contents of the message, itself, since the contents
+had a hash created, which can be checked against the message when it is received.
+This is much like the use of MD5 hashes to verify the integrity of downloaded software.
+With software downloads, a hash is made of the binary file, and then you run a similar
+hashing program on the downloaded file and see if the two hashes match.
+If they do match, you know your copy is a bit perfect copy of the original and no mistakes
+occurred in the downloading, but if even one bit is changed, the hash you get will be
+completely different.
+Now, I'm not going to get into the question of what a hash is at this point other than
+to say it is an example of one of those one-way functions.
+This function can easily produce the hash, but if you have the hash, you cannot go back
+to the original from it.
+That's what we mean by one-way.
+In your email then, the hash that goes into your digital signature is unique, and if
+anyone tampers with the message en route and changes even one single character of the
+message, it would result in a totally different hash which could be detected by the recipient.
+The other useful function of a digital signature is non-repudiation, which means that you
+cannot later deny having sent the message.
+It was encrypted with your key, and only you would have had access to that key.
+This is particularly useful for the related, but somewhat different use of what is called
+an electronic signature.
+An electronic signature may or may not be encrypted, but it is used in place of an actual physical
+signature on documents.
+With more and more commerce and other activity taking place online, legal systems are developing
+standards for using electronic signatures as valid legal proof, and obviously the non-repudiation
+provided by an encrypted digital signature is very useful.
+The thing to keep in mind is that a digital signature does not encrypt in any way the actual
+message being sent.
+That message is in the clear, as cryptographers would say, meaning that anyone who gets the
+message can read it.
+That may be good enough for your purposes if all you want to do is guarantee that the
+message came from you and has not been altered.
+But if you want to actually keep the content secret, you need to go one step further and
+actually encrypt the message itself.
+That way, if anyone intercepts the message, all they will see is a blob of random noise
+that they cannot decrypt.
+The important point to remember when sending encrypted email is that you are not using
+your own keys to do this.
+Sending encrypted mail begins by using the public key of the recipient.
+So it is inherently a one-to-one procedure and not suitable for mailing lists, although
+you could put a digital signature on a message to a list without any problem.
+So to send an encrypted email to someone, you must first obtain their public key.
+We'll talk more about this.
+In fact, I'm thinking at this point, I've asked Tony Beames from the Sunday Morning Linux
+review to join me and have a discussion about all of the issues around obtaining keys.
+But if you recall from our lessons on creating key pairs, one of the last steps was to post
+the key to a public key server, so that is one way to do it.
+There can still be ambiguity about people who share names, and there is a serious problem
+of ensuring the identity of the owner of any given key, which we will talk about when
+I talk to Tony.
+For now, let's assume that you have the public key for your correspondent.
+Now, Thunderbird, okay?
+Thunderbird is a great email client.
+It can be used to access either POP 3 or IMAP servers, and the difference between that
+POP 3 stands for Post Office Protocol Version 3, and that was the old standard for email.
+You would log on to the mail server that your ISP told you to log into, and it would
+grab all of your mail, download it to your local machine, and delete it from the server.
+But that was something that ISPs very much insisted on, because they didn't want to be
+keeping all of this email on hand back in the time when storage costs were a lot higher
+than they are now.
+Now the other protocol, IMAP, Internet Message Access Protocol, I think that is, and that
+is based on everything staying on the server.
+You log in with your client, and you can move messages from one folder to another, or delete
+them, or whatever you want to do, but everything stays on the server.
+These days, that's much more preferable, and now that storage costs have come down, it's
+much more common.
+So that way, you can access your mail from your desktop computer, or from your mobile
+phone, or what have you, and since it's on a server, no problem.
+Thunderbird is available, cross-platform, Linux, Windows, and Macintosh, and in many languages.
+It's part of the Mozilla project, which also produces Firefox, and is free and open
+source.
+Word follows Firefox and using plugins and extensions to add to its capabilities, and
+one of these is what we're going to talk about today, it's a plugin called Enigmail.
+To install it, you do what you would do for any other plugin.
+In Thunderbird, you go to the Tools menu, Add-ons, Get Add-ons, and then in the Search Bar type
+Enigmail, ENIGMAL.
+Select it and install it, and you're ready to go.
+Also note that Enigmail is available for CMonkey and Postbox, as well as for Thunderbird.
+Enigmail uses GNU PG, or GPG, as its core technology, and when you install it, you don't
+really need to do much more if you already created your keys previously using GNU PG.
+Enigmail will look in the usual place for your GNU PG key and use what it finds.
+But you can go to the Preferences for Enigmail and give it a location, manually if necessary,
+then you need to associate it with an account.
+If you only have one email account, that's going to be pretty easy, obviously, but some
+people may check two or more email accounts from one installation of Thunderbird.
+Now if you recall from our description of creating the key, your email address was part
+of the key creations they are tied together.
+You can add more email addresses to this key, but a better procedure is to have a key
+pair for each address.
+The reason is that anyone who decrypts a message from you automatically knows your email
+address from the decryption.
+And if you had multiple addresses configured on one key, all of them would be revealed
+to any recipient.
+Since we assume you are doing encryption to get privacy and security, you can see why
+a separate key pair for each address is preferred.
+Now once you have Enigmail installed, you have to configure it.
+So installing it is going to put a menu in Thunderbird called OpenPGP.
+So if you take a look at the menu bar at the top of Thunderbird, you've got this whole
+new menu there.
+Now if you click on that, you've got a number of things, but towards the bottom there's
+an option called Setup Wizard that will step you through the initial configuration.
+So I'm going to assume that we're going to do that.
+So we click on the Setup Wizard and it's going to ask you a few questions and we'll
+talk about those.
+The first question is whether you want to sign all outgoing email, or would you rather
+do it on a case-by-case basis.
+Now you might think signing each email is a good thing to do, but there are costs involved.
+To sign an email, you have to provide your GPG passphrase.
+And if you actually did as we suggested and made it long and secure, it will be a big
+pain in the butt to do this for every single email you send.
+If you don't mind that, go ahead and sign everything, but I have chosen to be more selective.
+You may think, hey, why don't I just make my passphrase something simple and easy?
+Well, now you have just reduced your security immensely.
+And wasn't that the purpose when we started to get good security?
+So make up your own mind.
+I make a conscious decision whether or not I want to sign any given email.
+And it's got to be important enough for me to open up key pass and find the card for
+my GPG passphrase and copy it and paste it into the window there.
+Now the next screen is for setting encryption on all emails.
+This is even less user friendly than digital signing because encrypting outbound email
+requires that you have the public encryption key for each recipient.
+So by definition, you cannot encrypt a message that goes to an email list with multiple
+recipients since each one of them would have a different public key.
+That's why the wizard tells you, unless most of your communication partners have public
+keys, you should not enable encryption by default.
+I would listen to that.
+Chances are, most of us only have a handful of people that we communicate with regularly
+that have public keys when we want to, we can send them an encrypted email.
+When the wizard asks permission to change some technical settings in Thunderbird to make
+encryption work better, you can click the details button to see what they're asking
+to do.
+For most people, they're not what they're asking for is not a big problem.
+In fact, the biggest change you might see would be disabling the ability to compose HTML
+messages.
+This makes sense because encryption is only possible with text and HTML would just create
+a mess.
+Next, the wizard asks you to select a key pair to use with your email.
+Now the key pair you created earlier in GPG should appear here, unless for some reason you
+moved it to a non-standard location.
+But assuming you see it here, click on it once to highlight it, then click the next button.
+This will take you to a screen that gives a summary of the settings you have made and
+tells you that clicking the next button one more time will put those settings into effect.
+So click the next button, you'll see a message that OpenPGP is now ready for use.
+Click finish to close the wizard.
+Now using this is actually pretty easy.
+Let's start with signing.
+You open up, you click the right button, menu opens up, I mean a window opens up, you
+create a whole message, and then you say, hey, I want to put a digital signature on
+this.
+Well, you go to the window, the message window will also have menus, and there'll be
+an OpenPGP menu in the message window.
+So you click on that, and the very first option there is sign message.
+So just click to put a check mark there, and then when you're done, you click the send
+button.
+When you do that, what's going to happen is a window will pop up asking for your GPG
+passphrase, anything you do with this stuff, you have to have your passphrase.
+So enter your passphrase, and then your message will be sent with a digital signature.
+And what your recipient is going to get is something that says begin PGP signed message
+hash, shy one, and then they're going to see the message in the clear, because this
+was not about encrypting the message.
+This was simply about guaranteeing its authenticity.
+So your message will be there, your signature will be there, and then at the bottom there
+will be begin PGP signature, and a bunch of gobbledygook that looks like various numbers
+and letters, and uppercase, and lowercase, and you know a few other characters, et cetera.
+And then at the very bottom end PGP signature.
+Now shy one stands for secure hash algorithm one, and this was an early standard for encryption.
+These days it is not considered particularly secure as an encryption method, but we're
+not encrypting the message, we're simply guaranteeing its authenticity.
+So this is fine.
+Shy one is a, I would say roughly equivalent to MD5, neither one of them are suitable
+for actual security of encrypting, but for the purpose we use them, they're fine.
+Now when your recipient receives the message, what happens depends on whether they have
+some kind of PGP or GPG configured in their email client.
+If they do not, they'll see the message just as I said, all right, they will see the
+actual message, they'll see the gobbledygook, et cetera.
+But if they do have the appropriate software installed on their mail client, they will
+probably see some kind of message that says this signature is good, ideally that would
+be the case.
+Now if something went wrong, they'd make a message saying, yeah this is a bad signature.
+And that would alert them that, okay, this may have been tampered with.
+Now that's not a guarantee that it's been tampered with.
+There have been a number of problems over the years with software that sticks in trailing
+spaces where it shouldn't and what have you and anything like that is going to throw
+off the signature.
+Now sending encrypted mail, not difficult to either.
+So again, you'd click on the right button and your composition window opens up, you
+write your message.
+And now what you do is you go to the open PGP menu instead of selecting, well, you could
+do both, I suppose, but I'm not sure, there's a whole lot of point to it.
+You're select, encrypt your message.
+And in this case, what happens is, it's, you're going to get something that says, begin
+PGP message, a whole bunch of gobbledygook and PGP message.
+This is the encrypted version of what you've sent.
+Now there is no clear text message to view, that's the whole point.
+So and that's the difference between signing a message and encrypting a message.
+Now in order to encrypt it, when you say, you know, you select, you want to encrypt the
+message and you click send, you are going to be asked to specify who it is you're sending
+it to.
+Because remember, when you send this, you're not using your key, you're using the public
+key of the recipient and you have to already have that in hand in order to do this.
+Now, when your recipient gets it, they should then, in their mail client, there should be
+something that, you know, in Thunderbird, you can set up any mail to say, automatically
+decrypt anything that comes into my mailbox.
+Or you can open the message and select, you know, decrypt this message.
+So you've got a few options like that with other clients that might be slightly different.
+Basically, if your recipient has configured their mail client properly, they can decrypt
+the message using their private key that you encrypted using their public key.
+So that concludes this initial look at email encryption.
+This is Ahuka signing off for Hacker Public Radio and reminding everyone, please support
+free software.
+Thank you.
+You have been listening to Hacker Public Radio, as Hacker Public Radio does already.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by a HBR listener like yourself.
+If you ever consider recording a podcast, then visit our website to find out how easy
+it really is.
+Hacker Public Radio was founded by the digital dog pound and the infonomicum computer
+globe.
+We are as funded by the binary revolution at binref.com, all binref projects are proudly sponsored
+by Lina Pages.
+From shared hosting to custom private clouds, go to LinaPages.com for all your hosting
+needs.
+Unless otherwise stasis, today's show is released under a creative commons, attribution,
+share a like, free dose of license.

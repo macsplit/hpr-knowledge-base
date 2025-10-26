@@ -1,0 +1,332 @@
+Episode: 2703
+Title: HPR2703: Fog of war in Yesod based game
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2703/hpr2703.mp3
+Transcribed: 2025-10-19 07:45:16
+
+---
+
+This is HPR Episode 2,703 entitled, FOD on War in the SOD based game.
+It is hosted by Tuku Toroto and is about 25 minutes long and Karima Clean Flag.
+The summary is how to implement FOD on War System in turn based web game.
+This episode of HPR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org
+forward slash donate.
+Support universal access to all knowledge of FOD on War in the SOD.
+Support universal access to all knowledge of FOD on War in the SOD based game.
+Support universal access to all knowledge of FOD on War in the SOD based game.
+Support universal access to all knowledge of FOD on War in the SOD based game.
+Support universal access to all knowledge of FOD on War in the SOD based game.
+Support universal access to all knowledge of FOD on War in the SOD based game.
+Hello my name is Tuku and you are listening to Hacker Public Radio.
+Today I'm going to look how to make a one way,
+today I'm going to look into a fun way of making a FOD on War in a desert based
+web game.
+Premise is that there is an unknown simple web test.
+Space exploration game and big part of the Space exploration game is of course exploration.
+So you need to have something to explore.
+But it's not fun if you immediately in the beginning of the game
+have a complete view of everything that is in the game.
+So there's a sort of a dual of the universe, two sides of the universe.
+There's this part that really is and there's this part that the players see.
+And even more every player have a slightly different view of what they
+because they start from the different planets and exploratory different directions
+and do the different kind of things.
+So the first part, what really is, is used for the running that reasonable simulation.
+And the second part is what gives the players chance to explore.
+So the solution I game up for this is a relatively simple, I like simple solutions.
+So the real situation is stored in the database.
+For example, there's a one table for the star systems.
+One table for the stars that are located in the star systems are the table for the planets.
+And another table that stores the population of the planets.
+And one table that stores the buildings that are located in the planets.
+So basically one table for the type of entity.
+And then there's a separate tables that met almost one to one with these ones.
+That has to use to store reports or observations.
+So there's a small table, then there's a star, a star report table.
+And planet report and population report and building report and so on.
+And all of these report tables are connected to a faction.
+If you remember every player is a part of a faction.
+The essentially is just a group of players that work together and it's the faction
+who owns the planet and has the shipments and so on.
+But every report table is connected to a faction.
+Basically this is a following key to the faction table.
+And this causes the...
+This is because then it's the faction that has the view of the universe.
+If there's a two players that form a faction and one that is first one direction and another one to the other direction.
+They automatically share all the things they find.
+They let one.
+Basically all the players in the faction have the same view of the universe.
+Okay. And these reports are also tied in time.
+There's another column that tells this observation or report was done.
+And reports are almost always in partial and they may even be incorrect.
+So for example, when a ship arrives to a new system, they might initially spot very crude details like this.
+But okay, here's a star and then there's a sum amount of planet.
+And if they start doing scientific observations in the system, they slowly start accumulating more information.
+For example, they get the luminosity of the star or stellar class or they measure the gravity of the planet
+and measure what kind of atmosphere it has.
+All that information slowly starts accumulating.
+Sometimes they might make mistakes and then a bit later they might correct those mistakes like what they are thought.
+But this planet is...
+gravity is one C but it's actually later on realized that it's 0.98 C's.
+And at this point it might be a good idea to have a look at the show notes.
+I have shown how they...
+I'm going to use a planet as an example and I have copied the definition of the planet and planet report tables.
+So basically the planet has a name, position in the system like we from 1 to n.
+Link to the sciences to make this.
+It might have an owner that is a fraction who has the owner's report planet.
+Oh, it might not help if it's a completely answer to planet and gravity.
+And the report has the same similar information, it has the...
+But it has a link to the planet that is the report is about.
+It has the owner that is the fraction.
+It has the link to the space system that the planet is located.
+And it's a name, position, gravity.
+And the information when it was...
+When the observation was made.
+But if you look, you notice that these information are...
+For example, gravity is double maybe.
+And position is int maybe, meaning that it's a...
+The information might or might not be present there.
+In the code, wherever there's a gravity regarding to the planet, it's always double.
+But in the planet...
+In the code, the planet report is maybe double.
+It may be nothing, meaning that the observation hasn't been done.
+Or it may be just double, meaning that observation hasn't been done.
+And the same number, and no, no.
+So, there's a lot of maybe, maybe...
+Feel Center reports.
+Okay.
+As I said, reports are cumulative.
+So the...
+The multiple, multiple observations are done.
+About the same entities over the time.
+And this...
+And when the player is viewing the information,
+all this information is actually created, compared to the one single report
+that is shown to the player that this is the current information you know about.
+So the basic tests are entities.
+These are the planets.
+They test the report, planet report, and then test the...
+These are stored in the database.
+And then test the final thing, collated report that is shown to the players.
+So, I'm going to have a closer look in the gold next.
+There's a...
+This code uses some pipe classes.
+They are really common in Haskell there.
+Basically they define a set of operations that can be performed to instances of the pipe class.
+For example,
+For example, number type class in Haskell defines that you can add and subtract and multiply
+instances and then there's a...
+You can...
+Then there's a defined hat there.
+Then the Haskell defines instances in and flowed and such for the...
+For the pipe class.
+Meaning that you can multiply in the case.
+You can multiply tables.
+And I approached this by dividing the whole process into...
+A whole process into several sets.
+So first we need to get that data from the database and transform it into the form that can be processed.
+And getting the data from the database is persistent.
+A lot of people handle that for me.
+But to transform that data into something that is more easily processable,
+I have a report transform type class that defines one operation from the report.
+And this is...
+Usually match one to one between the report and the database and the collated report.
+But in some cases, it's possible to add some extra data.
+For example, for the population, the population table stores just a raise ID.
+There can be different raises like their runs and such in the game.
+But the population table stores only a raise ID.
+And the raises are defined on a different table.
+And in this report transform phrase that ID is used to place the name of the raise into the collated report.
+That way when the player gets the report they know that it's about the name of the raise.
+That is in happening a planet instead of just the ID.
+But in case of the planet and planet reports, it's just a one to one mapping basically.
+Okay, now that we have a stack of reports about several planets,
+some of those reports might be about the same planet and some of the reports might be different planets.
+This situation could be that the seed has arrived into a star system and they have been observing the system of the scientific officer
+as a huge stack of or rather huge pile of reports on that table.
+I need to make some order on it.
+So I defined a class called, that class called cropped.
+That is used to indicate if two reports are about the same entity.
+So it again defines only one function, same group.
+That takes two reports, sorry two collated reports.
+And actually it takes two of anything that has been defined to have an instance of the group.
+But it takes two of those collated reports and tells if they are about the same entity.
+Usually it's the simple comparison of the primary piece.
+And that's exactly what we are doing in the case of the planet reports,
+because these are just comparing the planet ID of those or reports if they are the same,
+then they are about the same planet if they are not the same entity or not about the same planet.
+Okay, and now that we have sorted those planets on a sort of reports into need stacks,
+we need to combine one stack into a single report.
+So all the information that has been collected for example about Venus will be squeezed and aggregated into one report.
+And that is the pattern, or the pattern maybe is the pattern.
+These are easy way to combine these stack, one stack called monoid.
+And these are, if you start programming in Haskell, monoids are going to run into them all the time.
+They are very common.
+It is a simple abstraction, mathematical abstraction.
+And basically it defines that there's an object in how case a planet report,
+sorry collated planet report, and an associative binary operation that is used to combine these.
+And then there's an empty element.
+And then there's a couple of rules, how these should work.
+For example, in case of text, which is really a list of characters,
+if you have A, B and C, and you combine them with this operation,
+you get a string A, B, C altogether.
+But if you add some parenthesis, you have A plus B inside of parenthesis plus C.
+That is equal to A plus B plus C inside parenthesis.
+So all the things are combined matters.
+But like you cannot just move, switch A and B around and get the same result.
+Of course, that's a different.
+But adding parenthesis doesn't matter.
+And then there's the empty element.
+That A plus empty string is A, and empty string plus A is again A.
+So this is what forms a monoid.
+And also every monoid is also semi-group, which is just this binary operation,
+without the empty element.
+So how this mathematical notion relates to collated planet reports is
+that if you have a stack of collated planet reports,
+we can just take two of those and make a third one,
+where all the information of the old one is superimposed with a new one.
+So basically, we are just collecting the newest information that is available.
+And then we need that empty report.
+In case we don't have anything, or if you have,
+then we have just a collated planet report where all the fields are nothing empty.
+And then I had to take a, I didn't really know what's the best way.
+So I ended up setting the, for entry, keys to zeroes,
+and the dates to zero to indicate this information is incorrect.
+This might not be the best way of doing that,
+but I couldn't figure out a way to around this.
+And if we define these type classes,
+or are the instances of these type classes to have our entries,
+the actual processing is just a couple of lines.
+But I'll try to find a better explanation about the monoid and what it is about,
+and link it into the show notes.
+So the actual processing, now that we have defined all these auxiliary functions,
+is that the collated report function,
+that this is for the single entity.
+This takes a, this takes a list of things,
+and these things must have a report transform type class,
+and it produces a single thing,
+that has to be a result of that report transform,
+and also form a monoidal instance.
+And the actual implementation is just M concat map from report to reports.
+For, for, for, for words.
+And this just, first it maps the reports from the database,
+the address and the tion into that collated representation,
+and then it uses M concat to squeeze all those collated reports into a single one.
+And M concat is defined by the hospital,
+in the, by the terms of the, that diamond operation,
+that single binary operation that we talk about a little bit later,
+that we define, when we were defining the monoidal instance.
+And for the multiple reports, the situation is slightly more complex,
+because now we have a stack of these things,
+and we are producing stack of these things.
+So we have a stack of, but we have a stack of something
+that can be used in the report, report transformation,
+and we are producing a stack of things,
+that are a result of that report transformation,
+form a monoid, and also that first item has to be something
+that can be grouped like we, we can tell that,
+what is about the same entity.
+But that basically is just in that,
+I defined that in a two steps,
+like the special case is when you have an empty list,
+then you, the result is an empty list, that's easy.
+But if you have something on your list,
+then you are first going to split them,
+you are the code collected, that is often,
+it picks the first item,
+collects from the list all the items that belong to the same group,
+and then it collates them with the earlier function,
+and then it takes the next item that hasn't been processed,
+and that's the same thing.
+Okay, but all this happens on the server side, of course,
+and the data on the server is going to help the player match
+at all, they need to see that,
+so we need to send it to the client somehow.
+There's two ways we can render it as an HTML page,
+or we can send it as a JSON,
+and in the example I'm going through the hit,
+change on, and the first we need to define a way
+how to transform our report into the JSON,
+and template Haskell offers as a shortcut.
+We can just use the derived JSON with default options,
+or our collated planet report data,
+and it will create as to from JSON and to JSON instances.
+Now we can, now we can, with a single call,
+transform JSON into a,
+we can actually transform JSON message into collated planet report,
+and the vice versa collated planet report into JSON,
+and now the code to actually do all this
+is again pretty short.
+There's a handler that takes a key planet.
+This is the primary of the planet we are interested in,
+and returns a handler value.
+This is JSON in our case.
+First, that is to check that the player is actually
+a mentor of a faction,
+and before that the code checks
+that they are actually locked in and outindicated.
+And if this fails, they are going to get,
+I don't remove what error code they are going to get,
+maybe 500, maybe something else.
+But if this check passes,
+then we are loading the,
+using the persistent select list
+to load all the planet reports
+that are of this given planet,
+and are made by the section that the player is member of,
+and we are sorting them by the report date.
+And then we are just calling the collated report
+to take this loaded data
+from into the collated planet report.
+That not entity law is there
+because the loaded planet reports,
+the planet reports that are loaded
+from the database tables of two items.
+First element is the ID,
+and second element is the actual report.
+So doing the not entity law gives us the actual reports.
+And then we are going to just turn that into the JSON
+with a two JSON code and return it.
+So I really like how simple it looks
+at this level.
+Like, just authenticate the loaded data
+to the report,
+to turn the player down.
+And the actual report thing
+is not that complex.
+It's just quite a bit of stuff to write there.
+And of course you have to write that
+for each and every entity type in your game.
+That's quite a bit of type.
+Okay, I'm going to call this off.
+And I will be interested to hear
+if you have written something similar,
+or tackle the similar problem.
+And what do you think about the approach in general?
+Okay, until next time,
+this is Doug, signing off.
+You've been listening to HackerPublicRadio
+at HackerPublicRadio.org.
+We are a community podcast network
+that releases shows every weekday,
+Monday through Friday.
+Today's show, like all our shows,
+was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast,
+then click on our contribute link
+to find out how easy it really is.
+HackerPublicRadio was founded
+by the digital dog pound
+and the Infonomicon Computer Club.
+And it's part of the binary revolution
+at binrev.com.
+If you have comments on today's show,
+please email the host directly,
+leave a comment on the website
+or record a follow-up episode yourself.
+Unless otherwise stated,
+today's show is released under
+Creative Commons,
+Attribution,
+ShareLife,
+3.0 license.

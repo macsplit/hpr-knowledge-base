@@ -1,0 +1,89 @@
+Episode: 740
+Title: HPR0740: DDoS : What is it and how to protect yourself
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0740/hpr0740.mp3
+Transcribed: 2025-10-08 01:44:35
+
+---
+
+.
+.
+Hello and welcome to today's episode of HPR. My name is Josh, also known as Shadow Dow for those of you that hang around the
+Ben Rev IRC or on the site itself. I'm a system administrator and cloud specialist for a web hosting company.
+I've been using Linux for about 12 years and today I'm going to talk about DOS attacks and more specifically the DDoS attacks that people sometimes get on their
+sites. Getting right into it, DDoS attack is short for distributed denial service attack. There's a few different ways to do it, but the most common way is taking multiple
+systems or multiple computers, typically compromised computers and having it target a single target. So a DDoS attack is what would be considered a many to one scenario requiring a large number of systems to achieve the
+attack or school. Again, this can be their botnet that's hired. If you go on the black market, you can usually find systems for a pretty cheap, depending on their geographical location and what they're through, put different things like that.
+Or it can actually be set of systems that have been put together to do specifically that or people volunteering to do stuff.
+A good example of that would be when anonymous attacked the payment card industries, servers like Visa Mastercard, I think they went for PayPal, if I remember right, just a bunch of different companies were getting attacked.
+And it wasn't just people who were vulnerable or botnets, but it was people who were actively trying to stand for something along with anonymous.
+Going into that, we're also looking at the most common targeted service as well, which is the web service on a server. This usually is Apache or light HTTPD or IS or any number of the web services out there.
+If you attack the service and it's not optimized, not configured correctly, it can actually cause a system to physically crash, lose all connections, and just drop offline.
+Recording the reboot, bringing the system back up, and then it's a rinse repeat. It happens over and over again. Typically in a hosting environment, that means that whoever is the target is going to be suspended and the site's going to be offline, achieving the hacker's goals.
+Even if the server itself does not fail though, if the attack is large enough, it can actually fill up the targeted applications connection pool, bringing the site down to a crawl or completely inaccessible.
+Different applications are able to do that. Most common one that everybody is afraid about as of late is low orbit ion cannon, which was again the application that was used from anonymous when they were targeting different sites.
+Low to mild attacks can be mitigated fairly easy with a decent firewall, but as that traffic grows, it still is going to eat the bandwidth and eventually saturate the connection to the internet for that server.
+If the problem isn't handled, the effect is again the attacker achieves his goal, the server is offline to the internet.
+Most hosting companies and companies with a high speed internet connection have a relationship with their ISPs that they can call them and say, hey, I've got this IP address that's getting hacked, I need you to black hole it, and they'll do this to prevent other customers or other systems from being taken offline by the entire system or the entire data center being attacked.
+But once that IP gets black hole, nobody can reach it. Again, the attacker's goals have been achieved. They have effectively taken that server site, whatever, offline and the attacker wins or the attacker wins, excuse me, the attacker wins.
+So the question comes up, how do we protect ourselves? There are a lot of companies out on the internet that claim that they protect you from DDoS and they'll provide clean traffic to your server, but they're expensive. They easily can charge upward and over $800 US to mitigate just a small DDoS.
+Because they will charge you for the bandwidth that they use and the number of connections. So if you've got 25,000 connection based DDoS attack, that's low in some cases.
+So they will charge you through the nose easily for mitigation. That's just for one time what happens if you're getting it over the course of months time that you're just getting two, three, four attacks a month.
+And I do know some people that do or used to get that quite frequently. So the better question then becomes how do we protect ourselves without going bankrupt.
+I mentioned earlier that a DDoS is a many to one type attack where you have multiple systems attacking one single server, one single system.
+But if you can make that go from a many to one to a many to many, you're removing the teeth from the attack, you're making it so that it can't bring down the entire service, can't bring down the entire server.
+And to achieve this, best way to do it is to have multiple smaller servers or virtual servers act as a reverse proxy in different data centers in different points in the world.
+It may sound expensive, but if you do it with virtual machines, get Amazon EC2 or get one host VPS program and VPS another, it does add up to a little bit of money.
+But for the amount of data and traffic that you'll be able to pass through those, it is a lot less than what you'd be paying from some of these guys who are charging $800 or more for a DOS attack.
+It also depends on how many virtual machines or servers you need. But once you get those servers in different locations all around the world in different data centers, that's really key.
+You need to make sure that they're in different data centers so that you don't saturate one location because as soon as you saturate one location, the attacker wins again.
+So once you get those servers, you want to set up a reverse proxy. I personally use NGINX just because it's a low memory footprint and it handles connections very quickly.
+And you want to pass legitimate requests. You don't want to just pass connections, but you want to pass legitimate requests for files and for web data to the actual host of the website where it's hosted.
+You also want to have a way to set up those servers to automatically block high-number connections so that even if they do start passing legitimate traffic, which again also kind of slows down the attacker, makes them have to change of how they're doing things.
+But if you have a script in place and I actually wrote one that's on my site under the project section, which is darkserifection.com, it will allow you to block high number of connections from a given IP address.
+So instead of having to wait until you physically log into one of your servers and say, oh geez, I'm getting attacked on this one really hard and block the IP address.
+This will do automatically for you. My script relies on having APF or CSF, but again, it automatically does the blocks for you and protects you from excessive connections from a single IP.
+It's adjustable. It can be fine-tuned to find what balance you need because it looks at a certain number of connections every time it's run, it's set up to be able to run in a cron job again.
+So once you have the proxy server set up, you need to then update your DNS and create a record for the domain to point to every single one of the reverse proxy servers.
+So if you are running, say, darkserifection.com, you're going to put an A record for duckserifection.com to go to each one of your reverse proxy servers.
+You may have two, three, four, five different records. You can have as many as you want. It turns into a round robin, but you also want to remove the main server that's hosting the site from that record.
+Because you don't want somebody to get lucky, oh, I started attacking the main server, and now all your reverse servers are going slow because your main server is getting attacked.
+One of the other things I like about using a virtual machine is if you've got one company that has multiple data centers all over the world, you can actually clone, set up your virtual machines, how you want them to clone them, and distribute them out to different nodes.
+So then you're not spending all your time having to recreate and redo and reset up everything over and over again.
+Nice thing about that is if you set up three of them and you decide, hey, my site's still going kind of slow, it's loading, but it's not loading as fast as I want it to, you can bring up a fourth or a fifth server added into the DNS records, and you're bringing up more reverse proxy servers.
+And just make sure that they're in different locations, you don't want them sitting in one location because now then you're getting multiple attacks on one data center, you're making a lot of work for the hosting provider that's giving you service.
+And if they have to do too much work, they'll just suspend you, cancel your account, do whatever, black holyripe.
+I say that from experience because I've had it happen to me, I've unfortunately had to do it to people because they've gotten ridiculously high number of connections.
+And I do recommend stuff like this to them.
+And if you understand how the internet works, it makes perfect sense.
+But not everybody understands how the internet works.
+Going forward, what kind of recourse does somebody who's been attacked really have?
+So you've got your site stable, you're paying a little bit extra than what you're expecting, what you need to do is keep logs of the attack.
+When it first started, while it's happening, any emails, any threatening emails, any threatening items, anything like that.
+Anybody that's made threats to you recently, you may want to just double check and see what's going on.
+If you can track the attack to some place within your own nation, I'm in the United States.
+So if you can track it within your own country, contact your local authorities, tell them that you have logs of somebody attacking your server and using a bot network to attack your server website, your business, whatever.
+And they're going to get you in contact with the right people.
+The United States, they usually escalate it to local division of FBI.
+Based on what I've heard in some countries, they don't take it as serious or they don't have a strict of laws.
+But it's still worth reporting it because if this person who's attacking continues to do it, it starts adding up to a monetary value.
+Or a monetary cost to you.
+And a lot of places won't listen to you until you have a significant loss or significant damages.
+It's just how the system works.
+But you have to keep pressing it.
+It's not just something like you report it once and you don't follow up on it because if you don't follow up on it, they're never going to follow up.
+They've got tons of reports all the time.
+Again, from people, a lot of times, from people that don't know a lot about the internet.
+So you get the fake reports like, oh, Google hacked my computer.
+You want to make sure that you follow up because they're not going to.
+Also, keep in mind that this isn't something that you want to have in place at all times because it does get expensive.
+It runs me about $100 a month for one of my friends, a couple of my friends actually, who got DOS attacked quite hard to the point where it caused one of our data centers to go to a snail's pace.
+It was completely bringing down the entire data center.
+We actually had to suspend their account, which I felt really bad for.
+But because of that, I had to figure out a way to bring it back online without costing an arm and a leg.
+And this is the report or the radio show of my hard work.
+So if you guys have any questions, feel free to shoot me an email.
+Josh at Dark Sider Perfection will get to me or let anybody here at HPR know and they'll know how to get hold of me.
+So thank you for listening and hope it was educational for you.
+Thank you for listening to Hacker Republic Radio.
+For more information on the show and how to contribute your own shows, visit HackerPublicRadio.org.
+Thank you very much.

@@ -1,0 +1,444 @@
+Episode: 1668
+Title: HPR1668: Nixstaller
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1668/hpr1668.mp3
+Transcribed: 2025-10-18 06:42:47
+
+---
+
+This is HPR Episode 1668 Entitled Nixthaler. It is hosted by Clotu and is about 50 minutes long.
+The summary is, Clotu talks about Nixthaler, packaging applications for new Linux and BSD.
+This episode of HPR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15. That's HPR15.
+Better web hosting that's honest and fair at An Honesthost.com.
+Hi everyone, this is Clotu and you are listening to Hack of Public Radio.
+This is an entry in my packaging format mini-series except that it's a little bit different.
+It's not a packaging format that you might expect. It's not an RPM. It's not dead either.
+It's not anything like that. It's different.
+So to lead up to what I'm talking about, I'll tell you a little story.
+Back when Humble Bundle was just kind of starting, I think there'd already been one
+and then they were coming out with the second one. I don't remember all the games in that,
+but I do remember specifically that Penumbra, I think that's what it's called, Penumbra,
+the sort of horror game I think, was being released in this second Humble Bundle.
+At that point, this was back in the days before Steam for Linux existed.
+So at that point, I thought that playing a game on Linux kind of sounded like an interesting
+novelty. I'd never really thought about doing that. In fact, at that point in my life, to be
+honest, I hadn't really even thought about playing games on computers. That was just something
+completely foreign to me. So I thought, okay, I'm going to try this Humble Bundle thing.
+So I purchased the Humble Bundle quite a lot actually. I remember giving handsomely to it.
+And I went to install certainly Penumbra, and possibly some of the other titles,
+but for at least that one, I remember very specifically that I did download it as sort of like this,
+I think it was just Penumbra.sh. So I thought, okay, well, I'm going to run this
+script, this shell script, and it will presumably, I guess, it's going to download and install a game
+or something. So I launched this thing, and what it actually does is it starts this little installer,
+the sort of install wizard if you will. And I remember thinking that that was quite unexpected,
+because I'd never really seen that on Linux. I mean, sure, I'd gone to an app to the application
+center or whatever, and installed, or I had run an install script, a Slack build, or whatever,
+or maybe I'd just drag something to my tilde slash bin directory. All of that was familiar to me.
+I've even gone so far probably as installing or downloading an RPM or a dev or something,
+and clicking on that, and then having it open in the standard system application manager software,
+all of that was familiar. I've never really seen this very, very certainly on other operating systems,
+very, very familiar kind of paradigm where you click an icon, and it launches this little install
+wizard, which takes you through half a dozen useless agreements, and clicking next a bunch of times,
+and then saying, okay, and then it installs, and then you say, okay, again, and the installer goes
+away finally, and then you launch the program, and sure enough, it's on your system. So I'd never
+really seen that, and I thought it was kind of interesting to see that on Linux, and you know,
+it just kind of registered, that's all. And as I got more humble bundles in the future, and probably
+other applications as well, but I can definitely remember them popping up here and there among the
+humble bundle offerings. And then most recently, I came across it again with this application called
+Natron, which is a compositing, graphic compositing motion picture compositing software from,
+well, you can look it up, Natron, NATR, and it's actually a very cool application, but that's
+beside the point. The point is that this install wizard kept popping out, and I kept thinking,
+I've got to check this thing out, I've got to check this thing out, I've got to look into this,
+and I just kept forgetting, or I'd put it off, or whatever. So it turns out, I mean, finally,
+I got curious enough, and I kind of looked further at this application that I kept running into.
+Turns out it's called NICS installer. Now this has nothing to do with NICS OS, which you may have
+heard of. I know that Gubnu has done at least one HPR episode on that, and I think he's probably
+talked about it on other shows as well. So I'd heard of NICS OS, and there's this sort of thing called
+NICS packaging, or maybe it's just called NICS, I don't know. But that's completely different,
+this predates all of that, actually. And all this is this NICS installer. You can find it on
+NICS installer.sourceforge.net. All it is is a shell that does a couple of different things,
+and first of all, you configure it, and then you launch this little executable script,
+and it takes what you have given it, and it zips it up, or actually,
+lismas it up, so xz it up into a self-contained, distributable archive. And when you unarchive it,
+it automatically launches this graphical install wizard that takes the user through
+these clickable screens, and helps them install a package. So before I jump into how to use it,
+let's talk a little bit about how it has developed. Now I don't know, I obviously have not been
+following it that long, but I can look back at older releases, and I can read the documentation,
+and I can kind of see what it was meant to do, and then what it is capable of doing. And both
+are really, really cool. So I don't know, and if you do know, you can certainly comment or correct
+me in some way. But it is my impression that old-school Linux, or possibly just old-school Linux,
+the idea was that, well, old-school would be portable source code, right? You're a developer,
+you make some application, and you say, oh, I want to send this to a friend of mine. So you send
+your friend the source code, and the friend takes the source code, compiles it on their computer,
+and installs it. And it's a matter of configure, make, install, or whatever sequence of install
+commands you've got. But let's just assume that's it. And maybe you're really nice, and in the
+make file, you include a make uninstall command that then removes all the files that maybe it initially
+installed. So that was sort of the way of doing it at one point from what I'm understanding.
+Certainly it's a possible way of installing things. And then, of course, since computers have not
+always been quite as fast as they tend to be now, I'm sure at some point people thought, well,
+it would be kind of neat if I didn't have to keep recompiling this code. I mean, especially if
+you're managing any number of computers, there's a distinct advantage to be able to compile the
+thing once and then distribute it to many computers without that step, because it's already compiled
+for that architecture. And from what I understand, that's kind of how TAR archive got used for
+distribution of software. They figured, okay, well, what we can do is make and do a make install
+into a very specific directory. And we'll arbitrarily call this directory destger. And I mean,
+obviously you could call it anything you want, but I'm going to call it a destination directory.
+And so instead of installing it to the root of your file system, it would be installing it into this
+fake root, you know, sort of a charuted root almost. It's like this other directory. And if it
+doesn't find the folders that it needs, it will create the folders, and then it'll copy the
+compiled files over into this destination directory. And so then what you have is this miniaturized
+version of a file system, but it's super, super sparse, like so sparse that it only contains the
+stuff that you compiled, or otherwise placed into it. So rather than having slash slash usr slash
+atc slash lib, and so on, it just has like whatever it needs slash usr slash maybe well really
+probably just usr maybe slash lib. Well, no, it would be probably slash usr and then inside of there
+it would be bin and share and lib or whatever. So you've got, I guess, user local maybe depending
+on how you do it, the point being you're sending all this stuff into this dedicated folder,
+and then you tar it up, maybe a gzip it, and then you send it to your other computers or your
+friends or whatever. And all you have to do to install that onto the new computer is tar xf this
+archive dash capital C slash. And what it does tar by design, it looks at the folder that you've
+sent it to, and it sees that it's slash. So it says, okay, well slash I have. So I'll skip that one
+now slash usr. Okay, well slash usr I also have, but it looks like there's some stuff inside of
+slash usr as well. So when you look at that and it sees the share and the bin and the lib or whatever,
+and then it decides, okay, well, or the usr and then, yeah, bin and then share. And then it says,
+okay, well, I've got this folder of an icon that I can dump into share and I've got this executable
+that I can dump into bin and it does that. And then the thing is installed. So basically it's just,
+it's almost, if you can think of it, this is how I think of it, it's an overlay, it's not an overlay,
+but it's like you're you're taking this stuff and then just kind of sprinkling it over or overlaying
+it on top of what already exists. So Nick's installer from what I can tell started out
+with that assumption that the steps that you were going to take in order to get something installed
+was that you will have probably compiled the source code yourself, put it into a directory for it,
+and then all you're doing with Nick's installer is you're tearing it up and including a nice little
+graphical interface script thing to help users who maybe don't know how to use a terminal or don't
+want to. It helps them click next and make sure, you know, just kind of verify, say, is this
+the place that you want me to install these files to? They say, yes, it is. And then Nick's
+installer dumps all the files into the place where the user has told them. That's the idea.
+The cool thing about Nick's installer is that it can actually be a lot more flexible than that,
+but we'll look at some of the examples together and see if this is at all useful to you. So
+if you want to, you're certainly welcome to go get the Nick's installer 0.5.1 release. Don't be
+scared that it's last release date was like in 2012. It isn't as if that this needs to be a fast
+moving project. It really doesn't. You can just download Nick's installer dash 0.5.1 and trust me,
+it'll work great. So grab that and unzip it or untard or whatever it is. And when you do that,
+you'll see that there are quite a few files, you know, in the directory. There are quite a
+few files and it's a little bit confusing possibly as to which you need to start with. Now you can
+install Nick's installer to your system by doing a, I think, a makeself.sh. I think is the script.
+I honestly don't know, I've never run it. But yes, you can use Nick's installer to install Nick's
+installer, which, you know, anytime you can use an application to install itself or to compile
+itself or whatever, that's pretty cool to me. But yes, that's how you can install it. Now me,
+I don't install it. I run everything. I run all the Nick's installer commands from my current
+location. And that is simply because in my training, as it were, self-training really. But in
+the way that I learned how to package, I've always done it in a dedicated directory, you know,
+Slack builds. I've always had a directory where I keep all my Slack builds in the template files
+and things like that just for organization, really. And then RPMs, you know, in RPM build. That's
+that's kind of the RPM tree is basically forced upon you. So I kind of, I'm in the habit of
+doing things that way. So that's how I do it here. I just put, I have a Nick's installer folder
+and I have all of my work files in there. And that's how I keep it. So I kind of honestly
+recommend doing it that way. But it's obviously up to you. You can do whatever you want. But that's
+how I do it. So the thing that you'll probably want to look at first are the examples. There are
+some great examples. There are about five different ones. And the first one that you want to look
+at probably is simple, the simple example. Because that's the one that's sort of, as I say,
+it's the most basic setup that you could probably come up with. And that's assuming that you're
+doing a very traditional kind of Linux install. And it's assuming that you don't need any special
+intervention in what you're doing. So it's going to use a lot of sort of built-in functions
+so that you really almost don't have to do anything. So when you're in, go into the example
+directory if you have it. And if not, you can just follow along in your imagination. And then
+there's a simple thing. So there are two, the two things that you really want to pay attention
+to right up front are the config.lua and the run.lua. So next-dollar uses
+lua scripting language, which if you've ever looked for a job in the gaming industry from what I
+have understood and what I've seen myself, lua is kind of a big deal there. But it's also I believe
+it's the scripting language and configuration language, I guess, of choice for like
+awesome, I think it is. So yeah, it's kind of, it's pretty popular. And from what I can tell,
+I mean this was actually my first real life exposure to it. I mean I've heard of it,
+I'm sure I've seen it before, but I never really had to actually use it. But from what I can tell,
+it's pretty simple to pick up. So that's kind of nice. So the first one we'll look at, I guess,
+is config.lua. And I'll just open it up here in emacs. That's just a plug for emacs really,
+just wanted to say it. And it's not a terribly long file, it's about 40 lines, this one.
+So we can just go through the options, I mean it's 40 lines, but half of those are comments,
+and the other half are blank lines, that doesn't make sense. A third of them are comments,
+and a third of them are blank lines. So the first thing that you'll see that looks like it matters
+is the config mode, cfg.mode. And it is currently set by default to attended. The options that you have
+are both attended or unattended. And attended, of course, is the one where it's really interactive
+versus not interactive. So attended is interactive, meaning that the user is going to launch this
+distributed thing that you give people so that they can install your application,
+and they have to launch it, and then click through the screens manually.
+For power users, you can actually, you can make this either unattended exclusively,
+or attended, and unattended, i.e. both, and then they can just launch it from the command line
+with flags and switches of your choosing, of your definition. So that's a nice option to have.
+Now I have not used both or unattended. I've only done this attended, and the reason I've
+done it is because my use case has been, I am distributing applications to people who
+I do not want them to have to go into the terminal to do this. I want them to be able to just
+graphically. So my use of this has been very specific and fairly limited, but I have read up a
+lot on it, and at some point I may use the unattended mode, and if you think that's useful,
+give it a go. Next one is config.appname. That would be whatever application you want this to be.
+This actually doesn't matter. I thought maybe this is going to be important. It's going to be useful
+for parsing and stuff like that, it's not. It appears in some pop-up dialog boxes when the
+installer or the graphical installer is telling the user what's happening. It will say things like
+now installing foo to your hard drive, and if you set foo to anything, that's what will show up.
+It doesn't really, it won't affect anything. In fact, this whole file is a config file. It's not
+going to, it doesn't figure into the actual processing of the source code that you're distributing.
+Okay, next one is config.archive type. Again, I thought, when I was first doing this, I thought,
+okay, well, this is going to ask, I need to set this to whatever I am giving it, and I thought,
+well, I'm giving it a BZ2, so I need to set this to BZ2. No, this is completely not about the
+package that you're distributing. This is the, about the Nickstaller package that you are building.
+So this is LISMA. By default, you can choose different types of compression. I don't know why
+you would. Actually, I do if you're sending it out to slow computers that you think might take
+a long time to uncompress LISMA. You might want to go with something a little bit lighter,
+but in my experience, LISMA, you know, I mean, yes, it's slower because it compresses more,
+but it's not really that slow. I mean, it's modern computers, but yeah, use your best judgment.
+Next one is config.target.os. Now, this one you can set or you can leave the link. The reason you
+can leave it blank is because we only have one option in this particular example. This is what I
+have done is I've only been doing, you know, I've been doing this for very specific use cases.
+I know exactly the computers that I am distributing these for, and it's only for local distribution.
+I'm not posting my packages online anywhere. This is just a convenience kind of thing. So I've
+been targeting very specifically either NIL or Linux. And if you do define it, then you have
+to do a curly brace, space, quote, Linux, close, quote, close curly brace. And you know it's Linux
+because you issue the command you name on the command line, and it tells you what you are running.
+So if you're on a different system than you will want to, or if you're building for a different
+system, you will want to find out the exact string that is returned from the command you name.
+So if it's A, B, S, D, then you need to know whether it's going to say B, S, D, or whether it's going
+to say very specifically free B, S, D, or net B, S, D, or is it going to say sun, or is it going
+to say sun OS, or is it going to say solaris? So you have to know that you really do need to find
+that out if you want this to work. So let's see, the target CPU architecture is obvious,
+config.targetarch. You can give it any number of architectures that you want to target. And again,
+you can't make this stuff up. You just have to type in uname-m and find out what the architecture name
+is and it turns out it's either x86 or x86 under 464. Now again, this is going to matter in a
+later step, both the operating system and the CPU architecture, because there are some folders
+that will need to create out in our project area that correspond to what we are telling it,
+it has access to. So if we say the target OS is Linux and free BSD, and we say that the target
+arches are x86 and x86 under 464, then we are going to need directories for each of those.
+In other words, we are going to need a Linux underscore x86, a Linux underscore x86 under
+464, a free BSD underscore x86, a free BSD x86 under 464. Okay, we will get into that later,
+it will all make sense. My point, I guess, is not to just make stuff up and you want to think
+about what you are actually targeting and what you can actually test on. Okay, so the front-ends
+to include, this is really cool. The fg.front-ends, you have got three to choose from GTK,
+FLTK, or in-curses. So this means, and this is really, really cool. This means that if someone is
+running a system without GTK on it, then the GUI interface will fall back to FLTK.
+And if they don't have FLTK or GTK, which probably means they are not running x at all,
+then it can still fall back to in-curses. So, I mean, this is super powerful. I mean, as long
+as someone has got a computer of the correct OS, this can present them with a GUI and take
+them step-by-step through their install. Very, very cool. Okay, next is config.defaultlanguage.
+And I've just left that in English because that's, again, my target is very specific.
+CFG.languages, they have a couple of different languages available. If you do your own translation,
+you certainly can add that to a folder and add that into the array. CFG.auto.lang is true.
+Really, again, I mean, it just depends on what you're doing this for. I could leave this false.
+I think it's just untrue by default, so I leave it untrue, but it doesn't much matter.
+I mean, I'm not installing on anything but an English language system, so there's no auto-detection
+really happening. And the picture used for the welcome screen is the CFG.intro-pick and the logo
+is CFG.Logo. So the intro-pick is a up to 300 by 200, I believe it is, file. It can be a JPEG
+or PNG, whatever. And it will go into the initial screen of your installer. I have to warn you
+that it does kind of, it means that you're welcome text. If you have any, is pushed over off to
+the side a little bit. So like the first time I tried this, I mean, it is cool to be able to have
+this intro-pick because you can brand it. And that's, I wanted that because the packages that I'm
+making is for this local makerspace. I kind of wanted them to see that, hey, this is stuff being
+made by real people. This is not a corporate application that's being made by someone you don't know.
+This is by someone that you know, this is by the makerspace. So I put the logo of the makerspace
+there. But it pushed the welcome text so far off to the right that it introduced this horizontal
+scroll bar. And it was just, it was a little bit overkill for just a little intro screen. So I made
+my intro-pick, the right size, which I think is 300 by 200. And then I just kept the welcome text
+quite short. And that worked out. But play around with that, I guess, before you, you know,
+go into production or whatever. The logo file is the icon that will get used for the installer.
+Now both of these, the intro-pick and the logo, no, the logo is the logo up in the top left.
+The config app icon, that's the icon that gets used. But anyway, all of these, the logo and the
+icon, the intro-pick, not really. That just defaults to nothing. But logo and icon, they're both,
+they have very nice defaults. So if you don't have anything that you want to use or you can't
+think of, you know, what you might want to use, don't worry. It looks really nice as is. So you
+can just leave them blank if you want. Now if you do define the intro-pick and the logo and the
+app icon, I will, you have to place these files somewhere. So let's talk about that. Let's talk
+about the file structure. So we're in this sample folder, but in real life, what you would have
+done by now is you would have executed the gin project shell script. So gin projecter, sorry,
+ginprogeder.sh. You run that and it gives you like this empty kind of template for a next
+dollar. And that includes the config.lua that we just went through. That was the whole of it.
+And a run.lua, which we'll go through in a minute. And then a couple of different directories
+that, that by default exist. There's a files underscore all, a files underscore extra in the
+lang. And I think maybe a welcome screen, I don't, or a welcome text, I don't remember for sure,
+but those are the directories and files. So the files underscore all. That's where you put your
+payload. That's the stuff that you want to install. You put it into files underscore all. Unless
+you are targeting multiple OSs. And that's where that comes in. The whole config.lua thing,
+where you say, okay, I'm targeting Linux and FreeBSD. Well, if you do that, then you have to have
+a files underscore Linux and a files underscore FreeBSD. And you place your payload for Linux
+into the files underscore Linux. And you place your payload for FreeBSD into files underscore FreeBSD.
+And once again, if you've got Linux and FreeBSD multiple architectures, let's say you've got
+x86 and x86 underscore 64, then you need to have a files underscore Linux underscore x86,
+and a files underscore Linux underscore x86 underscore 64. And so on again for FreeBSD. So
+it can get a little bit bulkier in that sense. Honestly, I'm not 100 percent sure why you would
+target multiple OSs in the same package. I'm not sure if I would do that myself. I would probably
+have separate downloads for the Linux and for the FreeBSD versions. But you mean, you know,
+if it's a small application, maybe it's more trouble for you to do that. So it's up to you,
+obviously. So the files underscore extra is where you're going to put your intro pick,
+your logo, and your icon, if you're customizing those things. As I've said, honestly, the defaults
+are quite attractive. I would not bother necessarily, you know, feeling like you have to put
+something there. The Lang folder just has the string files for the, for, for each language,
+I think English Dutch Bulgarian, Lithuanian and Polish are the ones that they have by default.
+So if you want to use that, you're certainly welcome to. I have not needed that yet,
+so I have not. The config.luo we've just gone through. So let's talk a little bit about
+this run.luo because that's really where all the action happens. That's, that's the file that
+contains the actual instructions for next dollar. So there are three functions in a run.luo file.
+There's a function for init for the, oh yeah, it's called init. So that's obviously the initial,
+with the initialization function. That's the thing that runs once when we kick this off.
+And then there's the function install. And that's, as the name suggests, that's really where
+it happens. That is the installation of your application. And then there's a function finish
+as well, which inherits any kind of error. And so finish is going to be, you know, either a true
+or a false thing. If it's true, then it's, then it'll do something. If it errors out,
+then you can have it do something else. I've not used the finish function yet.
+So this is super simple and how simple or not simple it is. Honestly, it can vary because
+it just depends on how you are installing your software. So the first thing we'll do is just look at the,
+what I feel is the expected use case or was the expected use case for next dollar.
+So that would be in init. We would set our destination directory to some place. Now it's
+important to note that the destination directory is not actually the destination directory. It's
+actually just the unzip directory, the untar directory. So in other words, when we start
+next dollar, where do we want our packaged up files? Because remember, next dollar files
+is really an archive in disguise. So where do we want those to get untard to or untard to?
+And that, by default, is home, the home directory, which is os.get on parent, quote, home,
+quote, quote, close parent, or bracket, whatever people call it. So that's the default. I
+don't do that myself, but it is a safe bet because you know that the user launching the thing
+can write to their own home directory. I personally use slash temp, but you can use home as well.
+Now the next thing that you need to tell next dollar is which screens you want it to use. Now you
+can custom define screens, but I'm not going to get into that because I haven't done that yet.
+But by default, I think they give you a welcome screen, a license screen, a select,
+uh, screen, a select, לשan, an installation screen, any finish screen? And I of
+those, I use the welcome screen because that's just kind of a nice greeting of, you know, yes you're
+here. This is what you're doing, you're about to install this application. I don't use a
+license screen. I just delete that entry from the, from the list and then the select,
+I don't think I use that one either to be honest, but you can, and it is a cool one.
+I've seen it be used before, and it lets the user kind of decide,
+oh, I want to install it into user games, or user bin, or whatever.
+So that's kind of neat, but I don't use it because, again, I have a very specific use case,
+and it's basically, I want people to be able to click on a package and click through some confirmation screens.
+And get the thing installed.
+So install screen and finish screen.
+Now, it's built into Nick Stoller that if the user launching Nick Stoller,
+you know, the installer itself, if they don't have permission to install to a certain directory,
+then it will prompt them for a password.
+So that's just kind of a nice thing to inherit.
+So that's really it for the function init.
+That's all you have to do.
+And then the function install, again, by default, is install.extract files.
+Okay, so again, this is, that's the most basic, I mean, that's it, that's all.
+That's, that's, that's, we're done.
+And that is the most basic version of this scenario you could possibly do.
+And you'll, you're noticing maybe that, that the command to install was to extract files.
+So all it's going to do is extract the files that you gave it.
+And so again, the, the, the assumption is that you've given it a self-contained
+tar of, of, of files that you want to dump onto someone's computer.
+So this is like a really elaborate way by default to untar a directory in a specified location.
+So that's not actually how I use it because, I mean, I could use it for that.
+It's just, I, I don't.
+But you, you, you can, you certainly can.
+You can do other cool things.
+You can use it to run installation scripts from within, from within next dollar.
+You can, you can, you can use it to compile code and then install.
+You can even use it to compile code or not install.
+And then register the, the things that you have just installed with the systems package manager.
+Yes, you heard me correct.
+You can not write RPMs, DEBs, Slackware packages and or arch, I think, Pac-Man, I think.
+There's something like that.
+Packages and just have next dollar do all your work for you and register it with the user system so that if they then type in
+Yum, remove, Foo, then, you know, Yum will actually know what Foo is.
+It'll, it, it won't.
+Yeah, that's it.
+I mean, it's not going to make an art.rpm for you, but, but the database of the, you know,
+the package management database will know that the thing exists, that it was installed,
+what was installed and what to remove.
+So that's really a really cool kind of little bonus trick there that you can do.
+So here's how I use it.
+And this is, this is a lot of sort of cheating and things that probably no one ever intended,
+but it works for me really well.
+And that is that I, in my init function, I do, I, I set install.desktr to equal quote slash temp.
+So I unzip everything to slash temp.
+Then I give it a list of the screens that I want to run, which are, as I said, welcome screen install screen and finish screen.
+And then I execute in the install function.
+I execute the install.extract files command.
+So install.extract files, parent, parent.
+And that extracts the files by default to thedesktr, which is again slash temp.
+Then I do an os.shader, so that's os.phdir, and then parent install.desktr, close parent.
+And then I just changed directory to the install.desktr location, which is slash temp.
+Then I do another os.shader, and I change into the folder that I know that I've already put there.
+So let's just say that's through.
+How do I know it's through?
+Well, because I put a folder called through in files underscore all.
+And now I'm in my own directory where I have put whatever I need.
+And then all I do, and this is like, I'm telling you, it's a dirty trick.
+I'm just cheating.
+But this is how flexible this thing is.
+I do an os.tramod, parent, quote, doinst.sh, quote, comma 700, close parent.
+So I've just traumatic so that it's executable in my own private installation shell script.
+That I've written separately, a separate of next dollar.
+And then I just, I tell it to set status to installing files.
+I tell it if, if right permission on slash usr is false, then install.execute as root.
+Doinst.sh, and then it prompts the user for a password.
+And failing that, I just do an install.execute of my doinst.sh.
+And then I end the function.
+So, I mean, and in my doinst.sh, I can do whatever I want.
+And that's primarily because some of the things that I'm installing in my very specific use case,
+they, you know, I'll have like a .deb that I want to install with dpkg.
+And then I want to install some extra stuff, like a desktop application.desktop file.
+And maybe I want to move something around.
+You know, I do a lot of sort of systemy types of things that I just, that I figure,
+okay, I'll throw that into the script because I know it needs to get done.
+And I'm about to run this thing on 12 different computers.
+So, I am, I am stepping outside of Nick's installer proper and just running an arbitrary shell, shell script.
+And, but it's that flexible. You can do that.
+It will let you do that, which is really, really kind of cool.
+So, let's say that we've finished up all of this stuff.
+We've placed our payloads into our files, underscore all folder.
+We've placed our pictures and our logos and our icons into files extra.
+And we've set all of our configuration options. We've created our run.sh.
+So, the next thing that all that's left to do really is to create the actual installable file
+that you're going to send to people or put on a thumb drive and sneaker net or whatever
+over to all the computers that you need this thing to be installed on.
+So, that's the gininstall.sh script in the Nick's installer folder.
+So, you run that just a .flash gininstall.sh.
+And then the path to the directory that you want it to use as, you know, the source.
+So, it might be a .flash gininstall.sh, fudash1.0.0.
+And then some name for the installer file itself.
+I like to name them like fudotinstall.
+I think that's fairly descriptive. So, it might be fudotinstall.
+And then there's another one bar, .install, and so on.
+You could call it fudotsh. You can call it fudotbin, fudotexe.
+It doesn't matter. Whatever. I mean, exe would be dumb because then if you have wine,
+it's going to think that it needs to launch there.
+But, you know, I mean, point is you can call it whatever you want.
+fudotrun. You've seen that before, probably.run. That's a pretty good one.
+So, anyway, gininstall does a little bit of a dummy check.
+Make sure that you're, you know, it parses all your files.
+If it finds any kind of obvious syntactical errors in your Lua, it will tell you.
+And assuming it does not, it will then archive up your files.
+And it places, you know, the different parts of it in different places.
+I'm assuming it takes your actual executable script.
+Well, your settings, and it probably parses it into its default script,
+places that the head of the archive, and then the archive itself probably gets placed somewhere after that.
+And that's placed onto into your current directory or wherever you've specified.
+And now you've got this fudotinstall or fudotrun or whatever you've named it.
+Now that will be a fairly large file, means an archive.
+It's lismed up so it's not as large as it could be.
+But, you know, it's got all the files that you're redistributing in it.
+And so you could put that on a fun drive or you can put it on a server somewhere or whatever you need to do.
+Send it out to people.
+And now if they double-click on it or click on it, whichever however they've got their file manager configured,
+it will, you know, invisibly, essentially unzip itself, unarchive itself,
+and present them with a graphical installer that they can then click.
+Next, next, yes, next, okay, install, whatever.
+And it's really cool. It looks nice. It looks very familiar.
+It's friendly. People are used to that kind of workflow.
+And yeah, I like it a lot. It's pretty slick.
+And again, it's super flexible. You can run scripts of your own choosing, really.
+As long as you've included in the archive, you can do whatever you want.
+Like I say, you can also register it with the person's system, the user's system application manager,
+given that it's either an RPM, a.deb, a Slackware, or I think, like Pac-Man, I'm pretty sure that's the other one.
+But I mean, it's got like four different formats that it will report about.
+You know what I mean? It's quite nice. It is really, really slick.
+And I've not even used that feature. I haven't used half the features of this thing.
+I've just used it because I wanted a friendly front-end for an installer that I basically just wrote in a shell script myself.
+And it's just so nice. You should really, really try this if you're packaging stuff up,
+and you need it to be across distributions, or you just don't want to take the time to learn RPM, or Slackware packaging, or Slack builds, or ports, or whatever.
+This is a very nice solution. It looks good. It's familiar to your user. It's just, it's really nice.
+So, I mean, heck, even if you don't intend to use it for production, it is worth checking out. Just download the thing and take a look at it. It's quite nice. It's quite interesting.
+And it's, yeah, it's fancy. It's neat. And it's easy to use. I mean, as I've described, it comes with many examples,
+so you can kind of look through the different run.luas, and see kind of what they do. They have BZ flag, cube, cube unattended, and them, and a simple example.
+So, it's like five different things that you can look at. And then they've got great documentation as well. If you look on their NextStaller.SourceForage.net, if you read through that thing, it really does explain everything that you need to know.
+So, that's everything that I can think about in terms of NextStaller. So, I hope that that's helpful and useful to you. It certainly has been quite useful to me. It's quite a nice application.
+So, please do try it out. And thank you very much.
+You've been listening to Hecopovic Radio at HecopovicRadio.org. We are a community podcast network that release the shows every weekday, Monday, Friday.
+Today's show, like all are shown, was contributed by an HPR listener like yourself. If you ever thought of recording a podcast, then click on our contribute links to find out how easy it really is.
+Hecopovic Radio was founded by the digital dog pound and the important computer club, and it's part of the binary resolution at dns.com.
+If you have comments on today's show, please email the host directly. Leave a comment on the website or record a follow-up episode for yourself. Unless otherwise stated, today's show is released under Creative Commons, Attribution, ShareLight, 3.0 Lightning.
+Thank you very much.

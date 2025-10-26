@@ -1,0 +1,272 @@
+Episode: 4328
+Title: HPR4328: Use SELinux the easy way
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4328/hpr4328.mp3
+Transcribed: 2025-10-25 23:09:19
+
+---
+
+This is Hacker Public Radio Episode 4328 for Wednesday 5 March 2025.
+Today's show is entitled, Use a Sea Linux the Easy Way.
+It is hosted by Clotu and is about 23 minutes long.
+It carries a clean flag.
+The summary is, you don't have to be an expert on a Sea Linux to use it effectively.
+You don't need to learn how Sea Linux works to use Sea Linux effectively.
+That's the premise of this very episode.
+I'm Clotu.
+Let's get started.
+Sea Linux, in case you don't know, is Security Enhanced Linux.
+It is a feature that ships on some distributions, by no means all distributions, but on some
+distributions there is Sea Linux, and it is a security subsystem that works to prevent
+files and code from running from locations on your system where they don't belong.
+This means that if a file has ended up in a location on your system that it shouldn't
+normally be, or that the file itself shouldn't even exist, so maybe it got put there maliciously,
+or maybe just by mistake, it's not impossible to untar an archive and have files end up in
+your root file system.
+If you do a certain number of steps incorrectly using escalated privileges, these things
+can happen.
+But Sea Linux, by design, knows whether a file has any business being in a location and
+certainly executing code from that location.
+As I said at the start of the episode, I don't care right now why or how Sea Linux knows
+this and how it implements these safeguards.
+What I'm most interested in is what you can do as a user to understand how to get around
+those problems safely.
+Sea Linux can be a little bit frustrating sometimes because even when you're trying to understand
+how things work, there's a lot of stuff that just isn't exactly documented.
+It exists in the source code, so you can go to Sea Linux's project pages and literally
+look at the things that it provides and defines in source code.
+But in terms of understanding security contexts and labels and things like that, it's just
+really hard to sort of discover them even when you're looking for them.
+However, my method of handling Sea Linux involves using your existing system as the template
+for what you need to do on your system.
+Allow me to explain, but first, let's talk about enforcement, Sea Linux's model of enforcement.
+So there's a really basic security toggle on a Linux distribution that has SE Linux installed
+on it and this is the set enforce command.
+Using just a single set enforce instruction, you can configure Sea Linux to allow a violation
+it would normally prevent.
+There are two states.
+There's enabled and permissive.
+By default, SE Linux is enabled, which is also represented by a one if you're using Boolean
+values.
+So set SE Linux to permissive mode or zero.
+You can do sudo set enforce space permissive where permissive is a capital P or you can
+do sudo set enforce zero.
+Try that the next time you're working on something that you just keep failing even when
+you're running it with sudo permissions and it's just not working.
+Try set in sudo set enforce permissive and see what happens.
+You can always confirm that you that your system has switched over to permissive with the
+command SE status.
+You can check the state of SE Linux at any time using just the command SE status and it
+gives you a whole big list of the states that SE Linux is in.
+The one that you're really looking for to the point that I usually just grep for this
+is current mode that's the that's what you're really looking for and it'll it current
+mode can either be enforcing or permissive.
+So the important thing here is to understand that when you switch over to permissive mode,
+you are telling SE Linux to log violations but to allow them anyway.
+This is not solving your problem.
+This is identifying the root cause of the problem.
+You're finding the symptom.
+You are not finding the cure.
+So after you've confirmed, yep, it's SE Linux is my problem because you've just put it
+into permissive mode and now the thing that wasn't working does work go back into enforcing
+mode.
+sudo set enforce enforcing with a capital E or sudo set enforce one and then do SE status
+to confirm that current mode is enforcing.
+You don't want to declare that you've solved the problem by turning off or turning down
+your security settings, right?
+That's just going into permissive mode simply confirms that yes, the error that you are experiencing
+is caused by an SE Linux block rather than just something else like you forgot to make
+it executable or you put the wrong magic cookie at the top of the file or whatever.
+Okay, what I really want to talk about here is labels and contexts.
+If you're running a Linux system with SE Linux on it, then you have a working example
+of what SE Linux requires for normal operation.
+The system has not been delivered to you in a broken state.
+It works.
+If you don't do anything to it, it is fully functional with SE Linux.
+This is important.
+That means you have a great example of how SE Linux is designed.
+Everything there has come from packages, from your distribution and everything there is
+integrated, tightly integrated with SE Linux.
+There are no just natural failures.
+It's all working.
+You don't have to learn about security context or minimize labels.
+As I said, they're actually pretty hard to find anyway.
+But it's very, very likely that whatever you are trying to do on your computer that you
+are failing to do because of SE Linux, there's some other file on your system doing a similar
+job that has been labeled correctly for SE Linux.
+You can always look at security labels of files.
+It's kind of a metadata system.
+You can see them for yourself with LS-capital Z.
+It's capital Z on your keyboard, capital Z, whatever.
+LS-capital Z shows you the SE Linux security context.
+How a file is labeled just as if though you were doing like an LS-L, like a long listing
+where it shows you the bite size and the groups and the executable permissions of a file.
+Such capital Z adds a bunch of more information about the SE Linux security labels applied
+to that file.
+If you, for instance, do a touch hello.txt, let's say, and then do LS-capital Z, hello.txt.
+You get back, unconfined underscore u colon object underscore r colon user underscore home
+underscore t colon s zero hello dot txt.
+That's the information I've gotten back from LS-capital Z.
+Don't worry about what any of that means.
+Now you know that there are SE Linux labels applied to your file.
+You didn't put them there.
+They're just there because SE Linux is integrated at a kernel level on your system.
+So an empty file created by you, the user in your own home directory,
+has, as you might expect, a very specific security profile.
+Even with the executable bit set, that file would not be permitted to run as a system wide service.
+It just doesn't have the correct security context.
+To SE Linux, it wouldn't make sense for a file that you've created in your home directory
+to then become like a service, like a demon that runs at boot time.
+And if you think about it very broadly, it really doesn't make sense.
+It's easy to fall into the trap of Linux and a computer being a single user device,
+because I mean, functionally, that's a lot of times how we use these things.
+But I mean, it is a multi-user system.
+Imagine now, if you're at home trying SE Linux and then you go to work where there's a server
+serving 100 people, it wouldn't make sense for a user to have a file even a very important,
+I mean, it could be you, it could be you, you could be the user, the sys admin of the system.
+Why would you have something that needs to run on the system level,
+just sort of scrolled away in your own home directory that could be,
+you know, if you won the lottery and quit your job, your home directory would likely go away.
+And then all of the services would go away.
+So that just doesn't make sense on like a sort of a good system design level.
+And it doesn't make sense in a security context.
+So if you use like an LL alias on your system,
+I suggest going into your Bash RC or your Bash alias file, however you define your alias is,
+and just try adding the dash capital Z option in with all the other things that you have under
+your LL alias. LL, you know, it usually has something like, um, dash H, maybe a dash
+capital A or a lowercase A, maybe a, maybe a dash, uh, capital F to see the classifications of
+the files, whatever you use, add capital Z in there because that'll get you the SE Linux labels
+for every file. It, it, it is a lot more visual information and it might be admittedly more than
+you want. So it, it, it, it's, it's kind of, it, it, it is a personal preference and how,
+how often you use LL and what you're actually looking for. I don't actually use it all that
+often. So when I use LL, I don't mind seeing all that security context stuff because it,
+it is useful. And that's why I'm saying to add capital Z to your LL alias because when you see
+these security labels, you start to internalize and learn almost in spite of yourself, what
+security labels look like, what normal security contexts are. Like for instance, I mean, if,
+if you'd never seen, unconfined underscore you before and maybe you haven't until this episode,
+then that sounds completely normal to you. Like, unconfined underscore you. Yeah, sure. That's what a
+file looks like. But if you start looking at other files on your system, then you might realize
+that unconfined underscore you is actually a very specific to like a certain, a certain origin
+of a file. So I think seeing them, even if you're not like memorizing them or even carrying
+about them, I find that seeing them on a daily basis helps me internalize sort of what a normal
+security context looks like for a specific kind of a file. But here's what, here's the, the cool
+thing about about sort of getting integrated with SE Linux, even on a surface level. As I said,
+your system, your running system is already an example of how that system is supposed to run.
+So let's say that you were developing a custom SE Linux service or rather a custom service
+for your laptop, let's say you've written a shell script, you want something to happen at a certain,
+at a certain interval. So you've written a service file for system D because let's be honest,
+if you're using SE Linux, it's probably on a system that also runs system D as it's in it.
+System. So you've written your service file and you've placed them in the appropriate system
+locations. So everything appears to be set up. Traditionally, if SE Linux weren't a thing,
+this would be correct. This would have been the correct order of things. You wrote the files,
+you distributed them across your system to where they need to be so that it's not just all in your
+home directory. You've, you've carefully set the ownership and permissions of those files. So you
+know that you root, it owns those files and they're, they've got their execute a little bit set.
+Everything seems on the surface to be exactly correct. Like this is the classic, this is it.
+You are mimicking your system right now. You're looking at what other service files are that
+they're owned by root. They're executable. Okay, that's what you've done. So you've, you've mimicked
+everything correctly. Everything should work. And yet when you do your system CTO dash, or enable dash,
+now my service, or my dot service, it keeps failing. So you start to suspect that maybe because
+you've checked your permissions, you've checked everything. So you start to suspect that SE Linux
+might be preventing the unrecognized service from running. That's usually a good thing, right? You
+don't want just random things running on your system. So this is, this is good. The, the, it's,
+it's a pain, but, but the, the attention to detail is good. So the first thing that you might do
+is confirm that the service does indeed run without SE Linux getting involved. So you, you could do
+pseudo set enforce permissive and then just verify that with SE status pipe grip current with a
+capital C, or you can just do grip dash I current. And you get the, the, the, you get a report that
+the current mode is indeed permissive. Okay, that's good. Now you can test whether your service starts
+without SE Linux. So you do pseudo system CTL enable dash, or let's just do start, I guess,
+start my dot service pipe pipe echo fail. So if it, if it doesn't work, we'll get a fail message.
+And you get nothing back. So it's working. It's running. It's, it's successful. You could check
+that with journal CTL. That sort of thing. Look at your logs. Make sure that the service actually
+launched and so on. Whatever. So you've verified that it works. If SE Linux isn't doing any of
+its enforcement. Okay. So as I said, that hasn't fixed the problem. You've not solved this issue.
+You, all you've done is you verified that SE Linux is the reason this service is being blocked.
+So get SE Linux back in for in enforcing mode, pseudo set enforce enforcing. And then you can
+verify that with SE status grip current. Now you know what the problem is. SE Linux is stopping
+your service from running for, for whatever reason. And you can delve into that. If you want to,
+you can try to figure out why SE Linux believes that this is not, but you're not going to get reports
+that are super satisfying. Trust me. It's in my experience. It's enough to know that you've
+done something wrong in the eyes of SE Linux. And you need to fix it. So here's what I do.
+Look at the files that you've created using dash capital Z and compare them with the files that
+you know to be working properly. The way I do that is I, I determine what I'm trying to do in this
+case. Let's say I'm trying to create a new service, a new demon to be launched by my system
+in the background that applies to the entire system to all users. Okay. Well, are there any other
+services on my system? I mean, obviously, of course there are. You might have to do a little bit
+of research. Well, no, you wouldn't because you've already put the service into place. So you know
+where these things are located. So you can do LS dash capital Z slash user slash lib slash system
+D slash system slash and then just choose a service that's that's working. Here's one called
+our disk. I don't know what that is our disk dot service. It system underscore you. So this is
+just the this is the dash capital Z. So I'm just seeing the SE Linux context here. So it's system
+underscore you colon object underscore R colon our disk underscore unit underscore file underscore T colon
+okay. So that's that's the known good configuration. Now let's look at what I've placed into
+that folder LS dash capital Z slash user slash lib slash system D slash system slash slash my
+dot service. Unconfined underscore you colon object underscore R colon system D underscore unit
+underscore file underscore T colon S zero. So there are some important differences here or at least
+there are noticeable differences. The first one was system you this one is unconfined you the
+known good one was our disk unit file is one of system D unit file. A little bit more research and
+you can find that our disk dot service that's just kind of an exceptional service file for whatever
+reason it has its own special security context called our disk underscore unit underscore file underscore
+that's not normal for system D unit files usually system D unit files get a tag or a label of
+system D underscore unit underscore file underscore T. So that is normal the version that I've put
+into the system myself got correctly identified by SE Linux as a system D unit file. So it it
+figured that out probably by looking at the contents of the file and the extension of the file
+it's a dot service. So that's a pretty good clue right there. And then the the file itself has all
+the stuff that you would find in a service file. So so that's correct. I don't need to change that
+but the unconfined underscore you is completely different than a system underscore you. And again
+you don't really need to know that much about security labels and contexts and how SE Linux
+determines one from the other to to kind of pick up what's going on here. One probably is saying
+this files okay to run on the system. And the one that is saying that is probably the one labeled
+system underscore you. Whereas unconfined underscore you. I don't know what that means. I don't
+know what it's confined or unconfined from. But to me it sounds like that's not something that
+wouldn't necessarily be okay to run at a system level under SE Linux. So to fix that or to
+experiment to see if this could fix it you can use Chican CHCON which stands for change context.
+And you just set your custom file to exactly the same context as your known good file. So for that
+you do pseudo Chican system underscore you colon object underscore R colon system D underscore
+unit underscore file underscore T colon S zero as I said just from doing more research like looking
+at other service files. That's what I mean by research just looking around using your skills of
+observation you you'd see that not everything's going to get an our disk underscore unit underscore
+file underscore T label and that it's more normal to have the system D underscore unit underscore
+file underscore T that's fine we get it. The thing that we really want to set here is system
+underscore you. So pseudo Chican system underscore you and then the rest of it. And then you do that
+to slash user slash live slash system D slash system slash my dot service. And then if you LS dash
+Z that file you now see that your context has changed to match all the other system D service
+files in that directory. Okay well let's do the same process with the shell script that we
+theoretically would have created for this service to launch. So LS dash Z slash user slash bin slash
+my script dot SH and again you get things like unconfined underscore you colon object underscore
+R colon G conf underscore home underscore T colon S zero again you probably don't need to be an expert
+at this stuff or even to be vaguely sort of aware of how SE Linux works to know that probably G
+conf underscore home isn't a usual security label to see in user bin and certainly there's that
+unconfined underscore you thing. I'm not trying to demonize unconfined underscore you by the way
+it's a perfectly fine security label. It's just if you're trying to run something at a system
+level that's just not the one that you probably are going to see and you can confirm this again
+with LS dash capital Z just you know slash user bin slash just choose any shell script in there
+and there are probably a couple you can do a find slash user slash bin dash type F dash name quote
+asterisk dot SH close quote and it'll list all the shell scripts in user bin. So pick one here's
+BRL TTY dash pro log dot SH that's one. So just do an LS dash is that on slash user bin
+BRL TTY dot dash pro log dot SH and you get system underscore you there's that label again
+object and underscore R and then bin underscore T is the final one rather than what was the
+other one G conf underscore home underscore T so yeah again you you kind of you just you start
+to recognize sort of like the places where it's like oh that that feels a bit off especially
+if you're using that dash capital Z every day anyway I just once a day you don't have to do it like
+all for every file you look at but just just once a day twice a day just take a look at at the
+security context and you start to to notice them. So again you can fix that with Chican what is
+Chican system underscore you colon object underscore R colon bin underscore T on user bin whatever I
+said it was my script dot SH and then you can verify that again with LS dash Z to make sure that
+that got set correctly and then if you try to run your service with system CTL the enable dash
+dash now my dot service it would magically work and of course it's not magic it's just that you
+have now conformed the security context to other known good services on your system and that's how
+you can use your current running system as a blueprint for your own activities and whether you do
+that on the fly sort of as you go dynamically like we just did here in this episode or whether you
+write that into like your RPM package or into the way that you're packaging something up such that
+when it installs it gets those those contexts are are set correctly it just kind of depends on
+on how you're structuring you know how you manage your system but either way that's that's what
+you can do and either way you don't necessarily have to go to SE Linux and take a whole course on
+how it works because you'll you may possibly never understand that it is a very complex system
+but seeing how it works on your current system is hugely informative and can help you fix those
+annoying little problems when you accidentally violate an SE Linux rule that's it that's my
+solution that's my workflow hope this was helpful
+you have been listening to hacker public radio at hacker public radio does work today show was
+contributed by a hbr listener like yourself if you ever thought of recording podcast and click
+on our contribute link to find out how easy it really is hosting for hbr has been kindly provided
+by an honesthost.com the internet archive and our syncs.net on this otherwise status today show
+is released on our creative commons attribution 4.0 international license

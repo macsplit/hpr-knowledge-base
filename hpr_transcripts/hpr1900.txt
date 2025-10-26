@@ -1,0 +1,101 @@
+Episode: 1900
+Title: HPR1900: 20 - SSH Basics
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1900/hpr1900.mp3
+Transcribed: 2025-10-18 10:57:44
+
+---
+
+This episode of HPR is brought to you by Ananasthos.com, get 15% discount on all shared hosting
+with the offer code HPR15, that's HPR15, better web hosting that's honest and fair at Ananasthos.com
+Hello, this is Ahuka, welcoming you to Hacker Public Radio and another exciting episode in our security and privacy series and we're in our mini series on SSH.
+So we have done two shows about SSH, one was sort of an introduction about what SSH is about and how it came to be, then we did one on how to set up a home server so you can experiment.
+So I'm going to assume that you have followed along so far that will make it a little easier to keep up with all of this and we want to talk about just the basics of making a connection and how you do that.
+So as we saw in the introductory tutorial SSH uses the client server model. Now technically a server is just the machine you're connecting to and there's no reason in principle it could not be another desktop, a laptop or even a telephone if it has the appropriate software.
+And in the previous tutorial we showed how you can easily install and set up a SSH server on your home network using another computer or a Raspberry Pi so that you can experiment with these commands.
+The model really reduces to you as the client and the other machine as the server. As with all internet connections there are standards and protocols involved.
+The original telnet communicated over TCP that's transmission control protocol through port 23 because SSH was conceived as a replacement it used the same TCP protocols and was assigned the adjacent port number of 22.
+Now this is the standard but it is not set in stone indeed one of the ways you can add to security is to use a non-standard port.
+Now this is something that the server has to be configured to do. It's up to the server to use a different port because the server has a demon that is listening and is going to listen to whichever port it's instructed to and we talked about that last time when we talked about configuring your server.
+So the server administrator whoever that would be if you're doing this at home then I presume you are the server administrator would configure the demon to listen to an alternate port such as 16180 just to get a five digit number random and then it would listen there for SSH traffic and then communicate this to the potential clients.
+Now this is a good thing to know if you're using SSH to log into a remote server that you administer. For example you may have a server co-located in a data center or a virtual private server that you control and administer.
+If a vulnerability in the SSH protocol were to be discovered you can bet that the bad guys would immediately start to hammer on port 22 of every IP address on the internet looking to take advantage.
+But if your server does this on a non-standard port it gives you a little bit more protection. Still if you're connecting to a server that you do not control you probably will connect to port 22 unless they give you specific instructions otherwise.
+And chances are your client software is already configured to do that by default. Now how does it work?
+Well to begin with all SSH connections are initiated by the client. You as the client are going to the server and asking please sir it may have a shell connection and as we said you'll generally do this on port 22.
+The server will have a demon listening to that port and it should respond to your request. If you have the same account name on both your client and the server you can just log into the server.
+If the account names are different then you should put in your account name. So here's some examples and we're doing this in a terminal.
+And that's really the best way to get to understand this stuff. So the first example.
+Just the command is SSH space and any IP address. So if you're doing on a home network it might be something like 192.168.1.24.
+I think I've got a machine somewhere on my network with that address.
+Now another example. Instead of using the IP address you could use the server name. Now that has to be something that is in your hosts file or that DNS is going to know how to debug.
+Again if it's on your home network you might want to have a hosts file that has all of this information. Otherwise you could run into problems.
+But here's the example SSH space my server dot host dot com.
+Now either of those work if your account name is the same on the server as it is on your local client. Now at home that's generally what I run into because I use the same login name for different machines.
+If they're different you could speed things along by adding the account name. So here's another example.
+SSH underscore Fred at my server dot host dot com.
+Now we talked about connecting to a different port. Now if you need to do that there is a switch that is part of the SSH command.
+It's a dash P switch. And so if you wanted to do that let's assume that the server was configured to listen to port 16180.
+Then the command to be SSH space dash P space 16180 space.
+And then put in either the IP address or the server name using any of the examples we've already talked about.
+Now the server should then send back to your client protocol version which should be SSH to dot zero.
+If your client also supports SSH to dot zero the connection proceeds. Otherwise the connection is dropped. All modern clients support SSH to dot zero however.
+If you really want to dive into the details you can start with rfc4253 which is written by the previously mentioned tattoo alone and I've got a link to that in the show notes.
+If you want to see everything going on use the dash V switch with the SSH command to turn on verbose mode.
+In fact you should probably use the dash V switch at least a few times just to see what is going on.
+This will show you all the communication going on between your client and the server.
+I noticed for instance that my recent version of kablin 2 it leaves out a lot of the stuff going on it just suppresses it but you know if you want to see it put in that switch.
+Okay then the binary packet protocol kicks in this specifies each of the fields in the packet sent using SSH.
+If you need full details consult rfc4253 mentioned previously this is something you can probably skip if you're not going to be writing your own client.
+Next is the servers turn to identify itself which it does by transmitting its public key.
+If this is your first time attempting to log into the server you will get a message that says the authenticity of host my server dot host dot com can't be established.
+The rsa key fingerprint is and then it will give you a bunch of hexadecimal to digit hexadecimal numbers.
+And that's the fingerprint of the key and then it says are you sure you want to continue connecting yes or no.
+Now if this is the first time you've tried to connect you don't know for sure if this is really the server you want this is the potential danger point in all of this.
+This is where a man in the middle attack could take place.
+So for instance imagine again you're sitting in a coffee shop public Wi-Fi or an airport terminal or wherever and you think I'm going to SSH into a server here and you get back the message authenticity can't be established here is the fingerprint.
+Do you just say yes.
+How do you know that someone in that coffee shop or airport terminal or wherever isn't sitting there with a nice little packet sniffer and you know if you watch hack five and I do.
+You're going to see there's a lot of interesting ways of of intercepting and spoofing so that you can basically get a man in the middle is going to intercept you request and send back something.
+This is oh yeah I'm that server you're looking for you can trust me and they'll give you their key and then you know you're going to give your log in and all of that it's a danger alright.
+Now it only happens the first time you connect with this particular machine because what happens is if you say yes you want to continue connecting it takes that public key from the server and stores it in something called a known hosts file.
+Now on a Linux machine this is usually found in your home directory so slash home then slash your username slash dot SSH and then in that directory there's a file called known underscore hosts.
+Now other systems may have it in other places windows it might be in something like your user profile name backslash SSH or backslash dot SSH I've seen both of those mentioned I don't know a lot about the windows side of this.
+And this is something you need you need to go through with each machine that you connect to this server you're going to have to get that key and store it in the known hosts file.
+Now once it's stored in there you know from then on you know if you went and and attempted to log in and got a different key get a warning about that.
+So what if you take a look at that it's a text file you can open it up and you will see a number of things you'll you'll see the basically a base 64 style.
+Mass that looks that is essentially the public key you know so that's you know upper and lower case letters numbers symbols all over the place.
+And if you take a look at the fingerprint you will see then and what I see on mine is EC DSA and that is the encryption standard that's elliptical curve DSA.
+Then dash shot to so that tells me something about the encryption standard and then NISTP 256.
+So that's that is what's used to create that encrypted secure connection so so what's happening here.
+There's a weakness because you're accepting a key on the first log in how do you prevent that your log in attempt at the fingerprint return to you so that's the key to this if you will pardon the pun.
+You probably don't want to post it publicly on an unsecured website for instance since the bad guys might figure out a way to spoof it and email carries the same risk.
+In a corporate environment you might post it on an encrypted website behind the firewall and require the employees to use their credentials to access it or even have the IT department configure this for all users.
+The point is that the security of the connection depends on the key and if a man in the middle can get you to accept a bad key they own you after that.
+Now the next step depends on whether you're using SSH version 1 or SSH version 2 since the vulnerability in SSH version 1 was found long ago in internet time you should probably question what is happening if you see it used today.
+SSH version 2 was adopted in 2006 which makes it comparatively old and stable.
+Now as Michael W. Lucas puts it in his book SSH Mastery and I quote SSH version 1 permits man in the middle attacks and session hijacking.
+If someone insists on using SSH 1 practice saying I told you so.
+Now his book is excellent the ebook is only ten bucks it's worth every cent.
+In particular if you need to set up an SSH server which I won't really cover in this kind of detail this book is mandatory reading I would say.
+Now among the changes introduced in SSH version 2 are improved encryption standards including triple DES and AES public key certification for clients we're going to get to that very quickly here.
+The use of sound cryptographic message authentication code algorithms SSH version 1 was monolithic meaning that all the protocols needed for encryption.
+Authentications etc were part of a single large protocol built into SSH version 1 and SSH version 2 each protocol is split out into its own and defined in a separate RFC such as the transport layer protocol the connection protocol and the authentication protocol.
+I think SSH version 1 is sufficiently obsolete that I'm not really going to dig into it so let's just focus on version 2.
+So version 2 once you've accepted the public key of the server it is up to you is the client to respond.
+You do this by first generating a symmetric key called the session key which will be used to encrypt all traffic.
+Remember from our previous tutorials that asymmetric key pairs carry a very large computational overhead.
+So they are generally used only to set up a connection and exchange the symmetric key.
+The client creates this key then using Diffie Hellman SHA1 key exchange since it back to the server.
+Note there is a provision in the protocol for a certificate authority to attest to the validity of the public keys use.
+This would help immensely in preventing the man in the middle attack you were vulnerable to at your first connection since the CA the certificate authority would give you content confidence and the ability of your service public key.
+But not all servers use this at present in part because certificates are expensive.
+And by the way we discussed all of this in much more detail when we were looking at SSL and TLS certificates and talked about how they try and deal with that problem.
+I think we'll get there eventually but right now we're just not where we need to be.
+Now we're not done yet. You should only have access to the server in accordance with the rights you were given when your account was created and that means that you need to authenticate.
+And so what I want to do in the next tutorial is start looking at using keys to authenticate.
+So with that this is Huka for Hacker Public Radio signing off and reminding everyone as always to support free software. Bye bye.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast then click on our contributing to find out how easy it really is.
+Hacker Public Radio was founded by the Digital Dove Pound and the Infonomicon Computer Club and is part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released under Creative Commons, Attribution, Share a Life, 3.0 license.

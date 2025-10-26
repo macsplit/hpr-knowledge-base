@@ -1,0 +1,346 @@
+Episode: 398
+Title: HPR0398: Intro to Iptables
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0398/hpr0398.mp3
+Transcribed: 2025-10-07 19:49:34
+
+---
+
+music
+Greetings. My name is Kevin Benco. Welcome to Hacker Public Radio. I am not yet a regular
+contributor to Hacker Public Radio. This is my second HPR podcast, my first one being
+oh sometime between 3 months and 10 billion years ago. Today I'd like to discuss a brief
+and basic overview of IP tables. First some preliminary disclaimers. I'm assuming that
+you are using kernel version 2.6, whatever. This is probably applicable to kernel version
+2.4, not whatever, but I don't really know. Second, I will be trying to speak in English
+or bad English and I'll try to avoid Uber geek talk. Thirdly, this being a basic and brief
+overview is going to also be general and incomplete. IP tables being as big and important as it
+is. Big being meaning simultaneously important and big meaning kind of complicated or it could
+get complicated. It's going to have to be basic and somewhat incomplete. First we need to have a
+brief overview of what a packet is with respect to internet. Packet is a chunk of stuff sent
+over a network that contains a header portion and a data portion. Think of it as a box of data
+with a label on the outside. The label is the header. It tells where the box is coming from. Where
+is it going and some other stuff. With respect to IP tables, we really only care about the header.
+We don't care about the data in the packet. FYI in case this ever comes up on jeopardy,
+an IP packet is also called a datagram and a TCP packet is called a segment. I don't know why
+that's just what I'm told. When discussing anything as important as this, one kind of wants
+to know where it came from. To the best of my knowledge and I'm probably incorrect, probably
+incorrect. IP tables was influenced by the IPFW command or functionality in the BFDs. Oh, I'm
+sorry, the BSDs. The forerunner of the IP tables command in the Linux kernel came in, came as
+IPFWADM and Linux kernel version 2.0. And to the best of my knowledge, that was released on
+9 June 1996. The successor of IPFWADM was IPchains. Came out in Linux kernel version 2.2. It was
+written by the Holy and Sacred Rusty Russell. And that version of the kernel came out to the best
+of my knowledge on 26 January 1999. IP tables, which is our current method of screen with packets
+within the kernel, was released with kernel version 2.4. It was written by the Holy and Sacred
+Rusty Russell, the netfilter core team, and a bunch of other people. And to the best of my knowledge,
+it was released on 4 January 2001. I hear rumor, or I read rumor, that the successor of
+IP tables, which is I guess going to be called NF tables, is currently in development and the
+netfilter guys want to plot that in some future version of the kernel. Apparently it'll be better
+than IP tables in much the same way that IP tables is better than IPchains. So who wrote the code
+anyway? Well, first off, it was written by the netfilter core team, which consists of a small
+group of individuals, each of which making large contributions. The core group, developing IP
+tables in netfilter, are the Holy and Sacred Rusty Russell. Oh my god. Yosef Cadlick Zick.
+I'm sorry. He's probably going to hunt me down and kill me. I've mispronounced his name badly.
+Mark Bocher, James Morris, and Harold Welty. That's the core group that's developing IP tables and
+netfilter. And the netfilter core team, they control the main IP tables tree, as they should.
+Because it's theirs. Also, the code for IP tables was also written by anybody who at the time and
+the will to contribute to it. And I'm also assuming the talent to contribute to the project.
+Now, what in the world is IP tables? IP tables is, among other things, an IP filter.
+IP standing for internet protocol. That's just the set of standards, which stuff is sent over
+the internet. It's used to filter tables. Oh, sorry. IP tables is used to filter packets based on
+the headers of the packets. IP tables is the command that is used to enter a rule for packet filtering.
+I've mentioned netfilter once or twice. What is netfilter? Netfilter is the name of the project
+that has written some of the code for the Linux kernel that deals with the kernel level IP stack.
+The netfilter project provides a set of hooks into the kernel level IP stack. That is,
+it's some stuff that's in the kernel that allows some outside user lane programs to access
+directly or indirectly access kernel functionality. In this particular case, netfilter
+is the netfilter deals with the functionality that messes with the kernel level IP stack.
+Or that uses the kernel level IP stack to mess with packets, shall we say.
+Now, to continue, IP tables, its IP filtering does full matching on the packet headers
+for the IP protocol, the TCP protocol, the UDP protocol, and the ICMP protocol.
+Click tangent here. The IP protocol. IP stands for internet protocol. So, IP protocol stands for
+internet protocol protocol. It's a standard set of protocols for communicating data across the
+packet switched networks, such as the internet. The IP protocol deals with each individual jump
+from computer to computer from node to node across the internet. TCP stands for transmission control
+protocol. So, TCP protocol stands for transmission control protocol protocol. TCP is the brother of
+the internet protocol. TCP protocol is only concerned with the starting point and the ending point
+of the transmission of data across the packets, which network. So, whereas TCP is only concerned
+about starting point and ending point, IP is the protocol that controls each individual jump
+along the way. TCP and IP, they're a set of communication protocol with handshaking.
+That is, there is a definite stream of communication flowing both ways between the source and the
+destination. Now, UDP, which stands for user datagram protocol, that is only concerned with
+sending a packet of data without doing any handshaking of any sort along the way. Thus, UDP
+just bars out of pack and hope it gets there. No handshaking between the source and destination.
+Now, ICMP, which stands for internet control message protocol, deals primarily with sending
+messages between computers over the internet. For example, error messages,
+pings, trace routes, stuff like that is what ICMP deals with. So, it's more computer-to-computer
+type data that's being sent, messages between computers that's being sent, rather than
+something more important like music and pornography. IP tables provide lesser matching on other
+types of packet headers. Like, oh, I don't know, FTP to list them was messed up, complicated,
+set of packet headers I can think of. As a slight tangent before I go any further, the term IP tables
+is or can be somewhat vague. IP tables can refer to two different or two related things.
+IP tables can refer to the modules or the functionality within the Linux kernel that allow
+that accesses the NetFilter XTables functionality that allows it to or that lets the kernel-level
+IP stack mess with packets. IP tables can also refer to the user land tools that communicate with
+the kernel through the NetFilter hooks to allow it to mess with the packets. That is, IP tables can
+meet when I say IP tables. I can mean the modules, the stuff that's inside the kernel,
+and I could also be referring to the user land tool that lets me write rules for the kernel-level
+IP stack. Now, to continue, again, an IP tables filtering rule contains the following three items.
+An insertion point, a match, and a target. An insertion point basically says, where does this
+rule get plugged in with respect to my other rules? Match means the stuff I'm looking for,
+and the target is what I'm going to do once I find what I'm looking for. That's simple. So,
+an IP tables filtering rule contains three sets of parameters. Where is it going? What am I looking
+for? And what do I do when I find it? One of the strengths, one of the many strengths of
+IP tables is stateful firewalling. The definition of stateful firewalling or a definition of stateful
+firewalling, which I believe I stole from the Wikipedia entry, stateful firewalling keeps track
+of the state-of-network connections traveling across the firewall. The firewall is programmed,
+programmed to distinguish, blah! The firewall is programmed to distinguish legitimate
+packets for different types of connections, and only packets matching a known connection state
+will be allowed by the firewall. Others will be rejected. So, what does this mean in English?
+Stateful firewalling is a quality of a firewall that remembers the state-of-the-network connection
+that goes through the firewall, and the firewall is able to distinguish good packets from bad
+packets based on the types of connections, and only the packets that match something I know about
+are going to be allowed by the firewall. If a packet comes through, and I don't know what the
+firewall doesn't know, what in the world it's coming from, what kind of connection it is,
+it's going to kill it with extreme prejudice or reject it. Now, IP tables allows full state matching
+on TCP packets, UDP packets, and ICP packets. Other protocols, IP tables is going to require the
+use of a generic connection tracking module from that filter, and the generic connection tracking
+module is less specific. You can write your own connection tracking modules, by the way,
+and there are just some protocols that are, well, to put it mildly complicated, such as FTP,
+and talk. I think IRC packets are kind of messed up too, and these require some additional modules
+in which two are patches to deal with them properly for IP tables. Now, with respect to stateful
+firewalling of IP tables, IP tables recognizes four states of packets. It recognizes, or let's say,
+I say packets, let's say connections. It recognizes new connections, established connections,
+related connections, and invalid connections. A new connection is essentially a new connection.
+It also includes non-SIN TCP packets, trivia here. A TCP packet contains a flag called a SIN,
+a SWIN, and if this SIN flag, it's either on or it's off. If the SIN flag is set, that means,
+hey, ain't no data here. Dad is coming with the next packet. If the SIN flag is not set,
+it says, hey, Dad is coming with this packet. Also, established connections. An established
+connection is a connection that is already passing traffic in both directions. A related connection
+is a connection or a packet that is related in some way to an existing established connection. For
+example, ICPM errors, FTP data that is FTP first makes a connection. That's one connection on one
+port, and then the actual data for the FTP comes through another connection that is related to the
+first connection. An invalid connection is actually a non-state. An invalid packet or connection is
+just bogus. Contains errors, things you're not expecting. For example, if a connection sends
+FTP, a normal connection is supposed to send a signal to the recipient saying, hey, I'm done,
+and then a recipient sends it back saying, yep, okay, well, FTP gets a yep, okay, without having
+said, oh, I'm done. Well, there's a problem, and that's an invalid packet. IP tables can also be
+used for NAT. NAT stands for Network Address Translation. This essentially requires or means that
+the kernel IP stack is mangling the source or destination addresses of the packets on a connection.
+Now, unfortunately, with IPv4 Network Address Translation, which I'll explain a little bit more.
+It's a near necessity. It also kind of breaks the internet, but it's a less or the two evils.
+Now, IPv6, which we should all be using by now, but we aren't, has no provisions for NAT,
+Network Address Translation. That's because, and it's heart and soul, NAT is a
+clue that we shouldn't be using anyway, but it's a necessity in IPv4, and we just have to deal with it.
+So, what good is NAT or what does NAT do? Well, Network Address Translation allows a
+local area network, that is, my computer's here sitting in this room, to look as if to look to the
+internet as if they were by a single IP address, and it also allows me to create several servers,
+for example, with a single IP address. Let me explain. I got here, I got a router here,
+staring at it. My ISP calls it a modem, but it's a router. And as far as the internet knows,
+there's one computer out here at my place. It's the router. As far as the router knows,
+there's five computers here, and one internet connection. So, with respect to the internet,
+there's one computer here, but with respect to reality, by way of the router and the network
+address translation stuff within the router. There's actually five computers, and this allows
+all five computers to hook up to the internet at the same time, and go to different places. So,
+my wife can look at crap on YouTube, but I go browsing porn, or what have you. IP tables,
+mangles, packets. To be more accurate, we're just rewriting, or we have the functionality to rewrite
+the non-data portions of the packets. That is, IP tables tells the kernel to rewrite packet headers
+for our own evil purposes. Some examples for those people who are, you know, who know,
+who know network stuff, IP tables can let me strip out all IP options, change TOS values, change
+TTL values, strip ECN values, do all kinds of nonsense like that. However, we need to also discuss
+what IP tables is not, and let me go yell at my cat. Sorry about that. My cat isn't really
+interested in me unless I'm doing something else than the cat needs to pay attention to me,
+and demand attention. That's the way cats are. Okay, what IP tables is not? IP tables is not a proxy
+solution. It's a common misconception, unfortunately. IP tables, filters, and mangles, packet headers.
+If you want some sort of proxy solution, squid sounds like a good idea. Also, IP tables is not a
+packet data filtering solution, yet another common misconception. If you want to filter data packets,
+the actual data on the packets, you should use squid, snort, squid and snort, a better option.
+IP tables is not a complete firewall. It's lacking in several features that should always reside in
+user space, not in kernel space. A good need, an idea is like snort. You need a good
+idea, snort, for example, and you need a good filtering proxy solution, filtering the data packets
+like squid. While IP tables is a portion, or it allows a function out before a portion of the
+firewall, it needs other tools to make a complete firewall. IP tables does what it does, and it does
+it damn well, and it doesn't do anything else, and that's the way stuff should be.
+So, what actually is up with IP tables? As I said a few times, IP tables is a framework for
+filtering connections based on packet headers. It is also a framework for accounting that is,
+it keeps track of the network data in terms of how many packets have been through and how much
+data has gone through the IP tables, or the kernel, shall we say. It is a simple way to do network
+address translation, and it's got the ability to mangle packet headers. Now, anybody that's had
+any brief exposure to IP tables is going to run across the term table and chain. Like myself,
+at first I was confused like, what? No, I'll be talking about this table and chain stuff. I'm so
+confused, I'm not going to even deal with it. I'm just going to go do something else. A table
+is a logical construct that delineates broad-carried categories of functionality. Oh, can I say that
+in English? A table is a way of grouping types of functionality. I'll get into what the tables are
+in a little while. So a table is a layer of abstraction. It lets us better organize the way we make
+rules by breaking up the different types of things we're doing with IP tables into four broad
+I think four categories. We'll get to that presently. A chain is a collection of rules that are
+sequentially compared against the packet headers that share a common characteristic with respect to
+the table. That is, each table has got one or more chains in it and the chains are based. They're
+just sets of rules that are gone through sequentially in order and they all share a common characteristic
+being that they're all the things on the chain are part of or they fall under the jurisdiction of a
+table. When we're talking about chains, anybody that's going to need experience in programming,
+think linked list. I cannot discuss chains without the image of a linked list jumping to mind.
+If you think linked list, if you're thinking about chains, you can just think of a linked list and
+that's pretty accurate as far as I'm concerned. Now, IP tables has three basic tables or categories of
+functionality. The filter table, which is the default table, the NAT table, the network for network
+address translation functionality, and the mangled table, which is four mangling packet headers.
+Now, each table contains, as I think I said earlier, one or more chains. There are several predefined
+chains that we can actually define or create user-defined chains or specify user-defined
+chains. Our predefined chains may then be called through any user-defined chains that we may
+create. Let us discuss the filter table. It's used for filtering. It contains three chains,
+or three default chains, or three predefined chains. The input chain, the output chain,
+and the forward chain. The input chain deals with all the stuff connections that originate outside
+the computer, and whose destination is inside the computer. The output chain deals with all the
+connections from the computer to outside the computer. The forward chain deals with stuff that
+ain't going into the computer. It deals with stuff that originates from outside the computer,
+and its destination is outside the computer. It's just packets or it's a connection that's
+traveling through and not stopping. Now, the filter table is used for filtering. We ain't going
+to use a filter table to define any rules for network access. They're then network address
+translation or mangling. We're just using it for filtering. The NAT table network address,
+it's used for network address translation, of course. Only the first packet of a connection
+hits this table. We only run a rule set for the first packet, the very head of the connection.
+The subsequent packets in the connection, we're going to do the same thing to all the
+subsequent ones that we do to the first one. It's just redirecting stuff. It contains three
+chains. The pre-routing chain, the post routing chain, and the output chain. The pre-routing chain
+is dealing with the stuff before we actually make a decision as to what to do with it.
+The post routing chain deals with what are we going to do with the stuff once we've made a
+decision about what to do with it, but before it's actually sent on its way. The output chain deals
+with where it deals with the stuff that is going to a destination outside the computer. The
+mangled table is used, of course, for mangling packets and only mangling packets. As with the NAT
+chain, only the first packet in a connection hits this table. Any decision the kernel makes
+for the head packet, for the first packet in a connection, has the same action taken for the
+rest of the connection. It contains five chains. The pre-routing chain, the post routing chain,
+the output chain, the input chain, and the forward chain. Now I'm not going to get into talking
+about any IP tables rules. That's all command line stuff, and while me talking about command line
+stuff, me talking about actual command lines is going to probably be boring as hell. I will, however,
+discuss briefly, or at least in general terms, the basic IP tables syntax. Generally, you're going
+to see the IP tables command followed by, or let me see. Let me look at this one, two, three, four,
+five, up to five sets of parameters. That's something I can have five parameters. It's going to have five
+sets of parameters, up to five sets of parameters. The general command is IP tables, and then a set of
+parameters dealing with which table you're messing with, an actual command, command options,
+a set of parameters dealing with the match we're looking for, and a set of parameters dealing with
+the targets. The tables, if we don't list a table thing, it's usually followed by it. It's followed
+by a dash t. If there's not a dash t with a table following it, it's the default table, the filter
+table. We're going to only specify three tables. The filter table, the NAT table, and the mangle table.
+The command, the set of parameters following the table designation, if any, essentially,
+are we inserting, adding, or deleting a rule? Are we appending a rule to the end? We plopping
+it in the middle, we replacing a rule, deleting a rule, listing the rules, or what have you?
+The command line option, the option to the command portion depends on the command. Of course,
+the most common one you know has got to be there is verbose, every command line. Every command
+line application has got to have, in my opinion, has got to have a verbose option so I can have
+all kinds of information that I could just not do anything with. The next set of data on the
+IP tables command is the match. Essentially, it's a list of stuff, and we're telling the kernel
+what kind of packets we're looking for. These can be complicated or not, and the final set of
+information on IP tables command are the targets. We're telling the kernel what to do with the packets.
+That's about it for the IP tables, the general basic IP tables syntax. Now, some of the commands,
+when I mentioned commands, the command portion of the parameters, we can append a rule to the
+to a chain. We can delete a rule. We can delete a rule in two different ways. We can delete it by
+saying, hey, delete this exact rule I'm giving you, or we can delete it by number. We can say, hey,
+delete this number rule. We can replace a rule. We can say, hey, we have to list by number. We say,
+hey, replace rule number three with this. We can insert a rule by default. We insert at the very
+front of the list, or we can insert, if we specify what rule we're inserting, we can say, hey,
+insert this at number two. Now, if I insert something at number two, that pushes number two
+and everything after that down. So, if I got, let's say I got three rules in a chain, call them A,
+B, and C, and I want to insert rule X at position two. After I insert rule X at position two, my rules
+are going to be A, X, B, and C. I can also zero out the accounting that IP tables does,
+that is to say, IP tables keeps track of the number of packets and the volume of data in the
+packets by table and by chain, and I can zero out this accounting for a particular table,
+for a particular chain, or for a whole damn shoot and match. Policy is a default rule,
+for a particular table and a particular chain. We can match IP tables. This is just a brief
+overview. There's a lot more matches I'm going to list here, but we can match by protocol,
+UDP, TCP, IC, MP, et cetera. We can also match all protocols. We can match by destination,
+IP port, sorry, we can match by destination, IP address, we can match by source IP address,
+we can match by destination port, we can match by source port, we can match on the incoming
+and outgoing interface, ETH0, ETH1, whatever, WLAN0, we can match on saying, hey, anything that
+comes through an Ethernet interface, any Ethernet interface on this computer, we can match on, say,
+anything that comes through any wireless interface on this computer, we can match on that.
+Targets, several targets. Once we find a match, we can, we have to tell the kernel what to do with it,
+several of the targets are accepting, hey, the packet's okay, hey, this,
+excuse me, we can actions okay, let it in, let it have its way, we can drop a packet, we could just
+drop it, don't say anything, anybody just pop through it away, we can reject it, that's dropping
+a packet and sending a meaner, meaner back to the source, I can list the rules, I can say, hey,
+list the entire, I can say list everything you got, I can say list everything in this table,
+I can say list it, list everything in this chain, I can say, tell me all the rules you got in the
+input chain of the mangled table, etc. I can also flush the rule set, I can say, hey, delete this
+chain on this table, I can, for example, hey, delete the input chain from the filter table,
+and it's going to just delete the input chain, I can say delete the, delete all the rules on the
+mangled table, this could be a problem, this could bite you in the butt if you're not careful,
+because, suppose I happen to flush a chain, it's not going to, it's not going to delete the,
+or flush the policy, and if my policy is to drop everything, and I'm happy to be doing this
+on a remote connection, hmm, I might have trouble getting the machine again to make any changes if
+I decide that was a mistake, more about that later, if you want to mess around with IP tables,
+may, without actually going into any rule sets, you need to have a pretty good idea of what
+exactly you want to do with the rule set, you want to know what to do, you want to know what
+you want to let in ahead of time, you want to know what you want to let out to the internet,
+you want to have some idea, you want to write stuff down, or at least make a few notes, be aware
+of what your interfaces are, ETH0 would have you, be aware of what your IP addresses are,
+be aware of what your IP addresses are on your lane, and be aware of your IP addresses on the
+the internet, be very careful about that, also, now I know this is something in Debian,
+I don't know if it isn't any of the other distributions, but by default Debian does not,
+the Debian kernel, shall we say, does not allow you to do net routing, you need to take a look at
+slash proc slash sys slash net slash ipv4 slash ip underscore forward, there is by default a zero
+in there saying we ain't doing any ip forwarding, you need to put a one in there, so you need to echo
+one and redirect it to slash proc slash sys slash net slash ipv4 slash ip underscore forward,
+that will allow, that'll tell the kernel, yeah we're allowing you to do net forwarding type stuff,
+that is the thing that I forget to do a lot, so be aware of this, I don't know if any other
+distributions do this, but Debian does, but then again why use anything other than Debian?
+Okay, let's wrap this podcast up, we need to discuss non-rules commands, non-rules ip tables commands,
+now please note, I should have said at the beginning, ip tables deals with ipv4,
+if you want to deal with ipv6 as we all should be, but we're not, we need to use the ipv6 tables,
+it's spelled ip, the number six tables, and that's for essentially doing the same stuff with
+ip tables, except there ain't no mad stuff, I guess, I don't know, ip tables dash save, it's one word,
+ip tables save, iptables save, ip tables save is generally used to dump the output through
+redirection to a file, to allow you to restore it later on, so ip tables save, just kind of redirected,
+greater than some file name, and it dumps your whole rule set in a file that you can look at,
+what not, and you can use the ip tables restore, iptables, to essentially load in that entire
+rule set, so you don't have to type it out by hand every time you boot up, now the most important
+command here, I don't believe, is ip tables apply, one word is a dash between them, iptables dash
+apply, ip tables apply, takes an optional parameter of a timeout, and I can't recall what the default
+timeout is, and a necessary requirement, or necessary parameter of a rule set file, like generated by
+ip tables save, what ip tables apply does is, it will apply the new rule set, and then ask you,
+hey, is this okay, if you do not respond within the timeout time, it will revert back to the old
+rule set, this will save you the horrible embarrassment of being locked out of your computer,
+locked out of the remote computer, and having to trudge into the actual server, and set things
+right, ip tables apply is a lifesaver, oh one thing I should mention, ip, messing with ip tables is,
+kind of dangerous, shall we say, because you could inadvertently leave your, the lesser danger,
+you could inadvertently leave your system wide open for anyone to have their way with it,
+or especially if you are in a remote connection, you can unlock yourself out of the computer,
+one other danger, if you're married, for example, is you can set up your ip tables rule set
+and you could neglect to allow access to certain ports, or what have you and have your wife,
+for significant other, nag, nag, nag, nag, nag, nag. That they can't access something on the internet,
+and it's your fault, and how dare you mess with the computer, well be careful of that too.
+Now, ip tables is, of course, a command line application, there are some gooey applications
+that use IP tables as a back end, or say another way, there are some gooey front ends to IP tables.
+Just a minor commentary on command line tools versus the gooey front ends. I like command line tools
+better. If we designed a gooey front end, a graphical user interface front end to say IP tables,
+that handled every single functionality and every detail that you could possibly do through IP
+tables, the thing would look like the cockpit. The gooey would look like the cockpit of a 747,
+there would be dials and knobs and buttons and slides and late menus and stuff all over the
+place and would drive the crazy. But there are some gooey tools out there that are pretty good.
+They're good enough for what you want it for generally good enough for your basic running IP
+tables functionality. Listed alphabetically, I'm going to mention fire storter. It's not been
+developed in a while. But it's still there, it's available in a Debian repository, so it's there.
+FW Builder, that's a gooey front end for IP tables. Guard Dog, Guide Dog, K My Firewall,
+letter K, spelled K-M-Y-F-I-R-E-W-A-L-L. Hey, I bet it's a KDE app. KNet filter, spelling K-N-E-T-F-I-L-T-E-R.
+Hey, but that's a KDE app too. The gooey front ends, I, in my own opinion, I think Guard Dog is
+probably the best one to start off with if you're not already using it. As a suggestion,
+if you want to muck around with IP tables, use a gooey thing, build your rule set,
+and then look at it, and then look at the configuration file it saves for the firewall.
+And that would be more or less in the format that the IP tables save file generates,
+and you could use that as a jumping off place to go to a jumping off place to messing with IP tables
+on the command line. Other resources. There's three damn good ones out there. In order of least
+useful to most useful, there's netfilter.org. Yet these are the guys that made IP tables.
+Another documentation is pretty, damn good. It's full documentation. I mean, it's all there, but
+in terms of finding stuff and coolness and finding cool things out there for, you know,
+cool things do with IP tables, it's pretty damn good. And it still gets 10 stars on my list, but
+there's better resources out there. You can go over to frozentux.net,
+go to iptables-tutorial.frosentux.net slash iptables-tutorial.html. That's a pretty damn good set
+of IP tables. That's a pretty good IP tables tutorial. And for your general IP tables stuff,
+you're going to go over to lartsy.org, l-a-r-t-c.org. Got to head on over there. That's in terms of
+usefulness, coolness, and best resources available. I'd go there. Well, in conclusion, I'd like to
+thank Donets, Coffee, and Ramen Noodles, because that's what gives me energy. And well, this is my
+hacker public radio episode. Hopefully it didn't suck too much, and oh my god, it's almost 50 minutes
+long. Well, again, this is Kevin Banco. This is my second hacker public radio podcast.
+And let's see if I can bang up another, bang another one together in less than three months,
+and I will try to make it less than an hour long. Thank you, everybody. Have a swell day.
+Thank you for listening to hacker public radio. HPR is sponsored by Carol.net. So head on over to
+C-A-R-O.

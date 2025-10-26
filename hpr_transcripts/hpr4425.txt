@@ -1,0 +1,566 @@
+Episode: 4425
+Title: HPR4425: Introducing Linux Matters
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4425/hpr4425.mp3
+Transcribed: 2025-10-26 00:36:13
+
+---
+
+This is Hacker Public Radio episode 4,425 for Friday the 18th of July 2025.
+Today's show is entitled Introducing Linux Matters.
+It is part of the series podcast recommendations.
+It is hosted by Ken Fallon and is about 38 minutes long.
+It carries a clean flag.
+The summary is long overdue.
+We share a teaser of another excellent Creative Commons podcast.
+Today's show is licensed under a Creative Commons Attribution Non-Commercial License.
+Hi everybody, my name is Ken Fallon.
+You're listening to another episode of Hacker Public Radio today is another in our series
+of recommendations for Creative Commons podcasts.
+This one is going to be Creative Commons Attribution Non-Commercial 4.0 International License.
+And it is Linux Matters, which you can find at litinixmatters.sh.
+If you go to the OAB page, it says, join three experienced open source professionals as
+they discuss the impact of Linux on their daily lives, upbeat family, friendly banter,
+conversation and discussions for Linux enthusiasts, casual observers of all ages.
+This of course is our very good friends of the podcast, Alan Pope, Mark Johnson and
+Martin Wimpress, who we met as a camp, except for Martin, who I managed to avoid the whole
+weekend, but that shall be rectified at the next one with any luck.
+This is a very nice, easy-going podcast actually.
+Little less on the free years of freedom and more on the programming side from my personal
+experience.
+But if you're not subscribed, the links to do so will be in the show notes for this episode.
+So sit back, relax and enjoy the podcast.
+I have successfully pulled off the great GitHub Space Heist.
+Did they catch you?
+No, they didn't.
+It's brilliant.
+Well, they're not talking about it on a podcast then.
+It's all right.
+Nobody's listening.
+It's doubly awkward because I've made my space high-stay GitHub action.
+So one way or another, they know I've done it.
+OK.
+What are you talking about?
+OK.
+So I build lots of things with GitHub actions, and that's all just fine and dandy.
+But occasionally I need to build big things.
+And what I'm about to explain is kind of focused on building things with nicks, but actually
+the little life hack that I've found, you can apply to other things as well.
+And I'll get into a little bit of that in a moment.
+But the concept here is, I needed lots of space to build large nicks configurations,
+particularly my OS configurations for my workstations, which have lots of big stuff in them,
+like browsers, DaVinci Resolve, audio players, a whole bunch of electron applications,
+full development environments, lots of language ecosystems, all of that sort of stuff.
+And consequently, that exhausts what at first glance appears to be 20GB of available space
+on a standard GitHub runner.
+That's probably Ubuntu.
+Yes.
+So it's running Ubuntu latest or whatever version you want to use.
+And there's a GitHub action from determinate systems that installs nicks for you.
+And then you can do nicks things in an Ubuntu machine.
+And like nicks builds for like small packages are just fine, but for these OS things,
+not so good, because it runs out of space.
+And the reason why I want to build my whole configuration is because if I build it,
+then I can cache the results in my own private, flake cache.
+And then that means that my system updates are fast and I don't have to do any local
+compiling or anything like that.
+So that was my motivation.
+I wanted to figure out how to make more space.
+And looking around in the GitHub Actions Marketplace, there are actions which delete lots of
+things from the Ubuntu runners in order to claim back some space.
+And I thought, well, that's an interesting idea.
+We could do some of that.
+The problem with that is it takes a long time, we'll get back to that in a little bit.
+But what I did is I made a little debug thing to sort of go an action to go poking around
+in the Ubuntu runner to sort of tell me about it.
+When I discovered there is a slash MNT partition in a GitHub runner.
+Historically, those used to be 14 gigabytes, which is interesting.
+And this is 14 gigabytes of space that you wouldn't ordinarily have access to.
+But today they are now 65 gigabytes inside in the standard GitHub runner.
+That's free space.
+Can I upload all of my photos into there or something?
+Yeah.
+The idea I had was what if I created a GitHub action that creates a partition inside that space
+as the slash nix volume, where nix does almost all of its things.
+So the long story short is that's exactly what I did.
+And I called this GitHub action nothing but nix.
+And this is for those people who are running a nix workflow and all they care about
+is having enough space for nix.
+And the first thing it does is it creates a sparse file using fallocate for the size of
+the mount partition, less a little bit of reserve, which you can configure.
+And then it formats that sparse file with butter FS in a raid zero configuration.
+And then mounts that volume as slash nix and have wallet.
+You now have 65 gigabytes of space for your slash nix volume.
+Two questions.
+Number one, I find it interesting that you pronounce it fallocate.
+Moving on.
+Is it any particular reason you use butter FS?
+Yes, I'll get to that in just a moment.
+It's because you can do clever things with butter FS that you can't do with the other
+file systems unless you get into using LVM and stuff like that.
+And I wanted to keep it as simple as possible.
+So having created my 65 gigabytes of space, I then thought, hmm, well, there's this other
+sort of approximate 20 gigabytes of space in the root partition.
+What if I could claim some of that back as well?
+So then what it does is it goes and creates another sparse file in the root partition.
+It then enrolls that sparse file into the butter FS volume.
+I've already created and then grows and balances that file system.
+So now you have 85 gigabytes of space available.
+So this is all going swimmingly at this point.
+And what was interesting about this is that you do run into issues.
+If you exhaust all of the space in the root file system, then you know, bad things start
+happening.
+And there are some things that are happening in the root file system that you need to
+preserve some space for.
+So I then had the bright idea of well, let's do the other strategy that everyone else does,
+which is going to delete a bunch of stuff.
+So instead of just doing big deletes of files, I thought that we could do this properly.
+So the action creates the 65 gigabyte volume, which it can do in about one second.
+So you know, instantly 65 gigabytes, you can then move on with the rest of your work
+flow.
+So in the background, nothing but nicks, then creates a new process that runs in the background
+that goes off and elegantly apt removes and purges a whole bunch of the stuff that the
+GitHub runners automatically provide in order to give, you know, every language imaginable,
+every build tool imaginable.
+You talk about doing it properly with apt, you know, auto removal, whatever.
+So some of the other actions just like RM, RF, like slash user bin and stuff like that,
+they do.
+And in fact, I have to do a little bit of that as well and we'll get into that.
+So whilst the rest of the action is running, nothing but nicks has kicked off this large
+apt get remove purge in the background and it removes gigabytes of stuff.
+Then the next thing it does is in slash user local on the runners is a whole bucket load
+of just random stuff that's been jammed in there that hasn't been apt installed in a
+correct way.
+And I thought, well, I don't need any of that.
+So I can just RM, RF that just brutally extract it.
+And this is where you run into an interesting problem turns out that takes a long time.
+RM minus RF on a large slash user local.
+I think it's like 10 or 15 gigabytes of stuff that's in there.
+It took between 11 and 16 minutes to RM minus RF that from the VM that is the Ubuntu
+host runner, which is a bit too long, like you couldn't.
+And this is the problem with some of these other actions.
+They do that.
+RM minus RF, you know, as a as a blocking action before you get the space back.
+Anyway, I found out there's some tools and they're called the fast unix collection
+or something.
+Anyway, they have two commands, CP Z and RM Z and they are super fast implementations
+of RM and CP written in rust that are hyper paralyzed and that deletion of slash user local
+that 11 to 16 minutes goes down to about 30 seconds, which is quite astonishing.
+So you ran this on the Ubuntu latest or whatever, the default GitHub action runner that
+most people use is, have you tried this on any others like I don't even know what other
+options are available on GitHub or are some of the alternatives like blacksmith, I think
+is an alternative.
+Do you know if they present like huge volumes of unknown like blank space to the runners?
+Blacksmith.sh do just present lots of space in the root file systems.
+You don't have to do any of this shenanigans and if you're looking for a fast alternative
+to GitHub actions that support GitHub actions are a really good option, you just change
+one line in your workflow to say you're using blacksmith and all of the other stuff just
+works.
+It's great, but I didn't want to pay for that and I didn't want to pay GitHub, I wanted
+to have my cake and eat it too.
+So yeah, I'm doing all of this crazy stuff, but what happens now is that nothing but
+nicks creates the 65 gigabytes, runs this background task that uninstalls a bunch
+of stuff, then goes and deletes a bunch of stuff as fast as possible and then creates
+this additional volume, which is now 40 gigabytes.
+And you can create somewhere between sort of 100 and 130 gigabytes for your, your
+nicks volume.
+Sorry, my, my math is sailing me there.
+You said the root position was 20 gigabytes and then you delete some stuff from it and
+you've got a 40 gigabyte volume.
+How does that happen?
+Sorry.
+The free space in the, oh, I see, repartition by default is 20 gigabytes and then nothing
+but nicks goes and deletes another 40 to 50 gigabytes of stuff out there, so it's
+actually understood.
+In the end, the core Ubuntu that's left behind is only like four and a half gigabytes,
+but there's like an 80 gigabyte volume that's been allocated for the root partition.
+So all of that deletion and purging happens in the background and then when that space
+is available, that nicks volume is dynamically grown with butter FS to be as large as it
+needs to be.
+And so I'm very happy I can now run my large nicks configuration jobs and all of my stuff
+is cash to all my updates are super quick and I'll have links in the show notes to nothing
+but nicks itself for anyone that is using nicks and also a blog post that I explained
+just like how this works under the hood.
+And one of the things I was thinking about is, well, this is an interesting trick like
+if you need to build large container images, you could do the same trick but mount up the
+partitions for where you want to put your container images, for example, maybe you want
+to put in lots of container images in order to complete your build.
+But the idea I've had is taking something like QuickMU, a project that the three of us
+have worked on in the past because in GitHub actions, the free tier and the paid tier,
+you can enable KVM acceleration to do pass through acceleration to virtual machines that
+you can run on the virtual machine that is the GitHub runner.
+So my idea is, you could use this extra space to provision your own virtual machine image
+in a GitHub runner, enable the KVM acceleration and then boot your own VM inside a GitHub runner
+in order to do like your golden build using your validated certified and secured build
+environments or build tons of container images that you wouldn't have space to do, you
+know, otherwise.
+So that's my little life hack for GitHub.
+I'm really pleased with that and I'd be interested to hear if anyone else finds a need for
+creating gobs of disk space on GitHub.
+This episode is sponsored by TaleScale.
+Go to talescale.com slash Linux Matters.
+TaleScale is a proper VPN for connecting your devices and infrastructure together, not
+something that's marketed at people watching foreign streaming services or who want to
+hide their browsing habits from coffee shop staff.
+It's the easiest way to connect devices and services to each other wherever they are.
+PCs and laptops, servers, cloud instances, 3D printers, network storage, connect anything
+and everything you want wherever it is and get started in minutes.
+TaleScale's personal plan will always be free and you get up to 100 devices and 3 users
+for free with no credit card required.
+The free personal plan is enough to get you started if, like me, you want to host services
+on your LAN and access them from anywhere on the internet securely, no messing with
+routers, no port forwarding and no messing with firewalls.
+But what gives you the confidence to stick with TaleScale is their straightforward business
+model.
+If you want to use TaleScale as an industrial scale with more users and devices or take
+advantage of features like mobile device management, auditing, network flow and logging
+and priority support, you can join over 10,000 companies as a paying customer.
+So show support for the show and go to taleScale.com slash Linux Matters and try TaleScale out
+at home or work today.
+That's taleScale.com slash Linux Matters.
+I rebooted an old website that has been dead for years and it's not mine, it's a website
+that somebody else made and then for some reason it shut down and I decided to reboot it.
+And I've been thinking and talking about doing this since about 2021 maybe before then.
+But over coffee the other day Martin kind of gave me the nudge and I just did it.
+So now I now have another domain and website to look after.
+To be fair, I didn't realize that I was nudging you to do this thing, I was showing you something
+else.
+It started by moving your blog onto a different platform, but then it kind of snowballed.
+Yeah.
+So this is called nerdy day trips and it was started back in 2011 by Ben Goldakos, a famous
+doctor and kind of celebrity doctor who writes for a number of organs, although it doesn't
+quite so much right now and he was looking for like a database of nerdy places he could
+go when he's in a particular town and he wanted a map so he could like find where these
+nerdy places are and go to them like it could be a museum, it could be a very specific
+museum like a transport museum or a pen museum or it could be just some architecture that
+people go nerdy about, right?
+It's not necessarily a computer thing, it's whatever you think, whatever somebody finds
+to be nerdy.
+Yes, exactly.
+And it was basically just a big map with loads of pins in it, a Google map with loads of
+pins in it.
+And the data was crowdsourced back then starting in 2011 and there were a lot of pins put
+into it and then the site kind of disappeared in about 2016.
+Now there were problems.
+I remember seeing spam attacks on the site and seeing that they didn't have very good
+spam protection and so there were lots of nefarious posts being placed.
+And I don't know quite why they shut the thing down, it could be a combination of things
+but the fact that Google changed the way they license Google maps could be one, maybe
+getting sick of all the spam will be another, it's a project that maybe ran its course.
+So while nobody's like publicly acknowledged why it went away, it just went away and that's
+fine.
+You know, sometimes things die but also sometimes things are reborn and so I decided
+to like the Phoenix.
+Yes, I decided to rebirth this Phoenix and it started like I said in 2021, I was chatting
+with Wilcook and Stuart Langridge, my good friends and we thought and we'd chat it and
+every so often we'd like throw together some mockups or a bit of data and one of the
+problems is seeding a website like nerdy day trips with the pins, like the places.
+If you start with an empty map, it's not very motivating for other people to crowdsource
+that data.
+You know, if Jimmy Wales opened a blank website and said, Hey, this is Wikipedia, everyone
+get go crazy.
+I don't think anyone would be throwing money at him.
+So I was chatting to Stuart about this some years ago and he went through the internet
+archive and pulled some of the data, scraped some of the data, not all of it but only some
+of it because of the architecture of their site, it was the internet archive doesn't have
+a full copy of the data, it only has whatever was on screen when the archive caught it and
+so we have some data like about a thousand pins or something like that and I took that
+blob of Jason and I mashed it a little bit and turned it into some markdown files and
+because everything gets fixed with Hugo in my mind, I used Hugo to build a little website
+in which there is a map with all the pins in it and there's some buttons to do various
+things like search and look at the details of each of the, each of where the pins are.
+So as you describe this, Hugo is a static site generator, this, what you're describing
+doesn't sound like a static website, so how did you pull this off?
+Well, I'm glad you asked.
+Each of the locations is a static page, it's a piece of markdown with a bit of front
+matter that's the GPS location, that long, an address, a title and maybe some other metadata
+about the place, right?
+And there's one file per location and they're in subdirectories based on country, region,
+that kind of thing so that you haven't got just like one big folder full of markdown files.
+It's about like 30 folders full of markdown files and the site gets built and published
+like, initially I did this locally just on my local workstation and it works like it,
+the site uses the data in the markdown files to build a JSON blob which gets loaded and
+we use leaflet.js to show the map and we're using OpenStreamMap instead of Google Maps
+and you see all the pins and yes, it's a static site, there is no editing, it's not like
+where you be, you can't just press a button and edit what's on the page, however, I pushed
+all of this into GitHub, so now you can edit that stuff.
+You can go to GitHub and go to the nerdy day trips project and you'll see website is
+in there and you'll find all the little markdown files buried in a folder or bunch of folders
+and you could edit those to update them or you could create new ones.
+What then happens is if any changes are made either to the website itself or to that data,
+it gets built and pushed to Cloudflare pages.
+I could have used GitHub pages but I used Cloudflare pages, thought I'd try something new
+to me anyway and so every time the site is updated, it gets rolled out a new build and
+within seconds the site is updated, the life site that is.
+The problem is it's a bit brutal to ask normies to go and edit a GitHub repo, they might
+not even have a GitHub account and so what I'm currently building is a frontend to that
+which can resist spam and makes it straightforward for normies, non-github users to propose a new
+location to be added to the map which goes through a review process, some automated some
+manual and then that turns into a pull request against the repository and so by appearing
+as a pull request it's just like any other change in amongst other people's edits to
+the code or edits to the database as it were and they get reviewed and someone can see
+a preview of that as well and merge it if it's a data that is desirable in the database.
+I say database, a bunch of mark down files on disk is a database in my mind.
+I'm thinking about one of the projects I was looking at a little while ago is that translation
+of 650 game strings in 56 languages, that started out as a Google sheet, you've got
+a GitHub repo but that doesn't stop anyone from turning the data that's in there into
+other formats, right?
+You could turn it into a SQL database or whatever you wanted it to be because the data's
+open.
+Yeah, I guess you could take that data and do something different with it.
+What I would really like people to just contribute to this and yeah, obviously someone might
+come up with a better way to render this information, which will be great, especially if
+they contributed and improved the website.
+There have been some iterative improvements like we didn't have search and then Stuart
+contributed a little search option.
+It's very much MVP at this point, like you can scroll around the map and you can zoom
+in and out and you can zoom straight to a location and there's a few like helper things
+in there but it's not finished by any stretch.
+The big problem right now is making it easy for people to add locations and edit locations
+and by the time you hear this, that may be done but at the moment, as we're talking here,
+you have to edit the pages directly on GitHub itself.
+You say it's MVP, I mean, how does it compare with the original website when it shut down
+in terms of its features?
+Well, it's an awful lot uglier for one thing.
+It's another thing.
+I'm not very good at CSS and if someone wants to design a logo and contribute improvements
+to the CSS, so it looks nice on both desktop and mobile, it's okay.
+It's usable right now but it could look better and it could respond better in mobile environments
+and so on.
+If someone wants to contribute that, that would be awesome.
+The old site had a nice logo, a nice theme and obviously a larger database of points of
+interest.
+Right.
+The main motivator for this is to not let what happened to the first site happen again.
+I would like the data to be crowdsourced just like theirs, but I want the data to be kept
+in the open, which is why I put it on GitHub.
+I could have used GitLab, I could have used anywhere else, but I just happened to use GitHub.
+And yeah, it could move in the future.
+That's part of the beauty of it being all like open and built with Hugo because you could
+build that anywhere and you could publish it anywhere.
+I happen to be using Cloudflare, but it could be published to GitLab pages or it could
+be published anywhere else or to your own server.
+This is just like the minimum possible nerdy day trips website.
+I don't have their original domain, their original domain was nerdydaytrips.com, I grabbed
+nerdydaytrips.org because I thought that went better with the idea of crowdsourcing and
+it's just like a fun little project.
+I've just had an idea, which is because it's Hugo and it's a static site, there'd be
+nothing stopping you building the static site and actually having the static site on your
+phone.
+And it could be usable completely offline, feel free, I want to be doing that.
+I do have it on my laptop and it's very easy to develop for like literally you clone
+the repository, you know, create a branch and you can just run Hugo serve and you'll end
+up with a local copy of the whole thing and it operates exactly as it does remotely.
+The only difference is I'm using Font Awesome for some of the icons and because of the
+free license I've got with Font Awesome, it only renders those for certain pre-selected
+domains.
+I think local host is one of them and nerdydaytrips.org is another, but if you published this as is
+to a host of your own, that bit probably wouldn't work, that's a full warning and I probably
+should put that in the read me, but if anyone wants to contribute to this, I would welcome
+it both in design and functionality and the data itself, hopefully by the time you listen
+to this, there'll be an opportunity to add whatever nerdy places you like to go to the
+database so other people can discover those places.
+Linux Matters is part of the Late Night Linux family.
+If you enjoy the show, please consider supporting us and the rest of the Late Night Linux team
+using the PayPal or Patreon links at linuxmatters.sh slash support.
+For $5 a month from Patreon, you can enjoy an add free feed of our show or for $10 get
+access to all the Late Night Linux shows add free.
+You can get in touch with us via email, show at linuxmatters.sh or chat with other listeners
+in our telegram group.
+All the details are at linuxmatters.sh slash contact.
+I have been pushing my steam back to its limit with a new game.
+Do we need to ask?
+Oh, yes, sorry, I completely forgot the signs there.
+Is it a game with road-like elements, by any chance?
+No, it's not.
+In this case, games with road-like elements don't tend to be that demanding, do they?
+It's like we don't know you anymore, Mark, the last two games that it's just like
+no.
+So I've been playing a game called Avald, which is a first-person RPG set in Aura, which
+is the setting of the Pillars of Eternity games, which I have spoken of with great joy before.
+So Pillars of Eternity is an isometric party RPG in the sort of Baldur's Gate tradition,
+but this is set in the same world, but a very different kind of game.
+And when it was first announced, it was a short trailer showing the first-person view
+and someone walking around with a sword and casting spells, and everyone immediately
+assumed that this was going to be a sort of Bethesda style RPG, like Skyrim or Fallout.
+And there's elements that are similar, but it's not really like that to play at what
+I've found really comes to mind when playing, is actually the most recent Tomb Raider games.
+So Tomb Raider, Shadow of the Tomb Raider and the other one, which I can't remember
+right now.
+So there's a lot more focus on exploration and sort of crafting and quests and stuff,
+and it's not just one big open world where you can pick anything up and back stuff
+with your sword and it goes flying across the room, which confused me at first,
+because you know, I'd climb up a bell tower and hit it with my sword and it didn't go
+dong and I'd go, well that's a little bit bad.
+So is it kind of, when you say it's like the Tomb Raider ones, it's kind of linear
+in that like you've got an open area that you can look around in, but you get taken
+from area to area throughout the game.
+Exactly.
+So you've got quests within that area, but you're free to explore and it's worth exploring
+because there's always something to find in each area, but it's not, you don't have
+puzzles to solve like in Tomb Raider, it's more narrative driven and character driven.
+And the environments look amazing, like they're really like graphically detailed, even
+if they're not sort of logically detailed in the same way that say Skyrim is.
+And there's some points which are obviously very deliberately made for you to find that
+you can then see across like the land and the music ramps up and you think, well that's
+actually quite impressive, like even on the Steam Deck with all the graphics settings
+low, there's still quite an impressive draw distance and you can see a lot of detail
+in all of this.
+So is that what you're alluding to when you say you push the Steam Deck to its limits?
+You had to like dial stuff down because it can't cope with it.
+So is it, is it just that it's possible if you've got a bigger GPU, it could do more?
+Well, this is the thing is the games rated as playable on the Steam Deck.
+So Valve has a rating system where they have I think five criteria, which a game has to
+meet for it to be Steam Deck verified and it's rated as playable, but it's rated as
+playable because you have to manually invoke the on-screen keyboard when you name your character.
+Aside from that, all of the other criteria, including that the default graphics settings
+give it, you know, are playable, is playable with the default graphics settings it gives
+you, that criteria is met and that's not quite what I found when I played it at first.
+Repairing it on the TV in big resolution or handheld.
+A bit of both.
+I've tried it in both just to see where the limits are and it's certainly better in handheld,
+but not perfect and I'm still playing it rendered at 720p, just blown up to a big
+telly.
+Right.
+So it's not like I'm trying to render it in 4K, that would be a tad silly to expect, but
+I found a few specific issues which I actually spent quite a bit of time when I started
+playing fiddling around with to see if I could work out where it was they were coming
+from.
+So the first thing I found was that in dark areas, I kept on looking at walls and seeing
+this weird sort of black stippling effect all over, which wasn't quite lined up with
+the shadows that were being cast, I couldn't work out what was going on.
+So I went through flicking every graphical setting to work out what was going on and I
+found that if I disabled ray tracing, that went away.
+Always turn off ray tracing.
+Always turn off ray tracing, right, noted, because yeah, normally it's not on by default
+and I don't tend to turn it on.
+Right.
+But yes, in this case, it was on by default and it was causing this problem.
+And once I turned this off and then I saw the shadows where they were meant to be, I
+realised that they looked like very jagged polygons, like sawtoothed edges on all of these
+on all the shadows.
+So I went through and found the settings again and found that I could just about get away
+with nudging shadows up to medium.
+It didn't have the much of an impact on the frame rate and they looked a bit better.
+Then a little way into the game, once you get through the prologue, you find yourself
+on a dock like next to some ships and there's ropes along the edge of the dock and then
+there's sea, which is very pretty and very nicely animated.
+But then I found if you look at the interface between the sea and the thing in front of
+the sea, there was this weird, almost like a Jpegar defect all the way along the screen.
+So I wasn't very happy with that.
+I was finding this was breaking my immersion of it.
+So again, I went through and found there's a setting in the graphics, which is just called
+effects.
+So I not I not stopped the effects and this problem went away.
+It wasn't just on or off.
+It wasn't a barrier.
+No, this is a slider.
+This is starts off low and goes up to ultra and whatever.
+So I've moved it from low to medium and this problem went away.
+So quite happy so far.
+The frame rate still decent enough.
+When you say decent, like what is the frame rate and is this game that's like frame rate
+sensitive?
+It plays about 30 frames second fairly solidly, right, which is reasonable for a game of that
+type on a steam deck.
+And you notice when you come into a new area, when you load up, you see the textures
+load everything.
+It's not like everything's like, bam, you know, eyes melt with the glory of it.
+You've got to set your expectations accordingly.
+But once you once everything's loaded and you're playing, it's going at 30 frames a second
+quite, quite nicely.
+You don't really notice a huge amount of slow down too often.
+But there was one remaining problem and that's a weird ghosting effect that I've noticed,
+which was most apparent when I mentioned before, it's a, you know, a first person swords
+and sorcery type game.
+And when you draw your weapon as the blade moves across the screen, you see a sort of ghost
+of it.
+And the best way I can describe this is imagine you're looking at a picture on an e-reader
+and then you change the page to another picture and it leaves a few dots behind of the previous
+picture.
+But you're seeing this in real time on a rendered game or the other thing that it really
+makes you think of is if you ever played like an early graphical adventure like Mist,
+when they wanted to, you know, you pick up an item off the background and they wanted
+to show you fading out, but they didn't really have transparency effects then.
+So things would kind of dissolve.
+Oh, like a stipple effect.
+Exactly.
+You get this same effect, which yeah, it kind of gives me this really weird nostalgia for
+like all the white dolls in early Windows games.
+But within this amazingly beautiful 3D environment, which is quite strange.
+Do you know if this is because you're running it on a steam deck, which is lower power
+or is it Linux or is it the driver's, is there any indication from other people's support
+conversations?
+What could be causing these kind of things?
+Yes, I did find a promising thread, which was discussing this.
+And some people, you know, one person saying, you, I've got it.
+It's definitely not this, this or this.
+It's definitely not a, you know, the drivers, the hardware, it's just, it happens.
+And other people say, well, I don't see this.
+And what they narrowed it down to was a feature of the Unreal 5 engine on which this game
+is built called temporal anti aliasing.
+Yeah.
+And essentially what's going on here is it's inventing additional frames of animation.
+Right.
+So I suspect if I was playing on something which could deliver a higher frame rate, and
+then I set a frame rate limit of what I was actually seeing on my telly.
+So say it could, you know, I could pay it at 30 or 60 or whatever.
+Then I probably wouldn't see this, but because I'm playing it on, you know, a reasonably limited
+device, it's giving me a smooth experience.
+But the payback is it's not actually rendering all of the frames I'm seeing.
+It's making some of them up as it goes along.
+And in some cases, not doing a good job of it has others.
+Unfortunately, there isn't any option to turn this off in the graphics settings and seeing
+if that makes a difference.
+It's kind of baked in.
+Yeah.
+I was just looking it up, actually.
+And I found the Unreal documentation where it tells you how to turn it off in the editor
+if you're the game publisher, but not like, I couldn't see a command line option which
+would be ideal.
+Sad.
+Yeah.
+I wonder if there's an any file in the game data somewhere you can go and twiddle that.
+Yeah.
+So this is an interesting discovery.
+And you know, it's something I've got to, I've just decided that I'm going to live with
+this.
+It's slightly annoying, but really, I'm enjoying the game and it doesn't pull me out
+of it too much that it would upset me.
+What it has led me to wonder though is are we sort of starting to hit the point where
+modern games aren't going to be able to target the Steam Deck as a sort of lowest common denominator
+anymore because I think, you know, Valve's obviously always trying to get people to be
+Steam Deck verified and setting these criteria.
+You don't have to be able to play it with any particular level of graphical fidelity.
+You just have to have a setting that it will pick up by default on the Steam Deck where
+it works.
+But if it's going to have issues like this and if that's going to cause consternation
+with gamers, maybe game developers might get to the point where they say, well, there's
+no point because we can't get it running nicely enough that we don't end up with a load
+of complaints about the game.
+And will we reach the point where Valve can come out with a new revision before that happens?
+I think you might be surprised at how much effort developers are prepared to put into
+getting a game running on smaller devices because the Steam Deck has a massive footprint
+now of like users as a console.
+And the efforts that some of the developers have gone to for sort of big grand 3D games
+have gone to to port it to the Switch are just astonishing.
+And the things that they've had to profile and debug and improve in order to get their
+games on the Switch because there's an audience there.
+I think there's probably enough people now with Steam Deck's that there's enough motivation
+to make it work well.
+I'm looking forward to all these YouTubers who do low-end gaming on like old Pentium
+fours.
+In a few years, they'll be doing low-end gaming, right?
+Steam decks.
+Oh, look at this arcane device that can't do modern gaming, but hey, I can play Doom on
+it.
+Yes.
+So when I play my next game, I'll report back and let you know if I'm still having ghosting
+issues.
+You have been listening to Hacker Public Radio at Hacker Public Radio does work.
+Today's show was contributed by a HBR listening like yourself.
+If you ever thought of recording podcasts, click on our contribute link to find out how
+easy it really is.
+Hosting for HBR has been kindly provided by Anonsthost.com, the Internet Archive and
+R-Sync.net.
+On the Sadois status, today's show is released under Creative Commons, Attribution, 4.0
+International License.

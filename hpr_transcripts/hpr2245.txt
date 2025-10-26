@@ -1,0 +1,248 @@
+Episode: 2245
+Title: HPR2245: Managing tags on HPR episodes - 1
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2245/hpr2245.mp3
+Transcribed: 2025-10-18 23:37:01
+
+---
+
+This is an HBR episode 2,245 entitled Managing Tag Monitoring on HBR Episodes 1.
+It is hosted by Dave Morris and is about 26 minutes long and carries an explicit flag.
+The summer is looking for the best way to store and manage tagging in the HBR database,
+part 1.
+This episode of HBR is brought to you by an honesthost.com.
+At 15% discount on all shared hosting with the offer code HBR15, that's HBR15.
+Better web hosting that's honest and fair at An Honesthost.com.
+Hello everybody, this is Dave Morris. Welcome to Hackabablic Radio.
+I'm starting a series of three shows today and it's on the subject of the tags that we ask you to add to shows when you submit them.
+There was a recent query on the HBR mailing list from Clinton Roy asking if we had a search interface for these tags and the answer had to be no.
+This is partly because we haven't yet completely resolved how we're going to store and manage them.
+I've been thinking about this for some number of months and I wanted to give you the benefit of what I've been doing and to stimulate some conversation about it.
+So to introduce it then, just I should say there's some long notes that go with this and some short notes that you'll see on the website.
+We've been collecting and storing tags for UHP shows for a bit of time now.
+I think a couple of years you and a half maybe I'm not sure the precise time but we've been doing it for enough time to make a difference.
+We planned originally to offer some sort of search interface and we still do.
+And in that time I put together a mechanism for adding tags to existing shows and a number of people have been helping out with doing this, including myself.
+And that's been happening since August 2015.
+It's still a way to go but we are making slow progress.
+At the time of recording this which is the 31st of January 2017 for future listens, we've processed 56%.
+That's 1,249 shows of the 2,217 we have in the system.
+Now in recent times the way in which we could or should use these tags was discussed.
+For example in show 2035 in 2016,
+droops made a suggestion which was the website, which is a lot of work, needs to have related shows listed on each individual shows page.
+This will take a tag system and someone to tag all of the almost uncountable previous episodes.
+So yeah, it's not uncountable but it's a lot and we do have a tag system but I'm not happy with it and I'm preempting the rest of the discussion there.
+The episode 2035 begins a discussion about some of the ways that tags can be stored, managed and accessed efficiently in the database.
+So it's prompted this show in other words and the two that follow.
+So I started putting this particular show together which I envisaged as being one in summer of 2016 but it's grown, the whole thing has grown a lot since then.
+There's a lot so I've split it into three.
+I should warn you that the subject gets quite technical in the later shows.
+I'm discussing database design techniques and all three of the shows contain examples of database queries and scripts.
+And if you're not interested in this subject or not really interested in databases, shall we say, then feel free to skip.
+However, you might find this first episode a bit more palatable than the next two and whatever it would be very helpful if you have any thoughts on the subject that you would contribute to us in some form or other.
+The whole subject of databases and so forth has been, I guess, hanging in the air for some time.
+There has been discussion as to whether we should use a database at all to hold our HPR shows.
+And there's also been discussion about whether we should put together a static site rather than the current dynamic one.
+The static site idea has been motivated by security considerations amongst other things.
+I imagine that such a static site would probably be best generated from a database.
+There, you could argue against that, I suppose, but databases are good at doing the stuff that we currently do.
+So even with a static site, it would be good to have a database behind it.
+But even if we have a database, as we do now, there are quite a lot of opinions about how it should be put together.
+Part of this discussion is motivated by the fact that database administration skills are quite specialized.
+And the concept behind databases can be a little difficult to comprehend when first encountered.
+One view has been that using any of the advanced features of the chosen database system,
+which is mySQL or MariaDB is now, they should be avoided because doing so will be too complicated for future volunteer HPR administrators to maintain.
+The types of capabilities that would be desirable, and that this is my list, I guess, would be that it would be good if we could allow there to be more than one host associated with the show.
+We have had, and we'll continue to have instances where more than one person is on a show and their co-hosts or whatever.
+And we don't have any means of signifying this at the moment.
+We do have entries in the database where we have hosts in quotes who are written down as two people.
+So, you know, person A, person B. And they're a separate host from person A and person B, which doesn't like any sense at all to my mind.
+We'd also like to have shows associated with more than one series, though that would be good, though not as important as the host thing.
+And of course, there's how we would implement a tech system.
+The way that the database, which is a relational database is in this reasonably advanced, and at the moment it's being treated as if it's just a bunch of spreadsheets.
+Maybe that's a little bit harsh, I don't know, but it's certainly its full capabilities are not really being used.
+So, I want to enlarge on this in this show and the later ones.
+So, let's look at tags and their potential uses.
+Why have tags at all?
+Well, the first point would be using them as a way of showing a relationship between shows.
+So, as Drupes suggested, if a particular show has tags associated with it and all of the shows which share any of the same tags should be related, you'd expect them to be related.
+And they should be linked or be linkable from that show in some way.
+So, displaying these sorts of relationship lists of other shows, perhaps, would be helpful in finding other shows worth listening to.
+Because at the moment, it can be hard to find, it is hard to find shows with a particular topic other than by scanning through there.
+They're titles or using Google search on the site, which effectively does that.
+It does actually, it would use the tags, because the tags are displayed in one of the views on the site, but it's not ideal.
+I thought it might be useful to be able to list shows by tags.
+I'm not sure if anybody would agree with this, but I thought perhaps there might be some more.
+I'm a margin having a sort of master show index, so I'm thinking of something like the index of a book with the name of a tag on the left-hand side, say, and a show number link on the other side.
+Otherwise, we could have a table listing tags with the show number and title to the right of the tag.
+We're talking about 2,000 plus, 2,200 plus shows at the moment, so that's not a huge display.
+I'd like to experiment with it personally just to see it would be usable.
+You're definitely going to have multiple shows next to a given tag, at least when the tag system has been populated.
+The third point, of course, is using queries against the tag.
+You might want to do something like looking for the tags into you and either Ogkamp or FSconz, for example.
+I mentioned this because that combination exists, so you might be looking for shows which have been tags as interviews, either Ogkamp or FSconz.
+This is not particularly difficult to implement at the database level, but it would require something quite sophisticated.
+On the front end to make a usable interface on the website, and that implies JavaScript, which is never popular.
+There is, though, possibility of using a URL-based interface, so you could invoke this as a query in your browser.
+Your browser's address line, I guess. I don't know how popular that would be.
+However, I still think that having some means of querying is desirable, and I'm doing this show because that is a thing that has been requested in various forms.
+So let's look at database design. How could you implement a tag system in the HBR database?
+Currently, it holds tags as a comma-separated list, and this is exactly the same way that we request them to be entered into the submission form
+when an episode's being uploaded. We don't currently reformat these in any standard way, so although their comma-separated entities, words or phrases,
+they don't conform to the CSV standard, which I've referenced here as RSC418O.
+The reason why using such a standard is desirable is you might want a tag that's got a comma in it, and I've given an example where
+you might have tags on a show which might be TED and technology, comma, education, and design, which is the full meaning of that TED.
+So the expectation would be that the second full instance with the comma in it was a single tag, so you would need to
+limit it in some way to make sure that the comma wasn't interpreted as a tag separator.
+Now the storage that's currently allocated for the tag list per episode is only 200 characters, and this is quite restrictive,
+and there are some longer shows that would benefit from more tags that might fit in this field.
+And the longest tag list currently in the database, I did a quick scan to see, is 196 characters, so it's almost, we've almost got an overflow already.
+I think that tag list was created by myself, but I think the point stands.
+So the question is then what would be the best way to store tags?
+So I'm going to look at what we currently have today on this episode, and later we'll look at the two other different solutions,
+and I'll comment about each one of them. Just to give a disclaimer, I'm not a trained database designer.
+I worked a database as a fair bit over the past 15 years or so, but I'm largely self-taught,
+and listeners to this episode may well have better ideas for doing what's needed,
+and hopefully will have had proper training and much more experience than I've had.
+So if that's the case, then please add your ideas and suggestions either to the comments or sending
+email to the HBR list, or indeed email me directly if you prefer.
+I'd like there to be a community discussion about this, if possible.
+So let's look at a tags as a comma-separated list then.
+There's a field called tags in the table that holds the episode, which is called EPS,
+and it is table holds all of the episode detail.
+So what's good about doing this?
+But it's simple to store such tags, just place words and phrases in a comma-separated list.
+Let's stick them into the tabs tags field.
+It's easy to maintain. We just add tags to the field or remove them with relative ease.
+I do this to when I add tags to shows which I do if they're missing when sugar gets uploaded to
+the internet archive, and I've actually written a little script that calls the VIRM editor to do it.
+So what are the disadvantages?
+Well, the current field is small, and as I've said can be easily exceeded,
+and there are shows which might need quite a lot of tags, and particularly the one that's got 196
+on it, 1806 characters on it, is one of the new year's shows, and people like to list things
+like software or hardware and so on, which is an argument for tagging.
+I think the tags should be pre-processed or processed at some stage to ensure that they conform to
+the CSB format, preferably before storage, so that business of having a tag with a comma and it
+needs to be dealt with. The format is quite wasteful since the same tags are duplicated throughout
+in the various episodes. So for example, there are 84 instances of Linux in the tags, for example.
+It's all stored there, whereas really you just want one, and you want to be able to point to all the
+episodes that use it, store Linux once and point to the shows. In particular, this format is
+difficult to search efficiently, and I'm going to go into detail about this in a minute, and in the
+database it's necessary to search the tags field of each show with a string search to find stuff,
+and this is expensive to run and scales badly. Now I know this is actually a tiny database.
+I mean, I've got this number of shows. We store the show notes in the database too, but it's still
+very small in database terms. So efficiency arguments can be shot down on the basis that the cost
+is low on a system, which is so small, but I still think it's a bad thing to do, because
+there are more efficient ways of doing it. Let's put it in that way, and the more efficient ways of
+doing it give you benefits, which I'll talk about. Database is usually use some sort of an index
+on tables and fields to help optimize searches, and this is very, very difficult to do when you've
+got a single field holding multiple tags. I don't actually know how you would do this. I'm sure there
+are ways in which it could be done, but it would be, there's a full text search capability, for example,
+in my SQL and MariaDB. I haven't looked into it, but I feel that that would be a bad solution anyway,
+so that's why I've not looked at it much. So let's look at the searching issue then.
+So this EPS table, it's the thing that holds the show number, the release date, the episode title,
+et cetera, et cetera, and the tags in the database. So if we wanted to find all shows with a given tag,
+we could take, for example, the show groups accorded called Building Community, episode 2035,
+which has a single tag, the word community. The same you wanted to find other shows with this tag.
+I've put here a query that could possibly be used to do it. Now, I don't want to give a lesson
+in structured query language or SQL, which is what this is, but essentially what we have here is a
+select command, I guess, which initiates a query. It's just the verb that's used to query a database
+to find information, retrieve information. It contains also the verb from, so you select some stuff
+from, and then the name of a table, between the select and the from are the fields you want out
+of the table, and then following the from and the table name is aware verb, which introduces
+the filtering part of the query. And this is the thing where you would say, show me only those rows
+in the table in the database, which match these criteria. So in this particular case, we've got
+select ID, date, title from EPS, the table I mentioned before, where, and then we have tags
+like quote, percent, community, percent, close quote, semicolon. They need semicolons on the end.
+What this query will do is find all rows in the EPS table with community in the tags field. Now,
+the where verb can be followed by an equal sign and contain an equal sign in its expression,
+but we can't use that here because there won't, it's rare that the tags field will only contain
+the word community. It will, in the case where we're looking at, but it won't elsewhere.
+We're looking for the word community in the list of other words. So the like verb that's being
+used here, or it's an operator, really, uses wild cards. And in SQL, the wild card used with like
+is the percent, percent is sort of whatever. So percent community percent means community
+followed, preceded by and followed by anything, including nothing. Comparisons in my SQL and Maria
+do be are not case sensitive. So we don't care about the case. Now, when we run this, we get back
+95 rows. And the reason we get so many, that's the wrong number, I should say, is because community
+new shows all have the tags community new. And what we're doing here doesn't differentiate between
+community as this tag all of its own and as part of another tag. So I've shown this query again,
+which is the same except that the the string after like is percent comma community comma percent.
+And this works when we get three hits, but it doesn't include show two or three five because
+in that case, there weren't commas in the tags field. There was just one word there. My next example
+shows a whole bunch of ways in which you can say where tags like and then a string or tags like
+other string or blah, blah, blah. And there's four possible ways of doing it. But that produces 95
+results again because it doesn't, although it's complicated, it doesn't exclude the community news case.
+Now Maria DB and my school can handle limited regular expressions. I put limited because
+regular expressions are disappointingly lacking in features. Anyway, that's personal prejudice.
+So instead of where tags like, you can do where tags and then the word regx,
+followed by in single quotes, a regular expression. My regular expression is open parenthesis,
+circumflex, vertical bar comma, closed parenthesis, community, open parenthesis,
+comma, vertical bar, dollar, closed parenthesis. So what that's saying is community
+proceeded by either the start of the line or a comma and followed by either a comma or the end
+of the line. So that's now getting much closer to sort of thing that we would want to do to get
+the tags that are just the word community somewhere or other. When you run this, it returns five
+matches. But there are more, I know there are more, I'll show you in a minute. But that's because
+some contain spaces after the comma or before the comma in some cases. And because we're not
+cleaning them up, it's not getting them all. So finally in this, in these examples here,
+then I show an example where the same expression contains a space and an asterisk, meaning one or
+zero or more spaces, then community, then space asterisk after community. So it's catering for the
+case there might be spaces before and after community. And in that case, we get back nine matches.
+And I've run the queries and put the output into the notes so you can see the sort of thing you
+get back nine matches is correct. I do believe anyway. So you could use the regular expression thing
+to find multiple tags. And I've got an example here where I won't read this one because they're now
+getting quite complex and just just bear with me and believe what I say and you can look to see
+what I was telling the truth or not. In this particular case, I'm looking for the string HPR
+or the string community. And I get 14 matches back. I included the tags in the result of the query,
+so you can see what matched. If we wanted to find HPR and community, because that that query
+before was anything that had HPR in the tags or anything that contained community in the tag,
+some of these contain both, but it it selects all of them. So if we want to use AND,
+then we need two regular expressions. So it's got even more complicated. In this case, we get back
+five hits. There is a find in set function within MariaDB and MySQL. And that's capable of parsing
+comma separated lists. So it is possible to do a more complicated search, at least a more
+practice. Yeah, a little bit less complicated actually. After the where we have the function find
+underscore in underscore set, open parenthesis, then in quotes community, comma tags, that's the
+community is what you're searching for and tags is is the field you're looking in and you get back
+a number from that call. So you're looking for anything greater than zero. This works and
+but only gives us five matches on the community tag because of the space problem I mentioned before.
+So the regular expression thing might be better until the tags are cleaned up. Now, how would you
+do the thing that Drupes suggested, given a show number, extract its tags and use them to perform
+a search for other shows matching each tag? Well, this is quite difficult to do using this this
+thing. I don't really know of a way of doing it just in plain SQL SQL. You need to make one query
+in a script say one query to get the target show, then script would need to take all of the tags
+from that show and in a loop would need to query to return the details of all of the shows with
+those tags and single query to do that is beyond my capabilities. It would be possible to write
+a script to do it or something in PHP. I think the point though, the point I'm trying to make anyway
+is that using a comma separated tag field is not a good way of doing things because it gives you
+a lot more problems than you really need. And I say in my conclusion that doing this way is not
+not desirable. And even if we did continue to use it this way, we'd need to increase the size of
+the tags field. I've actually put in an example of how you would do that in using structured query
+language, not really very relevant, but anyways there. You'd need to make sure that all of the tags
+were properly CSV formatted. I actually wrote a little Pell script to do this, which I call
+clean CSV tags. I've included it with this show in case you're interested. And that does the job.
+I've run it against a copy of the HPR database that I hold. And it's good. It puts quotes around
+everything, takes out all the spirit spaces and stuff. Ideally, I'd like to be processing the
+tags for spelling. In case there were any misspelled tags. And there's an issue with plurals I think.
+And I think that a tag, if you had two tags in two different shows, one of which was, I can't
+think of an example, banana. Banana in one case and bananas in the other case. Then a lot of
+tag matches would regard those as different, not even though once just the plural of the other.
+So it would be better to process this stuff and remove unnecessary, unnecessary plurals.
+And another thing that sometimes happens, so I don't know as many cases, is that people put
+unnecessary postrophies in words and it would be good to spot and remove these. I haven't done
+with that, though I can imagine the little script that I wrote could be modified to do that.
+So we could live with it, but I really don't think we should. So I've included what I called an
+epilogue at the end of this, which is just to say, could you please include tags
+when uploading your shows? Just a few key words that reflect what your show is about or the topics
+you spoke about would be great. There are several sitting in the queue to be uploaded, which don't
+have tags, which means I feel I need to add them because it adds a lot to them, both eventually on
+HPR, but also on the archive.org site. And the other point is if you feel motivated to help with the
+missing tags problem, then it would be most appreciated and I've linked to where you can go to find out
+about what's needed. All right. Okay, we'll call it quits there. I hope that that covered the
+subject and has given you food for thought. And in the next episode, I will be talking about my first
+solution to this problem using database techniques to achieve it. Okay, thanks a lot then. Bye now.
+You've been listening to Hacker Public Radio at Hacker Public Radio.org. We are a community
+podcast network that releases shows every weekday Monday through Friday. Today's show, like all our
+shows, was contributed by an HPR listener like yourself. If you ever thought of recording a
+podcast, then click on our contributing to find out how easy it really is. Hacker Public Radio was
+founded by the Digital Dove Pound and the Infonomicon Computer Club and is part of the Binary
+Revolution at binrev.com. If you have comments on today's show, please email the host directly,
+leave a comment on the website or record a follow-up episode yourself. Unless otherwise stated,
+today's show is released on the creative comments, attribution, share a like, 3.0 license.

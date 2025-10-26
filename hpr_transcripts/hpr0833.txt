@@ -1,0 +1,302 @@
+Episode: 833
+Title: HPR0833: Ian Romanick Interview at X.Org Developer Conference (XDC) 2011
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0833/hpr0833.mp3
+Transcribed: 2025-10-08 03:12:49
+
+---
+
+This is Marcus again. This is my third interview at the XORG Developers Conference with
+Ian Romanick. He works on Mesa. So this is the third interview at XORG. Is this XDS or
+XDC? You know, I think people are starting to just call it ZORG-Con. ZORG-Con. OK, ZORG-Con
+2011. I'm here with Romanick. Ian Romanick. Romanick.
+OK, so. And I guess, so who are you? Tell us a little about yourself. I think X, what
+you work on. So I'm Ian Romanick. I've been working on X-related things since I want to
+say 2002. I originally got into Mesa development back when I was working at IBM and in the Linux
+Technology Center there where we had sort of this back in those very hidey early days, we
+had this sort of nebulous goal of of make Linux better. And so one of the big problems that
+we encountered was graphics and in particular 3D on Linux was a disaster. So I had sort
+of open rain to just jump in and work on stuff wherever things were bad to try to make things
+better. So I spent a lot of time working on new features and trying to fix bugs and existing
+drivers and just get involved and improve the state of things. And so that's what I did
+there for quite a long time before moving over to Intel three years ago and where I've been
+working on the various drivers for the Intel integrated graphics chipsets. Primarily still
+in Mesa and now I'm the, I guess I'm the architect of our 3D driver for those parts. So what is
+Mesa? I was talking about that a little bit before but it's, what is it? So technically speaking
+Mesa is an implementation of an open GL-like programming interface and we have to call it
+that for trademark reasons. You can't call it, you can't just call it open GL or something like that?
+We can't call it open GL because it's never passed the conformance tests and no one's
+paid the licensing fees. So call it Mesa. We'll call it Mesa. All right. So it's, so they
+have a software programmer right against to open GL API anyway and anything that the
+card doesn't hardware accelerate, it falls back to Mesa, is that how that works? Well, so, so basically
+Mesa converts the things that the application calls tracks state and sends commands to the
+driver which then either sends commands to the hardware or if it's trying to do something
+that the hardware can't do, we'll fall back to doing rendering in software but hopefully
+you never have to fall back to rendering in software because that's super, super slow. So
+how much of an average application now is hardware accelerated versus using Mesa versus
+well, so it's all using Mesa, right? I mean it all goes through Mesa and because the
+driver lives inside of Mesa, it's part of it. So how, this part of the XM not familiar
+with that at all. So Mesa is just the overall, so the OpenGL XM the hardware accelerated stuff
+is inside of Mesa, right? Yeah, it's, so there's a lot of device specific code that's inside
+of Mesa. And so when you build, so when you build the the DRI drivers, which DRI is the
+direct rendering infrastructure, that's the interfaces that we use in X to arbitrate access
+to the hardware. When you build one of these DRI drivers, you have, you build the blob of
+device specific code for whatever driver you are and then all of the state and data
+tracking code that's part of what we call core Mesa, which is just the device independent
+parts of it, the stuff that that handles sort of the, you know, taking care of things
+that are just part of the API and that aren't really specific to a piece of hardware.
+How does LibDRM and DRM tie into all that? So LibDRM, so DRM, which is the direct rendering manager
+is the kernel portion of this. So when you, you set up all these commands and need to submit
+them off to the hardware, well, we can't just have anyone banging on the hardware that
+would be all kinds of security holes. So we have to have the kernel do that for us.
+So we submit buffers containing commands to the kernel. Most of the kernel modules for the
+different drivers will then look at those command buffers and make sure that you're not doing
+something, trying to do something hinky and then we'll send the commands off to the hardware
+and then most hardware works where it, after it's completed commands or has done different
+things that will generate interrupts and the kernel module will handle that part of it.
+Okay. Then LibDRM is a set of wrappers on top of the raw kernel interfaces. So both,
+so at least for the Intel driver and I believe most of the other drivers work like this,
+both the 3D driver and the 2D driver link with LibDRM to send so they can send in commands to the kernel.
+And that's especially true in when you have KMS to do to a kernel mode setting.
+Okay. And that's that allows you don't have that flicker when you start our hardware
+goes from text mode to QE. Well, so I mean the big advantage of KMS is that it pulls a bunch of
+code out of the user mode driver so we can do a bunch of different kinds of arbitration of things
+and we can do page flipping and different kinds of memory allocation.
+It's one of those things that has, it's death by a thousand cuts or life by a thousand,
+I'm not sure what. It has a whole bunch of little benefits that all pile up to be extremely useful.
+Okay, so it's not just the text mode. Right, right. That's that's kind of the icing on the cake.
+Okay. So DRM and DRI and all this is all that is within Mesa itself. Mesa is the overall.
+Well, yeah, there's a lot of the DRI stuff is in Mesa. A lot of it also lives in the X server.
+Part of of DRI itself is when you try to run a 3D application, it needs to arbitrate some access to the hardware
+and some permissions and some buffer management that it has to coordinate with the X server.
+And DRI defines that protocol between the client and the X server.
+So that for example, when you want to get the buffer so that you can do 3D rendering to a window,
+some communication happens with the X server. When you want to, if you're done rendering to the off screen buffer
+and you want to flip to make that visible, there's some protocol that happens with the X server to make that buffer swap happen.
+Okay. And a bunch of that protocol changed and got revised and changed around when compositors started becoming more common.
+And we had to revamp it quite a lot and that's what ended up becoming DRI 2.
+The old way that we did it was, let's do a quick hack to get some stuff working so that we can actually have 3D
+and then we lived with that for five or six years and then finally said, this quick hack needs to die.
+We need to do it right. And that's what DRI 2 is.
+And that's, yeah, DRI 2. So when you draw, so the 3D is used for 2D stuff as well, or just 3D.
+Yeah, just for 3D. So if you're trying to accelerate like a normal window on a screen, like a normal application,
+does that do any kind of hardware acceleration?
+Yeah, there's acceleration for render, but all that lives in the 2D driver.
+Oh, okay. So there are various people who have big dreams of being able to make that live on top,
+have a generic set of render acceleration that can live on top of OpenGL.
+But there's some limitations of how 3D hardware works that make that challenge.
+Was it the EGL stuff that looted way several years ago?
+So EGL is kind of an orthogonal issue.
+This was the stuff. It's had a couple names. I think the name of the most recent project trying to do that is,
+I want to say glamour. I believe it's the most recent project to try to do 2D acceleration on top of OpenGL.
+But for the most part, it sounds like the 2D stuff, the regular, the windows and buttons and all that stuff.
+That's not really hardware accelerated?
+No, it is. It just goes through a completely different channel to do it.
+That's what the X-Render extension is.
+So X-Render...
+I thought X-Render was going away, or did I miss any misunderstanding?
+There's a lot I don't understand here.
+Yeah, it's going away just like X is going away.
+People say, oh, it's going to go away in a couple of years and they've been saying that forever.
+Okay, so it's not like Wayland's going to... Well, maybe that's a separate topic.
+That's a future that's not here yet. You've still got all these?
+Yeah, something like that.
+Alright.
+So part of my thing is I'm trying to get people to come into X and Mesa being part of that.
+I mean, how can people get involved in Mesa?
+I mean, is it basically learning curve like a vertical wall, like a clip they got to climb up,
+or is there anything they can do to help?
+So the way that most people end up getting involved,
+and I think actually the way that I got involved, too, is find some particular thing
+in that piece of software.
+And I think this applies to getting involved with most pieces of open-source software.
+Find one particular thing that it either doesn't do, or that it doesn't do right,
+and start asking questions and looking at the code and trying to figure out
+either why it doesn't do it right or what it would take to make it do the thing that you want.
+And just start pulling at that one little thread.
+And one of two things happens.
+You get frustrated and go away, because it turns out that it's a hard problem or a hard project or whatever
+that you don't have the time or inclination or whatever to do.
+Or you start to learn about the project and get involved with it,
+and gradually you pull at that thread long enough, and you completely unravel the whole sweater,
+and then you realize that you have a thousand patches submitted in that project,
+and you're one of the core developers.
+When it feels like six months ago you didn't know anything about it.
+So this is the expected, you start out, you have no idea what's going on,
+you're actually in a dart.
+Oh yeah.
+All right.
+And as far as I know, that's the way pretty much I'll go out on a limb,
+and I'll say that's how every single active developer on this got involved.
+There was either some piece of functionality that they wanted that was missing
+or something that was there, but that didn't work right for some particular scenario,
+and they just started trying to figure out why,
+and asking people questions, and looking at source code, tracing through things,
+and looking at how data or execution flows through the code base for that one particular microfeature
+that they cared about, and eventually they just learned enough to be able to accomplish
+that one small thing, and then, you know, at that point most people are hooked.
+So there's still, could you even do a mace all while then?
+Is there still like little threads that you don't fully understand now these days?
+Oh yeah.
+I mean it's a giant code base.
+I mean there's, so a few weeks ago we removed support for a bunch of deprecated old drivers
+and gutted out, I think, 127,000 lines of code.
+And there's still half a million lines of code left.
+I mean it's a big piece of software.
+So yeah, there's a lot of it.
+A lot of code in there I've never seen and have no clue how it works,
+but you still work the main guys.
+It comes to me, so.
+Yeah.
+I'm still, at this point, I'm, yeah, I'm one of the people that most people go to with questions.
+Like, how does this, this part work?
+And a lot of times I know, sometimes I don't know, but in those cases I will almost always know who to ask.
+Okay.
+Okay.
+So then you'd be good to ask this.
+So is there anything that's happened recently or will happen very shortly in mace that people will start seeing,
+like six months, the next, just those come out or anything.
+I think it's really cool.
+127,000 lines of code is pretty cool.
+Yeah.
+Well, unless you happen to have one of those, you know, eight year old pieces of graphics,
+if you have a G200, you may be sad.
+But if you have a G200 and you're trying to run modern 3D applications on it, you're already sad.
+Well, so like we presented earlier today at the conference where my team and other people in the community
+are working full steam ahead towards OpenGL3.0.
+So that will be exciting on that.
+I think on that spot, I think I saw eight total things we're still missing.
+I know those other things were underneath the cover huge, but yeah.
+So there's eight, I think there's like eight primary feature groups that still remain to be done.
+And a couple of those.
+So there was one of the items that when we went through and figured out what it was going to take to implement it,
+it was like five person months worth of work.
+Wow.
+Eight things seems like a solo list.
+Well, so one of them was like five person months and one of the other things on that list,
+I think we figured was two weeks.
+So there's some variation in the size of it.
+Trying to see the light at the end of the tunnel when 3.0 will be...
+Yeah, I think we're going to...
+You know, I'm always reluctant to say anything about dates because I'm not asking for one.
+Well, because it's software.
+And it's how it goes.
+But yeah, we're getting close.
+I think we're going to have it.
+We're going to have it.
+Very cool.
+So if you're working on 3.0, does that mean like two or two one are done?
+Or are they basically separate questions?
+Yeah, I mean, we've supported 2.1 for quite some time.
+So the way that Mesa numbers its releases the major number,
+roughly corresponds to some GL version.
+So the entire Mesa 7.X has been OpenGL 2.1.
+Oh, OK.
+And 6.X was OpenGL 2.0 and 5 was OpenGL 1.5, etc.
+This is Mesa 8.0?
+So it will be 8.0 when we have 3.0 support.
+Assuming that we keep that numbering scheme,
+and I don't see any particular reason to change.
+OK.
+So I have to ask about OpenGL 4.
+Is it, what's the story with it?
+Not that I'm pushing because I'm happy that you always come here.
+You know, someday.
+It's definitely a goal.
+But there's a lot of work to be done before that.
+How many of you are working on Mesa?
+So right now, my team at Intel is 6.
+6 people who are mostly full-time working on Mesa?
+OK.
+Do you know about like this, AMD, such HDI, happy working on it?
+Yeah.
+So AMD has, I want to say two guys,
+and then they had an intern over the summer,
+who had been previously involved with the Mesa project,
+and they decided to give him money over the summer
+to keep doing the same work.
+And then who else did you ask about?
+Oh, just anyone in general.
+Because I know Intel.
+You said that.
+I just wonder if it's the overall...
+So primarily corporate wise,
+there's Intel and AMD.
+Red Hat has a couple of people who do a bunch of stuff for Mesa,
+and then VMware has a number of people.
+I don't know how many people they have.
+All of their people were previously the tungsten graphics people.
+Oh, exactly.
+They got a lot of work.
+Yeah.
+Zach, and then Brian Paul,
+who started the Mesa project,
+a project at college.
+Keith, well, I'm totally blanking on names.
+Jacob Bornecrands.
+I'm blanking on names.
+They have a bunch of people who do various amounts of open source
+and closed source work related to Mesa and a bunch of their projects.
+Okay.
+Sorry.
+It's about 10 to 15 and I'm not part of it.
+Yeah, I think maybe closer to 8 or 10 total.
+Cool.
+So 3 out of 10 will happen.
+Yeah, although it seems like it's mostly us and the AMD guys
+and one of the guys at Red Hat,
+who are really pushing to get to it.
+We're certainly the most enthusiastic about it,
+but we'll have a big popcorn party minutes done.
+All right.
+Very cool.
+All right.
+So I got the same list I was asking the other guys about.
+I guess I asked if people can get involved.
+I mean, something you're always looking for people to try to help.
+I know it's not the easiest thing to get in.
+Yeah, yeah.
+I mean, you know, over the last year we've had three or four new people
+come to the project who've kind of gone about the process that I described before.
+They had one particular thing they were interested in and they just started pulling at that thread
+and now they're trapped.
+Very cool.
+All right.
+Hopefully we can get some hopefully this podcast to the listeners.
+Well, I get some more people that come help you guys out.
+That'd be cool.
+Anything else you want to say?
+Mention chat?
+I don't know how people actually listen to my podcast,
+but at least two, you know, I have a couple of friends all this.
+Yeah, just if you're interested, you know,
+come read the mailing list, hang out on the IRC channel.
+Is that Mace?
+What?
+Freeno.net.
+Freeno.net.
+I believe I want to say it's actually hashed DRI.
+DevL, I think?
+DRI.
+DevL?
+Yeah.
+I believe that's correct.
+Very cool.
+All right.
+Thank you for your time, Ian.
+The conference is now over, so I'm guessing it's your time or whatever.
+Yes, it is.
+All right.
+Well, cool.
+Thanks again.
+You have been listening to Hacker Public Radio,
+where Hacker Public Radio does our.
+We are a community podcast network that releases shows every weekday on DevL.
+Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever consider recording a podcast, then visit our website to find out how easy it really is.
+Hacker Public Radio was founded by the digital dark pound and the infonomicom computer club.
+HPR is funded by the binary revolution at BingRef.com.
+All BingRef projects are crowd-responsive by linear pages.
+From shared hosting to custom private clouds, go to lunarpages.com for all your hosting needs.
+Unless otherwise stasis, today's show is released under a creative commons,
+attribution, share alike, details or license.

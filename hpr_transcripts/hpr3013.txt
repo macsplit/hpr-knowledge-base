@@ -1,0 +1,1115 @@
+Episode: 3013
+Title: HPR3013: Bash Tips - 21
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3013/hpr3013.mp3
+Transcribed: 2025-10-24 15:11:28
+
+---
+
+This is Hacker Public Radio episode 2013 for Wednesday, 19 February 2020.
+Today's show is entitled Bash Tips 21, Bashnado,
+and as part of the series, Bash scripting, it is hosted by Dave Morris
+and is about 42 minutes long
+and carries an explicit flag. The summer is
+Environment Variables.
+This episode of HPR is brought to you by Ananasthost.com.
+Get 15% discount on all shared hosting with the offer code
+HPR15. That's HPR15.
+Better web hosting that's Anastom Fair at Ananasthost.com.
+Music
+Hello everybody. Welcome to Hacker Public Radio.
+My name is Dave Morris and today I am going to do a show
+in the, I guess it's a sub-series of Bash scripting
+and the show is called Bash Tips 21.
+So the subject of this particular episode is to talk about the environment.
+That's the environment in relation, not disabrisingly,
+to shell the shell and bash in particular.
+You've probably seen reference to this in various contexts
+when you're looking at things relating to shells and shell scripts
+and scripts in other programming languages and compile programs and stuff.
+It's often referred to not sure that all references are well explained.
+So in Unix and Unix like operating systems like Linux of course,
+there is an environment which is maintained by the shell
+and in this case obviously we're looking at Bash.
+So when a script or a program or a sub-process is invoked,
+it's given an array of strings called the environment.
+This is a list of name and value pairs in the form of name equals value.
+So the environment is used to convey various bits of information
+to the executing script or program or whatever.
+For example, two standard variables you'll see,
+which are provided by the shell, home HOME in capitals,
+which is set to your or the current user's home directory,
+which it's been taken from the et cetera password file,
+and PWD, all in capitals, which is set to the current working directory.
+The user of the shell can set and change
+and remove and view environment variables for their own purposes as well.
+We're going to look at in this episode and as I've already said,
+Bash itself creates and in some cases manages environment variables.
+It's slightly confusing that Bash maintains its own set of variables
+which are, they're actually referred to in the manual as Bash variables.
+I think I didn't check this.
+But they contain information about the version of Bash and things like that.
+Sometimes they're changing, Bash is changing them,
+but these are not environment variables.
+They're not variables in the normal sense and you can't change them mostly.
+One important point about all of this environment stuff is
+the environment contains global data,
+which is passed from a parent process to child processes,
+and it's a way of communicating information down that particular tree.
+But it's not possible for a subprocess to pass the information back to the parent.
+Subprocess can change these these environment variables as it wishes,
+as it's necessary, but that's private to it or any subprocesses
+which are created during the running of that particular thing.
+So you can look at the environment in a number of ways.
+There are quite a few actually.
+I'm going to go through them all not in great depth,
+but with references to where you can find more.
+But I thought it was useful maybe to do the whole lot
+because I certainly found this a little bit confusing.
+There's so many ways of getting to the same stuff.
+So you can view stuff from the command line with the command printN,
+P-R-I-N-T-E-N-V,
+depending on which release of Linux or Unix you're running.
+Sometimes it's a built-in command, sometimes it's a standalone command.
+In my particular case on Debian,
+it's slash user slash bin slash printN.
+I'm going to just mention these things now and then drill into them a bit later.
+There's a command N-V-E-N-V,
+which without any arguments does the same thing as printN without arguments.
+This is actually a more complex tool which you can use to run an environment,
+a programming and modified environment.
+We're going to look at this later.
+Then scripting languages like Ork, Python, and Perl,
+and so forth can view and manipulate the environment.
+And of course, compile languages such as C can do this too.
+And there are some other commands that will show the environment,
+which will also look at.
+So how would you change the environment?
+Change variables in the environment.
+These variables are not significantly different from the shell parameters
+we've looked at throughout the BashTip series.
+The only difference is that they have a marker associated with them,
+which says they are to be exported.
+So that means that they're copied to commands and sub-processes and so on.
+Sub-shells.
+You'll often see variables in the environment referred to as the environment variables.
+I think I've probably done this already in this particular episode.
+The BashTip manual makes a distinction between ordinary parameters,
+it calls them all variables, as you might also call them,
+and environment variables.
+But many other sources are a lot less precise about which is which.
+I suppose it doesn't really matter except that you want to know which ones
+are being exported and which are not.
+And you can flip variables between the two states too.
+So I've got a list here of how you can create or change variables,
+environment variables.
+You can be set up a login time, and as a system administrator,
+you can set these globally for everybody who ever logs into this system.
+We can set it up, set them up locally for a particular user yourself, probably.
+And this is done through a bunch of configuration files.
+Now I plan to talk about Bash's configuration files and some of the others
+that are relevant in a later show.
+So I'm not going to dig more deeply into that today.
+When you invoke a command or a script,
+you can proceed it with name equals value expressions.
+And these will temporarily place the variables into environment for the command.
+There's also an export command, which allows you to create a variable
+and set it and market as being exported.
+The declare command, which we've seen before,
+will take the iPhone X option, which does this when you create something that way.
+When you've got an environment variable set up,
+it can be changed at any time in the sub-shell with a command like myver
+equals 42, just as for a normal variable.
+The shell just changes the value,
+not paying any attention to whether it's exported or not.
+The export command can also be used to turn off the export marker on a variable.
+And as usual, you can delete these variables with the un-set command
+as we've seen in an earlier episode.
+So we're going to drill down into these as we go.
+So let's start with the temporary addition of a variable to a command's environment.
+So for example, I've got an awk script, which has actually been placed in the temp directory,
+slash TMP, and I've called it awktest.org.
+And it consists of a single line beginning capital's open curly bracket,
+print hello world in quotes, close curly bracket.
+It's possible to invoke awk to execute this file
+by setting up the environment variable awk path.
+And this is a list of directories where awk looks to find script files.
+And you'd obviously give it the full path to the file as well,
+but this is a slightly more convenient way.
+So here's the example.
+If you typed on your command line awk path,
+where awk path is in capital's awk,
+p-a-t-h equals, and then slash TMP,
+let's declaring it as containing the one directory temp.
+Then follow that by a space and awk,
+calling orkspace-f-space-a-w-k-t-e-s-t,
+the name of the file.
+And then you find that it will run,
+and you will get a hello world message back.
+Now we didn't put the dot awk suffix on that file,
+and that was taking advantage of the fact that when awk searches for the file,
+using awk path, it will accept files with that name directly,
+all ones with a dot awk suffix.
+It's really important to separate the setting of this environment variable awk path
+from the awk command by a space, not a semicolon.
+If you put a semicolon in there,
+it will split this line into two commands,
+which will not be related to one another.
+They will not communicate with one another.
+So it wouldn't have achieved what you wanted,
+and awk would not have found the file.
+The awk path variable is not changed in the parent process.
+That is the process that runs awk.
+You could look at it afterwards and see
+the effect.
+I haven't done that in the notes here.
+It's just a temporary thing,
+and it's passed to the child process,
+and it lasts just as long as the command runs.
+So that is quite useful,
+think to be able to do to pass an environment variable
+down to a sub-shell sub-command.
+There will no look at the print end and end commands.
+Print end without arguments.
+It's just lists all the environment variables.
+If you follow it with the list of variable names,
+it will print only those.
+But the difference is, with no arguments,
+it prints out fairly obviously it would do this,
+name equals value pairs.
+So you know what the variables are called and what the values are.
+But if you specify specific variable names
+in the print end command,
+you would just get the values printed.
+Now the end command,
+ENV command, is,
+I thought it was worth spending a little bit of time on
+what you can do with it.
+We probably, I think we've seen this before.
+I can't remember if I've talked about this,
+or just shown it without explaining it.
+But it's,
+either without a print list of environment variables
+or it'll run the command in an altered environment.
+So it's another way of doing this,
+and probably a more convenient way of doing it.
+I've got a little table here of some of the options
+that you can provide.
+The first one is a simple hyphen,
+or hyphen i,
+or double hyphen ignore environment.
+So what that does is,
+when N runs,
+it can produce its own environment.
+It creates an empty one.
+The hyphen zero,
+or hyphen hyphen null,
+will end each output line with zero,
+by rather than a new line.
+Hyphen U,
+or hyphen hyphen unset equals name,
+will remove a variable
+from the environment that you're creating.
+So you might want to pass an environment
+through to a program
+and remove a particular thing
+that's available in the parent environment.
+Hyphen capital C,
+or hyphen hyphen C-H-D-I-R,
+equals directory,
+will change the working directory
+to a particular directory.
+And the last one is quite important,
+or the next one.
+Hyphen capital S,
+or hyphen hyphen split,
+hyphen string,
+equals S.
+It will process and split S.
+into separate arguments.
+So you would use that
+to provide arguments
+to end,
+as shown in the template of the command.
+And it's particularly useful
+in passing multiple arguments
+when you're using this
+in an executable script,
+which we'll look at in a moment.
+There's a hyphen-locase V,
+or hyphen hyphen debug option,
+which shows verbose information.
+As it does its stuff.
+So end is followed by options,
+if you wish,
+and it's then followed
+by name equals value things,
+as many as you wish,
+or none at all.
+And then it's followed
+by command,
+which takes its own arguments.
+Now it's often used
+in shell script
+to run the correct interpreter
+on the hash bang,
+or she bang line,
+the first line of the file,
+which begins with hash,
+exclamation mark.
+And you don't need to know
+the path of the thing.
+It is necessary to know
+the path of N,
+but this is usually
+user bin N.
+So for example,
+to run a Python 3 script,
+you might begin with hash,
+exclamation mark, slash user,
+slash bin slash N,
+space Python 3.
+So we don't know
+where Python 3 is,
+because we let N,
+we'll get out for us.
+So that's really convenient.
+Now the hyphen capital S option,
+is important if the interpreter
+needs its own options.
+So I've got an example here,
+there's a file called,
+I haven't actually provided these for you,
+but they're just listed here.
+Orc test1,
+which consists of this hash bang line,
+with Orc space hyphen F in it.
+And the contents of the script
+are another beginning
+with a print hello world in it.
+If you invoke Orc test1,
+you get error messages.
+And that's because N doesn't
+know how to interpret
+Orc space hyphen F
+all by itself.
+And it says,
+use hyphen capital S
+to pass options in Shebang Line.
+So it knows that it doesn't know
+when it tells you how to
+write it by things.
+So if we make another
+script Orc test2,
+and in the hash bang line,
+we follow N
+with space hyphen capital S,
+then we can put space
+Orc space hyphen F
+and the print hello world body
+of the thing.
+When you run that,
+it works.
+So if you are in the business
+of invoking Orc scripts
+as executable files
+with a hash bang to start them.
+And you like to use N
+because it's a more reliable way
+of finding the application
+that you're the interpreter,
+as they call it,
+which you're trying to run.
+Then this is an important thing for you.
+Now the end command can also be run
+from the command line
+in a similar way to
+where we saw earlier on,
+where you just put
+name equals value.
+You proceed that
+with N,
+ENV space,
+and we've got here,
+MSG,
+in capitals equals,
+in quotes,
+hello,
+printN,
+MSG.
+And what it returns is,
+hello.
+So what that's done is
+the end has created
+the environment variable MSG
+and is then,
+and then we run printN
+to look at the contents
+of that MSG value,
+which we see is,
+hello.
+And if you then follow that
+with the command printN,
+MSG,
+nothing is returned
+because the variable has been
+deleted once
+that particular command has
+written.
+There's no longer available
+because the environment
+for that particular command has gone away.
+Now I've given another example
+where you can do the same thing,
+setting the options,
+the end options of
+hyphen V,
+which is debug.
+And I,
+which is to clear the environment,
+and then do the rest of the stuff.
+And you then get
+debug info,
+which says,
+cleaning environment,
+and then set N,
+MSG equals hello,
+executing printN,
+arg0 equals printN,
+message equals hello.
+So it's,
+it's a,
+it's just,
+got a lot more chatty
+about what it was doing.
+But it's quite interesting,
+I find it interesting to see
+what it's actually doing.
+That's enough about N,
+I think,
+but there's a lot more information
+in the
+GNU call you towards manual,
+if you want to get more into it.
+So looking at the declare command,
+we saw this earlier in the series,
+and you can use it to create variables
+and arrays,
+but if you use the
+hyphen X option,
+then the variables created are also
+marked for exporting the environment,
+and can be used by
+subsequent commands,
+subcommands,
+and so on.
+You can't export
+arrays this way.
+Bash doesn't have this capability.
+Apparently it was
+planned to add this at some point
+in the past,
+but it has not been implemented.
+I don't know whether it ever will be,
+but you can't
+copy arrays to the
+environment of a subcommand.
+Remember, declare
+hyphen P can be used to show
+the actual declare command
+that you would need to use
+to create variable,
+and you'll see them being shown
+as declare with a hyphen X.
+If you want to limit
+your looking at variables,
+the environment variables,
+then you can use
+declare space hyphen P,
+space hyphen X,
+and you'll only report back
+the exported ones.
+So, personally, I quite like doing that,
+because it gives you a little bit more information
+about variables if you're
+searching for what they are
+and how they've been set up and so on.
+So, next we've got the export command.
+This is the one you most often see
+in example scripts and so forth,
+and it will mark
+variables to be passed
+to child processes
+in the usual way,
+and the template
+is export
+with followed by
+hyphen F or hyphen N,
+or both of the hyphen P,
+and then name equals value.
+So, in short,
+you can use it
+to export a variable that's already been set.
+You can use it to set
+a new variable
+and export it,
+and you can also use it to display stuff.
+The hyphen N option
+says to
+mark the variables
+that are arguments
+to the command, not to be exported.
+In other words, it switches off
+the marker that says export this.
+There is a hyphen F option
+which lets you export
+shell functions,
+but I'm not going to go into this.
+I might leave that until,
+I haven't actually covered shell functions in any depth.
+Then again, this is
+queued up for later.
+So, I'll talk about this more then.
+The hyphen P
+option displays output in a form
+that you can reuse.
+And if you just write
+export space hyphen P,
+then you get back
+a whole bunch of
+the environment variables
+which is similar to
+if you used declare space
+hyphen X
+space hyphen P.
+So, if we look at the example
+where we had
+orc path pointing to temp
+and we then
+run an orc script
+that was sitting in the temp directory.
+You could have done this
+typing two lines.
+First one being export
+orc path equals temp
+and then calling orc
+hyphen F space orc test
+and it would have worked.
+But orc path would have been
+set in the current environment
+with a two temp.
+So, unlike the other one
+where it just
+happens for
+command invocation is then
+reset. Just as an aside,
+you might see cases
+in scripts where
+variables being set.
+So, my example is TZ
+that's the timezone equals
+in quotes Europe
+slash London,
+semi colon export TZ.
+And that's just
+the old way of doing it
+because I think earlier versions
+of export didn't allow you
+to both initialize
+and export variable at the same time.
+Nowadays, you'll see stuff
+where it's just done
+with TZ equals
+after the word export.
+Now, there's a thing about
+the set command which
+I have included here in the notes.
+We've looked at the set command
+in many contexts already
+and there's lots of options
+to it. This time,
+we're going to
+we actually need to look at it in a lot more detail
+the set command
+to fully understand it.
+But I'm not going to do that this time.
+Set space
+hyphen k does
+things in relation to
+environment variables.
+Now, I've written this all out
+and it gets quite involved
+and I'm feeling myself a little
+bit reluctant to go into
+depth with this in the audio
+to be honest with you.
+Because the times you'd want it
+as far as I can make out,
+we'd very few
+the effect of it.
+And it seems extraordinarily
+obscure to me.
+I was interested in finding it
+and also of understanding it
+and I've written down what I
+discovered in the notes here
+but I'm not going to talk about them.
+So it's basically
+about how you
+pass environment variables
+when you invoke a script
+and I've demonstrated how
+you can proceed
+the script invocation
+with setting up
+an environment variable.
+But you also embed it
+amongst the arguments of the script
+but this only works if you use
+set hyphen k before you do so.
+You think that sounds interesting
+then go and have a look at the notes
+in more detail
+and there are links to
+how you can use this.
+I'm not sure it ever says
+what I'm going to.
+I'm not quite clear myself
+so how would you use?
+Why would you use
+environment variables?
+You've probably seen
+reference to these things
+when reading man pages.
+You already had some
+minimal demonstration of how
+you can change the behaviour
+of Ork with Ork path.
+And of course there's a lot
+of similarities
+in your Linux system.
+It's common
+for complex
+information about
+the running of
+script or program
+to be conveyed through
+configuration files.
+But it's not uncommon
+to see environment variables
+being used as a way
+to communicate this stuff.
+So for example the
+GNU Privacy Guard
+it uses a thing
+an environment variable
+GNU PG Home
+in capitals.
+And this specifies
+the different directory
+to be used instead
+of the default which is
+in the home directory.genuPG
+or case.
+It's also things like
+in Postgres
+the command line tool
+this is PSQL
+which is something
+that allows you to interact
+with the Postgres database
+from the command line.
+There's a whole load
+of environment variables
+that can be used as
+to provide defaults
+for running this.
+So PG database is one.
+You don't have to tell
+PSQL which database
+you want to open.
+PG host,
+which user to login as.
+So it's quite common
+to see this sort of stuff.
+So in general,
+environment variables
+will do two main things.
+Pass information about
+the login environment such as
+the shell, the desktop, the user.
+For example, shell,
+variable shell in capitals
+contains the current shell
+such as slash bin slash bash.
+Desktop session
+such as in my case,
+xfce user
+defines the current user name.
+And these are all created
+during login
+and can be controlled
+by configuration files
+or are just
+defaulted by
+the shell itself bash.
+And you could also use
+environment variables
+to parse information to scripts,
+to commands,
+line, so temporarily
+or permanently.
+And we've seen very
+bit about how you do that.
+I'm going to talk, as I said,
+I think already
+more about configuration files
+in relation to bash
+in an upcoming show.
+It can be argued that
+any complex software system
+is better controlled
+through configuration files
+rather than through
+demo or JSON formats
+being used to
+communicate stuff to
+programs and scripts. I certainly
+do this myself.
+And it allows a lot
+of settings to be controlled
+in one place, doesn't fill up
+the environment with lots of variables.
+Because there's no such concept
+as arrays within the variable.
+You can't just say he's an array
+with all the settings,
+which would have been nice.
+I don't have a configuration file
+containing this stuff.
+So now I'm going to dig
+into some examples.
+And because the examples
+are, I've shown
+the actual scripts
+that I'm running. And then shown
+the output from the scripts.
+I'm not going to
+go into the vast amount of detail
+in the audio, because you can
+check the sag yourself in the notes.
+So my first example,
+which is called
+bash21ex2.sh.
+What this is doing is
+it's running bash
+through using nth,
+to start with. Then
+it is setting variables
+within the script.
+And then it's running
+the different forms of
+say variables one variable
+is showing
+examples of how
+you would get information
+from the environment.
+So it's setting a thing
+a variable called BT version
+to 21. So BT version
+is just my
+idea of having a bash
+tips version. So this is
+a show 21. So we BT version
+equals 21 export
+and BT version.
+And then we use nth
+to pull back
+some variables
+and print nth and export
+and declare.
+Just to demonstrate the different ways
+in which you can do it. The variables
+I'm looking at are
+the editor variable, which
+is a standard thing for
+defining which editor
+you want to default to.
+Shell, which is
+the shell that's currently running this script.
+And BT version
+of the thing I just declared.
+In the case of nth
+you can't easily pick
+out the individual
+variables because nth
+just dumps a whole lot.
+In the case of print n you can specify
+the variables you want to see.
+But you can't do that with export
+and you can't do it with declare.
+So I've used grep in each case
+to pull up specific things.
+And you can see
+at the end
+the running of this thing
+and the sort of way in which
+things are shown.
+As I said before, export
+prints out the contents of stuff.
+But it looks just like
+you'd use declare
+to do it. How useful that is.
+It's a very special but
+just to give you some idea of how
+these commands work.
+So the next example is showing
+how you can write an
+orc script to look at the
+environment. So in this case it's
+not using n to invoke orc.
+Afterwork with a
+hyphen f because
+it wants to read the
+commands, the actual
+script from the file.
+And it's a begin
+rule and in it is simply
+a loop which goes through
+an array called
+environ.
+And environ is indexed
+by the names
+of the variables.
+So for each one we print out
+the word environ
+square brackets and then the name
+that we get back.
+And then the value.
+So that's all we do.
+I've ran this
+with an account which I've
+reserved specifically for
+doing HPR
+episodes, HPR demo.
+I've called it.
+And it has a pretty
+minimal set of
+environment variables set up
+the list is fairly short.
+And there's a little note
+here which talks about how
+I did this.
+The fact that it's done through
+an SSH connection.
+So that will have affected
+the contents of the listing
+which you see here in the notes.
+But anyway just to give the point
+that these things are available
+in scripting languages
+and in programs too.
+The next one example
+for is another quite
+simple thing where you
+invoke the script.
+It's the bash script.
+And it will report back
+the contents of
+particular variable
+environment variable.
+Actually just
+variable of its own.
+Any variable it will report back.
+Now I look at it.
+So I'm running it.
+It's a quick check to see
+if there are arguments
+if not
+then it will exit
+with an error message.
+But if there are arguments
+then it will loop
+through them and report
+what they are
+using declare to do it.
+And there's a for loop
+for arg semicolon space
+do which is simply
+a way of walking
+with the arguments to a script.
+So if I run it
+with the single
+argument shell in
+Gabitals, then I get back
+a declare, declare space
+hyphen x,
+shell equals
+and then encodes slash bin slash bash.
+And then the next example
+shows the script being run
+with some
+temporary environment variable.
+So declared two of them.
+Which is set to the value north.
+Weather
+set the value wet.
+And we then
+run the script with
+the two variables
+two names, compass
+and weather. We get back
+the contents of the two.
+They both come back
+with a hyphen x in front of them
+because
+we have
+doing this temporary environment variable
+in the business
+have put them in the
+environment for that script.
+Now I'm just talking here
+about using export
+in bash configuration files.
+That's the next example.
+And I've included
+bash 21
+underscore ex5.sh
+which simply
+shows some of the
+the environment variables
+that I'm currently using
+bash configuration.
+Just three of them in fact.
+But just to demonstrate
+this, I'm going to go in a lot more detail
+about this in a
+upcoming show.
+So I'll not really comment on
+maybe I should actually
+yet. So the first one is
+setting the variable path.
+Path is a standard
+thing that's set
+by bash I think.
+And is modified by
+what I'm doing here
+is setting
+using export
+to set path
+in capital
+to equal
+then the current contents of path
+which is dollar open curly brackets path
+close curly bracket
+and then a colon
+and then dollar home slash bin.
+So what path actually is
+is list of directories
+where
+things to execute. So if you ask
+if you run
+ls or something it will
+is ls built in
+the commands that you're not built in
+like print end we know that's not built in
+bash will go and find it
+by searching your path.
+If you mess your path up
+then you will find that things
+don't work because bash can't find them.
+What I've done here is to add
+to the end of this
+my bin directory, my own home directory
+and that's where I put tools
+that I use
+written myself and use often
+and they just run as
+if they're building commands.
+So you always see the warning
+in this case do not
+add dot to the end of this
+and don't put colon dot
+on the end of your path.
+What that would do would be to run
+scripts by looking for them
+in your current directory
+but that is a vector
+for all manner of attacks
+running things out here
+your current directory is never
+a good idea
+to automate through path.
+Then the other two variables
+are editor and visual
+which are things where you
+set the preferred
+editor. Editor
+in capital is a lightweight
+editor you want to use for
+quick and dirty edits
+and it defaults to nano
+but since I hate nano
+I don't use them
+and visual is for more
+so if it's to get the editor
+where you would
+again use them but you might
+want to use all manner of things
+G-Edit or Emax
+or whatever takes fancy
+Now my final example
+is probably another one
+I'm going to skip
+in terms of the audio
+and I've even said in the notes
+to read things
+let me just give you a little bit of the background
+and then leave it there
+Back in 2013 I wrote a script
+a script
+which I wanted to
+help me to submit
+shows to HPR
+because every time I
+organized a new show
+I would do something
+daft, get something wrong
+in the setup
+so I had been accused
+but
+I write scripts
+to protect myself from myself
+and I quite enjoy writing scripts as well
+So that's what I did
+and the intention was
+perhaps this might be used to others
+so I wanted it to be written
+entirely in bash
+So I decided I wanted a way
+of setting up a configuration
+some configuration info
+for a particular
+episode
+I decided I would
+do this using
+environment variables
+created through an export command
+So I've included
+a file called bash21
+underscore EX6
+underscore 1.cfg
+which lists
+the various settings
+I'm still sort of semi-using this
+by the way
+but it never reached the point
+where it was
+is a horrible clunky thing
+anyway it
+sets up things like
+the name of the project
+the project is
+the name of the directory that holds it
+which is derived from the title
+and the tags are in there
+whether it's explicit or not
+if there's a series
+associated with it
+the email associated
+with it which I've obscured here
+the actual title bash tips
+in 21
+and so on and so forth
+In there though there's an array
+underscore cfg
+underscore files
+is a list of files
+which can
+comprise the bits
+of this particular show
+which at some point
+I would have uploaded
+to HPR
+when this was originally
+designed we used ftp
+got uploaded through ftp
+that lots of underscores in the names
+but those get replaced by the
+slot number when
+the thing is finished
+so sourcing
+this configuration file
+would cause all the exports
+to be invoked
+and all of these
+variables to appear in the environment
+and so on and so forth
+except that
+the array wouldn't work that way
+so it wouldn't be possible to
+call a sub command
+and expect it to be able to see the array
+however
+every time the sub commands run
+they source this file
+so even though
+the array
+doesn't get put in the environment
+it gets put in the local list of variables
+so it sort of worked
+well it's really clunky
+and weird
+that seemed like a great idea in that time
+so that's my preamble really
+what I am doing in the example
+is taking this file
+and converting it
+in a little script
+to make a different format thing
+which uses declare
+which is probably a better way
+of doing it
+but it was just a novelty
+just to demonstrate some of the
+weird and wonderful things you could do
+if you were so minded
+oh yeah and the declares
+they would have just written
+stuff into the
+current list of
+variables
+I think I will call it quits at that point
+because this is
+quite a long show as it is
+so time to go
+okay
+I hope you find that useful
+and I will try and do the next one
+in this series a little bit quicker than the last one
+I took a rest and the rest was so nice
+so let's run on a bit more
+you know
+you've been listening to heckaPublicRadio
+at heckaPublicRadio.org
+we are a community podcast network
+that releases shows every weekday
+Monday through Friday
+today's show, like all our shows
+was contributed by an HBR listener
+like yourself
+if you ever thought of recording a podcast
+then click on our contributing
+how easy it really is
+heckaPublicRadio was founded
+by the digital dog pound
+and the infonomican computer club
+and it's part of the binary revolution
+at binrev.com
+if you have comments on today's show
+please email the host directly
+leave a comment on the website
+or record a follow-up episode yourself
+unless otherwise stated
+today's show is released on the
+Creative Commons
+symbolizes

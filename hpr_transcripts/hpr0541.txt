@@ -1,0 +1,837 @@
+Episode: 541
+Title: HPR0541: Interview with Moxie Marlinspike
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0541/hpr0541.mp3
+Transcribed: 2025-10-07 22:48:20
+
+---
+
+So
+The interview you're about to hear was originally recorded for the Trackseq podcast.
+You can find out more about the Trackseq podcast at www.tragseq.com.
+Well guys, I'm blessed to announce today's Trackseq guest is the man himself, Mr. Moxie
+Marlon Spike.
+Hi Moxie.
+Welcome to the show.
+Could you introduce yourself to the audience please, buddy?
+Yeah, here.
+My name is Markie Marlon Spike.
+I'm a fellow at the Institute for Disrupted Studies and I'm happy to be here.
+As I say, it's always a pleasure to speak to you, Moxie.
+I spoke to you over at Hacker Public Radio before and yeah, it's nice of you to come
+on.
+I suppose I'm going to do the usual sort of question that you ask on a security podcast,
+a security people, but how did you get into the whole hacking scene?
+Well, to the 90s Hacker scene, you know, I guess, you know, at least in the United States
+during the 90s, there was this, you know, a kind of thing that was happening where, you
+know, hackers weren't, you know, there's no money in security, right?
+And so there's a lot more community in terms of hacker culture and people working together
+and sharing information because wasn't really worth much and it was just sort of fun and
+interesting for everybody involved.
+And so, yeah, I guess I became really interested in stuff through that and, you know, working
+with those folks.
+Yeah, I mean, for people that do know about, you've released some pretty dumb exacting software
+over at Thought Crime Dogs, such as SSL Strip for starters, I don't suppose I could get
+you to maybe give us a short description of what that tool is and where, you know, where
+you would deploy it and how it sort of works.
+Right.
+So SSL Strip is like, basically trying to attack the bridge between HTTP and HTTPS, the
+idea is that, you know, SSL on the web is kind of strange because it is, you know, way
+dependent on this insecure protocol for delivery, right?
+Like, connections don't often start directly as SSL connections, they're upgraded from HTTP
+connections.
+And that upgrade happens when you, you know, click on a link that says check out or
+should not be required or log in.
+And with the user interfaces of modern web browsers is really designed to provide negative
+feedback.
+It's designed to warn you when things are going amiss with your SSL connection with the
+certificates that you're seeing.
+And SSL Strip is trying to exploit that by preventing that SSL connection from ever occurring
+and avoiding the negative feedback.
+So you don't get some of the same positive feedback, but the idea is that it's really the
+negative feedback that people are looking for.
+So basically, it's the attack set bridge by downgrading the connection and preventing
+it from ever becoming SSL.
+And it's, you know, it's a simple trick, but it's actually pretty deadly in practice.
+And, I mean, I'm going to be like, no, it's, I'm going to be like, I'm almost
+about, I mean, I've used the tool myself and, you know, I, it's, it's, it's pretty awesome.
+I mean, you hear a lot of people saying that it's about, you know, user awareness, user
+awareness, but I, I doubt very much that most average users, even most security people
+would really notice that much that, that the sites having the SSL stripped out of that.
+What were you about to say anyway, Moxie, before I sort of rudely interrupted you?
+No, no, no, no, I mean, you're right, it is, it is pretty effective that, you know, like
+I've got experiments where I run it at security conferences, right, before talk, and, you
+know, even so-called security professionals who are supposed to be, you know, very aware
+of these things.
+And the threats and know that they're on a hostile network, you know, they're at the
+security conference, you know, even that I have extremely high success rates, intercepting
+credentials.
+Yep.
+Yeah, it's, it's pretty deadly.
+You're quite, you know, being, in, in fairness, you're quite well-known for your talks
+on SSL, TLS, like the basic constraints that are on the null prefix attack.
+I know that they're, they're very different, but could I get you to explain to listeners
+at home, firstly, what exactly the basic constraints vulnerability was, and then maybe if I
+get you to, to later on, maybe talk to us a little bit about the null prefix, it's
+not, because I absolutely love that attack, by the way, I thought that was fantastic.
+Yeah, okay.
+So, the basic constraint stuff was, you know, an old vulnerability where, so certificates
+are, you know, often come in pairs and sometimes we can come in chains where you have, like,
+a chain trust.
+A, you know, root certificate, because the authority will sign an intermediate certificate, which
+will then sign your entity certificate for your website, like the current edward.
+And, you know, what I discovered is that the most successful limitations weren't verifying
+the chain of trust correctly.
+So, there's a field called basic constraints on a certificate, but it's supposed to tell
+you what a certificate is good for.
+You know, not all certificates should be able to do all things.
+And, the basic constraints field should limit a certificate to being able to, you know,
+sign other certificates or not.
+And, what I found was that, first of all, most certificates already didn't issue certificates
+with that field set.
+It was just missing.
+And that even if it was there, most of the silent limitations would ignore it.
+So, if you got any certificate for any legitimate domain, if you want to talk crime
+edward and you get a certificate for a thought crime edward, that certificate that you got
+was essentially a CA certificate.
+Because you could then use that to sign any other certificate that you just invented
+and pass to a web browser or other silent limitation, and it would accept it as valid.
+And, you know, so I started talking about that because, or I've been talking about that,
+or just bringing it up briefly because that was the vulnerability that originally motivated me
+to write SSL SNF, which I've been updating for, you know, more recent attacks.
+Yeah, I was going to say it just leads so nicely on to the SSL SNF tool.
+I talked about it recently at the Aberdeen University in Dundee.
+And there was, you know, so basically with your valid certificate, you're basically,
+am I right in thinking on the fly, you're able to sign basically certificates
+for different domains, and SNF traffic quite effectively then.
+Yeah, sure. I mean, it's like when you're exploiting the basic constraints vulnerability,
+if you had any valid certificate for any domain, you know, some domain that you legitimately own,
+then on the fly, you could intercept connections for any other domain, generate a certificate for that.
+That's a main assignment with your certificate, pass it back to the client, and they would accept it as valid.
+And one question that I'd love to ask you about this as well.
+I mean, was this, was this primarily, you know, IE, or was this across the board
+or the basic constraints was happening?
+It was pretty across the board the most, I'm not even sure if I remember now.
+I mean, at the time, you know, this is like the early 2000s or whatever at the time,
+the Microsoft Crypto API was the really big game in town.
+And so just like these recent vulnerabilities, it affected the entire Microsoft Crypto API,
+which means that any software that runs on Windows usually uses the Crypto API as a self-pack.
+So, you know, just as recently, the no prefix attacks affected the Microsoft Crypto API,
+so that in turn, it made, you know, not just the Internet Explorer, but also Chrome, Safari,
+and all the other stuff that runs on Windows, whatever.
+And then that just moves swiftly onto the no prefix.
+Can I maybe get you to, I know you've probably bought the back teeth of talking about the no prefix attack,
+but I mean, for those at home who haven't kind of, haven't come across it before,
+could I get you to kind of do as a kind of quick introduction to the basic concept?
+Right. So the basic concept is basically that the strings that are embedded in certificates
+are encoded using AFN1 as the protocol format.
+And so when you're parsing a product certificate, the strings inside of it are essentially cascade strings.
+Which means that it's like a tag length value system, where you have like a 1 by tag that says,
+this is a string that describes some property, then you have a length that says,
+you know, the string is going to be five-character long, and then you have the actual string value 1 by per character.
+And the major consequence of this is that it's different than how C strings are represented.
+C strings, you don't know how long it is, you just get a pointer to the first character,
+and you have to keep iterating through memory until you encounter a null character.
+And then you know you're really in a string.
+But when you look at Pascal strings, which is how certificates encode string values,
+a null character has no special meaning. It's just another character in your character string.
+And so the idea was that what you could do was generate a certificate for a domain like www.patreon.com,
+nullcharacter.botground.org.
+And when I submit this to a certificate authority, they will find it because I own the domain.
+It's a hotground.org.
+But then when I pass it to a web browser, they will pull the string out and evaluate it as a C string,
+using a compare against what it's trying to connect to.
+And the null character in the string will terminate the compare and it will validate successfully.
+So essentially what you can do is get certificate sign for any domain that you'd like.
+And then you know you could take the concept even further and generate wildcard certificates,
+you know like www.star.nullcharacter.botground.org.
+Get that signed in for some of the self-inflentations, notably all the Mozilla products,
+that would match any domain.
+So you could just get one certificate sign that would match everything.
+And so that's a basic idea.
+Yeah, I'm sure anyone that's interested in that listening at home,
+if you go to ThoughtCrime.org, you'll be able to find Mox's white papers on it.
+They're very interesting, I must admit.
+I've done a couple of talks at our local Linux user group and done some stuff for podcasting.
+It's a really interesting attack, I have to be honest with you.
+I also love how you defeated OCSP, but a different story for a different day, I think.
+I mean, I suppose, I mean I got this question sent to me from a friend of mine,
+the minute that they heard that you were coming on the shore.
+It's really a two-folder question.
+I have to ask you, really, what were your thoughts on the TLS renegotiations vulnerability?
+And what are they now?
+Because obviously, as times evolved around that vulnerability,
+how it can be attacked seems to have changed slightly.
+Yeah, it's an interesting vulnerability.
+I personally have not found it to be extremely useful and active.
+It's very similar to cross-night request forgery.
+You get a little bit more, maybe, out of it.
+But websites in general should already be defined to resist cross-night request forgery.
+You know, a lot that you could do with the renegotiations stuff you could just do with inserting an image tag into someone's HTTP stream.
+So, there have been a few cases where I thought, you know, it could be interesting to try and do something with us here.
+But in general, it's a really, really specific attack where you need a very specific set of circumstances
+and a sort of capital line to make it really useful in practice.
+Yeah, I've not had to enjoy with it yet. I have to be honest with you.
+I mean, I've read that some people have had some joy using it with SSL strip to basically downgrade
+an established SSL connection down to it and do it then.
+I'm right in thinking that the SSL strip can't obviously can't strip an already established SSL connection.
+But I was reading the potential for the renegotiations vulnerability to basically downgrade the connection
+so that you can start using SSL strip.
+Have you had any joy make in that work?
+I haven't tried.
+The problem with that is that it's not a generalizable attack.
+You need to know ahead of time what your target is going to be looking at and figure out some URL or request
+to that site from an SSL session that will downgrade you back to HTTP and then plug that into SSL strip.
+And so, again, it's this really very targeted thing where you have to know a lot of the variables ahead of time.
+And I think in general, my preference tends to be with the network attack tools that I just want to run it and get everything on a network.
+I last often find myself in situations where I sort of know everything ahead of time about what's going to happen and can set up all of the circumstances and variables to exploit that.
+So, I think there are some education like that with the renegotiations stuff where you can do some cool things with the downgrade stuff.
+You can do some cool things in a few other places, but it's just really pretty specific.
+Yeah, it does, for me, it does seem that it's not our usual one-fights fits all, but it does seem that there might be potential to leverage it if you know it's very specific.
+Maybe it's good for internal penetration testing.
+I'm quite sure if you know which internal site you want to attack, then I suppose it's good for that.
+Anyone that's visiting your site knows that you'd like to see some pretty awesome projects.
+And the last time I spoke to you, we had a chat about some of them.
+But I noticed that you've got a couple of new projects that I was really tempted to talk to you about.
+One of them being Google Share. Can I get you for the folks at home to kind of sum up what it is and what it can be used for?
+Okay, so Google Sharing is like a targeted, anonymizing service.
+And you know, the idea is that increasingly now there's this consensus that what Google is doing is getting a little bit dangerous, that they have a lot of information on a lot of people and the privacy and publications of using Google are a little bit questionable.
+So what we've done with Google Sharing is set up an anonymizing proxy.
+And we've also written a Firefox add-on.
+And the Firefox add-on runs in your browser and watches your outgoing request.
+And whenever it's either a request for a Google service that does not require a login, so things like Google Search, Google Images, Google Products, Google Maps,
+but not things like Gmail or Google Checkout, then it will redirect that request via FSL through the Google Sharing proxy.
+And what the proxy does is maintain a pool of basically identities that are shared amongst all of the users of the proxy.
+So the pool is basically a set of cookies that are issued fresh from Google and user agent strings with another HTTP header.
+And those identities are passed between the requests that get proxied through the Google Sharing proxy.
+So the net result is that all of the traffic looking, all the traffic coming from the Google Sharing proxy appears to Google as if it's just a large corporate net.
+You have one IP address with a number of legitimate looking clients behind it.
+But each one of those clients can't really be pegged to any individual user since all of the requests are shared amongst the clients.
+And so basically you get some anonymity and are still capable of using Google Services without having to visit any special website or anything.
+It's just totally transparent.
+And it's different than just full-on, anonymizing systems because it's targeted just for Google's strict requests and other Google services.
+So it's very fast. It doesn't affect your normal web browsing usage pattern.
+Like if you download a large file or something, it's not going through Google Sharing, you're using your direct internet connection.
+But just to these, Google that you'd like to be anonymized are.
+Okay, so that's the basic system.
+I mean...
+I suppose there's a really stupid question to ask, but I'm going to ask it anyway.
+Do you think Google share a net?
+Do you think they're pretty freaked about it or...?
+I don't know. I don't know what they think.
+You know, right now there's about 30,000 users and you know, continuing to grow, but that's less than a drop in a bucket from their perspective.
+I think the potential that it has is as we continue development on Google Sharing, it's looking like it's living more towards a distributed model that could eventually become something a peer-to-peer model.
+And when that happens, then it's interesting because there would be no way for Google to know whether data is collecting from any given IP address is authentic or not.
+And so that's interesting, right? Because at that point you can sort of imagine that you're in a significant way destroying their ability to collect information on people, even if they're not even Google Sharing, which I think is a kind of interesting concept.
+Yeah, I mean, obviously, at least foundations as well, I'm matching for other search engines that may come up in the future collecting huge amounts of data.
+Obviously, there's not many search engines in the same leak as Google, but I suppose there's a lot of lessons to be learned here and it sounds a pretty awesome project.
+Completely life-filled of what we've been talking about here. I noticed the other day as well. I noticed a wee while ago, but I had to put it in here.
+I'd really like to talk to you about your WPA Cracker site as well.
+Yeah, I mean, it looks awesome. Obviously, the same question again for the folks at home. Could you sum up what WPA Cracker is?
+Right. It's a site where you can upload a network capture from a WPA network. So you collect your handshake using any of the aircraft tools or anything like that.
+And then you can upload it to the site and we will perform a dictionary attack on the handshake, but we use a large cluster of CPUs to do the attack.
+So whereas we have a few different dictionary options and the smallest dictionary option that we have would take five days to run on a very fast desktop machine, but we can run it in 20 minutes.
+So, you know, the idea is basically you can get the dictionary attacked on very quickly by using our service.
+And we're starting to expand into other stuff as well, and we'll like it to become just sort of a general cloud tracking service where we can support, you know, all different types of formats, you can upload whatever you'd like, and you know, very quickly get cracking results, either brute force or dictionary.
+Yeah, I mean, it's an awesome project. I have to be honest with you, and it seems fairly priced, you know, I mean, you know, a fair price for the service, it seems.
+Yeah, it seems a really interesting project. Could I just jump in here? No.
+It's usually the other way round, Aaron interrupts me, but this time really it's sorry to interrupt your flow here Aaron, but really question really for Moxie, you know, looking at WPA cracker with a reporter's hat on as it were, it looks like, you know, Moxie's a real black hat here.
+You know, you can upload anything to him, and he'll just crack it for you. I notice the fact mentions this is how you can recover your passwords. I'm guessing that's carefully phrased, but do not think you're making yourself a really high target here.
+I mean, I understand, you know, otherwise, I'm really asking yourself here.
+Yeah, no, I'm actually not so sure that it's that clear, right? The people I know that use this kind of thing are actually network auditors and penetration testers.
+There's like an interesting contradiction, right, where when you're doing WPA cracking, you need a network connection to be able to upload your handshake to our server.
+So situations where someone's just like trying to get on their neighbor's wireless because they don't have internet access, so they're somewhere and there's a WPA network that they don't have internet access and they would like to get on.
+You can't really use a service because in those situations you would need internet connection to begin with in order to, you know, upload the stuff.
+So it seems to be more often used by people who are, you know, actually doing penetration testing, they have a network connection of their own and they'd like to evaluate the security of whatever network they're auditing.
+You know, that said, anyone can use it for any purpose, but that's sort of the contradiction at all. Yeah, pretty cool.
+Yeah, yeah, okay, just thought I'd ask you. Go on, carry on Aaron.
+Well, before you carry on Aaron, I mean, from a penetration testing point of view, I mean, I know personally when I do penetration testing stuff, quite a lot of the time it's in the contracts that we're not allowed to give this kind of information out to external companies.
+So I mean, although I mean, I really like the idea of being able to have a distributed cracking network that can do the work that would take us weeks to do in minutes, but it does truly come down to contractual sometimes where it simply says that this information has to be kept within house and you can't send it out to external parties.
+And I know that's come up before, but I think HTML was actually looking at doing a similar thing with MetaSport, doing kind of cracking in the background.
+I know that never came to fruition. Is that ever become an issue for you? Have you ever heard of people saying they'd love to use your service, but they can't because of course.
+Yeah, yeah, totally. Yeah, that's definitely come up.
+And there's some stuff that we're working on at MetaSport. For instance, as we support other formats, it's harder to do with WPA and actually probably impossible, but with other formats, you can do some interesting stuff where you can blind the content.
+So, for instance, we're about to add PDF support where you can crack encrypted PDF through WPA cracker.
+And what we've done is written a tool that allows you to extract basically the metadata needed to do the cracking without leaking any of the contents.
+And then you can send us just the metadata, and we can perform the job that way without ever having access to whatever content it is that you're worried about leaking.
+And so, basically, we can try and do some things like that as well as a few other tricks to perhaps help with that problem.
+Sort of back on the shoulders of our question, Moxie. Would it be fair to say that maybe the release of WPA,
+to say that maybe the relationship that you're having with people with WPA cracker is actually rather than third party testers actually system admins all of the organization wanting to test their own WPA key rather than
+rather than third party penetration testers saying to their clients, can we obviously because of contract problems and so on and so forth.
+It's better at the moment than to say that maybe you're working pretty much with the actual physical owners of the technology.
+Yeah, I don't know. At the end of the day, I know very little about the clients in general.
+All I know are the people I know that use it. And there have also been cases that I know of where penetration testers have been able to talk to whoever they're doing auditing for and say, listen, you know, this is a service that you should allow us to use.
+It's going to save everyone money.
+The truth is that if you audit their wireless network and we crack their password, they should change their password or deploy something else.
+That's right, so it's not that much information that we're really leaking. So a lot of time is leaking.
+Jumping back to kind of earlier talk, earlier questions recently, I'm assuming to hear a lot of people telling me that, you know, SSL isn't long left for this world.
+What do you think the answer is? Do you think that we build a replacement or do we kind of try and purchase a cell for modern requirements?
+I mean, I'd really like to get your thoughts on this state of SSL and what needs to be done.
+Yeah, okay. Well, so it's interesting. I think there are a few lessons that can be learned from the stuff that's happened recently with SSL.
+I mean, first of all, if you look at SSL as a protocol, it is terrible. You know, it is, you know, second to curb a kind of the perfect roadmap of mistakes that people have made in designing secure protocols.
+So you can look at the evolution of SSL and realize that, you know, all of the things that we know is about how to design secure protocol are, you know, sort of mapped out through the mistakes that are embedded within the protocol.
+So the protocol, yeah, it doesn't look great. You know, that said, people have managed to sort of, you know, tack things on and do implementation-based workarounds and all the stuff to compensate for a lot of mistakes.
+A lot of the attacks that we see recently offer implementation errors. And, you know, they're sometimes interesting in that they're, you know, implementation bugs that every implementation makes, which, you know, is kind of a unique situation.
+But, you know, I think if you look at sort of the history, like if you look at just the history of the attack on SSL that I published, there is not an SSL implementation that has ever existed in the history of SSL implementations that has been secure.
+But if you look at, you know, starting from like the attack that I published, you know, back through time, you know, all the attacks sort of overlap to cover every SSL implementation.
+And I don't think that we should assume that it is any different now that, you know, at this point, there's an SSL implementation that is somehow secure.
+But I don't, you know, to me, that says less about SSL than it does just software and, you know, the inability to write secure software.
+But I think, you know, just, you know, one thing that we need to come to terms with and that, you know, people haven't coming to terms with for some time now is that secure software is just kind of impossible.
+That it is not really reasonable to think that we're going to be able to get all the bugs or that we're ever going to be able to make something, you know, as complex as a SSL stack completely secure.
+So do you think we're in a situation where we're kind of using SSL as a crotch, basically saying our application is insecure by design, but as we've got SSL, we're fine.
+Oh, yeah, I mean, but this is something you see all the time, right? I mean, you need to, you know, you know, one of the first questions that any auditor should ask is, you know, what happens when you're compromised?
+Not if you're compromised, right? But, you know, to think that any one piece of technology is going to provide sort of absolute security for your entire system is kind of dangerous, right?
+Because, you know, security software in itself is always vulnerable. You know, there are vulnerabilities that exist in intelligent detection systems.
+So, you know, just like anything, you want layer defenses, you want to try and isolate data and areas of your network.
+And so when you see stuff like, you know, for instance, the Mozilla Auto Update Protocol, which was depending on SSL for security against all possible attacks.
+These are the dangerous situations to be in because, you know, I think we've seen and we'll continue to see that it is unreasonable to think that that one piece is ever going to be absolutely secure.
+So, you know, if you're using SSL, but not signing your updates, that's probably a problem.
+So, as long as people are using defense in depth, using SSL along with, you know, hashing with passwords, using salts, challenging responses on logons, and doing things like using Macs to prevent people from changing data when it's in transit.
+Then they should be as secure as they can be if they're just using SSL. What you're trying to say is that they're already onto a loser.
+Yeah, I mean, that's, yeah, you're back with the deal is that, you know, no one, this piece is ever going to really work.
+But, you know, maybe if you combine them all together and you'll get something that overlaps in a way that, you know, gives you, you know, the security you need, even that it's a difficult game.
+Mark, see, the last of my questions, I know that the lots have got a couple more for you, but, you know, actually the fluffy question.
+But, you know, what's your advice to people that are wanting to get into the hacking scene, you know, people wanting to get involved now?
+You know, what would your advice be to a fresh face wanting to get involved?
+I would say, start with the basics. You know, read TTPIP Illustrated. You know, volume is one, two, and three. Read, you know, apply cryptography. Read, you know, the design and implementation of computer hardware.
+Like, you know, if you really, ultimately security is really just about, you know, understanding how all the pieces fit together and then finding the holes in the glue.
+And so, you know, starting with the basic is the best way to begin.
+Brian, Tom, do you have questions, Tom, are you there, man?
+Yeah, I'm there yet.
+Well, it's, you had some questions for Mark sitting here.
+Yeah, yeah, I've got a couple actually. The first one, I didn't actually put this on the correspondence before, but it's just come on now.
+Obviously, we've been talking about SSL and, like, there's no prefix type of phone stuff, but how did you actually get into, like, working on that, like, what, what was it that drew you to actually doing that work in the first place?
+Well, I guess, you know, I've just been interested in secure protocols and SSL for a long time.
+And, you know, I think it's, you know, attacking something like SSL is often interesting just because it's so foundation in a lot of ways that, you know, if you find one bug, you really probably hit a lot of pieces of software.
+Because there's only a few stacks and, you know, some of the different pieces of software then linked to the best stacks.
+So it's an interesting place to look for stuff. And, you know, I'm just interested in secure protocols in general.
+So, you know, finding those little holes in the glue is, I don't know, just kind of fun for me.
+And, when you did find the vulnerability in what you found, recently I found a hole in the WordPress.
+And, I've got some media attention. Some was good and some was bad.
+I mean, what I'm trying to ask is, did you get any bad media attention from breaking this and, like, how did you go about dealing, how did you react with that?
+No, I wouldn't say that I got any real, like, bad media attention. You know, it seems like, you know, reporters, particularly in this sort of trade press these days are, you know, hit to the idea that security researchers are bad.
+You know, certainly in, like, the comments of some articles that I've all written there were people that were like, this guy should be locked up in jail, you know, whatever.
+And, you know, then the sort of, you know, the negative feedback that I got was from people like PayPal, right, who responded, you know, not openly, but sort of more surreptitiously.
+And, you know, that's a whole saga of its own.
+I think, I think, Chris, are you there, me? I heard someone drop off.
+He's back to the limbo. Robert, do you have any questions for Marxie?
+Well, yeah, actually, and this is a bit of a rotten one to drop on you, Marxie.
+But some of these SSL issues, if you like, would you see IPv6 perhaps mitigating some of those?
+My apologies if you don't, if you're all Ipsek, I should say IPv6, mitigating those in any way.
+Or is it, is it, is it one of your fields?
+IPv6?
+No, Ipsek, well obviously that is linked with IPv6, but Ipsek itself, the lower level encryption.
+Right, right, yeah. I mean, yeah, like IPv6 is all right, it's definitely the lessons were learned in the design of IPv6.
+It seems to have proved very difficult to deploy.
+It's something that has difficulty with getting the certificates between sides, but yes, yeah, carry on.
+Yeah, and I mean, even if you look at, you know, for instance, like it seems to me that like VPN software was, you know, where IPv6 really ended up being sort of deployed.
+And strangely, if you look at, you know, where that stuff is going, it's all moving towards SSL VPN.
+Everyone is abandoning IPv6 for their VPN solution and deploying SSL VPN instead, which, you know, is interesting and confusing and all that stuff.
+But it seems to like come down to just use a deployment and, you know, the way that the implementations work on software.
+Yeah. Sorry, my apologies. It's the time delay I reckon I think it's hard to know when someone's sort of stopped.
+Right, right.
+Yeah, no, go ahead. What were you saying?
+Sorry, I was going to say it's another case of ease of use, trumping possibly better security in a fact.
+Yeah, but it's also, it's a little bit more than that. I mean, there's one thing that's like ease of use.
+And there's another thing of just like, it's a usable at all, you know, there's news.
+You know, some people can VPN into their, like, corporate networks because, you know, the VPN client, like, segfaults, the Linux kernel and stuff like that.
+You know, there's some really bad implementations out there that it's not just not even just a matter of deploying them.
+But it's just like they don't even work at all. And so, you know, that's problematic.
+Yeah, yeah.
+I had one other question really, which was, I was looking at this, this is not related to the SSL thing.
+Well, it sort of touches it gently, I suppose. I was looking at your knock knock tool, the Paul knocking tool.
+I thought that was an interesting approach that instead of going down the, let's build a knock knock server and slap it on all the ports and have a yet another tool.
+Which could be subject to vulnerabilities that, in fact, you've tried to make it as small and simple as possible.
+And perhaps you could describe, I know Aaron's asking to describe all of your tools.
+But I think this one's quite an easy description, really, for people, you know, perhaps you could describe that.
+I'm sure they've heard of port knocking tools.
+Right.
+How yours differs in somebody.
+Right, right. Yeah, I mean, if you look at, you know, the basic, port knocking concepts, you know, make for us.
+Since you want to expose this little code to strangers as possible.
+And, you know, there's a lot of time, there's no reason that anyone should be able to connect to, you know, your SSH Damien.
+There's no reason that anyone should be able to connect to your IMAP Damien.
+You know, this is software that I guarantee you right now has remote vulnerabilities in it.
+So you want to, you know, partition that off as best you can.
+And, you know, the initial port knocking concepts made a lot of sense.
+And people looked at it and thought, well, I think it's really just security, through obscurity, you know, how many different port combinations are there and all this stuff.
+And to the problems that emerged really suggested the use of something like cryptography to do this sort of authentication.
+And people just lost their minds.
+I mean, people went crazy with this.
+I mean, they started inventing their port knocking stuff into the kernel and like writing kernel modules.
+People started writing whole services that exchanged UDP packets and, you know, did RC4 and all this cryptography and stuff.
+Like some things, it's like a, you know, five-way handshake to open a port.
+And, you know, to me, it, you know, as soon as I guess there were some problems that needed to be addressed with the original port knocking concepts.
+But the idea behind all of this is that you want to reduce complexity.
+You know, that you want to simplify and reduce the code path that you're exposing to people.
+And start using like, you know, LibDcap to inspect every packet on the network or, you know, write whole other network services or invent stuff into the kernel.
+That's going to be opposite of the direction you want to be headed with this.
+And it's a knock knock of an attempt to kind of remedy that by having like a super simple, very easy to audit port knocking implementation.
+It doesn't use LibDcap.
+It doesn't run in the kernel. It doesn't use any crazy libraries.
+And it has a, you know, contemporary NTPA-figure protocol where a single packet is sent to open a port.
+And so I, yeah, I'm pretty happy with it.
+And I think it's pretty easy to deploy and to use.
+Yeah, I mean, looking at the, sorry.
+I mean, looking at, I've looked at, look at other, you know, SSH knocking and port knocking stuff before it.
+And like you, I suppose, looked at it in despair and thought, you know, I'm only wanting to secure this.
+You know, I don't really want an entire course in, you know, in all these, these wonderful services that you set up.
+So, yeah, looking at it, it's nice and simple.
+Create a certificate for the, for the serve of client, parent and distribute them, yeah.
+So maybe, maybe it's the turn of phrase of yours, Bob.
+It's, you know, users are after two AA batteries and we've given them nuclear power.
+Well, this one, so this one's a one-granny solution or what I would call a one-granny.
+Or I would call this a one, this I admin solution.
+You know, it's a, you haven't got too much to get your head around.
+And if you've got 700 things to do that day, this is one that you could, you can go right.
+See that, that, that create, create these certificates distributed.
+I'm done. I can move on to the next job.
+And feel reasonably confident about it.
+For the same reasons that Moxie is pointing out there that it's simple.
+You can look at the Python code, you know, it's not massively complicated.
+And, you know, I think it's the way to go.
+And as, again, if you are talking about LibPcap for these other things,
+if there's a compromise in LibPcap and it's looking at every single packet that's going by,
+then, you know, let loose the dogs of war on your network.
+Really, whereas with this, then perhaps you might allow someone to attempt to get into your SSH at worst
+or at worst, or your ports are blocked.
+So, you know, yeah, I think that's interesting too.
+Chris, was that your last question for Moxie, by the way, Raman?
+Well, yeah, it's a question come from making my own point.
+So, I'll just be quiet now.
+Wouldn't be the first time that it's happened.
+I'm just going to say that makes a change.
+Now now, I'll put Kettle Black.
+Chris, we had this, we had this beautiful link from Moxie talking about eBay,
+not eBay PayPal, and you dropped off the call.
+I know you had some questions from Moxie, so, you know, jumping behind you.
+Yeah, I did really, I wanted to cover the PayPal stuff,
+because I've not been a big fan of PayPal for the last year or so.
+I don't know how much you talked about it when I dropped off,
+but I know that they PayPal circled around and weren't particularly happy about
+some of the stuff you were teaching in your course,
+which quite, quite luckily links in with my second question,
+which is about your upcoming courses.
+I mean, is the stuff with PayPal still ongoing?
+Or is that now resolved?
+Oh, yeah. They still have my money.
+I mean, it's ridiculous.
+It's a very interesting situation where you think that
+one of the most important qualities of a payment processor
+or something that is essentially masquerading of the bank is trust.
+If at any time, this third party steals like their customer's money
+or just takes it or whatever you want to call it,
+you'd think that that would sort of be the end of them.
+That that word would get around and keep everyone from stepping up using them.
+But they do this all the time.
+They just confiscate people's money and people continue to use them
+because they've really sort of dominated this market in a way
+where it's almost impossible not to.
+So yeah, it's a really bad situation.
+There's basically nothing I can do.
+I have no record to get my money back.
+They've just decided that they didn't like the things that I was doing.
+Now they've retaliated by taking my money.
+To jump in here, it's probably fair to ask you if you could maybe
+recap for people that don't know the story about what exactly happened
+with PayPal and no prefect certificates
+and just kind of your views on that.
+Like you say, some people at home might not have actually heard the story.
+I'd be surprised if they haven't.
+Better cover the fences here.
+Right.
+I guess what the basic outline was.
+First of all, in my talk, I often use PayPal as an example of a site
+that you might want to intercept communication for.
+I do that because it's an obvious example.
+It's an inflammatory.
+People realize that if their PayPal credentials are compromised,
+that could be dangerous.
+They don't like that.
+Someone from PayPal sent me an email about that after I gave the talk.
+Things are kind of unsteady.
+Then someone published a no prefect certificate for PayPal
+to the full disclosure, I think, mailing list.
+They creeped out and responded by suspending my account,
+which is kind of funny.
+Then the site has kind of continued with Google Sharing
+where they suspended my PayPal account,
+and I was able to get the EFF to negotiate with them,
+and PayPal said, okay, it's fine.
+We'll sort of back off, but the deal is that you can't use PayPal
+for anything associated with thoughtcrime.org,
+because they were taking a stand against thoughtcrime.
+So I haven't been, but then I was using PayPal to accept donations
+for Google Sharing.
+A lot of people very generously donated to Google Sharing,
+and then PayPal suspended that account,
+and has held onto that money for months now,
+and isn't working with me to resolve to help me get my money back eventually.
+So it's kind of a complicated ongoing saga here.
+Do you think that maybe it's a problem of,
+I hate to say this, but it's almost like a lack of regulation of PayPal.
+There isn't an ombudsman, there isn't an overseer of the giant,
+that is PayPal, and there isn't.
+Yeah, they're a bank in all but name, that's what they are.
+But there's no FUTur, too.
+But there isn't, because they like their management.
+They like to occupy that furry space in between,
+because if they were a bank with their capital B,
+if you like, they would be regulated.
+But they do handle, in effect, they're handling money.
+It's just made to not look like money.
+They're a broker, really, aren't they?
+They sit between a seller and a buyer, so they're a broker,
+but they are an effective agent.
+Yeah, but, you know, they're not,
+but classified as a bank, and so they're not regulated in those ways.
+Yeah.
+As he's pointed out, he's not unique, sorry,
+as I said, the time zone, the delay difference here,
+I think, is causing a problem.
+But yeah.
+Yeah.
+Sorry, go ahead.
+Yeah, I mean, there is, I think, exactly.
+There's plenty of people who have problems with PayPal,
+people's money, people's money, people's money,
+if they can suspend it all the time.
+Well, there's a fact, with hackers for charity,
+as well, didn't they?
+There was some kind of mistake in their paperwork,
+so they suspended all their accounts,
+and they've generally long stranded in the middle of nowhere
+with no access to any of his money.
+But obviously, the bad press surrounding a charity
+being cut off by PayPal,
+forced them to actually get things back up and running again.
+So I mean, although there's people there who support you
+and who are going to complain
+and who are going to say, well, I'm going to use PayPal,
+because of what's happened here,
+there's not quite so much outcry as there is
+with hackers for charity, for example.
+Sure.
+And the other problem is that there's nothing else.
+There's no, they don't have any serious competitors
+in that exact market of what they're doing.
+And so it's kind of hard to just say,
+why am I going to stop using PayPal?
+Because they are sort of like filling this market
+that people care about.
+Well, they're not really on the bad situation.
+They're not really at the end of the day.
+There's no two ways about it.
+You're absolutely right.
+If you want to take donations now,
+you're going to have to think of very alternative mechanisms
+for dealing with it,
+because not only is it the case of you receiving money,
+but also how do people, most people
+making a donation are going to have a PayPal account
+now going to have to add in another layer of abstraction.
+You know what I think?
+Interesting is that, as a business,
+we don't deal with...
+If someone only says you can only pay us by PayPal,
+they contact them to find out how else we can do it.
+Not because of any particular views on PayPal,
+but just that as a business,
+we don't want to go down that route.
+You know, we have checks.
+We have direct debits.
+We can pay in all sorts of ways.
+And it's just incredibly awkward for us to pay through PayPal.
+And where I've tried to make donations
+to some open source projects,
+which I have done,
+it's always turned out to be awkward
+because the only method of payment
+or that they perceive as payment is PayPal.
+It has become awkward.
+You know, in the end,
+I've had to usually do something like find out,
+maybe with what web servers they're using
+and are offered to pay for that service
+for them as a donation.
+You know, it isn't ideal for businesses.
+For simple end users, my apologies for that,
+but you know what, for Harry Homeowner,
+I think, yeah, that's fine.
+Or for a small open source project.
+But he does make it awkward as a business
+to deal with people and to even donate in some ways.
+So it isn't all PayPal's way, if you know what I mean, but simple.
+Yeah.
+Maybe the answer is
+maybe creating something like PayPal
+and then arguing that PayPal
+haven't monopoly on it,
+and it isn't fair.
+Possibly having an open source clearing house
+would be the other way, maybe.
+Because there's lots of projects I'd like to donate
+just 25 quid to.
+I use every day as a business and I think,
+well, really, I should be donating to this
+because it's a vital part of what I do.
+But if I go to the website,
+and the only way I can pay is by PayPal
+and there's no other way,
+then I'm sorry, that's,
+yeah, I'm not going to donate.
+There's no, I'm not going to donate directly
+because there's no mechanism by which I can do it.
+If there were perhaps a central,
+a bit like you have ignoring all the other source
+forage issues, but a bit like you have source forage
+for hosting your project.
+If there were a similar way that you could
+have a central donation place
+that business gets come to get an invoice from you
+and deal with you in a business,
+the business like way,
+and then they dealt with distributing it.
+A bit like the one they use for,
+the model they use for,
+and again, this is going to upset people
+about the model they use for collecting royalties
+for music, you know, that sort of thing.
+Burn them.
+No, I do, you know, it's a business.
+I'd love to donate more.
+I'm not the only one, you know.
+I'm sure out there, you know,
+it's not a businessman, you know.
+You shouldn't always get an image of a grey being
+circling you and about to devour you
+because we aren't all like that,
+only scuff,
+but yeah, you know,
+something like that would be better.
+Yeah, I mean, I don't want to turn this into a PayPal thing,
+but I mean, I know you mentioned
+about them being the only one available.
+It isn't true,
+they're the only ones available
+that aren't based in Russia and used.
+Yeah, I mean, there are options out there,
+but none that we would like to be using.
+No, no, no, no.
+I know, all these bulbs,
+open source exchanges,
+and quite out and running yet,
+but when it is, I'll let you know.
+Work on it.
+Now, let us know,
+and we'll move more to you.
+Moxie, I mean, obviously,
+another question for you there is,
+is how are you actually handling,
+are you getting donations now,
+and have you found another mechanism
+that maybe doesn't merit PayPal,
+but achieve some of your objectives,
+or are you just hiring them?
+Yeah, I'm pretty high in drive.
+I switched to this thing called tipit2,
+tipit.co,
+and you could, you know,
+it's like the tipjar system,
+or whatever,
+it seems alright.
+And just after I switched,
+they like shut down.
+She says they get...
+They were the moxie kiss of death.
+For thought problems,
+you know, like,
+there's too many,
+like, I don't know,
+something was happening,
+and basically shut down,
+and try and implement,
+like, better abuse,
+horrific.
+But the funny thing is,
+like, you know,
+I switched,
+and I was like,
+hey, I switched to this,
+and, you know,
+people generously need some donations,
+and, like, you know,
+the threshold for which you can cash out
+is something like a hundred bucks,
+and, you know,
+I have, like,
+$98 in there or something.
+And, you know,
+it's shut down,
+so I can't get any more donations in there,
+so I'm like, you know,
+$2 below the threshold
+of what I can cash out,
+so that money has just sort of gone to,
+right?
+Because it's, you know,
+it's, it's bad.
+That's really unfortunate.
+That's just really, really bad luck.
+Well, I mean, hopefully,
+some of your,
+you know, I was wondering
+you're doing quite a lot of training
+at the conferences now,
+so hopefully,
+that's bringing a more direct flow
+of cash to keep your project running.
+I mean, do you want to talk briefly about
+the training you're doing?
+Because I know quite a lot of people
+have been talking very highly of it.
+Oh, good. Yeah.
+I've been doing this training called
+Designing Secure Protocols
+and Intercepting Secure Communication,
+and the deal is,
+it's a two-day training,
+and the first day is all about
+Designing Secure Protocol.
+It's about, you know,
+how you combine these cryptographic building blocks
+into something that is secure,
+and we go through all of that,
+and then use that knowledge to look at,
+you know, sort of existing
+secure protocols,
+and evaluate how they stack up,
+and attack some kind of mock
+protocols and stuff.
+And, you know,
+everything from SSL,
+SSH to encrypted web cookies,
+you know,
+you have a better idea
+of how to look at it,
+and evaluate whether
+something is or is not secure.
+And then the second day is all about tricks.
+It's about, you know,
+attacking the little holes in the glue
+between secure protocols
+and, really, you know,
+sort of practical hands-on
+using tools to perform network attacks,
+and that kind of stuff.
+And, yeah,
+it's been pretty good,
+and I think it's a fun training.
+And is that US-based?
+Well, let's see,
+I'm doing an upcoming training
+at Black Hat Europe,
+in, I guess,
+at April,
+and, yeah,
+maybe at a few other conferences,
+in the future as well.
+You know,
+I understand you're going to be doing
+at a brewcon as well, is that right?
+Yeah, I think,
+I'm not sure how that's
+shaping up, but if,
+yeah, there's some possibility
+that I will do at a brewcon,
+should enough people sign up
+and the training will go.
+You have four of us signed up already, by the way.
+All right.
+We're not paying through it
+through PayPal, okay?
+Yeah, we're going to have to give you cash on delivery or something.
+Yeah.
+Chris, if you've got any more questions from Arxie,
+I'll take that by the dead silence
+that he must have dropped off.
+No, I'm just about here.
+I'm just about here.
+I mean, the last thing I wanted to ask about
+was a comment you made on your Twitter feed.
+I know you're an RSA conference in San Francisco,
+and you mentioned that your name was up in light
+on one of the vendor walls
+as the Moxie SSL stripping in network attacks.
+Yeah, I think that's any more of it now?
+Is it what?
+I was just not being anything more or more.
+Yeah.
+No, I don't know.
+I wasn't even there,
+like a friend of mine signed me that picture.
+It was pretty funny, right?
+I can't remember what the wording was.
+It was defeating the Moxie attack.
+Or something like that.
+We don't see good at this.
+Yeah, it was just some random vendor proof
+or whatever.
+But yeah, I don't often see my name on billboards or whatever.
+What I thought was interesting was that underneath it
+it just says DNS hacks.
+So it doesn't say the Kominsky attack.
+It just says the Moxie attack.
+You've reached that threshold.
+Yeah.
+Yeah.
+Yeah, that's an awful thing.
+What's it now?
+Moxie, if you need an agent, Chris is your man, obviously.
+Yeah, right.
+Well, it could be this, like if they'd mention Kominsky,
+like you would have to pay some kind of royalty
+or something where they know that I never, you know,
+I don't have it together enough to sue them
+or whatever for a trademark, something.
+Never know when Faith, I'll give you a cash,
+but you never know.
+That'd be great.
+No, wouldn't it?
+It just sounds like a computer game, doesn't it?
+Yeah.
+Rainbow 60 marketer.
+Is there any more questions from the hosts for Moxie?
+Hold on for me.
+Hold on for me.
+Well, what's left for me to do is
+pissing and wrapping up firstly, Moxie,
+absolutely pleasure to have you on the show.
+I've really, really enjoyed speaking to you again.
+Yeah, it was great.
+You can find you at www.thoughtcrime.org.
+I believe you're on Twitter this time now,
+unless I'm spoke to you, you weren't on Twitter.
+And if I'm right, that's at Moxie,
+underscore, underscore or something like that.
+Yes, yes.
+Regrettably.
+I'm there.
+Is there anything you want to say to the folks at home
+before we wrap up the interview?
+No, no.
+Just thank you guys for having me on,
+and it was great talking to you guys,
+and up you.
+You could keep it up.
+Yeah, we love having guys like you on.
+It's just it's a lot of fun.
+Do feel free to join us,
+to stay on the line.
+We're going to talk about some new stuff,
+and we've got a tech segment sort of inspired
+by some of your tools as well.
+But all that's left for me to do is thank Moxie,
+and we'll be moving on to the new section.
+Thank you for listening to Hack with Public Radio.
+HPR is sponsored by Carol.net.
+She'll head on over to C-A-R-O-D-E-T for all of her TV.

@@ -1,0 +1,163 @@
+Episode: 1522
+Title: HPR1522: How to Use Docker and Linux Containers
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1522/hpr1522.mp3
+Transcribed: 2025-10-18 04:36:52
+
+---
+
+away, shall we take this thing?
+You're listening to Hacker Public Radio.
+This is Clat 2 and this is an episode on how to use Docker and Linux containers.
+What are Linux containers? Well, I don't really know on the expert on Linux containers or Docker for that matter but I've been playing around with it recently and I've had some good luck and I would like to talk to you about how to do it so that you can start playing around with it too.
+So Linux containers, I mean what I do know about them, is that there are a lot like, as everyone has said, BSD jails.
+Now I've never used a BSD jails so that doesn't mean a whole lot to me but I have used and you've probably used as well virtual machines.
+I mean you've used virtual box, maybe virtual manager and KVM on Fedora or Red Hat. You've used Kimu which actually vert manager uses as well I think but you know we've all done that at least and you may have also cheruded into something sometime.
+So if you've done either of those two things, well neither of them are exactly like Linux containers and depending on your level of computer science snobbery you might say that there absolutely nothing like Linux containers but the concept is similar.
+So Linux containers like something like vert manager or Kimu or KVM, well not so much KVM but Linux containers creates basically an imaginary Linux box inside of your Linux box.
+So for instance if I'm running a laptop, it's running slackware and I decide to utilize Docker and Linux containers, I can spin up an instance of Cintos for instance and start using a Cintos computer that lives inside of my slackware computer.
+It's really pretty cool actually. Now in theory this is a completely secure environment that doesn't know that it's a pretend computer inside of a slackware computer and of course it would be impervious to any kind of outside attack whether or not that actually holds true of course remains for the security researchers to find out.
+But the idea is really really similar to virtual box or Kimu or any kind of virtualizing technology like that but less like those and more like KVM or something like that, it tries to use as much of the actual hardware that you're running Linux on as possible.
+And in fact it goes a step farther and actually literally uses like the same kernel, a lot of the same underlying things that are keeping your laptop alive or whatever your computer going, maybe your server going, Linux containers is utilizing all that stuff.
+But it's doing so with very strict kind of, I don't know if it's really permissions or what but it's doing it in such a manner that anything inside of that container doesn't realize that there's a whole other computer on the outside.
+So that's sort of the non technical explanation of all of this Linux container stuff. Unfortunately I don't know a whole lot more in depth information about it but lots of information on the internet you can look it up.
+Linux containers have been around for a little while now I started trying to use them maybe a year ago, probably not quite a year ago.
+And it was really difficult to understand what on earth I was supposed to do. I mean there was really, at least that I knew of, there was not really, there weren't any great front ins for them.
+I really didn't understand how they were supposed to work, there were some XML examples somewhere. I tried like modifying some of those, it was not working.
+So that kind of fell apart but then Docker, this application layer that takes advantage of Linux containers and lets you take advantage of them, you know, through a much more user friendly kind of interface.
+Docker has recently, I don't think it's, I don't remember if it's actually released 1.0 or if it's just got a release candidate for 1.0 but it's really, really close to 1.0 or maybe it's been and gone.
+I don't know, I can't remember off the top of my head. And they're their site right now just has a bunch of stuff about all the awards that they're garnering. So I'm not sure exactly where they are.
+But either way, it's, you know, it's, it's coming along really quickly. People are loving it. People are very excited about it. And so it's something worth knowing about.
+And it's also just kind of cool to be able to open a shell and spin up, you know, a Cintos server inside of your laptop and just go at it.
+You know, just go for whatever you're doing if you're working on network topography lessons or you just want to get used to the Cintos way of doing things if you're, you know, more used to Debbie or something.
+I mean, whatever, it's just, it's so simple. It's so quick and easy.
+What's not quick and easy necessarily is getting the network ability of your Docker instance figured out.
+So I'm going to, I'm actually going to assume that you want your image, your Docker image, your little Linux container on the same network and subnet as your host computer.
+Because I'm coming from this in the same way that, well, I've always come to it as, and that is assuming that you want to play with virtual machines because you either have a need for a virtual machine.
+In other words, you know, your web developer at where you work says, I need a sandbox.
+You should be able to spin one up and it should be on the local network.
+They shouldn't have to go out to the internet or you know, you shouldn't have to set up a new router or something for them to get there.
+So it should be on the same local network and it should be convenient and it should be secure.
+Or maybe you're, you know, maybe you're just some person learning Linux or, you know, system administration stuff and you want to try that out.
+So if you've got a Linux box, you can spin up another Linux box inside of that Linux box and play around with like designing network schemes and kind of figuring out how subnet's work and different things like that.
+So that's kind of, that's kind of why I'm thinking that you would want to use Docker.
+I'm sure there are a billion other use cases out there, but that's just kind of what I was interested in them for.
+So the first thing that we have to do is create a bridge interface.
+Now a bridge interface, if you don't know what that is, they're a little bit confusing because they're, they can be mysterious.
+And, you know, as with so many other things in Linux, there's so many different ways to do this that it can get really confusing depending on what you're actually trying to achieve.
+So this is kind of how I see it.
+So a bridge interface is an imaginary, you know, ethernet port on your computer.
+Because by nature, an ethernet port can have one cable plugged into it, right?
+I mean, you can't have two cables plugged into one ethernet port. That's not how the technology works.
+So a bridge is kind of like this secondary imaginary ethernet port that you can plug something into.
+So in order for you to have an imaginary little computer in your computer, I'm going to say laptop because the computer that I've been playing around with is a laptop, Slack or laptop.
+So I'm going to say I've got an imaginary computer in my laptop.
+In order for that imaginary computer to be able to access, you know, the router that creates a local area network for me, I need for it to have an imaginary ethernet port on my laptop so that an imaginary ethernet cable can then be extended to the router.
+And then it's part of the local area network. I mean, that's how you get in on a local area network, right? You go talk to the router.
+So in order to do that, you need to create a bridge interface.
+Now, Docker by nature will create its own bridge interface for you.
+You can play around with that. I'm going to propose that we do it manually first and then launch Docker with the awareness that that bridge exists.
+So in order to do it that way, you have to create the bridge interface. You'll probably have to be root.
+So you do IP link add BR0 type bridge, that is IP space, link space, add space, BR0 space, type space bridge.
+Okay, so it's convention to call your bridge interface BR0, just like eth0 or WLAN0, BR0 is conventional. You can call it something else, but everyone's going to call it BR0 so you might as well as well.
+So IP is of course the command. It's a lot like if config, but it's kind of like the new cool if config. So I'm using it. So it's IP space add, that's a link, I'm sorry, IP space link, space add, ADD, BR0 and type bridge.
+So we're adding an interface to our computer and we're giving it the type of bridge. And now if you do IP add or show, it should show you that you now have a BR0 interface in existence.
+Actually, it might not because we haven't brought it up yet, but anyway, you do have one. So now if you will, you'll need to get the MAC address of this bridge. Now that, yeah, actually we'll show you because, yeah, okay. So anyway, the MAC address.
+So it's IP space adder ADDR like address IP space adder space show space BR0. Now we'll show you the bridge device that you have just created.
+Most importantly, there will be a line in there somewhere and it can kind of get lost in all the information, but if you look around, you'll see it.
+There should be a line called link slash ether and then it'll be followed by a familiar or not familiar, but you know, a MAC address which ought to look familiar to you.
+So link slash ether and then, you know, 00 colon, 5, 6 colon, F, A colon, E, A colon, whatever, whatever.
+Okay, so that's a MAC address of the bridge. You'll need that. You should write it down or copy and paste it somewhere because you'll need it for the very next step, which is to go to your router.
+And configure it to hand out any address with that MAC address, a specific IP address.
+This is just the easiest way to do this. Trust me. There are other ways to go about the same result, but really you want to do it this way. Really. Trust me.
+Okay, so here's how you do that. You go into your router and if it's, you know, I mean, it could be any brand of router.
+It could be one that you got with your internet service. It could be a net link. It could be a D-link, no, net gear, D-link, Belkin, you know, whatever.
+They're all going to be different, unfortunately. That's the fun part. This step may very well be the longest step of the whole process because, you know, if you're not familiar with this stuff or if you just got a new router yesterday and haven't figured out all of its bells and whistles, or maybe you're running your own home server or you're at work and you're running your home service.
+Or you're at work and you're running a server and your server is the DHCP server and your router has nothing to do with that sort of thing. Or, well, in that case, your server is a router, basically.
+But, well, it might not be. I guess it could just be a DHCP server point being, you know, at some, on some device on your network, you need to tell the thing handing out addresses.
+That if it gets a request from this MAC address, it needs to give it a specific IP address. So, on my home network, which I've been playing around with, it's just, it's something I got from the internet service provider.
+So, I can log in at 192.168.1.1 and then I go in there and I tell it to show me a list of the DHCP clients.
+It shows me a list of all the connected computers and then I can tell it to reserve a space for a certain MAC address. And so, it gives me some, some fields that I fill in.
+And one field I put in the MAC address and the other field I put in the desired address that I want to give that MAC address.
+So, for instance, 192.168.1.11, let's say.
+Okay, that means that whenever my bridge interface goes out onto the network and asks for an IP address, that router will now hand it 192.168.1.11 every single time.
+And that's what we want. Why do we want that? Well, because we don't want to cause any IP address collisions. IP address collisions are bad.
+It sometimes can bring down your entire network. It's really not fun. You don't want to do that.
+So, reserve a space for it, tell your router or your server doing the DHCP assignments, tell it that whenever it sees FOO MAC address, give it BAR IP address, that'll make things a lot easier for you.
+Okay, next step, once you're finished that, is back on your computer. So, I'm back on my Slackware laptop now.
+And on this computer, I say, I need to tell it, to give my bridge this address that I've reserved for it.
+Technically speaking, I don't have to do this. That's what the router is going to do. I'm superstitious. I like doing things manually. I'm going to do it here, even though it's going to actually technically be overwritten later.
+But I'm going to do it anyway. So, IP, space, adder, space, add, space 192.168.1.11, space, dev, space, BR0.
+So, there you go. That's the command. If you're doing any kind of variation of this process or your superstitious like me, that's the command to give your bridge that IP address manually.
+And then you can do IP link set, BR0 up, and that'll bring the bridge device up. Okay, so there you go. That's a big part of the job already done.
+But of course, the next thing that we have to do is start getting involved with Docker itself. So, we need to start Docker. It's a bit like a server. It's a damon. It'll run in the background.
+So, you can think of it as that. I mean, you could be doing this from your RC init files or however you start services. But you can do it with Docker directly.
+In the future, once you get all this figured out, you might want to assign it to your init system so that it comes up automatically. But for now, we're just doing it manually.
+So, but yeah, I mean, if you're doing this at work or something and you need your virtual machine to restart after if you lose power or something and you want to make sure that this all happens automatically, you would definitely want to make this part of your init system in nitscripts so that this actually happens no matter what.
+But the way that I'm doing it right now is Docker space dash delta as in, you know, D space dash D as in delta space dash B as in Bravo and space BR zero.
+So, you can kind of guess what we're doing there. We're starting Docker as a demon with the awareness of the bridge interface. The dash B space BR zero is saying use a bridge interface for your network connection and that bridge is called BR zero.
+That's a really important one. If you start it some other way, it's not going to work. A Docker will work, but your network will no longer work. What Docker tries to do without explicit instructions from you is it's going to try to find a way out to a network.
+And if it doesn't find one that it likes, it will create its own bridge network called Docker zero. And then it will use that and it assigns itself, you know, a valid but completely, you know, something that it feels secure that it's not that it's not being used right now and address.
+So it might come up with, you know, like 172.1.42.23 or something that that's fine. I mean, it'll work, but you won't be able to get to it from your local area network because it's on a different network. You're on 192. It's on 172. It's not going to work.
+Okay, so Docker space, dash, delta space, dash, bravo space, BR zero.
+This, if you launch it like this, it will probably tie up that shell. So just open up a new shell to continue in the future. Again, you can do it with an ampersand or you can more likely you'll just assign.
+You'll make it so that when Docker launches in the init system, it's doing it with, you know, being bound to that bridge interface.
+Okay, so now what you need to do in order to start out with Docker is have a look at index dot Docker dot IO. It's on the internet. You can look at it in a web browser like Firefox.
+So if you just go to index dot Docker dot IO, you'll see a list of all the different Linux container images that Docker offers.
+There's a way to make your own images. I started looking into that back when I didn't understand that what Docker was. It's really complex.
+I don't want to go into it right now. Well, because I still don't know how to. So I couldn't go into it. But, but trust me, index dot Docker dot IO, very great place. It offers very small little images of all your favorite distributions.
+You can pull one of those images. Let's say we see one on there called sent us, which does exist on there. So if we want that one, we could say Docker space pool space sent us.
+Oh, and by the way, for Docker, all the Docker stuff, you do not have to be root. You can do this as a normal user. So Docker pool sent us and that'll download the sent us image.
+And then you can start it up. You can do Docker space run space dash I space dash T space sent us space slash bin slash bash.
+And that will create a new image based on your sent us master image. And it will start, you know, it will attach you to that image in a bash shell.
+So again, that was Docker run dash I dash I dash I dash T. I remember that because it's like IT. So Docker run dash I dash T sent us slash bin slash bash. And this creates a new instance of sent us now.
+And so you'll you'll find yourself at a shell. It'll be a root shell. You won't have any users there. You'll it'll be a very, very bare bones, a little sent us system, very bare bones. I'm talking try to ping. You don't even have that installed.
+Conversely, if you've done your network configuration correctly, you should be able to do something like, for instance, yum install, IP, you tills, and you will you will you will get ping then.
+It should be able to go out find the repository download and install ping and then you should be able to ping the outside network.
+If you have not done your network configuration correctly, then yum will fail with the inability to reach the outside world.
+So that would be a good test to do to figure out if you've done the previous steps correctly.
+If it's not working, I would go back and check your router. Make sure that you gave it the right MAC address and that your bridge interface does indeed have that MAC address.
+So I should mention that if you create a bridge interface today and then you go out and have a coffee and you come back and your computer is maybe you shut down your computer and then you went out for coffee and then you come back and then you create the bridge interface again.
+It might have a different MAC address so it won't have gotten an IP address from your router as planned.
+So yeah, you need to do that.
+Of course, in the future, when you start using these things in real life, you would want to create an imaginary bridge interface with a MAC address that persists.
+And that's pretty easy to do. You can do it in your init system or when you create the bridge, you could assign it to MAC address manually.
+There's lots of different ways to do it. It's a little bit outside the Docker lessons though.
+So we've pulled the image, we've started an image. So now it's created like this instance of or a container actually of this thing from this image.
+So let's poke around. So exit out of your Docker container. So you can just EX IT.
+And now you should be back at your normal prompt and you should be able to do, you know, I don't know, a host name and you should be able to see that yes indeed you're back on Slackware or whatever you started out on.
+So what's going on here is Docker is running in the background as a demon and we've just we had pulled a syntax image and then we spun up a Linux container that's based on that image.
+Now what you can do to see what containers exist is you can do Docker space PS space dash A.
+This will show you any image that or any container rather that exists in its little system. It'll tell you, it gives it a unique ID and tells you what image it's based on.
+So it would probably be based on sent off 6 or 6.4. Not really sure. No, I think 6 is the latest. So because I think it's like 6.5 or something point being it'll show you the container ID and what image it's based on and when it was created I think and how long it was running different things like that.
+I think the size of the of that image and so on. So what you can do to get back into that image at any time now that you know it exists because of Docker PS dash A you can now reattach yourself to that.
+So let's say you do Docker PS dash A and you find that there's some image with the unique ID of 5, 4, B8, C4 delta 2, 2, C delta 6. It's just randomly from my show notes here.
+So if that's the container that you had launched just now and you and you want to go back into that then you don't run that first command that we did the docker run dash i dash t. We don't do that. We just do do docker attach.
+So you can do docker attach and then that unique ID which was 5, 4, B8, C4, D2, 2, C, D6 I think and then you'll find yourself once again at a bash prompt it'll be rude to you'll be in syntax again.
+You can poke around you can do cat slash Etsy slash red hat dash release and sure enough you'll see that you are not in slacker aim or you're in syntax and you can do young installs and all kinds of cool things and then you could exit again.
+Now if you wanted to for instance put that docker image on hold stop it from running you could do docker stop 5, 4, delta 6 whatever whatever and if you wanted to start it back up you could do docker start 5, 4, delta 6 whatever whatever whatever.
+So these container IDs are kind of your your your gateways to controlling the the Linux containers.
+So if you're thinking of you know like last time you used vert manager on Fedora or red hat it would be like the you know the pause and the start button or the whatever they are.
+You know you can you can do that you can freeze virtual machines you know just just like that and that's how you do it on docker docker start and docker stop and then the unique ID is the the container ID that is provided to you by docker PS space dash a.
+So that's kind of all I have for you about docker I haven't done a whole lot beyond that.
+There's honestly I mean in terms of lightweight usage this will get you started and this will get you pretty far because once you've got your network configured such that your docker your Linux container appears on your local area network.
+Once you've got that going then you should be able to install all kinds of interesting things like you know I don't know a web server and maybe you know wordpress install or instance or whatever you want to do and you know PHP node.js whatever you've got a computer inside of your computer.
+And you can talk to it just like it's a server right on your local area network really really cool really really convenient I mean just so convenient.
+I mean I've got a lot of RAM in my computer it's a fairly new laptop so when I spin one up it's I mean it's kind of a joke you know I don't even it doesn't it doesn't feel like a server is running inside of my laptop.
+It's just kind of it's just there and I can interact with it and I can do all kinds of cool things with it and it's really nice and people outside of my computer can can access it.
+You know I mean it's it's cool because it's it's got its IP address from the router so people can actually talk to it test my websites or or they can use it you know like whatever I mean it's it's like it's another computer and it's inside of your computer.
+It's really really nifty very very cool the the main thing I'd say like I mean Docker itself as you can tell is really simple.
+I mean it's not really simple like I don't mean that in a bad way it's just it is easy to use I mean it's it's a couple of different commands once you know those commands.
+And and like on every day use I mean like the attach the stop and the start I mean there's really nothing to remember you know it's just kind of it's it's really simple.
+The the hardest part I think is remembering how to spin up a new fresh container from from a basic image super simple the hard part I think is getting the router thing configured.
+So that the bridge talks to it correctly I mean it's not hard but it is you know you have to go into your router and configure some stuff so that might be a little bit.
+Complex and then the other part of it that I would say was slightly complex is just kind of wrapping your head around the concept of a bridge interface because those can get really really tricky sometimes and and that's kind of annoying.
+But it's not it's not all that bad as you can probably tell fairly simple so give it a shot go go try it now and I think you'll really like it.
+So the website for docker is I think docker.io and apparently was written in go geo and it's it's a really nice application.
+It it was pre-installed on slackware 14.1 I think or maybe it wasn't Linux containers certainly was already on slackware 14.1 but as I said that's not very user friendly.
+So docker was either pre-installed or I got it from slack builds either way whatever repository you're using I'm sure you'll have access to it.
+So grab docker play around with it and learn new stuff. Thanks for listening and I'll talk to you next time.
+You have been listening to hegerpublic radio at hegerpublicradio.org. We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show like all our shows was contributed by a HBR listener like yourself. If you ever consider recording a podcast then visit our website to find out how easy it really is.
+Hegerpublicradio was founded by the digital dog pound and the economical computer cloud. HBR is funded by the binary revolution at binref.com all binref projects are crowd sponsored by linear pages.
+From shared hosting to custom private clouds go to lunar pages.com for all your hosting needs.
+Unless otherwise stasis today's show is released on the creative commons attribution share a life 3.0 license.

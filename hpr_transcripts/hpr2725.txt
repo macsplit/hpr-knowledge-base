@@ -1,0 +1,191 @@
+Episode: 2725
+Title: HPR2725: The Illumos Shutdown Command Explained
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2725/hpr2725.mp3
+Transcribed: 2025-10-19 15:42:53
+
+---
+
+This is HBR episode 2007-125 entitled, The LUMON SHUT Mount Command Explained.
+It is hosted by Klaatu and in about 14 minutes long and carry a clean flag.
+The summary is a short podcast about The LUMON SHUT Mount Command.
+This episode of HBR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org
+forward slash donate.
+Support universal access to all knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge,
+knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, knowledge, a dream of Islam.
+Thanks for having me.
+made a comment on JDPP's episode saying that on BSD, the shutdown-P command to signal
+a power-down command, an auto-power-down command, is-capital-P. Claudio sort of offhandedly
+mentioned that he wasn't really sure what the equivalent was on an allumos-based system.
+And it occurred to me that I happened to run an allumos-based system on the spare
+drive of my laptop, and so I could probably answer that question, and I thought it might
+actually be a good topic for a show, because it's a completely different shutdown command
+than either Linux or BSD. It's kind of interesting to look at different commands on different
+Unix systems, I think.
+Open Indiana is the era parent to Open Solaris, which was the open-source version of Solaris.
+I happened to run it because I had a little bit of experience with Solaris at a previous
+job work too, and I kind of felt like Solaris was a cool little Unix system, so when they
+went open-source, I leapt at the chance to run it at home, and I boot into it every now
+and again, not all the time, primarily because my Wi-Fi card on the laptop, it does work,
+but it seems to run fairly slow and kind of falls out of, it kind of turns itself off
+every now and again under Solaris, so not really sure what the problem there is, and I haven't
+really dedicated any time to solving that problem, but it keeps me from booting into Open Indiana
+on a regular basis.
+But it's fun if I know that I'm just going to be doing a bunch of text hacking or just
+local programming on something, it's kind of fun to local programming with like something
+like Python or Lua, where it's properly abstracted from what I'm actually programming on, then
+I'll boot into Open Indiana.
+So the shutdown command is the original, or I don't know, the original, I haven't looked
+at the code base and tracked it back, but I mean, it is the Sun Microsystems version
+of shutdown.
+It is CDDL licensed, so I'm not sure what the future of this command is, and I say that
+because the Open Indiana project and the Illumas project as a whole has historically, as
+I've tracked it to the degree that I have, which, you know, isn't, I don't look in on
+it every day by any means, it's just, I kind of check in every now and again, and it seems
+like one of their, one of the things that they do is they replace CDDL licensed software
+with either GNU or BSD or MIT or some other open source license, because CDDL, I guess,
+has a bunch of sort of weird caveats in it that make people maybe not necessarily love
+to use it.
+So that's kind of been one of their MOs over the past couple of years, so I'm not sure
+if they intend to replace the shutdown command or not.
+But here's what we've got.
+So the shutdown command on Open Indiana is a pretty simple command, it has three options.
+One is the dash Y for yes, because when you shut down on Open Indiana, it prompts you
+whether you actually want to go through with this.
+And interestingly, it prompts you a couple of seconds after you've told it to shut down,
+so it's a little bit strange.
+So if you tell it to shut down and then walk away, your computer will not shut down.
+If you tell it to shut down with a dash Y, then it will, because when it prompts you
+sort of halfway through the shutdown count down whether you actually want to do this or
+not, then it'll automatically answer yes.
+By default, that delay is the delay from the command being issued and the time that
+the computer starts to actually do what shutdown told it to do is 60 seconds.
+You can change that delay.
+So 60 seconds from start to power down or sorry to shut down.
+And then I'm guessing about halfway through it, it prompts you for continuation.
+I haven't actually timed the prompt, it just feels like halfway through.
+So you can change the 60 second default with the option dash G, I don't remember what
+that stands for.
+There are no long forms, it's just the short forms of dash G.
+And that changes the offset from 60 seconds to whatever you want it to be, 30 seconds,
+15 seconds, zero seconds, whatever.
+And then so that's dash Y and then dash G. And then the one that you really need to know
+about is dash I, which tells the shutdown command, which init state to switch to.
+And that's a really important one because without issuing that, then I don't know, I've
+never actually tried without that, but I don't know what it would default to.
+So there are a couple of different init states.
+And to get that in open Indiana, the best way I have found is to just type in man init.
+And init tells you the different states, the two, the two main states that it, that
+it knows about is S for single user or any one of zero through six.
+One levels, zero five and six are reserved states for shutting the system down.
+Run systems two, three and four are available as multi user operating systems.
+So if we just kind of look through these states in man init, zero goes to firmware.
+What that means in practice is that it, it, it shuts down your operating system and
+your computer is left in a state of being powered on, but not really functional.
+And I guess maybe if I was running this on a Spark system or something with open firmware,
+maybe I would have immediate access to, to open firmware, I'm not really sure.
+But to, to me, run level zero has always looked like, well, really the same as five.
+It just kind of, it stops the computer and it is safe for you to switch manually, power
+it down.
+And as JWP noted in his episode, it used to be that that was a shut down, but that's
+what shut down looked like.
+It just meant that, okay, the operating system is going to stop sending stuff to disk.
+And so you, once you receive the notice that yes, it's okay to power down, then you,
+you were meant to physically go to the, the power switch, whether it's on your computer
+or on the wall or on a circuit breaker or whatever and power it down.
+So that's, that's init zero.
+And I guess it's through ACPI, I think is what J, JWP said that we can actually control
+the hardware switches with software.
+So that's, it's a nice feature.
+So init system one puts the system into sys admin mode, which is all the local file
+systems are mounted, only a small set of essential kernel processes are left running.
+It's meant for administrative tasks to be able to, you know, update the system and things
+like that.
+Probably a lot more useful really on, on a truly multi system, multi user system.
+I don't, I wouldn't ever use system, or init system, init level one, I don't think
+on, you know, on my laptop, then there's init system or init mode, whatever we're calling
+it.
+And it's state two, which puts the system into multi user mode.
+So that's just, it's, everything's mounted, all the file systems are mounted.
+All the normal demons are, are spawned, it's, it's normal sort of multi user thing.
+init three extends multi user mode by making local resources available over the network.
+init four is available to be defined as an alternative multi user environment to configure
+configuration.
+So I believe I imagine that would be sort of, you know, if you were configuring the system
+yourself, you might declare init four is the one with the GUI, and it may be init system
+init three, maybe wouldn't spawn a GUI, something like that, it's flexible.
+And it five, of course, is one of the reserved for shutdown.
+So if you tell it to go into init mode five, then it, it, again, it appears to shut, it
+shuts down the operating system and allows you to manually pull a plug somewhere or flip
+a switch.
+Finally, there's init six, which is essentially a reboot.
+So it, I guess on a technical level, what it actually does is, it does a shutdown operation
+and then it reboots to whatever is defined in your slash, at C slash init tab file.
+And then as I said, there's s as well.
+It's capital S or lowercase s, it doesn't care which, and that puts it into a single user
+mode, which of course leaves file systems that are required from multi user operations
+unmounted, but it leaves the essential stuff mounted for, for just a single user in admin
+mode, which probably everyone's more or less familiar with that.
+That's a pretty typical, a pretty common init mode for, for like system rescue and things
+like that.
+So that's, that those are the different init systems.
+So there are the init modes that you can go into, init states.
+I keep saying modes, I mean state, init state.
+So those are the states that you can go into, shut down is the command that lets you gracefully
+access those.
+So it's kind of the safeguard between you and just some kind of sudden tell init command
+by just going into a different init state.
+So shut down dash y if you don't want to be prompted for further, you know, for sort
+of your protection, dash g to control how long it takes.
+To shut down and then dash i to tell it which state to go into now.
+So to, for instance, to reboot, you could do shut down dash y dash i six.
+And that would send a reboot signal to your computer.
+Now, on opening Indiana, it just so happens that they also have the very convenient power
+off command.
+And I don't know where this thing came from.
+I only discovered it kind of recently, myself, to be honest, but it seems to be the, the
+man page is dated 2013 and it's, it's really, really useful.
+Apparently it is a, a sim link or a, you know, maybe it's a, maybe it's another version
+of the halt command.
+But the nice thing about power off is that it, it sends the shut down signal and then the
+power off signal.
+So your computer actually, it shuts down safely and then it actually does power down.
+So you don't have to manually turn the computer off.
+So what I'm saying is on a day to day basis, I don't actually use the shut down command
+on open, on open Indiana at all, not directly anyway.
+I just send a power off command and it powers down.
+Actually, I feel like it's faster than the shut down command.
+I could be, could maybe, maybe making that up because maybe I just, of always, I, maybe
+I don't define my custom shut down length, you know, so I just, so I'm comparing power
+off to the 60 second default of shutdown, but power off just feels nice and fast and
+clean.
+It's a simple command, very easy to execute.
+Both of those commands require root access and on open Indiana, I guess the, the traditional
+kind of default way of getting into a root shell is pf exec command.
+So pf exec bash and then into your password and then you're at root and then you can
+do power off or shut down or whatever.
+You can also use the SU command.
+No, you can't, sorry, the sudo commands, sudo and then again, just sudo bash and type
+in your password and assuming that you've got sudo configured, which open Indiana has
+for the, at least the initial user because it's enabled on my system and I never set it
+up directly.
+That's pretty much everything I can think about to, to say about the shut down command
+on open Indiana.
+I don't know exactly how similar that is to something that you would find, you know, on
+an Oracle Solaris system, but it is at least ostensibly exactly what you would have found
+on Sun Solaris before Oracle purchased it.
+From what I can tell of the Oracle documentation, it is the same on Oracle as well.
+So as far as I know, these systems are all using the same version of shut down and so they
+should all function this way.
+That said, I've never actually had the opportunity to shut down Solaris, the actual Solaris.
+When I was using them at my old jobs, that was definitely not something that I would have
+ever wanted to do.
+But on the laptop, it works fine and that's how you use them.
+This is JWP and Claudio for a very intriguing conversation and episode and I hope everyone
+has enjoyed it.
+Thanks for listening.
+Talk to you next time.
+If you have any questions, please email the host directly, leave a comment on the website
+or record a follow-up episode yourself.
+Unless otherwise status, today's show is released on the Creative Commons, Attribution,
+Share a Life, 3.0 license.

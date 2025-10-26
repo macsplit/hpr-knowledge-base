@@ -1,0 +1,366 @@
+Episode: 4342
+Title: HPR4342: How I use Git to blog on the web and gopherspace
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4342/hpr4342.mp3
+Transcribed: 2025-10-25 23:21:59
+
+---
+
+This is Hacker Public Radio Episode 4342 for Tuesday the 25th of March 2025.
+Today's show is entitled, How I Use Get to Blog on the Web and Go for Space.
+It is hosted by Klau 2 and is about 38 minutes long.
+It carries a clean flag.
+The summary is, How I Use Get to Blog on the Web and Go for Space.
+Hey everybody, this is Klau 2.
+I'm going to talk about my unified solution for blogging on WWW as well as Go for.
+Same blog posts, two different destinations, a single command.
+It's a little bit of a hack, I'm not saying it's a beautiful solution, but then again,
+I don't think anyone really accuses Go for of being beautiful at all, but this is working
+for me pretty well.
+For a while now, I've been blogging on mostly gaming related topics, a couple of tech articles
+find their way through, but it's mostly gaming related stuff like tabletop, a lot of tabletop
+stuff.
+And I've been using a flat file kind of CMS so that I can post articles to this website
+and have the, there's a PHP script that runs in the background.
+I didn't write it, it's part of the CMS thing that takes mark down, which I write the
+articles in and converts it to HTML and makes a nice landing page and kind of does all
+the sort of the work that you would expect, I don't know, something like WordPress to do,
+except instead of it happening sort of within your browser, it just happens in the background
+of your server and the next minute and the next moment, you know, you go to your website
+and there it is, there's everything.
+So everything is pre sort of calculated, like the script converts the file that is required
+and it puts it into the location that it's required to be placed into and so it's all done,
+it ends in a flat file site system, but there's a bunch of scripts running to make all of that happen.
+And the way that I interface with it personally is through Git.
+This is not a grab approved method, this is something that I do because it's my preferred method
+of working.
+And I've been doing this, I don't know when the earliest post was, but I mean probably since
+2023, maybe 2022, I don't really remember, but it's been a couple of years now and it's been
+running quite smoothly, this is just the workflow that I've used.
+It's a kind of a classic Git-based workflow.
+I don't remember where exactly I actually learned it.
+I feel like it was either from IBM DevWorks or I think DevWorks is the name of the old
+blog that IBM, the tech blog that they used to have or it was from Bill Von Hagen, a boss that I
+had at a company called Vivissimo, which was then bought by IBM. Anyway, it doesn't matter,
+point is some really smart people told me about this little trick and it's essentially you use Git
+hooks to sort of monitor on the server when something is received and that's a built-in feature
+of Git. Like if you make a repository somewhere, get repository somewhere and you look in the hooks
+directory or dot hooks, if it's a hidden directory, it kind of depends on whether it's a bare
+repository or a normal repository. It's either called hooks or dot hooks. You look in that directory
+and there's a bunch of sample. In fact, I can do it right now. I'll go to my temporary
+directory. I'll make a temporary directory called my fake blog, my fake blog. I'll go into my
+fake blog. I'll do git-dash, no, git and knit, right? Dash-bear I think and then a dot for here.
+I don't know how much of that's actually, I think I think some of that wasn't necessary. But anyway,
+I've just made a bare repository in my temporary folder and if I do an LS, there's a hooks directory.
+If I go into hooks and do an LS, there's a bunch of scripts that end in dot sample. That's the
+dot sample means, well, they're not going to run. Git doesn't run a script in the hooks directory that
+ends in the word sample. I mean, I don't know. I haven't looked at the code to know for sure
+that that's what. But to make it run, all you do is remove dot sample and then it would run.
+And there's a bunch of scripts here that are pretty self-descriptive in titles. One is called,
+or the one that I use most of all, is called post-receive. And I'm looking right now and I'm seeing
+that that doesn't exist. I guess I made that one up. But it does work. If you do a post-receive script
+in this directory, just trust me. It does run post-receive. I mean, I guess it's not, you know, the name,
+of course, isn't really the thing controlling when the script runs. That's the point. These are
+all examples of if you want to trigger something at a certain point in this repository's normal
+operation, here you can put the scripts here in your hooks, your Git hooks directory. And when
+something happens in that repository, these scripts will be checked to see if any of the triggers occur
+and then the script can run. So, for instance, if you just look at, let's do a post-update. That's
+similar, I guess, to post. That's not a very good one, actually. Let's do a pre-receive instead.
+Pre-receive, yeah, that's a good one. So it kind of gives you some of the common variables and
+things like that that you might encounter or have access to, I should say, within your Git
+repository, when something occurs. So this example hook script, the pre-receive, echoes all push
+options that start with echoback equals and rejects all pushes when the reject push option is
+used to enable this hook, rename this file to pre-receive. So if you look at that kind of script,
+you get access or you learn that you have access to things like Git underscore push
+underscore option underscore count, which is kind of like an args or of the v-args and the
+c-args kind of variable. It's kind of telling you, well, these are the options that were enabled
+when this was pushed. So that's fine. So what I did on my server that receives Git content
+pushes from my local machine. I created a hook, and I'll go into the hooks directory here,
+and I'll do a cat on post receive. And in this one, it just does, again, now it's using little
+built-in variables within Git that you kind of have to just read Git documentation to learn about,
+but they do exist and it's things like while read old rev, that's the old revision,
+space new rev, that's the new revision, and space ref name. So while we're reading all of those
+values from a push that we have just received, do, and then the way I do it is I do b-r as in branch,
+b-r equals dollar sign parentheses or backtick, whatever you forget, space rev dash parse dash dash
+symbolic dash dash a brief or a brev dash ref space dollar sign ref name close backtick or
+parentheses, whatever you prefer. So I've just identified the branch name with that incantation,
+and that's one of those incantations where you don't even need to know really what it means. You just
+look on the internet. How do I get the branch name from a git push, and it'll be right there.
+Now if you don't want to just look on the internet for the answer, you can just read the docs for
+git rev parse and find out which options filter everything down to the branch name, but either way,
+you can assign a variable to what filters down to the branch name of the thing that was just pushed.
+And again, the reason we have access to all this information is because we're using Git commands
+within the Git system on data that that that because it's in the hooks folder, it's running against
+this Git against this specific Git repository. So it knows its own sort of central, you know, directory
+or it's what would it be the the base directory. Okay, so while we're doing that, oh yeah, we got
+we got the branch name. So if the branch name dollar sign b r equals equals quote master closed master,
+then WebDur, and this is a variable that I'm creating WebDur equals slash bar slash whatever it
+is HTML slash, you know, my blog, whatever your blog fight, wherever your your your web directory is,
+export GitDur equals dollar sign WebDur slash dot Git. And then push D. So we're switching over to
+the WebDur's push D dollar sign WebDur Git pull pop D back to where we are and then finish the
+operation. So if you follow it all that, then you know that we've just said if this push that we
+just got was the master branch or main or whatever you call your your your top level branch,
+then set the the WebDur to my HTML directory where I need all of my my files to be and then
+export the GitDur to that WebDur directory is a hidden directory in that WebDur
+we'll just call that dot Git. So that's a non bear repository. And then we switch over to that
+directory to the WebDur. And then we do a Git pull. So we're we're switching over to a place that
+we have not pushed to. So it doesn't have any of our personal private information or any access
+or anything like that. This is just a clone of the stuff that I want on the web server. That's all
+this is. Anyone could make this. You could make this yourself by just cloning my you know a
+repository. It's not a big deal. This isn't this doesn't require that that Git directory doesn't have
+any special access to anything. And then we do a Git pull within that directory. Now because I'm
+using this Grave system, this CMS called Grave, I can I I have set up my Git repository to be
+something that is compliant with what Grave expects to exist. And when Grave detects that there's
+new files in those directories that I've just done a Git pull in, then it triggers a bunch of PHP
+scripts in the background that transform my markdown files to HTML and applies all of the built-in
+Grave themes and the ginger to templates and all the other things that it does and it makes the website
+look pretty. So that's what I've been doing for for the HTML that the HTTP the WWW side of my
+blog and it's been working quite well for several years. No problem. Again, the important note
+here is that the the the the place where all of that happens like the place that the the the privilege
+to Git pulling and pushing occur. That's not on the live web system. That's on the same server,
+but it's not within like the web directory. Recently, I decided that I really wanted a space
+outside of the WWW again. Been there before, but I never really felt like the traffic made the
+effort worth it. And I think there is a bit of a balancing act there. I mean, it's kind of fun
+for a while to post stuff on Go for or Gemini, but you do there there is the latent knowledge that
+you are just kind of like publishing it to a place that probably people really, you know, most people
+can't even get to well, I shouldn't say can't get to have not learned how to get to and and
+and the people who who can get there who have learned how to get to access non HTTP content
+over an internet connection. They just, you know, they they probably don't frequent your your site. So
+sometimes you will sit around and kind of wonder, well, is that worth maintaining? And the answer
+that I came to several years ago was no, it was not worth maintaining, but that was because I was
+using a non unified system. I would have content here and then I would have content there and
+sometimes the content would be the same and sometimes it would be different and then other times
+it would start out the same, but then I'd make changes to one, but not the other. And it just it
+literally, it just wasn't worth the effort. And so this time around in sort of my triumphant return
+to go for such as it is, I decided that the way to make sure that I could post to both the
+WWW and I'm saying the WWW very very point of the because it is the, you know, HTTP the protocol
+is not sort of like my issue. I'm fine with HTTP. I'm fine with HTML. I actually quite like HTML
+and CSS, but but the the the world wide web, the sort of the default street, the avenue,
+the super, the information super highway that that is the the the internet just a there it's sort
+of the charm of it has started to wane a little bit for me. So it's it's specifically WWW dot
+that sort of that subdomain of the internet has just kind of lost some of its appeal lately for me.
+I just feel like it's been there are a lot of sort of voices and influences on there that I'm
+just not that fond of. I mean really really big corporations own it just seems like a bunch
+of the websites and it just I don't feel like the sort of the voice of just kind of individuals
+come through quite as strongly in the way that they used to. So I figure why not let's let's
+start contributing to to the thing that I think is is a potential solution to this sort of this
+loss of of kind of really culture. I think I think it's there there's a certain cultural sort of
+component here that that that has faded from the internet. And I think that it persists not
+in the same way. It's developed, but it it's that there's a certain kind of of
+closeness or coziness on for instance go for or Gemini. So I thought well I should start posting
+to go for because if there's no if there's no content there then people definitely won't go
+there. I mean that's that's sort of a self fulfilling prophecy. So let's let's start posting
+there. But how can I post there and on the the WWW how can I do both of those things in such a way
+that I don't you know that it's invisible to me. Well turns out that my existing solution for
+flat file CMS on the web could also work on go for and I'm I keep referencing Gemini sort of
+in passing and that's because that is a target. It's an eventual target. I have not if not actually
+started posting to Gemini because I'm not running a Gemini server on the server that I have access
+to which is a server that deep geek and lost in Bronx and I share. So we are we're we're looking
+at expanding our operations into Gemini but for now it's go for. So it turns out that that really
+I mean almost obviously if you think about it the same solution can can totally work for for both
+go for and WWW especially since I write all of my posts and mark down as it is which is really
+just a plain text format. It has some fancy markup here and there I mean it's I guess it shouldn't
+right it's it's mark down but I mean it does you know because there are things that you can't express
+in pure text in some instances so it's got some specialized notation for like images which don't
+really show up but you at least get to see what image you're missing or that you're not seeing an
+image and there are you know URLs which currently I haven't like fixed or repaired you know such that
+they point to internal go for links so it's it's a you know it's not it isn't like a perfect
+solution I could I could get in there and and and do some do some cleanup if I wanted to but it's not
+super urgent for me right now because I'm pretty happy with what I've got and and 50% of the work
+I had already done for myself so once again it's just a single it's that little gets bait and switch
+trick I create a get repository on the destination server and this is a bear repository so it's not
+meant to be interacted with on the server it is a place that I push to that's all so I create a
+bear repository and in the hooks directory post receive I do exactly the same script while read
+old rev new rev ref name get rev pars symbolic a rev dash rev ref and then ref name look at the
+ref name is that it does it match the branch that you want to to honor as the the primary branch
+if so then set the web directory to some directory set your get directory to some sub directory
+within that web directory and then push over to that web directory do a get pull and pop back
+to where you are and then go through the cycle again so exactly the same script not I mean other
+than in instead of setting your quote unquote web directory to slash vars slash html or slash
+you know users share or not users share I don't know wherever people keep their html folders
+these days I mean it could be in your home directory in public underscore html if that's the
+kind of server you've got you know who knows point is you're you're putting it to var gofer slash
+whatever my blog my fake blog or wherever you keep your gofer folder for you know wherever your
+little gofer server has set your gofer files to exist in and then you do the get pull there and
+now you've got to get directory that's populated by all of your just raw markdown posts now I wasn't
+super happy I wasn't entirely happy with that and also I mean you can do like a directory listing
+in gofer you can just tell it yeah like look at this directory and list all of the files like that
+that's that's enough but the way that my CMS structures things is that everything is within a
+sub directory and everything and all the files have a standardized name it's item.md so really
+the title of the post is the directory I mean it isn't but I mean that's functionally that's
+what happens is that your title your post title becomes the directory and then within that directory
+there's the the the article content and that's just a peculiarity of the of the of the CMS I mean
+if you were doing this on some other system for others some of the reason maybe that wouldn't be
+the case for me that is the case so what I ended up doing was I wrote a quick little cron job
+or a shell script rather which I do run as a cron job I think every just right I only
+wrote run it once a day because I only anticipate ever posting one or scheduling one post a day
+and that's an important component of this solution as well um one of the things that I want to be
+able to do on my gofer server is schedule posts I don't want because I write posts months in advance
+like I just I write a thought down in you know a hundred lines and I commit it to get and I
+schedule it for a specific date and the grab CMS looks at the published date and the date lines
+and for some reason it does apparently require both I don't know why but it looks at those lines
+and figures out when it's supposed to actually appear on the website and then your post appears
+on your website on the date that it's supposed to appear so it's got that scheduling component
+which I quite like because yeah you could just dump everything on a server but I mean part of the
+reason people go to a server you know part of the enjoyment I think of of blogs is that you go
+every day and see if there's new content uh I post every other day so that that's kind of the
+schedule so I wanted to be able to only have things up here on the day that I want them to appear
+which of course is the uh the the I think either publish underscore date or just date uh value
+in the in the post in the post content itself there's a header a yaml header at the top that you
+can grip for so I just wrote a little uh copy post to blog shell script and it just it it does a
+it establishes what day it is when this script is running and that's with a date dash dash rfc dash
+3339 equals date and if you run that command you get uh something like you know 20 25 dash
+o3 dash 10 let's say so there's that date and then I have it look in my uh base directory
+which is where I have all of my new posts that I've posted to get so this is the get repository
+that that that holds all of the um all of the posts no matter what date it is big people in the
+world aren't seeing this this is the big master repository of a bunch of posts so I do have for
+post in find uh my der base slasher staging type f name item dot md and then I exec grip dash hl
+for the date that I've just established it is and assuming that the date the date in the post
+matches two days date then we're in the loop and we do post der equals der name post so now that's
+the the the the directory of the the post that I've just found right I'm finding the top I found
+an item dot md file with the date in it so now I'm taking a look at the directory name that it's
+contained in so now I have the name of the article and I copy the post to my base directory to my
+live directory this is the one that the world does see but I name it I give it a name of the
+the the the name is the the directories name so again the the title of the article is contained
+in the directory and so I'm naming the post now the the text file I'm renaming it to whatever
+directory it was found in so if I have a look at all my cool new toys directory right that's the name
+of the post well that directory contains item dot md but now I'm I'm copying item dot md to the
+live directory the one that the world sees and instead of calling it item dot md I'm calling it
+look at all my cool new toys dot txt or something like that okay so I've just located a post it's
+supposed to go live today I've copied it to my live directory I do one more step and this is a
+very gofer I mean all of this is very specific but there's so when gofer like I say you can just
+tell gofer hey look at that directory and give my user a list of the contents which is a great
+option like I I really really quite like that it's one of those things that makes gofer actually
+that's one of the things about gofer that is nice it's like hey look I just want to share a bunch of
+files with you here are the files in a directory like you want to look at one open it up so I mean
+I could I could you know with with this solution with a get solution and a a quick rename I mean
+I wouldn't even have to do the rename to be honest that's really this whole cron job is a convenience
+function like I could just say I could just do a get pull and and just point gofer to the resulting
+directory the place where I've you know my live directory where I've copied all the posts to like
+I could just be done with that but I do prefer for the posts themselves rather than being in sub
+directories with the name item dot md I just think that's weird that's a weird non gofer like
+experience so I do I do the rename that I've just described as a convenience for the readers but I
+as a further convenience I guess for myself no no for the readers as well because okay so if you're
+just looking at a big file of directories then if you're a reader and you come back to the sir you
+yeah you come back to that gofer space and you think well that's you know I want to see if there's
+a new blog you go to the big directory full of files and which one is new like what are you going to
+do like a dip on the directory every day or something that's that's that's silly yeah I think the
+value of just like here's a big directory full of files that's for for people who have discovered
+the gofer space and just they they've got an evening and they want to read a bunch of stuff or they
+just want kind of want to get a feel for what you're what you're offering here so it's you know
+I don't feel like that experiences for like the return visitor like for the return visitor you want
+that syndication that sense of syndication almost an RSS feed except I mean it's on gofer so there
+is no RSS feed I mean I guess there could be in a weird way but I don't know how many RSS feed
+readers take go for colon slash slash as a valid um you are I these days so I don't put the RSS
+feed on the gofer server and instead I emulate it with this one weird trick which is that I create
+a directory called by date or I think I call it date or something like that and the and and I'm
+not saying I call it the date I'm calling I'm I call the directory d a t t e how do you spell date
+d a t e yeah or you could call it you know by underscore date I mean it doesn't matter the
+directory isn't the directory name isn't actually even gonna be seen by the readers point is
+there's a directory and in this directory by date there's a file called gofer map and gofer map
+is how you list how you manually list files on your gofer server it's kind of your index.html
+for a lack of a better analogy I don't love gofer so don't don't take any of this like technically
+speaking I do not love the way gofer manages things so don't take this as an endorsement I'm just
+saying the gofer space is not the www and that to me is refreshing the the some of the conventions that
+gofer uses I I just feel that they're inferior frankly but look a little bit of this a little bit
+of that right I mean you know technology is perfect there's gonna be things that annoy me about
+something so I mean this is this is the way gofer is it's got I got a folder and inside that
+there there's this gofer map with an arcane syntax but again it's whatever it doesn't matter
+right it's it's all it works so and this is cool so I do I I found a post with a date of today
+that I want to add to my sort of my art my my non RSS feed so I do an echo dash e the dash e is a
+it escapes some things because you do literally need a tab symbol like a tab character in your gofer
+map like for it to parse correctly it has to be a tab so you have to do an echo dash e so I echo
+dash e zero latest the zero is go for go for terminology for I think it's a text file or something
+I'd have to look let me let me look I have I've got it's so non-sensical that I just have like a
+go for cheat sheet in my home directory because I just how can you remember this yeah zero is a
+text file all right so that's why it's zero latest because you're telling gofer that the thing
+that you're listing here on this line of text is a text file so zero and then capital L latest so
+this this text the the the name that gofer is going to provide to the reader is the word latest
+they're not going to see the zero they the it's just gofer knows that it's a text file and it's
+going to be called latest and then the single quote backslash T close single quote that of course
+makes a tabbed character and then I do something like dot dot slash der live slash base name post
+der dot txt and I echo that into a temporary file over in the temp directory then I do an echo
+dash e of zero date and that is dollar sign date so this is the date that we've established it is
+today space the results of bait or so you know backtick base name post der close back tip tick single
+quote backslash or yeah backslash T close quote dot dot slash der live base name post der dot txt
+and I echo that into my temporary files now I have two entries I've got one for the latest
+blog post and then I've got one that actually lists the the current date it's the same article
+listed twice I do it that way because I'm about to replace the previous latest entry with my new
+latest entry so the latest entry is always getting replaced every other day every time there's a new
+article and everything else all the the ones with the date are getting filtered are getting shifted
+down a line and I just do that with a said command I said I find zero latest and I replace it with
+the contents of my new file and then I remove the old latest line pretty pretty easy stuff
+than I remove my temporary file and I'm done now this go for map listing these are just this
+just points to locations so I'm not like duplicating posts one in the by date folder and one in the
+by you know just the the big the big bucket folder like there there there it's there all all
+one is a directory full of files that you actually see on the file system that's the big
+by topic directories what I call it but it's just a it's it's a bucket of all the files while
+the the folder called by date that contains just one file which is go for map and it is organized
+or it is rather listing those files along with the date of the post which is the always the current
+date when when this is being when the file is being modified so it's it's listing all of the files
+by date and then pointing back to the actual files in the by topic directory this is not only
+sort of like simple because again it's not you're not really there's the you're not duplicating files
+you don't have to manage a bunch of stuff but it it also is quite effective for updates like
+like updates and corrections and modifications so if I ever go back and change I don't know the
+well if I if I just add something to a to an article or to a post that I've posted then when
+I do a git push of course the git hook detects that I've pushed new con or that I've that yeah
+that I've pushed new content to the master branch it copies the file to the live directory where
+the live directory needs to be with the change in the the file name and everything and and no
+modification is required for like the date updates like that that that listing is still correct
+because it's always pointing back to this big bucket of all of the posts but the big bucket is
+the thing being updated either every day when I or every other day when I post a thing or or
+or rat well I don't I shouldn't say it that way because I don't post every other day that's
+the point right I I'll write a bunch of things now in three days and then I'll forget about it
+for two weeks and then I'll write a bunch of things for three days and then I'll forget about it for
+two weeks that kind of thing so the updates just happen invisibly the the date the by date column
+or page rather is just pointing to the the files whether they were the files with a mistake or
+with a correction it doesn't care it's just a URI on the on the server so it's it it's a surprisingly
+robust system that I that kind of took me by surprise I kind of felt like like when I made
+updates I just thought to myself oh that's not going to it's not going to ripple through in the
+go for server and I kind of felt bad because I was like I'm kind of back to a a dual head system
+and this is kind of frustrating like a split brain kind of situation where I'm making updates to one
+thing and it's not going to ripple through to the other thing but I guess I'll just have to I'll
+just have to agree with myself that the get repository is the the central source of truth for
+these things and you know if the the website or the go for site fall behind somehow then that's
+just oh well but no actually it totally works like both of them are getting updates from get
+once get gets those updates like the moment it's received in the bear get repository then the the
+fresh version of that article is copied to the the public facing live you know live server and no
+matter what like whether it's grab doing the intermediate processing of the markdown or whether
+it's my a little cron job that echoes the name of an article by date whatever little system is
+working in the background all it's ever doing is referencing a URI and that URI is is there no
+matter what like that that that's the same URI no matter what I do with a get push that URI
+exists I guess the one exception to that that I haven't really thought through is like oh my gosh
+what if I publish an article and then I decide for some weird reason to change the name of the
+directory that contains that file then I guess maybe that would be a little bit something that
+that could cause a glitch in the system but at the same time I've done that in a total of zero times
+since doing the blog so I I feel like if that ever comes up if I just start doing that for some
+weird reason then maybe I'll I'll I'll have to sort of adjust make make adjustments to my little
+system and because this is all centered around get it's really really easy to make this all happen
+basically in one command I mean once you get the infrastructure set up I mean you you have to
+certainly create your get pull or your get hooks rather on your server and do all the copying and
+the any kind of cron job that you may or may not want or need you would have you know whatever
+CMS you're running oh yeah the infrastructure is is flexible but the idea of triggering everything
+with a get push is is you can you can you can target separate places with one command and and this
+is really nice so you do a get remote this is on your local system that you get remote set dash
+URL dash dash add dash dash push let's say um all ALL and then your you know URL your target for
+it for the let's say your web server whatever that might be might be um you know your name at
+my server dot or example dot com colon slash my get repository whatever uh and so now that exists
+as a push destination for a remote called all that's one location so then you can do a get remote
+set dash URL dash dash add dash dash push all and then another location your name at my go for
+server dot com slash or colon slash um var slash go for slash blog dot get whatever and so now
+you've got yet another push location so if you do a get push all ahead then now you're pushing all
+of your changes to to both destinations with just one command from your local work work bench as
+it were so really really easy to to make it trigger sort of chain reactions on two separate locations
+or more locations if you're if you're you know eventually so I suppose I'll probably be pushing
+to a Gemini server as well so who knows maybe that'll be a third destination probably not actually
+that'll probably happen on the server but you get the point the idea is it's really really nice to
+be able to just get everything sort of you know in one place one source of of of labor you're doing
+all your work in one directory locally and then with just one get push command you're pushing it
+to several different destinations the servers are doing their little jobs in the background and making
+it available to your audience pretty pretty cool um I hope this is um maybe not taught you anything
+new but maybe inspired you to use some new ideas uh and new hacks on the way that you uh manage
+and distribute content thanks for listening you have been listening to hacker public radio
+at hacker public radio does work today's show was contributed by a hbr listener like yourself
+if you ever thought of recording podcast and click on our contribute link to find out how easy it
+is hosting for hbr has been kindly provided by an honest host.com the internet archive and our
+things.net unless otherwise stated today's show is released under creative commons attribution 4.0
+international license

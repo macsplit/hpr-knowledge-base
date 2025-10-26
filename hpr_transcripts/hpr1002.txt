@@ -1,0 +1,176 @@
+Episode: 1002
+Title: HPR1002: LiTS 008: free: Understanding Linux Memory Usage
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1002/hpr1002.mp3
+Transcribed: 2025-10-17 17:11:40
+
+---
+
+Welcome to Linux in the Shell episode 8, my name is Dan Washgroo, I will be your host
+today.
+Today we are going to be talking about the free command and understanding Linux memory
+usage.
+First I want to thank Hacker Public Radio for hosting the audio and the website for
+the show and to remind you to get a full right up of this episode head on over to Linux
+in the Shell.org, look up episode 8, check out the free command entry and also you can
+watch the video of utilizing the free command.
+Alright, let's talk about the free command, the free command is a snapshot into how your
+system's memory usage is, how much memory is being utilized, how much is free and how
+much swap is actually being utilized and how much is free.
+Very basic information but can be alarming if you are not familiar with how Linux utilizes
+the memory of your system.
+So by default if you issue the free command and hit enter, you will see a line says
+mem colon and followed by six columns, total used free shared buffers and cashed.
+Now the output of the values here will be in bytes by default and of course in today's
+systems having four or more gigs of RAM, displaying it in bytes may not be the most
+ideal way that you want to see it.
+Well free has a bunch of options to how you can display those values and depending on
+how your system is at a version of free, you have available to you the following options.
+Again dash B shows it in bytes and that's the default, dash K shows it in kilobytes, dash
+M shows it in megabytes, dash G shows it in gigabytes, dash dash Tara, that's TRA shows
+it in terabytes.
+So if you have terabytes of RAM available so you can display that.
+Now I prefer to use the dash H as much as possible and that's human readable mode.
+What that basically does is it takes the largest value of three to be displayed.
+So if you have a gig of RAM in your system and you do the dash H, more than likely it
+will report to used and free in the largest human readable value of three.
+So that would be more than likely megabytes being utilized.
+Now if you only have 512 megabytes, it may show the values in megs or in kilobytes.
+Again, it's all dynamically determined by the largest value it can show in that three
+digit format.
+So when I issue free dash H on my system, I have 1.5 gig of RAM, it shows me total and
+the first column used it shows me in megabytes and free it shows me in megabytes and it pretty
+much shows everything in megabytes.
+Instead of saying if I were to show it free in gigabytes, dash G, it would show me a total
+of one gigabyte being total and zero for used and zero for free because it can't, it doesn't
+show percentage values or decimal values, it only show full integer values.
+So if I do free M, it shows me 1,501 megabytes available, 858 megs use 8643 free.
+And again, if I were to try and show it in the dash Terra, because I don't have a
+terabyte of RAM, it reports all values is zero because again, it can't show it in decimals
+or whatever.
+Now continuing forward, when I issue the free command, free dash H, I shows me, for instance,
+I have 1.5 gigabytes of memory available to me, used 862 megabytes and 639 megabytes
+free.
+Because those values in the first row under M, may not be what you would expect to see
+and you may be alarmed, should you see that over 90% of your RAM is being utilized and
+you have 10% free or less, don't be alarmed right off the bat because you have to understand
+how Linux kernel is using memory.
+What the Linux kernel does with your free memory is that it allocates to what's called
+the buffer cache.
+And the buffer cache is this area of memory the kernel utilizes or secures, so to speak,
+to hold data.
+Data like recent information pulled from disk by an application or information that needs
+to be written out to disk by an application.
+The thought behind this is reading and writing from a disk is a lot slower than reading and
+writing from RAM.
+So if you take some information off a disk, you call information to be utilized by a program,
+for instance, like the LS command, it'll pull it into memory or a value of a find search,
+it'll pull it into memory.
+And the idea is, chances are you're going to want to do something again with that memory,
+that information that you pulled off of the disk.
+So it puts it into the buffer cache space allocated in the free RAM so that if it needs
+to do something with that data, it pulls it from RAM instead of having to go back out
+to the disk again.
+So if it's writing to disk, if an application wants to write to disk, the kernel will take
+and put it into the buffer cache and then write it out to the disk, in some cases, so
+that the program can continue doing whatever it's doing and not have to wait for the information
+to be written to the disk.
+Just like a program might be running, pull some data from disk and it might need to get
+that data again.
+Instead of having to pull the data from the disk again, it pulls it right at the kernel
+gives it to it from memory and if the program continues on, it doesn't have to wait to get
+the information from the disk.
+It's a method to reduce disk utilization and to speed everything up because accessing
+information from RAM is a lot faster than accessing information from disk.
+Now the amount of memory used by the kernel for buffer cache can be fairly small depending
+on what the system is doing to almost 90 to 95% of your free RAM that's available to
+be utilized.
+So understand that the way that the kernel then handles that, to you, it's technically
+still free RAM, to applications, it's free RAM, to the kernel, it is being used by the
+kernel for something.
+It should an application need RAM or need to use memory, the kernel will start jettising
+the data in the buffer cache and give it to the application as needed.
+The data being thrown out will be the least used data or the least access data in the buffer
+cache.
+So if there's something being accessed currently, it's not going to, it's not necessarily
+first in first out basis.
+It's based upon usage, if it's not, it hasn't been used for a long time, it's been stale,
+it doesn't keep it in the buffer cache.
+It might even jettison, you know, you'll see that that buffer cache, your usage, you
+don't grow and shrink as the system does different things.
+But should your system need, should an application need that RAM, it's still considered quote
+free.
+So looking at the used and free values in the first row, taking a consideration that
+you also have to need no, the amount of buffer, the amount of memory being used for the
+buffer cache.
+And you can see that a more accurate picture of that on the second line that says minus
+slash plus buffer slash cache.
+What that shows you is the amount of used memory, not including the buffer cache and then
+the amount of free memory, not including the buffer cache.
+So it's the values without the buffer cache taken into consideration.
+Now if you look at the first column or the first row of free on the memory line, there
+are three columns after buffer, after they used and free, they're shared, there's buffers
+and there's cache.
+Essentially, shared is not used anymore, it's obsolete.
+But buffers and cache, if you add those two values together, you get the amount of RAM
+being utilized by the Linux kernel's buffer cache.
+And you subtract that value from the amount of used RAM on the first line, you should get
+an approximate value for the amount of RAM used reported in the second line, the second
+row, the buffer cache row.
+And if you add it to the free, you should get a value roughly equal to what's in the
+free value RAM available to you.
+So you can see all that information on the first line, second line breaks it down a little
+easier for you.
+And then the third line is your swap and free.
+That tells you how much you may have a swap file or swap partition, how much of your
+swap available system swap is available, how much is being used and how much is free.
+So that's pretty straightforward.
+So just take into consideration that even if you are showing a 90 plus percent RAM utilized,
+pay attention to how much of that is RAM is being used by the buffer's cache.
+Look at those last two columns of buffers in the cache and realize that technically to
+the kernel, it's being used, but to you and to applications, that memory is available
+to be utilized.
+So don't be too alarmed.
+Now if the amount of physical RAM applications are using starts to exceed 90 percent and
+don't know what the exact threshold performance threshold would be on this.
+But if you see your RAM usage growing and it's actually RAM utilized by applications, at
+some point you're going to hit that threshold where the amount of memory being utilized exceeds
+the amount that the system would like to have for that buffer's cache and therefore applications
+are going to be calling data directly from disk and you won't have that busher buffer
+cache to be able to store that information.
+So performance is going to be a little degraded because you don't have enough buffer cache
+available to you.
+But then again, if you're exceeding 90 to 95 percent of your RAM, better watch out as to
+what you're doing.
+You might have to stop a few processes because you have something heavy due to going on
+or you have a runaway program that's consuming too much system resources.
+So just be aware of that.
+Now finishing out the free command, there are a few other options that are of value to
+you.
+The one is dash t or total, which will show you the totals on a fourth line of how much
+RAM and swap your systems is utilizing.
+Totals will not, it will add up the first and the third line and provide those totals
+so you get the memory and the swap and it will not take into account any buffer cache
+utilization.
+So that's total.
+There is the dash s, which stands for seconds and what that will do is run the free command
+every and seconds and display the output of free.
+So if you did free dash s five, it would show the output of free every five seconds continuously
+until you killed it.
+You can use the dash s with the dash c or dash dash count option, which allows you to
+display the output of free every and seconds for a number of iterations specified by dash
+c.
+So free dash s five dash c ten would display the output of free every five seconds for
+ten iterations after which it will return control back to the shell.
+You can only use the dash c option in conjunction with dash s.
+That's free in a nutshell.
+Just remember the output of free, pay close attention to the buffer's cache and don't
+be alarmed if the first row shows a used and free that exceeds your expectations.
+I want to thank the last known god for reporting to me a website called Linux8MyRAM.com and
+the all-cast planet channel on IRC and free node.
+That's a great website for explaining Linux memory usage and this whole thing I just
+talked about in the buffer cache.
+Head on over to linuxinachial.org for the full write-up of this episode and in the bibliography
+I have the links to that website along with a few other websites for your information.
+Thank you very much.
+Have a great week.
+Remember, contribute to HackRepublicRadio and enjoy.

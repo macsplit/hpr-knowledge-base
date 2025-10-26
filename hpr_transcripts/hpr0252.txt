@@ -1,0 +1,379 @@
+Episode: 252
+Title: HPR0252: Google App Engine 101
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0252/hpr0252.mp3
+Transcribed: 2025-10-07 14:52:44
+
+---
+
+...
+Yeah.
+The following presentation from the Utah Open Source Conference held August 28th through
+30th 2008 is underwritten by Ex-Mission.
+Since 1993, Ex-Mission has developed and supported effective connectivity, hosting and co-location
+services for thousands of Utah residents and businesses, Ex-Mission.com.
+Streaming and podcast hosting bandwidth for this and many other presentations at podcast.utos.org
+has been provided by Tier 4.
+The presentation entitled Google, App, and Gen 101 was presented by Jonathan Ellis.
+So I'm going to talk about using Google App Engine, specifically using Google App Engine
+with Django.
+As I was telling the gentleman here before we got started, Google officially says you
+can use any Python web framework you like that supports the whiskey protocol.
+In practice, they ship Django with the SDK, so they're really kind of saying, you know,
+use Django.
+And also, if you try to use other ones, Google kind of ripped the hell out of the standard
+library, the Python standard library, and they only really bothered checking to see that
+the library that Django needs are still there.
+So a lot of the other frameworks are like, hello, we need the AST module and a bunch of other
+things.
+So in practice, you can get other things to run on it, but it's a lot of work.
+And by a lot of work, I mean probably several hours.
+So it's not what you want as your first introduction to App Engine.
+Welcome, everyone, who's just coming in.
+So I have my slides up here and some code that we're going to use for doing some hands-on
+exercises here.
+And over there on your right, the URL is on the right board.
+Just go to a slash JLs and you'll get a directory listing and you can pick up those files
+because we're not going to have this slide up very long.
+So I'm going to talk about, and we're going to do a, I'm going to demonstrate a simple
+two-dualist application.
+And we're going to talk about the data model.
+We're going to talk about controllers and views, which, which Django calls views and templates
+respectively, which is a little confusing.
+And then we're going to talk about URL mapping really briefly, which is, which is simple,
+how Django connects the URLs to the controllers.
+So that's what we're going to talk about.
+I said Google Avenue ships Django, which, you know, it's true, but it's not useful because
+they ship the 0961 version of Django, which is, you know, to be fair to Google, they didn't
+have much choice.
+It's the only stable release, but it's over a year old.
+So, you know, the documentation doesn't reflect it anymore, and it's kind of old and busted
+and still works, but it's not the new hotness anymore.
+So the Mono is in release mode, beta 1 came out a couple weeks ago, beta 2 came out more
+recently, and the Mono final is scheduled for early September.
+So the code I'm demonstrating is using the beta 1.
+And that's the way to go moving forward.
+So what you need to do is use something called App Engine Helper.
+And what that does is it allows you to download a newer version of Django and wedge it into
+App Engine and just kind of remove the pull out the old Django that it ships with and
+use the newer one.
+And it does all the work.
+It's like magic.
+It's really cool.
+There's nothing to know about Google App Engine.
+App Engine and Django is, there's no relational database on App Engine.
+So who's kind of familiar with App Engine, who, okay, so maybe we should back up a second.
+App Engine is, it's kind of like a shared hosting service for Python code that doesn't have
+a relational database.
+What they have is they have the data store API, and what that is, it's a wrapper around
+Google's big table, which you've probably heard of.
+So what it is, it's basically an object database.
+And you can retrieve objects by keys and you can query objects by their attributes.
+It automatically indexes attributes for you.
+So that's nice.
+There are some limitations there that we'll talk about later.
+The other things about Django are, it has a bunch of kind of helper libraries out of
+the box.
+And a lot of them don't work on Google App Engine like the section middleware and the
+cache middleware.
+You know, these stuff, this stuff, the App Engine helper fixes, it fixes the section
+to work with the data store API, and Google recently released a MIM cache API.
+So it can use that too.
+But you know, it's not what, it can't do anything about the database API, it's never going
+to be a relational database.
+So Google App Engine and Django are both well documented.
+The documentation for App Engine is here, documentation for Django is here.
+So I'm just going to give kind of an overview of using them together because that's what's
+missing.
+There isn't any real, there aren't any sample applications provided using Django on App Engine.
+And there isn't any documentation either on how to use App Engine helper here to make
+your life easier.
+There is this thing called, they have a page called running Django on Google App Engine,
+which is basically how to write your own App Engine helper in five hours or less, you
+know, it's not where you want to go.
+So just use App Engine helper and your life will be good.
+So here's how you get started, and you don't need to do this with the tarball because I've
+already done it for you, but if you want to start your own application, these are the
+steps you follow.
+First of all, you need to get the App Engine helper from this URL and you need to get it
+from SVN because the released version, which is released 52, doesn't support Django
+1.0.
+So you'll need to grab that from the subversion until they do a new release, which will
+probably after Django 1.0 final.
+So then you grab a Django tarball, and you unzip it, and then what you do is you take the
+Django directly out and shove it in there, then you remove some files that you don't need
+because Google has a 1,000 file limit, Django has more than that.
+So you actually need to rip out the stuff that you won't be using.
+That will allow it to work.
+So there's two settings files that we're going to care about with Google App Engine.
+One is the app.yaml, and this is really simple.
+It's App Engine specific, and what we do, this is the only thing that I've changed from
+what App Engine helper comes with.
+App Engine helper comes with one of these out of the box.
+It also comes with a settings.py out of the box.
+And it's very same default.
+I only had to change this and one line in settings.py, so I just gave it the name of what my application
+is going to be.
+And then this, I didn't have to change, but I put that in bold to emphasize it, because
+the static DIR tells App Engine, this is where files live like, you know, your PNGs, your
+JavaScript, your CSS, but don't need to be interpreted by App Engine.
+And then everything else we're going to send to the Django main.py, which again, you don't
+have to worry about App Engine helper did it for you.
+So settings.py, the one line we had to add there, is also we need to tell it, you know,
+besides the App Engine Django app and authentication app, we want the to-do app, which is the one
+we're writing.
+So inside the to-do sub directory, we have an empty file that says, hey, this is a Python
+module, let us run Python code here.
+And then we have models.py, views.py, and templates, which is the data, the controllers
+remember, in Django, when they say views, they mean controllers, and then templates.
+So let me just give a quick demo here, and what the application looks like that we're
+going to be talking about.
+So the index of the application is just lift, just lift your to-do list.
+You can have multiple to-do list.
+And then we have the box to make a new one.
+So let's make a new one here.
+We've got a second one, and we can click on the list.
+We have items in them that we can might finish.
+Let's do that here, and my total is in finished, and they're, you know, my finished, we can
+create a new one, and that's all the application does.
+So we've got basically three actions, we've got two pages and three actions on them.
+So the pages are the index in this one, and the actions are created a new list, created
+a new item, and mark that in finished.
+So we'll be going over the code that does these now.
+So here's two objects that we're dealing with, we're dealing with list objects and item
+objects.
+So in the list, we just have a title, and we have a user property.
+Now you're familiar with whatever programming language you're in, it has strings, so we
+won't cover that.
+But you probably haven't seen user properties before.
+So this is one of the cool things about App Engine, is it's seamlessly integrated with
+the Google account API.
+So all you have to do is say, now this is a user property, and we'll see a little bit
+of code that we use to hit this into our application.
+And then it's automatically, anyone with a Google account can log into your application,
+and you'll know who they are, and you can associate content with them.
+And then we have the list items, which we have a string property again, we have a date
+time property that says when it was finished, and then we have a reference property.
+So the reference property is kind of the stupid half-brother of foreign keys in a relational
+database.
+And what this gives you is it says that I'm related to a list, and then we also can give
+a collection name equals items, and what that does is it puts a property into new list
+that I didn't have to declare, so I can say list.items, and it will query for the items
+that are associated through this reference property.
+So that's the reason I say that this is kind of the stupid half-brother, is this two
+things it doesn't do.
+One is it doesn't do referential integrity.
+If I have a list that has a bunch of items, I can blow the list away, and if I'm not careful
+in my code, then I can just leave these items orphaned with an invalid reference.
+It will not stop me from doing that.
+So if you're using my SQL, you're probably used to that, but otherwise, that's not something
+you like.
+The other thing is that in a modern object relational matter, if you have a list items, you
+can say items.append and put a new item in it, and it will take care of writing that
+to the database for you.
+Not so here.
+The dot items property that it generates will only let you query it, only let you iterate
+through those items, and you can filter on them and give them, you can do an order by,
+you can't modify it through that list.
+So in that respect, it's kind of weak.
+So those are our models.
+This is the whole model.
+This is the whole file.
+There's nothing else in there.
+Now I'm going to talk about the views, which is, again, remember, views means controllers,
+and I'm going to go through this piece at a time, because it's a larger file.
+So first I have a couple of forms declared.
+So this is part of Google App Engine, implemented something called Django Form.
+So it's not part of Django, but it's inspired by Django, and it looks a lot like the Django
+Forms API.
+So a model form means we're going to make a form based on these models that we just declared.
+So all we have to do is we have a class meta, and we say what model it belongs to, and
+then we can either include or exclude attributes off of that model.
+And I like to use exclude, because then if I go back here and I add a new attribute,
+it will automatically be in my form, and I don't have to do anything else.
+So I like to exclude one they don't want, rather than explicitly enumerating the ones
+they do want, but either way is supported.
+So we're going to exclude the user property there, because we're going to get that from
+the authentication API, and here we're going to exclude the reference property, and we're
+going to exclude the finished part, because that's going to be done by a separate one.
+So the controller, so this is the index controller.
+So this is what controls this, not this page, but this one.
+So we're going to have a list of our 2D lists, and then we're going to have a new list
+capability.
+So this part here, where we say every question method equals post, that's creating a new
+list.
+So we're going to skip this for now, and just look at what we have to do if we're just
+rendering the page.
+So what we do is these two here, 2D lists, but GQL, and query 2D lists, I commented out
+one of them, because there are two ways of doing the same thing.
+And I wanted to show you that there's kind of two data APIs that App Engine exposes.
+So this kind of, you build strings and execute them.
+So I'd like to do the other API better, it's kind of more object oriented, more modern,
+but Google is like, oh, that might be scary to people.
+So we're going to let you write GQL instead of SQL.
+So it kind of looks like SQL, and that's what that is.
+And then the other one, we have a dot order function that takes the attribute to order
+function, that's a dot filter, and that's pretty much all you can do with them.
+And then what we're going to do is that we have a list, or in this case, are iterable,
+meaning it's not a list yet, but it knows how to create, it knows how to get a list.
+We're going to return the template, so this is our template name, and then we're going
+to do something called local.
+That's because render to response takes a template an dictionary, meaning a hash table
+of values that the template cares about.
+So let's just look at that template really, really quickly.
+The template cares about a variable called to-dos, and it cares about a variable called form.
+So we could either explicitly put those in a dictionary, or we could use this Python
+function called locals, and what that does is, take the variables in my local name space
+and put them in a dictionary where the keys are the variable names, and the values are
+the variable values.
+So we've seen two dudes that the template cares about, and let's look at where the form
+comes from.
+Again, if it's posed, we're going to create something, we're not going to look at that right
+now.
+We're going to look at what we do when we don't create a new one, we just form equals to-do
+form.
+So that's what we said, class to-do form, that's what it's talking about.
+That's all we need to do to create the form object.
+And then when we're in our template, we need to put the form in the template by using
+bracket bracket form.
+So this is kind of the equivalent of PHP, no bracket percent equals.
+It says, no, print this into my page.
+And then you'll see it, but around it, we have table tags, and that's because the general
+forms use tables to make the forms line up nicely by default.
+So if your CSS bigot, you might have a problem with that, but it does make-the benefit for
+me is that I don't have to include any CSS to make things look halfway decent.
+But it does make things a little cranky, and that, you know, I have to kind of know what
+the table is doing to put my TRTD tags in for my little inputs to knit there.
+Okay, so that's the form, and then the listing the to-do is, we just have a for loop, and
+then we have-we're just going to put in an HREP to the page dealing with that list, and
+put the to-do dot title in it, and that's all there is to it.
+I do want to mention this, this looks like Python, if you're familiar with Python, it looks
+like Python, but it's not.
+Daniel templates are not Python code.
+These things where you have a bracket percent, this is called a template tag.
+This template tag is a for tag, and it happens to accept code that looks like a Python
+for loop, but it's not really.
+So for instance, if you wanted to do an if, there is something that's an if tag, and
+you can just say if Boolean, you can't say if Boolean equals condition, no, you can
+just say if Boolean.
+If you want to do an equals equals, you need to use the if equal tag instead.
+So it starts to break down.
+It's not really Python, and so as soon as you know that the less confused you're going
+to be.
+So let's look at what happens when the user creates a new list.
+So what happens is it comes in with the classical post, because that's what I said here in
+my form, method equals post.
+So we come in here, we instantiate the form, the next time we pass the post variables
+to the form, so it knows what data to use, and then we say if form is valid, then we
+say form.save, and what we're going to do here is we're going to say commit equals
+file.
+So what I said is I'm going to modify this object that's created for me afterwards,
+and I will take care of putting it in the database.
+So if I took the commit equals file, it wouldn't be incorrect, but it would be inefficient
+because it would be saved once here, and then once here, which is put as the app engine
+data store, you know, save this to the database call.
+And that works whether it's a new object or an existing object.
+So notice that form.save, we said form is a two new form, and it knows about two
+new lists, so save will return a new object of whatever type we declared, and it will
+stick the data from a quest.post into the appropriate attribute.
+So then the other thing, we had the reason we said commit equals file here, because we
+want to set the user attribute, and so what we're going to do is we're going to call
+getCurrentUver, this is from the app engine API, and stick that into the user attribute.
+So the only thing you might be saying, well, what if there isn't a logged in user, haven't
+I just stuck a no or a none attribute here?
+Well, up here we have login required, this is called a decorator in Python, and decorators
+are something that their functions that can wrap other functions with code.
+And so this particular one wraps the index function in code that says if the current
+user is none, then redirect and make in log in, that's what this does.
+So that's all the code I had to write to integrate this with Google accounts.
+So what that does is, let me see if I can, no, I don't have a, I'm not actually not going
+to demonstrate log out, because I would take too much time, but what you can do is when
+you run this for yourself, that's my presentation, when you run this for yourself, you'll notice
+that the first thing it does when you go to the index is it will ask you to log in, and
+since you run the development server, it doesn't do any actual authentication, whatever email
+address you give it, it will say, okay, you're good, but when you upload it to Google
+App Engine, you would actually authenticate versus Google accounts.
+And I didn't mention this, but this is what you run once you un-vip that code, and for
+those of you who just came in, the code is up there, just go to slash JLS, you'll get
+a directory listing, everything that starts out with Google App Engine, that's what you
+want.
+And then you'll see these as to the directory you un-vip and my managed up high run server,
+and then you go to port 8,000 on localhost.
+So back to this, we're done, we're done talking about the index page, so let's talk about
+what happens when we go in, when we go into a list, and mark some items finished, so I'm
+going to, I have my checkbox, and I have my mark button marked things finished, sorry,
+this is a new laptop, and not 100% used to it yet, all right, okay, so the controller
+says, but when we get to this method, we know we're submitting a form, so I didn't bother
+with any if request equals post, every time this is called, it's submitting a form.
+So what we're going to do is, this time we're not using a model form, we're rolling our
+own hard way, which sometimes have to do, and so what that looks like is, we're going
+to say request.post.getList, and then this is the name of the checkbox, so what does
+this, not it, you can have multiple checkboxes submitted at a time, then we're going to get
+all of them, and then for each of those, we're going to turn it into an integer, and then
+these brackets here, turn that into a list, and pass that to get item by ID, so get item
+by ID that basically, you know, get, fetch an object by its key, and so it can either take
+one object, or, sorry, one integer, or it can take a list of integers, and we're passing
+the list of integers, and it just knows what to do with either of those, so we put that
+into our items variable, and then for each of those, then we set the finish date, and
+we save it, so again, this is an existing item, but we still use .put to put it back in
+the database, so there's a couple things here that you might be thinking, oh, this is different
+if you know how relational databases work, and relational database, I'd just say update
+to the items, set finish equals current time stamp, where ID in this list, is one statement,
+I can't do that here, I have to read the items in, loop through them, set the finish and
+save it, explicitly, so, you're kind of seeing the dark side of the data story at PINL,
+is that, you know, it is an object database, it's not a relational database, and you have
+to pull the objects in to manipulate them, the other thing to note here is that they tend
+up now, isn't always what you might think, and what that means is, because data storage
+in distributed database, or rather big tables in distributed database, they tend up now
+will be different things on different machines, so if you have two requests coming in, and one
+of them runs on one machine, and one runs on another, you know, if you rely on the first
+request having its item spinach before the second one, then you might be in first
+surprise, so there's more information on Google's side about, you know, how to deal with
+this, I won't go into the details there except to note that you want to be aware of it.
+If it's more than a few seconds off, and they do the same things like your NTP, but,
+you know, if you're talking about millisecond level, then, you know, nothing you can do
+about that.
+Right, but nothing like, I wouldn't expect to be a minute off, I wouldn't either, I wouldn't
+either.
+So, let's look at how these functions that we've been looking at, these are Python functions
+with March finished, and index, let's look at how these functions get mapped to URL.
+So that's in something called URL.py, it's in the root of the application, it's not in
+the 2D sub directory, and it's just, there's a single line that says URL patterns equals
+patterns, there's a function called, and says look for these functions in this Python path,
+so to speak.
+So it's in the 2D sub directory, in view.py, so we leave the views off, or we leave the
+dot.py off, and we just use a dot instead of, instead of slash.
+And so then we map, this regular expression just says beginning of string end of string,
+if there's nothing there, we go to index, and we say, if it starts with a list, then
+have slash D plus, that's slash D plus, that's just a sequence of integers, then we go
+to the 2D list represented by this key, and what this part is, is it says, let's name
+this regular expression group, and they were going to name it ID, and the reason for that
+is, this is optional, but the reason for this is, we have parameters in the 2D function,
+which I didn't show you, and I won't be, because it doesn't really show anything
+else interesting, but there's an ID parameter there, and so it's saying, this is the group
+that we want to turn into that parameter, and that's optional, because if we leave it
+off, then we'll just pass the groups in as parameters, and the order they were given,
+but I think it's a little more maintainable, if we name them, and then we'll remind
+it when we're looking at that, what's going on.
+So if you're saying that regular expression seems like a terrible way to specify URL, I'm
+kind of with you there, but that's how it works, so, and it's not too bad if you're
+good with regular expressions, and then we're going to map Mark's finish to Mark's finish
+that's straightforward, so like I said, I skipped the 2D method and the template in order
+to give us more time to write some code, so, assuming, so who has the App Engine SDK installed?
+All right, everyone gets to go download that, so just remember if you're, they don't say
+this on their site, but if you download it on Linux, everyone else gets an installer,
+Linux doesn't, you get a zip file, unzip it, and just move the Google underscore App Engine
+directory that comes out, move that to user local, because that's where the server code
+looks for it, so just put it in user local, and then I've got the zip file of code over
+there, any questions while, while we're getting started on that?
+I'll give you a second to think about questions, and while you're doing that, let me give,
+let me, I'm going to use our Python user group here, use the Python.org, we have an ISC
+channel, it's very active, if you decide, hey, this App Engine stuff is cool, but I don't
+really know Python, you know, come over here and ask us, there's almost always someone
+there, and you know, we're really helpful, we also have a mailing list, it's more traffic
+because we like the instant gratification of IRC. Also, I went for a company called Feature 50,
+we do cool stuff, we do good hardware, we have 20% time, we work the famous people,
+send me a resume, and I won't go, I won't believe that anymore, so, so, we do Java and JavaScript
+as well, so I will leave this up, and I will go to write a link, while you guys are
+downloading the SDK, and so forth.
+.
+.

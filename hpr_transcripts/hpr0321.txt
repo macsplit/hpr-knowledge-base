@@ -1,0 +1,687 @@
+Episode: 321
+Title: HPR0321: Parrot
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0321/hpr0321.mp3
+Transcribed: 2025-10-07 16:19:54
+
+---
+
+music
+The Utah Open Source Foundation brings the Utah Logs home.
+Feel free to listen live at stream.utos.org or catch the audio afterward at podcast.utos.org.
+The bandwidth is provided by Center 7.
+The following presentation, Parrot, was given on March 11, 2009 by Stephen Weeks at the
+Provo Linux user group.
+Visit their site at plug.org.
+Wow.
+Wow.
+Happy.
+Hello.
+Let's see if this works again.
+My ex-server wouldn't wake up.
+What?
+I'm not sure.
+No.
+I'm not sure if it works.
+I don't know.
+I'm not sure.
+I'm not sure.
+I'm not sure.
+I'm not sure.
+Oh, I'm not sure.
+I'm not sure.
+I'm not sure.
+I'm not sure.
+I'm not sure.
+I'm not sure.
+I'm not sure.
+I'm not sure.
+I'm not sure if it works.
+Maybe we could, kittens or adults?
+Or could we wake up?
+And I was trying to log in again.
+It was working before.
+I'm here from Guru Lab's Parrot is really cool, so excited about Parrot.
+Parrot is a, it's a virtual machine for dynamic languages and video settings.
+And it's also a set of compiler tools on top of that, let me see, let's click here and
+just say, no, don't be disabled, shut up.
+Yes, this is how I teach all the time.
+I shout profanities at my laptop, that's, whoa, am I, that will have to be good enough.
+Now my display right here is very, very tiny, doesn't show as much as up there does, it's
+interesting.
+But I don't have an ATI card, I have zero ATI cards.
+I'll just look up there, how the work.
+Clint doesn't have to be nice.
+Anyway, right, I was saying things, sorry, a bit flustered, I'm also a bit sick, so if
+I fall on the ground coughing, just leave me for a minute, I'm sure I'll be fine.
+So Parrot, like I was saying, Parrot is a virtual machine for dynamic languages and it's also
+a set of compiler tools for building your own compiler for Parrot.
+One of the main goals of Parrot is to be able to allow all these different languages to
+interoperate with each other.
+You write your Ruby script, we're getting there, right now, at this very moment, most of
+that doesn't work because most of the languages library is, well, we're getting ready for
+our release in six days, six days will be the Parrot 1.0 release, which is good.
+How many people here know anything about Parrot, read about it, looked at it, okay.
+So the main thing I'm going to present on here is I wrote a little scheme compiler in
+Parrot and we're going to run through how to build the compiler and implement scheme.
+I had this prepared in advance and I apparently deleted it, I'm not sure, it wasn't on my
+laptop as of midnight last night.
+So I wrote it again in about three hours today, so that's good.
+These penguins here, the goal for these penguins is if you wanted a penguin, you have to
+ask me a question during my presentation.
+Your question is going to be if you can have a penguin, isn't it?
+That's a meaningful question, too.
+So any questions before I get started here?
+It might be one on IRC.
+It might be, I should, I could try to pay a tanking IRC.
+Yeah, that's good.
+Apparently he raised his hand but he doesn't ask the question so we'll wait.
+That's good.
+All right, so let's talk about Parrot.
+All right, so the very first thing I did to try to build this compiler is around this.
+There's this little tool of make language shell and go ahead and just run a Parrot slash
+live slash one to bell, tools, dev, that's not right, I don't care, anyway, get it, check
+it out, one.
+Here we are, creates this little directory for you, it's got the very basics implemented.
+It's with little test, which all this language is, is just say statement.
+It's the word say, followed by some text and a semicolon.
+So we can compile this, see if it works, then I'll show you a little bit about what we
+have here.
+All right, so if I run a Parrot on this steam.pbc, that's for Parrot bytecode, that's the
+compiled bytecode repeating myself here, run it on, it's yours or say, so it apparently
+works.
+All right, so let's walk through the different stages of this compiler, the very first stage
+is going to be the parsing, so we need a grammar here, so let's source, parser, grammar.pg
+or program, these are purl six rules, kind of like regular expressions, and so it's
+got comments here in pod, which is purls, markup, purls, commenting stuff, so you're going
+to find a grammar, it inherits from the PCT grammar, PCT is the Parrot compiler tools.
+All right, so we start off with a rule, it's kind of like a regular expression, there are
+two things here, rules and tokens.
+The difference is that in rules, white space is significant, any section of white space
+is replaced with a call to the WS rule, and so it's white space in your rule here represents
+white space in what you're trying to parse, right, which it'll work out, doesn't matter
+that much, we'll see it in a minute, anyway, so we want to parse inside of angle brackets
+is calling a named other rule, right, so it calls the statement rule, which if we look
+down here, that's the liberal text, say, followed by an expression, find later on, followed
+by a comma, another expression, any other, most of you familiar with regular expressions
+to some degree, vaguely kind of shut up.
+If anything I'm talking about just makes no sense to you at all, just throw something
+at me, or shout angrily, or let me know somehow, or, no, not at me, it's no things at
+pause, so, but care, anyway, calls the expressions, goes on like that, pretty straightforward, it's
+a pretty simple syntax, I'm not going to get into it too much with this, we'll talk about
+the scheme syntax, which I'm going to show you in just a minute, let's just go ahead
+and move to that, whenever moving along too quickly, or, I'll just trust you guys to
+harass me appropriately, anyway, the changes that I made here, right, a statement, which
+this top rule that's where it comes in, it starts parsing here, so any number of statements
+is a valid program, and after that it's either, the end of the string, so the dollar sign
+means is the end, or it panics, or they syntax error, so just bail out, so first we start
+with an open parenthesis, it's going to be a symbol, which I define all the way down
+here as just the built-in little thing identifier, which is, you know, ASCII, I'm sorry, a word
+character, letters, numbers, alpha numerics, that's what I was going for, some number of
+those, and I'm giving it the name, CMD for a command that you're running on scheme, right,
+the scheme syntax, hopefully all familiar with this, ASXpressions, so that'll be something
+like, you know, print, hello, right, something like that, it's going to be your scheme, vaguely,
+I don't actually delete no scheme, so this is based on little tutorials and grammar
+references and such, and then some number of other terms, which I'm going to find down
+here, become down a term, this leading a bar that's an OR, usually you'd see that in
+some kind of grouping, there's no grouping, so this just means either it's a value, or
+it's a symbol, right, so match those value, we come up here, that's this rule, right, that's
+either an integer, which is defined right here, or a quotation, right, which is defined
+here using some built and stuff, that just means either an apostrophe or the double quotes,
+and then everything leading up to the trailing double product, so I am skipping over kind of
+a lot, if you want me to stop and go into anything that I skip over, again, let me know,
+right, and then it has to be a close, now this special little curly brace star,
+close curly brace, what this means is, this is a use when we're actually trying to
+transform our parse tree farther down, but let's get into that in just a minute, so first
+let's see if this works, right, let's see if this parses some basic stuff, all right, so
+let's recompile it, oh go away, I don't want that right now, that's my take typing
+breaks thing, so my hands don't hurt, let's run parrot on steam.pbc, whoops, and let's
+say dash dash target equals parse, so let's see what happens, what it spits out when we
+give it a little expression, right, so let's say say hello, oh, and that's worked earlier,
+aha, did work earlier today, what's, what, since when, it's interesting, oh, oh this is going
+to be nice, let's see if it works anyway, what does work, so there's that, but no dump, oh,
+I guess it does work now, yeah, don't worry about it, I don't care, anyway, this is our parse
+tree, right, and so it takes the entire, except from that regular, from those rules, and it says,
+well here's the entire parse, was this text right here, say hello, well that contains one
+statement, which is, this right here, say hello, that contained a CMG, you remember earlier,
+I assigned that name right, see here, CMD equals, and call the symbol rule, so CMD contains an
+identifier, which was, say, there's also one term here, which, well that was a repetition, right,
+it's got that star, so that's inside of an array, of size one, which contained a value,
+which was a quote, which was a string literal, which was, hello, is this parse tree pretty
+clear for everyone, right, this is just the, well, not repeating myself again, right, so yes,
+how many people have written parses? I don't know, oh, I don't know, oh you were asking them,
+not me, you're clever man, I haven't implemented any sort of compiler, well, a little bit for other
+stuff, I like this a lot better than some of the other options for parsers, so anyway, the next
+step is to take that, I just set up a bunch of aliases right here, all that is, is steamed
+as just hard equals parse, saves me on type, right, so we want to compile this down, the next
+step is an abstract syntax tree, so we're going to see, can everyone read this font size
+comfortably? All right, so what we want is just an abstract representation of the sort of
+things we want to do, right, this is going to be very high level view of our program, it's going
+to be things like run a command with these arguments, right, so the next layer down, let me show you
+what that looks like, this is a past block, past tense for parrot abstract syntax tree, there's a bunch of
+classes in that namespace, right, we've got blocks, we've got operations, variables, values,
+right, so we're saying that this is a block, is our entire program, and that's a declaration of
+the par, we'll get into that in a minute, this is an operation, the type of operation is call, so a
+function call, and this has two sub nodes, right, all of these nodes, all of these past nodes have two
+parts, they have named parameters, you can see in here, so it's kind of like a Python dictionary or
+purl hash, and there's also positional items, so this is kind of like a, both the hash and an array
+together, or a dictionary and an array together, so the two items in here are a past var, right, so a new
+variable, whose name, the name of the variable is say, and its scope is package scope, kind of like
+global scope, I don't look in the namespace, and the past value is hello, so call the save function,
+which is in our global namespace on the text hello, is that pretty, pretty clear, any question
+now what this is doing, all right, so the way we get the, the way we get there is the compiler is
+actually calling, every time it gets to one of these little curly brace, star, close, curly brace,
+it calls a function often in other namespace, and it passes it this entire match, and then that
+other function constructs those objects, right, so in this top rule, what it does is it says, oh well,
+this is my entire program, so I'm going to make a block, I'm going to shove every item in there
+as a statement in that block, right, as an operation, and so we see that's exactly what it is right here,
+method top, it accepts this dollar sign slash, now this file here is written in a subset of
+purl six, called not quite purl, it's a very restricted purl six, and so it doesn't support a lot
+of the, a lot of the fancy things, just the basic syntax, for example it doesn't have assignment,
+it only has binding, just kind of like a, by reference instead of by value, so we see right here,
+it's accepting this dollar slash, that's the match object, and so that that's, everything
+goes in there, when we said target equals parse, and it printed that out, that's the object that
+this thing gets, so what we're going to do here is we're going to create and bind this variable,
+the difference between assignment and binding isn't that much that you really need to care about,
+it just means it doesn't get a new copy, it's just they're all pointing to the same data structure,
+going to create a new pass block, so passblock.new, this colon and the word followed by parentheses,
+that's purl six is a named argument passing, so we're going to create a block with block type
+declaration, and this node thing here, that's for introspection, right, where it said,
+right here, where it can tell what was going on here, right, this pass over is created from,
+or this, some other stuff, yeah, not actually important, that's just extra stuff, anyway,
+so we're going to iterate over, right, remember the statements, we're in array, right, it's,
+our statements are in array, right, because of any number of them, so we iterate over them,
+for each statement, you're going to push into it, right, because this block has a list of
+statements, and a list of things it's going to do, now again we have some special syntax,
+right, this is not quite purl, it's used here, it's mostly just special idioms, right,
+this dollar sign parentheses means that this, if you haven't worked with purl, the dollar sign
+underscore, that's the current topic, right, so for each time goes through this for loop,
+it's, this dollar sign underscore is set to each item in there, don't bother with the name,
+because we're not doing much special with it, so this dollar sign parentheses means get the syntax
+tree representation of each of these objects, right, so, so go ahead and compile the syntax tree
+for each one of those statements, and then give it back to me, and push it inside of this block,
+right, so if I had multiple of those, right, I can go ahead and do that,
+you know, say one, say two, we have two past ops, right, two operations in term,
+pretty straightforward, and these are children at the block, so we've gone through this a little bit more,
+we won't go through the whole thing unless someone asks me to, there's, well we'll get to it eventually,
+right, so it's going to call the rule for those statements, right, so that's method statement,
+again it accepts a match object, this says I want to create a new past op, right, an operation,
+right, like a function call or a method call or something like that, on, again we see this dollar sign
+so get the syntax tree of this, right, of this CMD thing, which is a symbol, and so we can chase that
+down, come down here and see that for symbols, right now I'm doing, say make a new past variable,
+whose name is, whatever was in the ident, part of the match, and whose scope is packet, so a
+globally scope variable, right, and I'll show you in a little bit where that save function is defined,
+it's not just magic, we'll get to it, all right, so inside the statement,
+new past op, that past type call, so call that function, and for each one of those terms,
+I remember term again was any number of these, push those into the op, okay, pretty straightforward,
+and then the make command means set this as the syntax tree representation for this node,
+it's kind of like return, it's slightly different for some reasons we're not going to get into,
+but you can think of it as just returning it back into one of these calls here, right, that's what
+that is, so any questions about how this is working, how this compiles that, that parse tree
+down into a syntax tree, all right, so now parrot takes that abstract syntax tree,
+next step it goes to is it compiles it down into a, well, couple steps, it compiles it down
+into peer essentially, which is the parrot intermediate representation, that's essentially a
+parrot's version of assembly, right, so I say say hello, it says dot sub create a new subroutine
+with some garbage out here that we don't care about, so what we're going to do is we're going to
+look in the global namespace, fetch it into a register, my parrot is a register based virtual
+machine, not a stack based virtual machine like many others, who has done any kind of assembly
+stuff, all right, so look up with this string say, and then we're going to save the result of
+calling this function with the value hello, and then we're going to return it, so that's all it
+does, right, pretty straightforward, any questions so far about how this works, all right, no questions,
+oh, I guess I'll keep my penguins to myself, all right, so let's start implementing a little bit
+more, this is a little not exciting, so let's check out next step, right, some basic math operations,
+nested expressions, so let's see what we changed in here, first thing we changed, we're defining
+more of these, right, in this built-ins directory, the make file compiles, you know, concatenates them
+all together and then includes them in the bytecode, so let's take a look at these, all right,
+the one we already have was that say function, the source built-ins say dot peer, this is just dot sub say,
+we want to accept one parameter, which just slurps up, right, it accepts as many parameters,
+sorry, as many arguments as we pass to it, it solves them inside of an array here called args,
+yeah, that's a modifier to this, right, it says, yeah, that basically says for the calling
+conventions, however many arguments are passed, just shove along into an array and put them inside
+of this variable here, this is written in peer, it's a parrots assembly language,
+so it's not, I mean, it looks kind of a little bit like, it's very high level for an assembly
+language, so we create a new, we sign a name, parrot has four different kinds of registers,
+right, there has four different kinds of registers and you see what the dollar sign out in front
+for reasons we don't get into, but then it's a capital letter and a number, or four different
+kinds of registers, there's PMs, well there's integers, right, so a whole number, there's
+num registers, which are a float, right, there's string registers which contain some amount of text,
+there's PMC registers, sensor parrot magic cookie, which basically means an object, right,
+some sort of high level object, it could be an array, it could be a socket, it could be, you know,
+some custom user class that you've made, it could be anything else, right,
+and so this is just giving a name to a PMC register called it, it create a new object of the iterator
+class, pass these args, and then just loop over it, keep pulling something out, printing it,
+and then looping back, print a new line, and then we're done, so you define this little built-in,
+once you get most of your language up a bit higher, you can start, you know, of course,
+defining your libraries in terms of, you know, actually writing them in their own code, the
+parrot's purl six implementation, for example, has a decent amount that's written in purl six itself,
+I think, I think their PHP implementation might be doing a little bit of that, I'm not sure,
+or a few others, anyway, we also added this math.purify, I'll just define some little basics,
+so we create a subroutine called plus, which will add two values, we create a subroutine called minus,
+which will subtract them, star from multiply, slash for divide.
+These are actually op-codes already.
+Yeah, that's what I'm saying, so you have to define those in a subroutine.
+Right, this is a very high-level assembly language, which is kind of fun,
+and what else do we do in here?
+So we add those, and change the grammar a little bit around, I made it so that a term could
+also be a statement, right, which you remember statement is a full-ass expression,
+and I also changed the symbol rule to instead of just be alpha numeric to be any character other
+than white space and parentheses, so that I can actually call the plus function and things like that.
+All right, so if I compile this, I can then run it, and we'll say say plus one two.
+Okay, pretty straightforward. Also, with each of these, I've been updating the tests,
+right, so I now have that this is the tap format, what is it, the test anything protocol,
+choose a law in the purl world, just print out the number of tests, and then okay one, okay two,
+okay three, okay four, right, so if I make tests, it runs, T slash zero zero sanity, okay,
+all tests successful. How do I actually just run steam on the file, it prints everything out?
+Let's work on okay so far. Yeah.
+Do you have to do like pause convention, excuse me, the drag?
+In steam? Yes. Parrot actually has, and this is one reason that I kind of was a little unsure
+about using steam for this, but actually has an additional way that you can use its parsing engine
+to do bottom up parsing instead, so you actually just define a table of operators, right?
+You define, well here, here I've got my infix plus, and I've got my prefix, you know minus to
+do negatives, and they're all, you know, the infix plus is higher precedents or lower precedents,
+and the infix multiply, and then you just define all those rules, and then you say can be a token
+here, and we'll go through and just parse out, you know, all that infix math and all of that,
+so there is some really nice stuff for that. If we have time at the end, we can go into that too,
+as well, if someone wants. Someone asked a question, he gets a penguin.
+All right, so what comes next? I don't even remember what order I did these in.
+Up until now, I think I got about here by 1am this morning, four should come next.
+Yes, yes, I got through to this part by 138, so implementation of the special form if,
+right, which is just, you know, if, and then you have some condition, right,
+if 1 is less than 2, then do this, otherwise do that. This is what it looks like in scheme.
+Pretty straightforward, so let's actually take a look at what we changed here.
+All right, so I added some comparison functions, let's take a look at those.
+All right, I did sub equals. If they, if these two are equal, then jump to the true label,
+which is down here, and return one. Otherwise, just fall through and return zero.
+Same thing for less than greater than, less than or equal, greater than or equal.
+You see, I'm just using these built-in parrot ops, which are, again, it's a very high-level language,
+or assembly language. And we also did, right, there we go. I'll just pull it up.
+Instead of the, whoops, instead of the diff, and what we have here is I changed the statement rule
+to first check for one of the special forms, which have their own special parsing rules.
+For example, instead of just like a function call, you don't want to evaluate both branches first
+to pass the argument in. That would be bad if you evaluate both branches of the conditional.
+So we check them both and only evaluate the one that's appropriate.
+If it doesn't match any of those, then we call the simple rule, which is just what it was before.
+So the special right down here, well, that's just the if rule. Now, one thing that you'll
+see right here in a few places, this hash equals, then a word, that's when something could match
+in a variety of different ways. And you want the parser engine to actually tell you which it was.
+So the way that's actually implemented is down here in the statement rule,
+and now except a second parameter here, which is a key. And that's which one of those
+things actually matched, right? So what I do is I take, you know, just return the syntax tree for
+the key named sub match of dollar slash, which is the match. So just actually return by far,
+it's just the same thing that's in here. So it just tells you it matched simple instead of
+special or special instead of simple, to simplify your rules there. Fun losing you that's not
+too important. We'll see it again a few times. So it comes out here, tries to match if,
+for if that's the literal text, if, and then one term, another term and a third term. So I'm
+just naming them condition, if it's true, if it's false. And then we call this, right? If you're
+just doing matching, right, if you're just trying to do, you know, the equivalent of regular
+expression, you don't need to do anything special with it, you don't need this special curly thing,
+right? So let me show you what, if, implements. So you have method if, that makes a new past operation,
+it creates a new one. The three arguments are the condition, if it's true, and if it's false.
+And then the past type, I saw earlier, right down here for a simple, so that's just a past type of
+call, it's a function call. This past type is if, for doing conditionals, right? The
+paracompilot will provide a lot of default implementations that make a lot of sense. We can
+actually take a look at the documentation, docs, d, pdd, 26, st. It's also in some more reasonable
+path, but that's the one I actually remember. So we look for past op, that can be past type of
+copy, bind, or if the first, second, and third children represent the condition, the then,
+and the else parts of a conditional expression. First, child's evaluated, if it's true, then the
+second's evaluated, if it's false, and the third's evaluated. Pretty straightforward.
+So we can actually see that, that's what the syntax tree looks like. We compile it,
+we see if it works, we say, say, if, one is less than zero,
+hello, hello, or goodbye. But if one is greater than zero, we say, hello, okay. Let's do a
+dash dash target equals past, and we see it did actually make a past op of if, that's a child
+of past type call, so call the save function on this past op. If you want to look at the
+period generates, that's just target equals peer, if less than one zero, hello, or goodbye.
+We see it get global that, if this jump to this value down here, and then go on and run these,
+otherwise, make a goodbye, and then jump down to the end where it returns it. So that's what it
+will generate for each one of these. It's pretty straightforward, completely losing you, and
+because it was more typing. And I can do the same thing here.
+Right. So in this case, the first get global say, then to the end down here, it calls this function,
+which are retrieved up here, and it calls this function on which ever value it did here,
+so I decided to set it to this or set it to that, and call the function on it.
+So any questions so far about this? Pretty clear? All right. So the rest is just
+implementing more of the special forms. So just adding more to our scheme compiler.
+I think next is five? Whoa, I apparently can count. No, that's the same one. Oh wait, no, that was
+previous. We'll skip that one for now. Okay, we define works, that's actually setting new variables.
+Oh, oh way. Ah, right. And so we first make a grammar change, right? Here in our special rule,
+say it could also be a define. And what that looks like is inside of the parentheses, right? Because
+remember, special is called from something that says parentheses. So inside it, ask expression,
+it starts with the literal text, define. And then I added some stuff here for error checking,
+and I pulled it out later, so it doesn't matter much. But basically it's just define, and then
+a variable you want to create, and what you want to set it to. Pretty straight forward, right?
+And that in scheme is just define a as one. So let me show you what the grammar rule for that
+looks like. It just says my variable, going to bind it to the syntax tree for variable, right,
+for that match. And then I also set this is decal. That says, this is a declaration. I'm creating a
+new variable here, right? It's not something that already exists, so don't try to fetch it,
+just create a new one. And my value, that's that. So now we make a past op, the past type bind,
+right? So actually do an assignment to this value, assign to the variable, the value.
+Pretty straight forward. So we can try this, right? There are make, define, message.
+Thank you, Clint.
+Hello world. Say the message. It works. Fantastic, right?
+Oh, I made some tests for if and for define, we run make test, we see they all pass.
+See the if test pass prints out, define test prints out.
+Pretty straightforward. If you want to actually look at the syntax tree for that,
+right? You say steam dash dash target equals syntax tree, define a as one.
+So you see it just calls bind a newly declared variable named a, that's in package scope,
+but it got that from that symbol rule, right? Which creates a new variable nodes here.
+And then it turns a new integer, right? Any questions about this? We okay with this?
+Want me to look at anything more and more depth? Want to sit there quietly? Your face is staring
+ominously. Okay. What's that? Oh, sure. Oh, below the assembly level.
+Para compiles it down to what's called a PVC file, which is para byte code. So just compiles
+it down to the actual binary representation of the op codes. And such.
+So we can actually print it out like that. Well, we can actually do this,
+that's that's a way.
+I don't bother with it. Yeah, you can actually compile down your individual programs
+down to a PVC. And so you don't need to strip your source with it or anything like that.
+You can just run the PVC directly, right? I wonder to do something like that.
+Well, that's just target equals peer. I'll put you defined there. And there's a little bit that
+I'll need to change in here because I'm not generating it properly. Load byte code,
+steam.pbc. You're on parodon it directly. That'll print it out. We'll write out to define.pbc.
+So now we run parodon.byte code.
+And actually dump it out and see here's the header, which tells me the word size,
+all of that stuff. And down here's the actual op codes. All right.
+Here's the constants table, which is for the literal text and such.
+And so that is that is that is that about what you were asking about?
+All right. So let's see what I implemented next. I don't even remember.
+That was it. So that was now. 7th can count.
+Let. Let is for doing lexically sculpt variables, right? So set these variables for just this block
+and then they're gone. So it's kind of like many other languages you do with the curly braces
+or something like that or indentation and Python, that kind of thing.
+So let's actually show you what it's like. Again, it's pretty simple,
+but I do need to do things a bit differently, right? Now that we've got lexically sculpt variables,
+we need a way to actually track what's going on with them, right? See, you know, we need to maintain
+a symbol table to say these variables have been defined here, but later on they're not defined.
+So what we do is we're going to have this global variable of this at sign. Again,
+this is purl six. The at sign means it's an array, a list. The question mark means it's a global
+variable, right? So we're saying here's our package global variable called block and all capital
+letters to show that it's weird. What we're going to do in here is as we go through and create new
+blocks, they're nested inside each other, which is what let does, we're going to actually, you know,
+make a new block object and save it inside of this array, right? We're just going to, you know,
+shove it on the front, then every time we need to look at the current block, we'll just look at
+the start of this array. We can just walk the whole thing there, right? Right, exactly, exactly.
+And we also made a parsing change here, right? We're going to actually call this two times at the
+very beginning, right, which is first we need to set up this stack, make our block for the entire
+thing, and then again at the end, right? It was going to be called two times. So we see up here,
+if the key equals begin, then we want to set us that are variable here to a new past block,
+and we want to unshift it, it's purlish for, you know, shove it on the front, kind of like push,
+but on the front instead of the end. So unshift this block on there. At the end, we want to actually
+grab it off of the front. So we want to shift it off, like pop, but from the front,
+then iterate over the statements and push them onto it, and then return it, right?
+That's our change down here. Define, I actually had
+do it lexically in the current block instead of globals now. So when we pull the variable out,
+we set the scope on it to lexical. We also, right, first I grab my block out of
+that block sub zero. So the very first one on the stack, right? So the very most recent,
+and we call the symbol function on it, which is just a way to set some data in there, right? So we
+keep this symbol table around, which I'm all in storing it here is the name of the variable,
+and this is lexically sculpt, right? So later on, when we actually mentioned a symbol,
+we can actually go back and walk up the stack and see, well, is it defined lexically anywhere?
+If not, it must be a global variable, right? So try that instead. So we'll see that in a bit
+down here. So the way we define let, the grammar for that is right here. What the grammar actually
+looks like is let, the insider parentheses, we have a list of things inside parentheses. So we say
+a is equal to one, and b is equal to two, and c is equal to three. Then over here, we can do,
+you know, whatever you want, right? Say a, say b, right? That's what a let statement looks like.
+So it's kind of like, you know, just defining a block in some of the little, little bit different.
+Ah, I can't, yeah. So down here, what we do, oh, we also have the grammar for it.
+I didn't show it. So we say we first have an open parentheses, and then any number,
+well, at least one, the plus is like the star, but at least one instead of at least zero,
+of open parentheses, a symbol, excuse me, a symbol, which we save under the name var and a term,
+which we save under the name val, a closed parentheses, at which point, once we've parsed that much,
+go ahead and call it, right? So we create our block first and, you know, save things inside the
+symbol table. So the one we're out parsing the other statements, it has access to them. Then we
+parse any number of statements, and then we're done, right? Call it again.
+So the way we do this, right, we again use this, this global set of, you know, blocks at our little
+symbol table. So if the key is begin, and we create a new past block, block type of media,
+which means go ahead and run this right now, right? We're not defining some code, right? We're
+not defining a function or something. This is just inline stuff to actually do, and we're going to
+create a list of statements, which is like a block, but it doesn't make a new scope, right? So
+just a list of statements to hold stuff in. And then for each one of the variables, we defined,
+again, that's going to be a list, we want to save it inside, and we can actually look at the
+parse tree as we're doing this. Oh, I already did make it. All right, so we say let a1 and b2,
+then say a. Oh, that's bigger than I. Want it to be go get bigger. Yeah, there we go.
+So we have our special form. It's let. It has two variables, which are a and b, because they both
+get saved into that name. So it becomes an array. And we have two values, which are 1 and 2. And then
+we have a statement here, which is this big thing. So what we do with it, right, for each variable,
+give me the syntax tree representation of it. And then we want to shift off a value, right,
+so pull a value off the front of the list of values. There would be a few other ways to write it,
+so you know, work on the two lists in parallel, but I'm kind of lazy. So I'm not rewriting it.
+Set the scope on it to lexical, say it is a new declaration, register it in the symbol table,
+and then push it, right, push a new past off, which is we're going to bind this,
+right, push that new off into the init variable, which I have to find up here. Then at the end,
+we shove the init block onto the beginning of our block, right, so we start off in our block by
+just assigning these variables. Then we unshift it off, right, we shove our block into this list
+of block, right, our symbol table. Let me know if I'm going too fast or you're just throwing
+something at me as a valid comment here, really. Anyway, if we're at the end, what we want to do is
+make a list of statements, right, for each statement, push it in there, and then grab our block
+off of the top of the symbol table, right, pull it off, shove our statements into it,
+and then set it as the syntax tree for this node, right, for this part of the parse tree,
+right, so let me show you what this actually looks like. It's pretty nice.
+Past for the abstract syntax tree, let a equal the one, say a,
+pretty straightforward, so we start off, we get a new block here,
+right, of type of media, and it has a sim table attribute, right, so for this block,
+we've got a new variable called a, which is lexically scoped, and then we want to bind,
+right, there's our first child here, a list of statements, and an enlist of statements together
+just concatenate, there's no difference between them, right, so first we want to bind,
+right, into our new variable A, right, it's newly declared here, an integer, value of one,
+and then we call our namesay, scope package, right, so our global save function,
+on this value A, right, and the reason it was able to look up, right, this serialization is
+pretty poor, it just references the earlier thing because that's how I got it, right, by looking
+it up, let me show you, all the way down here somewhere, in symbol, yes, yeah, yeah, that's,
+yeah, that's all it means, so down here in symbol, so every time we just have, you know,
+just some plain text there and want to look something up, by default it's going to be global,
+but in the name of it, it's going to be the stringification of the symbol match there,
+then for every block, right, so we're going to start at the beginning and just walk through it,
+if the block, we call the symbol function to look up a symbol from its symbol table,
+and the scope is still packaged because we haven't found anything yet,
+but if we find something we haven't found yet, then we just set the scope to whatever the scope
+of that symbol is, it's going to be lexical, right, and then we return a new pass variable
+with that name in that scope, is that pretty clear, we, all right, I keep asking that,
+you can just stop that, anyway, I think we have one more thing, which is lambda's,
+oh, let me actually show you that it works,
+apparently works, right, for say one to three, we assign a is one, b is two, we say okay one,
+okay two, okay, one plus two, and everything seems to work out, okay, all right,
+make tests, still passes, all right, our four test files now,
+eight, is that where we are, apparently, so lambda is just a closure, right, it's just,
+you know, the lexical scope function, the function is sticking to variable,
+so the syntax of it is just the word lambda, an open parenthesis, the list of parameters
+that that function takes, closed parenthesis, and then a statement, video, okay, all right,
+here's our examples here in the test, right, we define an, oh, using let, we set okay to be a lambda
+on message, which is say the word okay, and then the message, and then here we call okay one,
+okay, on a function on one, right, pretty straight, I'll stop saying straight forward, I'm sorry,
+I know that was getting annoying, because it annoys me when I say it too much, anyway,
+so the beginning, we had a new past block, it's a declaration, and then we iterate over these
+variables, right, for each thing saved in the var name, that's a symbol, right, so we just bind
+it to the syntax representation there, which makes a new past var, set the scope on it to parameter,
+say, how we, we are declaring something, and then we also saved in the symbol table as a lexical
+variable, and then we push it in there, right, and we unshift it off, unshift it off, otherwise,
+right, so we're at the end, we take our statements, shove them into the block, set it as a return
+value, and we're done, so let's look at what this syntax tree looks like, right, so I cough, and then
+we check it out again, so we run past on, so make a lambda of a variable A, and we return
+A times 2, and so we see that makes a past block, it's a declaration, has this lexical variable called A,
+and it's got a, it's first statement in here, it's just a new parameter, right, called A,
+and then it has one statement in it, which is call, the function star, on this value,
+and this variable, all right, if we take a look at the, uh, pier generated by that,
+let's, uh, say, uh, define, uh, double to be lambda on A of times A2, yeah, that works out,
+oh, well, actually let me then call double, uh, say, double to, all right, so we first, um,
+get this subroutine down here, 13 something, just see down here is named 13 something, as generated,
+it doesn't give a meaningful name, it accepts one parameter, just parameter 23, that's going to be
+a lexical variable, so we'll just use this little thing to say stored in the lexical symbol table as A,
+and we look up the global function star, we then look up A again, because it might have changed in
+the meantime, we call star on A and 2, return it, swap in here, we lexically save it as double,
+get the save function, get the double function, call the double function on 2, call the save
+function on double, and her done, so it generates some, okay, bike, or assembly here,
+that's about it, again I have tests as well, uh, they run, make tests, everything checks out, okay,
+any, any questions about this, anything you want to see more on, yeah,
+what was the, uh, what was the, uh, what was the problem, the ration, it's really hard to build a
+compiler, it takes a long time, it takes a lot of expertise, it takes a lot of training, and
+well, if you're wanting people to be able to experiment with new things, they wanted to
+enable people to go out and, you know, build their own, well that was the rationale for the
+parrot compiler tools, specifically, um, for parrot, the original reasoning came around, was for
+Perl 6, storage, raising a hand, yes, oh, the name parrot,
+another, the m4, Perl, just like, for 5, yeah, then after the joke was done,
+who in the world had that part,
+she was around by the start,
+so it's, what about it,
+um, I can probably expand on that a little, okay, my specific interest is probably in how it does the
+cross language, hybridish type stuff, and that's probably how the VM is best interacted with,
+um, you can talk about how that's actually, like, conceptually just brought about, and now it's
+actually implemented in some, over a high of 10,000. The way that works is, uh, each language actually
+has its own, uh, its own namespace that it runs in, right, and so code that's running in
+Perl 6 runs in the Perl 6 namespace, so when it, it sets a global variable, that's visible to
+Perl 6 code, but it doesn't start stomping on other languages, right, it also just compiles
+everything down to peer, as you saw here, right, there's nothing different from peer that's
+generated by the Perl 6 compiler, versus peer that's generated by the Python compiler, or
+generate by the law code compiler, or anything like that, yeah, well, for, for various, for various
+meetings of support, we get different answers, um, there's currently a mostly complete tickle
+implementation, a mostly complete Louis implementation, a fairly complete law code implementation,
+um, of course just silly, oh, and, uh, coming along pretty nicely PHP implementation, and a
+very nice, uh, Perl 6 implementation, not quite done, um, Python, there's a little bit of a,
+Python compiler, but there hasn't really been enough interest in anyone to work on it very much,
+um, there's, uh, there's a fully complete HQ9 plus compiler, which is a language which consists
+of the letters HQ9 and plus, we're printing out hello world, printing out a quine, which is a
+program that prints its own source code, printing out 99 bottles of the beer, beer on the wall,
+and I don't remember what the last one was, but it's a joke language, um, there's a very
+complete APL implementation, which is kind of fun to be able to call APL from Perl 6, entertaining,
+um, APL is a really interesting language, um, I've been having to keep trouble keeping track of
+all of them lately because, uh, right now they're being moved out of the parrot repository into their
+own repositories, um, there's a, I wrote a kind of okay, uh, Ruby implementation, it's very slow at
+parsing, um, once the program is actually compiled it runs okay, but it's very, very slow, I started on a,
+small talk implementation, but the grammar's mostly complete, there's no standard library,
+so it's useless, mostly, um, scheme implementation, Perl 6, and there's a huge, there's a big
+wiki page on the parrot wiki that has all of the others that I'm not remembering, this is
+everything that nobody's bothered to move over yet, awesome, basic, uh, be fun, implementation is
+just scary, um, a few others that I know I'm forgetting, let's, I at least name all the big ones,
+two, some degree, some languages of, well, the active languages have had that problem, yes, um,
+but yeah, the parrot 1.0 is going to be out next Tuesday, is there a lease, and the headline for
+parrot 1.0 is it's a stable API for language implementers, which means they're going to have,
+start having a stable long term deprecation cycle, after this release, then the next major release,
+there's still some bike shedding on what they're calling a major releases, deprecation releases,
+whatever releases, but the next release that affects the deprecation cycle will be in June or July,
+forget which, and then after that it's going to be on a six month cycle, right, it's going to be
+every January, every June, right, so every six months, yeah. So is, uh, this 1.0 milestone, is that,
+give us any hope of seeing pro-six? Parrot is separate from the pro-six development,
+the pro-six compiler on parrot is currently passing, I think it's coming up on around 8,000 tests
+from the, instead of spec tests, there has been some speculation that a complete set of tests will
+be somewhere around 15,000, we're not there yet, we're still working on the test suite as well, so
+I would not be surprised if it was released in 3rd or 4th quarter this year, the first
+actual release of Rukudo was just this past month, it was alpha something named, but there was a
+release and it's going to continue having a monthly release cycle just as a parrot has been
+for, you foreseeable future. There's a lot of stuff that can be done if you want to help,
+so it's still a lot of, so a lot of work that's pretty accessible, even if it's just on the test suite,
+so pro-six is coming up right here, so that's actually pretty exciting, I can, uh,
+oh, I think I already compiled that, oh, that's really cool, everything's all screwed up right now,
+because, uh, parrots moving towards a lot of things are trying to rely on an installed parrot,
+instead of a parrot from the build tree, and so right now, and I just changed around to that,
+at around 12, 30 this morning, so there's still a few things that are fighting over which version
+of parrot it's using, and yeah, that's not something you'd run into on a reasonable system,
+it's not all hose, anything else you want to talk about?
+Parrots targeted platforms are Windows, macOS, I know we've got both Intel and PPC, macOS,
+64-bit and 32-bit Linux, they're looking to get packages in Ubuntu, packages in Fedora,
+packages in Debian, they've been fighting to get packages in Debian for the past year and a half,
+because everyone who keeps trying to sponsor them just disappears and doesn't respond to emails,
+I know we have a few people running it on various BSDs, I don't know if they are in the officially
+supported set or not, any other platforms you're curious about? There has been a lot of interest
+in getting a running on mobile devices. Another interesting thing that I saw was some people were
+working to get it running as a Firefox plugin, so you could then write your scripts instead of
+in JavaScript in any language pair of supports. Not that I know of.
+There has been some work at getting Java bytecode to run on Parrot, so you could then interoperate your
+compiled Java classes with, you know, use them from Parrot, which is interesting as well,
+as there's another project getting .NET bytecode running on it too.
+It's fun though.
+With Java that was originally Jonathan Worthington, who wrote most of it,
+I know he is doing some kind of DBI stuff, but I'm not sure why.
+Let's say your Python code or even really wanted to do your hash script to act as any database through
+a little bit of a DBI. Who else wants a penguin?
+Be careful you got a wire.
+Oh, all the way back there. I'm out of penguins now.
+The bytecode is a cross-platform. You compile your bytecode on one system. It will run that exact same
+file on any other architecture, regardless of NDN, regardless of processor.
+Right, as long as you have Parrot installed that, but it's not machine code. The closest you
+can get for that is there is a tool, which will embed a Parrot interpreter into a piece of
+bytecode, embed some bytecode into a Parrot interpreter to make a fake cutable instead of an
+executable, which is kind of silly, but works out.
+What's that? Now, performance, there are few bottlenecks in performance. Performance right now,
+I actually did have some statistics. I don't remember when I made these, but at the time,
+this was running on an unoptimized Parrot, and this is measuring some kind of loop or something
+running on the cardinal, which was my Ruby implementation on Parrot against the C version of
+Ruby. And about a ten times performance difference, but I was not able to run it on an
+unoptimized Parrot, so there was no jits, no kind of optimization at all. But there are two
+few big bottlenecks. One is the current Parrot architecture. There are several places where we go
+back and forth from C calling conventions, and Parrot calling conventions, and back and forth
+several times, which just kills performance horribly. And there are plans to fix that,
+but nobody has implemented them yet. There's a plan how to do it, it's just a lot of work,
+so it hasn't happened yet. Also, garbage collection, right now Parrot uses a stop-the-world
+market sweep, everything, garbage collector, which is, well, slow and bad. There have been a
+couple of projects to implement a generational garbage collector on Parrot. Apparently, it is
+mostly done, but just needs to be merged in and touched up, and it's been that way for a few months
+waiting for someone to finish it off. That was part of someone's Google Summer Code project,
+partially a few of the other Parrot contributors were working on it. So
+the core Parrot developers that I've talked to about this have very good hopes for Parrot's
+performance in the future. It's not horrible right now. It's not, you know, thousands of times slower,
+like a few things I've seen, but it's still, you know, not fast right now. Is that
+bad on the order you wanted to know? For example,
+let's just throw something together, i0 equals 0, greater than i0, a big number. Let's put another
+zero on there. I don't want to count them. Loop, and increment i0, go to loop.
+So let's run that. Oh, that was not enough zeros.
+Let's make a thousand times more.
+There, that was about three and a half seconds to run that many iterations. So in spinning
+the CPU uselessly, at least it can do that much. That's in no means a reasonable benchmark,
+not a very useful one, but it does mean something. There's also,
+it does have a jit, which is not as good as it could be yet. Not quite everything can be jitted yet,
+but I'm told there are plans for everything to be, so let's see about that.
+Anything else?
+How fast can you type?
+Maybe that.
+The Python interpreter or compiler right now does not very much. I can do the basics,
+define a class, call a function, define a function, instantiate a class, the basic stuff like that,
+but it doesn't have list comprehension, it doesn't have a lot of the fun stuff.
+What about the constructs that are different between languages? How does Perry handle that?
+Kind of thinking of examples of, and I really don't have a good understanding of
+enough languages to actually say which one has different stuff in them. I know there are different
+components in different languages. How does it deal with that in regard to like, so maybe in Perl,
+there's some magical object in the structure in certain way, and it's different in Python,
+where they build them. How does that, I mean, guessing it's in the interpreter itself in Perl, but
+if it's fundamentally different, should they accomplish similar goals? The good example maybe is
+like a reading loop that you think is differently there? The way that works is that the compiler
+generates the same, it's always just generating peer. So control constructs like that, like loops,
+and, you know, whatever else. There are several things like that I can see, that's the problem.
+I'm thinking more like, you know, something abstract that probably got implemented in some language
+that people use. I mean, there's probably examples, I'm not articulating that word, but
+in general, most of that stuff is exposed through the same core parent primitives. There are a few
+places that things are weird, for example, most scheme and list implementations that you look at.
+Don't use an array, is there that object? They have, you know, the nested cons cells, which if
+you implemented your language like that, if another language tried to work with one of your objects,
+it would be weird. You couldn't do array access on it. You'd have to call the, you know,
+the foreign function to do it. The parent took me to account that. He said, oh, that could be like an
+array in this language and that. I can actually fill, I guess you could. The parent stance on that
+is that they don't do anything like that. They do not define any kind of policy. You could define,
+you know, the module in Python that would, you know, kind of wrap that foreign class, right? Like
+to find your scheme module, right? So you'll import scheme, right? And then you could call scheme
+functions. That's a reason of a way to deal with that. But there's nothing in pair that tries to
+do that automatically. That tries to convert objects from one type to another type. Well, there's
+what we don't know. For example, in Ruby, a lot of the core classes like integer and string and
+such have a lot of methods on. And depending on how you implement things, if you just, you know,
+if I returned a string from Perl 6 to some Ruby code, the Ruby code working on it would, you know,
+if you tried to call that method, there's no method like that on this object, right? You could
+just call the Perl methods because that's a Perl object, right? It's just a different class.
+Right? So it doesn't translate that. Right. Exactly.
+And that makes sense. That has never been implemented. So it's been pushed off until someone
+implements it. It is not part of the one point or release. It is still part of the plan for the
+eventually we'll do this magic ponies release number. But currently there's no STM.
+The things it does have, it does have good threading, it does have a good event model.
+The object model is Perl 6's object model, which is a 2% of all other object models basically.
+So one interesting thing has been seen that you can define, you know, using roles in such
+on other languages that don't normally support that. One tension that has existed has been,
+it would be so easy to add this to my language, but the language doesn't support it. For example,
+I added the gather take control structure from Perl 6. I added that to Ruby, a Ruby compiler,
+because it was easy and made some things nicer to work with. But if anyone writes that in their
+Ruby code, it will be not bad. But it was kind of fun actually calling Ruby functions, which would
+take a variable and have that interoper with the Perl 6 gather construct and things like that.
+What I've seen is one of the benefits of Perl 6 is that if other open source language is a chance to
+be able to truly open source and gather the core work from another language that's abstracted to there.
+So that's what Perl's tried to do all along with it now, sharing that same core.
+Right now, all of the languages that I implemented, the
+call code in another language construct in. If you try to use it, we'll still look for that
+language to be in the language's directory of a paired installation, which it probably won't be,
+because like I said, all the languages are moving out. There's some infrastructure work that's going on
+on actually, where the language is going to be installed, and Perl can look them up for you, and
+I'm not sure how that's been working out because I haven't been following that mailing list thread.
+Right now, none of that works. After I think two or three months ago or something,
+I posted a blog post about I got all of it working and the fun examples and such.

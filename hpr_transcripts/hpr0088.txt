@@ -1,0 +1,85 @@
+Episode: 88
+Title: HPR0088: Hiding and stripping program symbols
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0088/hpr0088.mp3
+Transcribed: 2025-10-07 11:21:11
+
+---
+
+.
+Hello and welcome to another episode of Hacker Public Radio. I will be your host today,
+a few texts and today we'll be talking about hiding and stripping symbols from programs.
+The outline for today is talking about why you'd be interested in such a thing
+as hiding and stripping symbols from programs. Then we'll talk about background knowledge
+of what you need to know for it to all make sense. Then we'll talk about how you actually do it.
+And then a couple tips and tricks when working with symbols and programs.
+So why are you interested in symbols and programs in your computer and why do you care?
+About hiding them and stripping them. First they can reduce the size of your program.
+They can make it load faster, run faster, and in some cases it can prevent breakage.
+So if you use computer it's important to you. Particularly it's important if you're a programmer
+or if you're a package maintainer or just if you're interested in how your computer works
+or even in some reverse engineering context is important to know about symbols in the programs.
+So it's important to note that we're talking about programs here. We're talking about compiled programs,
+programs compiled from source code as opposed to interpreted programs.
+So interpreted programs you have human readable source code, high level source code commands that's read in.
+And the program that is run is not run directly by the processor. There's actually another program
+that interprets the commands, the interpreter. There's another interface between the high level source code
+and how it gets fed to the processor. But compiled programs you start off with source code, human readable instructions and logic.
+And that has to be compiled into instructions understandable by the processor.
+So interpretive examples are Python or bash scripts and compiled languages such as C or C++ or Fortran or something like this.
+And when you use a high level programming language like C or C++, one of the artifacts of the compilation process,
+the process of compiling and linking and building your programs is that you get these symbols inside the files that you create.
+And these symbols are human readable symbols for the functions and the classes that you have designed in your source code.
+So if you have made any programs in a compiled language such as C or C++, you are probably already familiar with the symbol terminology.
+You've come across it, I'm sure, in debugging. So often if you're doing debugging, you send a switch to the compiler that says include debugging symbols.
+And what these debugging symbols are tags to the functions and classes that you create. So it will say, I have this function kickbutt in my program.
+And when you include the debugging symbols that will have information of where the kickbutt program, what file it's created and what line number it is on, so that you can debug the code effectively.
+The symbols are also important for understanding how libraries work. You have a library that you create and then you have another program that is going to call some functions or classes from that library.
+And how you call them, you name them according to the human readable symbol name when you are calling them in your code.
+And so of course those names have to exist in the library in some state and those are the symbols in the libraries.
+One of the benefits of hiding symbols is that there are reduced conflicts in the symbol names of your libraries.
+So you hide symbols that do not need to be available to the user of the library. That way if two libraries have the same function or a function with the same name that might do different things, there's not a conflict there and you don't have problems of calling the wrong function, for example.
+The long and short of it is that there are symbols in compiled object files and these symbols are an artifact of the high level source code, the human readable function names and class names.
+So the idea is that if you're not doing debugging, you don't include debugging symbols. And if you have a library with functions that you do not intend to be called by the user's program or other libraries, then you do not have those symbols available.
+And when you do not have these symbols available, the file size is much, much smaller in some cases and that means it's faster to load the file.
+It takes a long time to read files from the hard disk and it takes up less space on the hard disk and in some cases with shared libraries, your library can run much faster.
+So how do you hide and strip symbols from your compiled object files?
+In libraries, you have to have some way of defining which functions and classes you want made available to the user of the library.
+You have to define your API, if you were.
+This cannot be done automatically by the compiler because the compiler has no way of knowing which functions and classes you intend on making available in the future and using in the future.
+So there are two basic ways of defining the API.
+The first way is in source where you modify your function definitions so that the compiler can understand which functions and classes you want made available.
+There are different ways of doing this depending on the compiler. For example, for the windows, visual compiler, there is a syntax containing underscore, underscore, dll, spec, dll, import or dll.
+For the GNUC compiler, there is something that looks like attribute visibility hidden or attribute visibility default.
+By having these in your function declarations, you can define which functions you want to be hidden and which functions you want to be visible.
+So the hidden ones, you can strip away and hide away.
+GCC also has a good way of doing things where you can hide functions by default using the dash f visibility equals hidden switch to the compiler.
+And then just to find which functions you want to be available for calling.
+You can do that either with the declaration at each function or you can do it with a pound pragmat gcc visibility command.
+The second way of defining which functions and classes you want to be kept inside the library is with a linker.
+You can create a linker script and you can pass that to the linker that contains the definitions of the functions you want to be local and functions you want to be external.
+For more information on hiding with the compiler, see the gcc man page and the f visibility switch section or there will be some other links in the show notes.
+For more information on using the linker to change the symbols available, see the info page on the LD command.
+I prefer to use the in source method because it's one less thing to think about.
+And for your binary applications, you can also remove the symbols.
+You can remove the symbols with a command called strip in Linux or you can do it by sending commands to the linker such as the dash s switch to the LD linker in Linux.
+Remember, you can send commands to the linker through the pile or such as gcc with the dash capital W lorscore L.
+So it would be dash capital W lorscore L comma dash lorscore s.
+So some tips and tricks for working with symbols.
+When you're going through your source code and figuring out which functions to make available and which to hide, be careful about your headers.
+So you include headers of programs and they may not have had that logic built into them about which programs may be available.
+And they, you may hide things that you may not want to have hidden.
+Also watch out for exception classes.
+Even if you're not fooling around with hiding symbols or stripping symbols, this can be a gotcha in C or C++.
+This is how I came across all this jazz about hiding and stripping symbols.
+There are some inherited exception classes in the standard library who are not visible.
+And even if you throw them during your program, everything will compile fine but it will not run correctly.
+And this has to do with visibility problems.
+Remember that reverse engineering is made easier by having these human readable symbols in your program.
+A lot more easier if you have debugging symbols in the program but non debugging symbols are useful too if you want to do reverse engineering.
+So hide and strip your symbols if you're worried about people reverse engineering your applications or try to get a version of an application that has been compiled with debug symbols if you want to try reverse engineering on it.
+Finally the NM application in Linux will show you all the symbols within an objects file.
+So that's very useful in understanding what's going on.
+Thank you for listening. Please tune in next time for another exciting episode of Hacker Public Radio.
+Thank you for listening to Hacker Public Radio.
+HPR is sponsored by Carol.net so head on over to CARO.ENC for all of us here.
+Thank you.

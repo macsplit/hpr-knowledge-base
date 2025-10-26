@@ -1,0 +1,195 @@
+Episode: 2815
+Title: HPR2815: Copy pasta
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2815/hpr2815.mp3
+Transcribed: 2025-10-19 17:14:47
+
+---
+
+This is HBR episode 2008-150 entitled Copypasta.
+It is hosted by Klaatu and is about 38 minutes long and carries a clean flag.
+The summer is copying and pasting on Linux,
+X selections, Excel, Clipboard Manager, GPM, Green and more.
+This episode of HBR is brought to you by archive.org.
+Support universal access to all knowledge by heading over to archive.org forward slash donate.
+Everyone, this is Klaatu and you're listening to Hacker Public Radio.
+About a week ago now, Ken Fallon sent an email to the mailing list asking or with some show topic requests.
+I don't know where these show topic requests came from.
+If they were his or if he was passing them on to the list, I'm not sure.
+One of them was an explanation of how copy and paste works in Linux.
+And I thought that sounded like a topic that I could probably take a stab at.
+First and foremost, I guess, if you're not using Linux right now,
+the thing that you need to remember is that copy and paste on Linux works exactly the same as the copy and paste on your current operating system almost definitely.
+Whether it's Mac, Windows, iOS or Android, the way that you think you copy and paste in an operating system is exactly the way that you can copy and paste in Linux.
+So for instance, if I double click a word in a random place, in this case, it's my web browser that happened to have open and then press Ctrl C.
+I know on some operating systems that's different, it's not a Ctrl C, it's a long press and a hold and then scrolling over to the copy option or maybe it's a different, it's not Ctrl, it's Command, but you get the idea.
+And then you press, you go to some other application and you press Ctrl V and that pastes the same value that you just copied into your other application.
+And that really is what a clipboard is designed to do.
+If you, for instance, look at the documentation for, let's say, the Windows clipboard application, which is documented in a Windows user.h, apparently.
+I'm saying this off of the Microsoft documentation site, I haven't looked at this myself.
+But apparently this appears in Windows or.h. And the idea is, it's a clipboard is a set of functions and messages that enable applications to transfer data.
+And that's pretty much accurate throughout all the operating systems out there.
+The idea of this, this thing that we'll just call a clipboard because that's what everyone calls this thing is a temporary holding area for some selection of data.
+Now the way that the clipboard handles different kinds of data differs between operating systems, but the fact that you can send data to the clipboard and then get it back out of the clipboard later,
+that's what copy and paste is. The ways that different operating systems choose to interact with that subsystem on the level of the code behind it all differs.
+And for that reason, you may find the Linux implementation of the concept of a clipboard a lot more flexible than other operating systems offer.
+And of course with flexibility, sometimes there comes confusion. So we're going to clear that up hopefully right now.
+So first of all, the main system of a clipboard in on Linux is provided by X or X11.
+It was in the X server system, the GUI interface for Linux, the thing that makes the graphics appears on your screen when you boot your system.
+It was within that system that the clipboard was defined and specified by a group called the...
+Well, by X.org, in a document called the InterClient Communication Conventions Manual, that's the ICCCM in a paper published in 1994-ish, something like that.
+So it was kind of laid out at that time. Not everyone follows the convention that it defines, but that's where it's kind of spelled out for everyone to understand how a Linux system or a Unix system really expects the clipboard to work.
+The basic, and we're starting to get a lot more technical here. So just, if this gets overwhelming, just keep remembering, just go back to the beginning and remember, Control-C, Control-V. That's all you really need to know.
+But beyond that, because Linux is a lot more flexible than just Control-C, Control-V, we can look at it, we can look at the code behind it all and figure out what's really happening.
+So what's really happening is that there are these things called Atoms, ATOM, and an Atom is a distinct unit of data, paraphrasing here.
+It translates an Atom into an X selection, and we'll talk a lot about selections, because that concept is really, really important to the Linux clipboard, and even just kind of to the way that Linux...
+and applications running on Linux interpret copying and pasting. But this system is called the X selection, and there are three levels, or three versions of an X selection.
+One is the primary, one is the secondary, and one is the... not what you think, it's the clipboard.
+So that's a little bit confusing, because we thought we were talking about the clipboard, and we are, but there's a little bit of interpretation available here.
+We can redefine some expectations, and that really is what the Linux clipboard does. It kind of changes the game of copying and pasting, and you will find out why very soon.
+So the most important ones to understand, or to get used to, is the primary and the clipboard selection.
+Secondary, I'll try to sort of remember to mention it in passing, but it's not something that we usually encounter in the wild, but it's there, it's just nobody ever uses it.
+So the primary selection is literally a selection.
+So for instance, if you... if I have a Firefox window here, open, and I select the terms...
+the terms, the words, a selection owner must confirm. You know what, this is all too technical.
+So let's go to a different website here to get something completely different. Here's some text, Dragon.
+Okay, so I've selected the word Dragon in my Firefox window.
+So now, that's in one client of the X server, right? That is an application running inside of the larger X system.
+It is a window that I have launched within my GUI.
+So when I've selected... when I select the word Dragon in Firefox, Firefox makes a claim on that selection,
+on that primary selection. So what I've just selected goes into this slot, and it is called the primary selection.
+And Firefox has ownership of that primary selection.
+Now, I'm going to open up a second application called K-Rite, which is just a basic text editor for KDE, which is the desktop that I'm running right now.
+And I am going to do something really out of the ordinary, and just hit the middle mouse button.
+And if you don't have a middle mouse button, then you can usually emulate one on your trackpad, for instance, with maybe a three finger tap, or maybe two fingers in a click.
+There are different ways to emulate a middle mouse button on different computers.
+I luckily have a proper mouse. I can actually hit the middle mouse button.
+And amazingly, the primary selection that I have selected over in Firefox, the word Dragon, appears in my K-Rite window.
+So what's happening on the back end is that K-Rite detects that I have just requested to paste something in using the middle mouse button.
+So it knows what I'm asking for, which is I want to make a duplicate of the primary selection in my current window.
+So K-Rite identifies which application owns the primary selection, and it calls over to Firefox, in this case, because that's the thing that claimed ownership of the primary selection.
+And says, hey, user wants to paste whatever you have selected into my window. Can I have that selection, the primary selection?
+Firefox sends the text over to K-Rite, and it appears in the window.
+That is the primary selection. Now, maybe it's confusing. Maybe it's unexpected. I'm not sure.
+But if I hit Ctrl V, I don't get the primary selection. I get some other text that I copied earlier when I was talking about my Ctrl C and Ctrl V example.
+You remember that? It only happened like a minute ago. So how is this possible?
+Well, the difference between these two entities is that one is the primary selection, which is the word Dragon in Firefox, and one is a clipboard selection.
+You might think that it would be the secondary selection. It's not. The secondary selection can be invoked by applications that, for instance, need to swap data maybe from between the primary and secondary selections.
+Because you can actually have more than one selection, right? You could have different things in different windows.
+It's rarely used, at least, that as far as I can tell. Generally speaking, I don't think that the secondary one is worth really thinking too much about.
+So primary and clipboard is what we have. The primary one is the one that you have literally selected, and you get that data, you get that value by hitting your middle mouse button.
+It is a convention of the X server. That is something that they came up with. They decided that that would be the way that they would transfer text between one application window and another application window running within the same X server environment. That's the primary selection.
+Middle-clicking isn't technically the only way to get the primary selection. If you have an application called XCell, that's XSEL. It's a command in your terminal. If you have that installed, it doesn't necessarily come installed, so you might have to install it.
+But if you've got it installed, then you can do XSEL space dash dash primary, and it will spit out the primary selection into your terminal.
+I don't know necessarily why you would need that, but it's certainly something that you could do. I mean, maybe you just want to see proof that there's a primary selection like I've told you.
+But there it is right there in the XSEL for X selection command, you have access to it. So XCell dash P, or dash dash primary, spits out whatever the primary selection is.
+And now you know how it does that. It looks at who owns that primary selection. It requests the data of the primary selection from the owner.
+And when it is sent the data, it then copies it or it spits it back out into whatever window that you have requested it to be put into.
+Okay, so the one that you're going to interact with more often, I guess, is the clipboard selection.
+And this is the one that's super obvious and the one that I've already mentioned. And there are different ways, of course, to get something into the clipboard selection.
+Generally, it is to be fair by selecting it. So if I'm over here in Firefox, I can select the text, and I can go to the Edit menu and select Copy, or I can right-click and select Copy.
+Or as I've already said, I can do a Control-C. Now we also happen to know that if I leave it selected and then go over to K-Rite, I could just middle-click, but that's not the clipboard selection, right? That's the primary selection.
+So I've just copied this set of words, and just to make it not technical, I'll select this word here, Podcasts.
+So I've copied that, and now I'm selecting a completely different word, Character Sheets.
+So now I'm over in K-Rite, I'm going to hit Control-V. My primary selection happens to be Character Sheets in Firefox.
+But we know, because I told you, that I just copied the word Podcasts. So if I hit Control-V, I expect to see the clipboard selection, which is Podcasts.
+And sure enough, that's exactly what I get. So Control-V, or I can go to the Edit Paste, or I can go to Right-Click and Paste.
+Either way, I get the word Podcasts, Podcasts, and Podcasts. Just paste it into my K-Rite.
+And the way that that happens is, well, pretty much exactly the way that you think it is, or that it would happen, which is you copy something into the clipboard selection.
+It stays there, it doesn't need to have any primary owner or anything, it just gets copied into that space.
+And then when you paste from that space, your application that you're pasting into, grabs the value in the clipboard selection and pastes it.
+And all of this is independent of the application. This is all just the X-server managing and jockeying data from one place to another.
+Now, one really quick thing about the original design of the clipboard on the X-server, technically speaking, according to the definition or the specification rather, technically speaking, the clipboard is aware that certain things that you copy are represented in different ways to different applications.
+So in theory, you should, well, actually not just in theory. In fact, you can go to some website, here's this website, the Genome Developer.genome.org.
+I happen to be there because I was looking at the GTK clipboard functions. So I'm here, there's a logo at the top.
+If I right-click on this logo, on this graphical logo element, and hit Copy Image, then if I go to the Genome Image Manipulation program, commonly called Gimp, and I wait momentarily for it to start up.
+Now, if I get a new document, new empty document, and then hit Ctrl V to paste, and then Shift Ctrl N to make a new layer,
+I get the graphic, the exact graphic. So obviously you're not constrained to just copying text into your clipboards.
+You can select, you can send something into your clipboard selection that is not just a text item from a website or a text editor or whatever.
+You can copy and paste images, you can copy and paste other things. And again, this is all independent of the applications. So this is the operating system clipboard.
+This is not something fancy that Firefox and Gimp have collaborated on in order to make it possible to paste images.
+I realize it doesn't seem exciting because probably your operating system can also do that. I'm just pointing out that the examples don't constrain you to text.
+Technically, according to the specification, it should be possible to select an image, for instance, copy the image, and then into, for instance, a graphical application like Gimp, paste the image data.
+But then if you go into something like K-Rite, which is a text editor, you should be able to hit paste and, for instance, the path to that image would be pasted rather than the image itself.
+So the clipboard itself is, according to the specifications, it is target aware. It has different targets. So a target item is all the different data types of an element that has been copied.
+And then in theory, the application requesting the data should be able to ask or should be able to specify rather what version of that data it needs from the clipboard.
+And I keep using the word technically and should, and so on, because so far I have not discovered anything where that actually works. I've not, that is not something that I have actually witnessed being implemented.
+I guess maybe that's a little bit untrue because there are times where, for instance, I could go into a file manager, copy a file, and then paste, hit paste in console, and rather than getting, rather than obviously the file itself, I do get the file path.
+So that's, that's maybe one, one exception to the rule. And then, of course, if I go into a separate, into a separate folder here, and then hit the right mouse button and paste one file, then that file gets pasted into this folder.
+So I guess that's one example of it actually working the way that it's designed. Although I'm not 100% sure that the file manager is actually getting a different kind of kind of data set. I think it's just, I think they're both using the path.
+It's just doing something different. One is pasting it in as text, and one is implementing a copy of that file path into this current destination. So I'm not convinced that that's actually leveraging what I was just describing.
+Anyway, that's a technical thing. It's supposed to be available. I've not seen it actually happen, but it is technically a capability of the Linux clipboard.
+Okay, so let's talk a little bit about what we've learned so far. What we've learned is that there are two types of clipboards on the or selections really on the Linux desktop.
+One is the primary selection, which is literally what is selected in the very traditional sense of, oh, I've selected text. That's the primary selection, and you can get that primary selection by either middle clicking or by using some fancy command like Excel, X, S, E, L, dash, P, and you get the selection in your terminal in the output of your terminal.
+The clipboard selection is anything that you have selected, and then I guess you don't even sometimes you don't even have selected. I think you can just sometimes right click on something like a graphic.
+So anything that you have explicitly copied with the edit copy menu or the right click copy or a control C copy, those get sent to the clipboard selection, and you retrieve those by then pasting them into some location.
+And that's very frequently a control V or a right click paste or an edit paste. You can also see that selection or rather retrieve that selection with the Excel command X, S, E, L, space by either dash dash clipboard or Excel dash B for board, I guess.
+So that's how you can get that stuff. Now interestingly, you can also see your X clipboard with the command X clipboard. It's an application actually. It'll launch a little window, and it shows the clipboard selection.
+It's pretty much it. There are some, you can remove an item from the clipboard, you can create a new item, you can save the item, you can do all kinds of things with it. I guess I've never really used it. I just know it exists.
+So that does bring me to another convention of Linux desktops or some of them anyway. And that is the so-called clipboard manager and different clipboard managers come with different names.
+The one that's installed or that that comes naturally with KDE or at least KDE 4 on Slackware is called Clipper. I'm pretty sure it's still called that in KDE 5.
+And it is a really handy history tracker of your clipboard and your primary selections. So yes, you heard me correct. It tracks both your clipboard selection and your primary selection.
+That can sometimes be a little bit confusing because I've just spent 20 minutes telling you how they are two different things. And then on a clipboard manager you open it and it kind of flattens it all into one.
+It's pretty useful actually because it kind of assumes that if you selected something as a selection then you meant for it to be pasted somewhere.
+And so it tracks a pasteable target I guess is how we could think of it. It's a really, really useful little application. I can't live without a clipboard manager.
+I recently was installing a GNOME desktop onto a laptop and it doesn't ship with a clipboard manager. And that was one of the first things that I hunted down was clipboard manager.
+It is just something that I absolutely cannot live without. The way that I use it is that I will select something or copy something.
+And then later when I need that value, I personally have the pop-up menu mapped to Super, which is like the Windows key on a lot of laptops or a lot of computers rather. It's a penguin key for me.
+You hit Super V and that pops up your menu, your history menu of everything that you have copied within the past well until it cycles out. I think I have the tin most recent ones stored and then you can select the one that you want to sort of make the active selection.
+And then when you hit paste again rather than pasting the what was either the well obviously wouldn't do the primary selection, right.
+But rather than pasting what you thought was a clipboard selection, it pastes in whatever you told it to make the active clipboard selection.
+So here's at some point I guess I had 4, 4, 1, 0, 0 selected probably an audacity I would imagine. And so I've just selected that in my clipboard manager. So now that is the clipboard selection.
+Even though most recently I had the word what did I have the word I had the word standard copied apparently. So I'll hit control V and there's 4, 4, 1, 0, 0.
+So so the clipboard manager sort of manipulates your clipboard selection for you. It also manipulates your primary selection.
+So if I have, I'll go back to the 4, 4, 100 and now if I middle click I get the 4, 4, 100 as if though my my active selection was 4, 400, even though I have no active primary selection right now.
+That's a clipboard manager. They all tend to work pretty much the same. A lot of times the keyboard to bring up the menu will differ. Sometimes you might not even want the keyboard short cut draw. Maybe you just want to go up to the system tray and click on the manager and select the thing yourself. It's all about how you work.
+But they're really really handy. There are a bunch of different ones out there. They're generally generically called clipboard managers and they're really handy. So you should try them out. You should look them up for your your desktop. Most desktops have access to them.
+Genome certainly has a small handful KDE has a small handful. There are some that try to be more generic. And so even if you're running like flux box, for instance, you can start in your dot flux box slash startup file. You can just put in clipper and then the ampersand sign so that it so that the startup file continues to be processed.
+And then clipper will be available to you within flux box as long as you have clipper installed, obviously. And if it's not clipper, then it could be something else. They're like I say, there are a bunch of different ones out there. Okay.
+So that's pretty much I think all the all the generic X server level clipboard slash X selection information that I have for you.
+But there's there are some other things to think about which would be that some applications kind of have their own clipboard happening.
+So you might copy something in an application and it doesn't go to your system clipboard at all because it's an internal system within that application.
+And that's important sometimes to to have access to because maybe you want multiple levels of undo in your application.
+Or maybe you have some really specialized data that just wouldn't make sense to send it to your system clipboard because that that wave file that you've just copied several minutes of probably doesn't need to be available to your to your system clipboard.
+Or maybe it does, but it didn't get sent there anyway, or maybe it did get sent there, but the application that you want to paste it into doesn't know what to do with that data. And so it pretends like it's not there.
+But that can happen. And certainly, for instance, Emax has its own system of copying and pasting. It's got a kill ring. And that brings in a whole other dimension of copying and pasting and recalling data and scrolling through it and so on.
+So that's something to be aware of. And then last but not least is, well, what if you don't have a GUI running? What if you're not doing the GUI thing? Well, there are two different solutions to copy and pasting data in a TTY in a text console.
+So this is the text console, the one that you get, if you're running a GUI, you can get there by control alt F something F1, maybe F2, F3, something like that. It'll get you to, it'll take you out of your GUI and dump you into just a text log in.
+Or if you're using a server, that might be the default. You log into it via SSH or something, and that's all you have. Now if you're doing that, if you're SSHing into something, then you're probably doing that.
+I shouldn't say probably, you're possibly doing that from a graphical terminal. So you would, you have all the conveniences of your graphical terminal available to you, which I say conveniences because most modern graphical terminals have things like copying and pasting.
+A lot of times they require you to abstract the control C and control V keyboard commands away from the terminal because the terminal already has a use for instance for control C. That's how you stop a running application.
+So that's something that's occupying your prompt. So a lot of times it would be rather than control C, it would just be shift control C and then shift control V to paste. But the same idea.
+So if your SSHing into something and you don't have a GUI, then certainly you can just use whatever your terminal provides you. But maybe your terminal doesn't provide you that. Maybe you're using X term for some reason.
+You don't have all the modern conveniences or maybe as I say, you're just logging into a computer that doesn't have a GUI. That's fine. You have some options possibly. So the first option is something called GPM, which apparently means general purpose mouse.
+Never knew that actually. I even read the header file in preparation for this episode and it didn't mention that that's what it stood for. But according to the arch wiki that I just now looked at, yes, that's what it means, general purpose mouse.
+And what that does is it gives you access to a to a mouse cursor, even though there's no GUI. It's pretty handy. And it gives you the ability to click and drag across some selection and then paste it into into something by with a middle click.
+So it's pretty much exactly what you would get with your primary selection in X except you're getting it without X. That's it. That's the easy way.
+The other way is to use GNU screen, which is quite, quite handy as well. And in GNU screen, you can sort of get out of your window as it were by hitting some escape key.
+So GNU screen gives you sort of a window manager for a console for a terminal or for a text console. So in order to then sort of if you if you've ever used Vi or them, you kind of know this concept of well, you can be in edit mode or you can be in whatever else they call it. I think insert mode.
+And is it edit mode? I don't know. Insert mode and like type mode or something. So you can get in these two two different modes. And so in GNU screen, you can kind of do the same thing. So for instance, I will type the word dragon again. And then I'll go to the beginning of the line with control A. And this is in GNU screen. So I've sorry to get here. I should slow down here.
+So to get into screen, you type in screen. It's as simple as that. If it's not installed, it'll it'll come back with an error that it doesn't know what screen means. So you need to go install screen. Once you're in screen, you are in insert mode for lack of a better term.
+You can type and the stuff that you type appears in your terminal, just as you would expect. So you can use this. This is just like a terminal, any other terminal.
+But what we really want to do is manipulate what we're doing. So we're going to type in the word dragon. And then I'm going to hit this special key combination to get me into sort of a command mode.
+So I'm going to go to on GNU screen, normally it's control A. I actually remapped it to control J because no one uses control J for anything I've found.
+But you could assuming that you haven't modified your GNU screen control A to get yourself into sort of this floating non-insert mode place.
+And then I'm going to hit the left bracket. And that gets me into copy mode. And I know that it gets me into copy mode because it says at the bottom of my terminal there says copy mode on.
+So now I can move. You can move your cursor anywhere you want. It's really cool. You can go up. You can go down. You can go even before you can go to before your prompts.
+Anywhere you want, you can grab text from. So I'll keep it simple and stay on my dragon line here. And I'm going to hit return where I have my cursor on the D. And then I'll arrow over to...
+How about if we just go DRAG drag just to show that this is flexible. So DRAG and then I'm going to hit return again. And that creates my second mark, which is my closing mark.
+So I've done an in and an out point basically. So I'm saying copy from the D all the way to the G into my buffer or into my copy into my clipboard.
+So we now know that we have DRAG in my clipboard, although it's not of course really a clipboard, right? This is not the clipboard selection. This is not the primary selection. Those are constructs of the GUI.
+This is no GUI involved. This is within GNU screen and a text console. To get that value out of GNU screens little clipboard, we do something similar as before, which is again control A. If you haven't modified your GNU screen, control A to get into that little command mode and then the right bracket pastes.
+And sure enough, DRAG is pasted right after dragging. Of course I could put it in front of Dragon too, so I could control A right bracket. Now I've got drag, drag, gun, drag. So there you go.
+So that's and then the third way that I can't cover because I'm not familiar enough with it is Tmux. Tmux is very similar to screen in a lot of ways. It's actually a lot more advanced than screen.
+But I just don't use it as much and so I don't know how to copy and paste in Tmux. But it's the same idea. And if you if you look up Tmux and look up how to copy and paste, it's there you just have to learn how to do it.
+So that's that's everything that's that's the clipboard the X selection system in in the X on the X GUI server and the graphical server and the alternatives to something without a GUI.
+Those are the different ways you can interact with them different desktop environments like GNOME or KDE might have different windows into the X selection subsystem.
+For instance, I mean I just so happened to look up the GTK stuff so GTK clipboard received funk GTK clipboard text received funk GTK clipboard get display get the default and so on.
+So there's a bunch of different ways to interact with the clipboard but none of those are absolutely necessary.
+The the clipboard itself is a self contained self-sufficient system that is provided by the the graphical server.
+That's everything I know about the clipboard copying and pasting in Linux. Thanks for listening. Talk to you next time.
+You've been listening to Heka Public Radio at HekaPublicRadio.org. We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show like all our shows was contributed by an HBR listener like yourself. If you ever thought of recording a podcast then click on our contributing to find out how easy it really is.
+Heka Public Radio was founded by the digital dog pound and the infonomicon computer club and is part of the binary revolution at binrev.com.
+If you have comments on today's show please email the host directly leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated today's show is released on the creative comments, attribution, share a like, 3.0 license.
+Thanks for watching.

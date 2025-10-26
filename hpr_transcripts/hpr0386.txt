@@ -1,0 +1,133 @@
+Episode: 386
+Title: HPR0386: SSH config file
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr0386/hpr0386.mp3
+Transcribed: 2025-10-07 19:32:49
+
+---
+
+Ummm...
+Hello, my name is Ken Fallon, this is another episode of Hacker Public Radio.
+This episode is on the SSH config file which allows you to specify commonly used SSH settings
+in a file so that you don't need to retype them every single time.
+When people are using SSH client, they quite often come across two things.
+The first is that you have long user names and host names for machines out on the internet
+that you need to connect to and also you might want to set up a port forward for one reason
+or another.
+So say for example that you have a dynamic address from your ISP and you've registered a
+dynamic DNS host name and that host name is my name dot dynamic DNS dot org and you use
+a name at home is different to the one that you're logged in and work so you need to
+put in user name in front of that so you would typically use SSH space username as the name
+of my host dot dynamic DNS dot org.
+Now that's a lot of typing so what you can do is create a little shortcut to tell SSH
+but you don't need to do that every time.
+So if you open up a text editor you'll find a hidden directory called dot SSH in your home
+directory.
+And in there if you don't have a file called config you can create one and you could simplify
+all that by creating the words host space and home for instance.
+And then on a new line you type in user space and the name that you are using as you use
+a name and then the next line you type in host name space and the long dynamic DNS address
+that you have.
+So then on your command line once you save that file any other anytime that you want
+to connect to your home machine you just need to type in SSH space home and regardless
+of what DNS or IP address or whatever that you specified in the config file you'll be
+able to connect to that and it's not actually using DNS at this point it's using whatever
+entry is specified there for the host name.
+So even though you might be logged in as work user on your work machine and you have
+a home user called home user it uses what's in the config file.
+So a lot of these examples will be in the show notes for this episode.
+I kind of find that quite handy and convenient a lot of the times.
+Another thing I tend to do is say I want to do a port forward so you can use the minus
+capital L sign on the command line and then do the port forwarding that way.
+So if you want to basically create a tunnel from 8080 to your home machine and port 80
+what you would do is under that section where you have host home and a user home user host
+name my machine that dynamic DNS dot org and then under that you will put in local forward
+space 8080 space the internal IP address of the machine that you want to connect to.
+So if it's a non-rotable IP address might be something like 192.168.1 that I don't know
+100 and then we call on 80.
+So what that will do is every time that you log in to the home it will create a it will
+attempt to create a tunnel so that your local host port 8080 and that machine is automatically
+redirected to port 80.
+I've just gone through some of the more interesting topics here.
+Another thing that you might do is to stop people connecting to port 22 yeah I know it's
+security by obscurity but why not take a quick win if you can a lot of people will have
+their SSH server listening on a different port let's call it 1 2 3 4.
+So under as another entry under your host home section you can put in the word port space
+1 2 3 4 and what that will do is instead of connecting a port 22 as normal if you type
+in SSH space home it will use the port 1 2 3 4 instead all very convenient.
+So that's all kind of cool if you do a man SSH anything that you can normally do with SSH
+you find yourself doing that all the time regularly you can usually pop that into your SSH config file.
+There's a full man page if you type man space SSH underscore config it'll give you all the options
+that you can put into your config file. That's the sort of basic stuff that I think a lot of
+listeners would use. Some of the more specific stuff that I've used in the past has been doing
+remote forwards where I would I'm not really going to go into the syntax of these but I'll just
+give you an example of how possible. So where you have a bastion host and you need to SSH to
+this bastion host and then from that bastion host you need to connect to another machine and then
+to another machine. What you can do is do port forwards through that so that you set up the
+connection once and it sets up another connection another connection another connection for your
+automatically so that's kind of cool. One thing that you might want to do is have a different
+identity file for different machines on the net so for instance you might have one identity file for
+your for your hosting company. Yeah you might have another identity file for your brother's machine
+that you're allowed to log into and that way you know if one key is compromised then it's you
+kind of limiting the the compromise. So say for example you have a special identity file for
+your you know and then by identity file I mean an SSH key so you have a separate SSH key generated
+for each machine that you want to log into. So if somebody compromises the key on your ISPs
+box for instance while they don't have the keys to the kingdom they can't connect into the
+machine at home instead of using the default home directory dot SSH forward slash ID underscore
+dsa dot pub which they would use as a public file generally. What you can do is you can create
+another set of keys and you know save that somewhere so let's let's say for the sake of argument
+we're going to use the identity file ISP underscore ID underscore dsa dot pub and yeah the private key
+obviously there will be IS home directory dot SSH forward slash ISP underscore ID dot dsa okay
+well simply only need to do is under your host home section or in this case it would be host ISP
+you would have user ISP user host name the host name of the ISP which might be an IP address either
+that works as well and then the next line would be identity file a space and where the path to
+the identity file say tilde for the home directory forward slash dot SSH forward slash ISP underscore
+ID dot dsa dot pub. So for example a lot of people will have SSH clients set up to use protocol
+2 and 1 and 1 has has been proven to have some vulnerabilities in it already so what you can do
+is you can at the top of that file I generally put in protocol space 2 normally it's a protocol
+space 2 comma 1 and what that will do is if protocol 2 isn't available then it'll switch back to 1
+another line I have in there is forward x11 to yes which will mean that I don't need to use the
+minus capital X so that any accessions if I connect to a machine and I type I don't know conqueror
+for instance then the web browser and the remote machine is open on my desktop so rather than
+doing poor forwarding on all that sort of thing I can SSH into my home machine and then you just type
+Firefox on the command line and Firefox from my home machine comes up on my work machine for
+instance there's a security risk involved in that and you can read the man pages about you know
+what it is read the man pages make a decision yourself on whether you want to enable that or not
+but if you find yourself using the minus x anyway then that's something that you can do
+another one is the forwarding agent so if you've got a long complicated key
+what I tend to do is I use the SSH ad command I have SSH agent enabled and what that does is that
+memorizes in very broad terms it memorizes the password for the keys that I I'm unlocking
+and once I unlock the keys I do that first thing in the morning I have a cup of coffee
+entry in my 28 character keys and then I'm set to go for the day that then passes through
+the authentication for the for the all the keys on all the servers that I need to log into
+so if I connect via a bastion server for instance I use my key I connect into that machine
+and then when I want to connect to a machine that's connected to a bastion server so it's like a
+stepping stone server the SSH agent will allow me to pass my authentication from the stepping
+stone server to the server I want to work on on the other side of that connection so that's
+that's pretty much that one weird one that I did come across was related to
+gss api authentication I have that set to gss api authentication to know the reason why that's a
+weird one is if you read the man pages but it says by default it's set to know what on devian
+distributions which Ubuntu is and kabuntu and devian itself that is set to yes what that's all
+about is that's a mechanism for linking in a car boss authentication but it causes it to do a DNS
+query every time on the hostname that you connect into and if you connect into a machine that doesn't
+have DNS set up for it then you're going to get a timeout while it does that initial connection
+and that used to drive me nuts and work when you connect into a machine and you have a timeout
+for low parentries in the first time and then you would log in subsequently during the day and
+that would be absolutely fine you reset your machine and the next thing you'd have this timeout
+is just very frustrating and that it turns out to be that DNS thing so that is one of the things
+that I set one thing that I tend to do is I will set up one connection to do my port forwarding
+home and I'll tend to run that in the background without a shell so that you know I can connect to
+my web server home and I have all my port forwardings done and I've got my agents running and all
+that sort of stuff but then if later I wanted to connect into that machine during the day I'd
+have a different section so I have two sections for my home machine so one would be called host
+host home dash tunnels for instance and I only connect to that once a day and that sets up all
+the tunnels and then the other one will be called host home and the only thing that that actually
+has in is my username the host name and the port so I don't do any forwarding or anything
+anything weird with that one and the reason for that is if you set up all your port forwarding
+and you connect in you know a second SSH session then it gives you an armistice to say that it
+can't create the tunnels because they've already been created it's not the end of the world and
+I mean a lot of the times you might be using something like screened anyway so yeah it's just
+the way you want to work that is pretty much it's about the SSH config file before you hear this
+you'll probably hear some feedback on the bad apples that are sent into Tlattu if you don't hear
+that feedback and Tlattu probably hasn't played it yet and tune in tomorrow for another exciting
+episode on on Hacker Public Radio and as I say I'm Vulkan live long
+prosper thank you for listening to Hacker Public Radio HPR sponsored by caro.net so head on over

@@ -1,0 +1,454 @@
+Episode: 2260
+Title: HPR2260: Managing tags on HPR episodes - 2
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2260/hpr2260.mp3
+Transcribed: 2025-10-19 00:30:32
+
+---
+
+This is an HBR episode 2, 260 entitled Managing Tag Mod HBR Episodes 2.
+It is hosted by Dave Morris and in about 25 minutes long and Karima next visit flag.
+The summer is looking for the best way to store and manage tag in the HBR database Part 2.
+This episode of HBR is brought to you by AnanasThost.com.
+At 15% discount on all shared hosting with the offer code HBR15 that's HBR15.
+Better web hosting that's honest and fair at AnanasThost.com.
+Hello, welcome to Hacker Public Radio, my name is Dave Morris.
+Today I'm going to do the second in a brief group of shows.
+I'm not calling it a series because it's not a series yet.
+But we probably do need a database series.
+But anyway, this is a second show talking about Managing Tags.
+We want tags in the database.
+We want to be able to search on them and we need to design them properly.
+So in the first show of this group we looked at that stuff,
+why we needed them and so forth and then we looked at how we're storing them at the moment.
+But we're not actually using them and I talked about the advantages and disadvantages of doing
+the tag storing in the way that we do and how usable it will be.
+Now there are long notes for this because it's quite a detail.
+Subjection, I put a lot of detail in here.
+In fact, it's explicit detail.
+It's not unclean but it's explicit use of English, I don't know.
+Anyway, I did put a disclaimer in this one as well as the previous one saying,
+I'm not really a trained database guy.
+Just messed around with them for a fair number of years.
+So I sort of feel I know my way around them.
+But I don't think I could stand up against somebody who's really been trained in these things.
+So if you have, you listen to this,
+wondering what the hell I'm talking about and seeing the flaws in what I'm saying,
+please pipe out and say, so you don't necessarily end up being committed to rebuilding this thing.
+But some advice would always be useful.
+So I went for a second approach to storing tags and accessing them and managing them.
+And I thought that since tags have been used in all sorts of places on the web for a long time,
+there were going to be plenty of suggestions for ways in which you could do this.
+So I did various Google searches and came across one solution,
+which uses a single table in the database containing tags.
+I put a link in the notes and it's the solution marked scuttle solution.
+I'm not quite sure what that means, but anyway, have a look at it if you're interested.
+So the way I've implemented this, and I've got a test database which is a copy of the HBR
+live database, I created a table called tags and it's got three columns in it.
+It's got an ID.
+The idea is a reference to the show number in the EPS table, the one that holds the episodes,
+and it's got the tag itself, which is in whatever case it originally arrived in.
+And then it's got LC tag, which is the lowercase form of the tag.
+Now, I designed this originally because I'd not been that used to using MySQL.
+And MariaDB and Postgres is what I've used most.
+And I wasn't aware that MySQL and MariaDB don't do case sensitive matches by default.
+So I don't actually need the two forms of the tag, but I'm not changing it just for this.
+We're talking about design here, so if it ever does get turned into reality,
+there'll be lots of scope for changing it and improving it.
+So having made this table, how to fill it.
+So I thought, well, in the database already, there are all of the tags that have been
+submitted into the episodes, either by the hosts or by further processing after the event.
+They're all there as CSV comes the variable stuff in the in the tags field of the EPS table.
+So I went for method one in setting stuff up, managing it.
+And it was to use the database capabilities themselves.
+There's a thing within most databases to allow you to write bits of code in the database,
+which can be run on the data there.
+These are referred to as stored procedures or stored functions.
+So I wrote something which was, this is not an original piece of code,
+it's derived from something I saw on Stack Overflow.
+And it's a, when you run it, it reads the tags in the EPS table throughout the entire database
+and builds up the tags table from what it find.
+I made a note here, this is fairly advanced database, trickery, magic even.
+And I'm not a great expert on this, I just sort of found some advice and hacked it around a bit and used it.
+So if you're not interested in this, then skip over it.
+But I just really mention it because I did this.
+It's not the ideal way I reckon.
+But I've put the details of what I do in with these notes.
+There's a file called Normalize underscore tags underscore one dot SQL,
+which contains the SQL statements to define the stored procedures and the table
+and to build indexes and that type of thing.
+Then I've got another thing which I call Refresh underscore tags dot SQL,
+which needs to be run and every time it's run, it empties the tags table and rebuilds it.
+Very much a sledgehammer approach.
+Second method, so I really wasn't happy with this, even though it's quite fun to do,
+try and get my head around what it actually means and how to do it.
+The second method was to write a pulse script.
+It could be any language you wished if you wanted to do this sort of thing.
+I made one at a pulse, because that's the language I know best.
+And it's called Refresh underscore tags.
+And what it does is it actually edits the tags in place,
+using the same technique reading through the EPS tables tags and then looking at the tags table.
+I've included this with the show and there's a brief explanation here as to how it actually works.
+I'm not going to go into detail.
+This is moderately long, bit of a bit of pearl.
+The basis of it is that it uses a pearl module which understands CSV
+and it used that to parse the CSV data.
+And I did this because CSV is more tricky than you might think.
+So if the CSV data is in good order and it will parse it,
+if it finds anything faulty, it'll report it and ignore it.
+But that would give us an opportunity to go and fix it.
+But I want the further details in the notes.
+I won't read them here because I suspect that it's not going to be amazingly interesting to people.
+But it's using a fairly simple algorithm to hunt through all of the stored CSV tags
+and looks to see if there are any changes in there that need to be propagated.
+Now the table tags tables also got indexes.
+Indexes are a feature within a database whereby you run a process
+which looks through a table, a particular column in a table,
+field in the table, both mean the same thing.
+And it makes indexes which are effectively pointers into the table.
+And you can set it up so that as you add and remove things in a table,
+the indexes are kept in step.
+So building an index alongside it is very useful.
+And it means that when the database engine comes to try and look for something for you,
+if there's an index that will use that,
+rather than sequentially hunting through every row in the table or tables.
+So doing this speeds things up.
+So I have several indexes associated here,
+which again I won't go into a huge lot of detail.
+So the tags table contains repeated instances of a tag,
+one for each matching episode number.
+And I've got a little query here just to demonstrate
+which selects the ID number and the tag from the tags table
+where the tag is equal to the string grep.
+And it returns two instances of the word grep,
+which are used as tags on two shows 2040 and 2072.
+You'd expect there to be more grep instances as tags in the database.
+But I think that's largely due to the fact that only about 50% of the shows
+have been tagged.
+So let's look at the advantages and disadvantages of using this approach.
+And we'll go on to look at how you would actually use it.
+So I think that this solution gives a much more reliable and efficient solution
+to the problem of storing and finding tags,
+much more so than the common separated variables things.
+The fact there's a separate table allows you to build indexes
+and that optimizes access and so forth as I've mentioned.
+You can't do this, not without a lot of work
+against a common separated string type approach.
+The disadvantages are really around the way I've implemented the management of it.
+Using the stored procedure stuff, you have to blitz the whole table
+and then rebuild it, which is not good.
+When you use the pulse script, then it's much lighter weight
+and runs very quickly.
+And the first stored procedure method parses the CSV data
+using SQL expressions, which is not good
+because it doesn't really understand
+properly formatted CSV data.
+So the pulse script does much better job.
+So those are really disadvantages that can easily be avoided
+by not using the stored procedure stuff.
+That one thing that a database designers would not like about this,
+I think, would be that it's not normalized.
+Normalization is a process where effectively you don't store duplicate values.
+As much as possible, you avoid storing duplicate values.
+And this solution is not normalized.
+We'll come on to this in the next episode.
+Yes, I'm sorry, there is another episode.
+So in terms of searching, we can now do much more sophisticated searches
+partly because the work of parsing the CSV
+extracting the tags has been done
+and the results stored in the table and the tags table.
+So when we look to things in this method of searching in the first show,
+every search required the tag list per episode to be looked at
+and individual tags picked out using
+rather arcane methods with regular expressions and so forth.
+But in this case, everything has been done
+by building the table in the first place.
+And as I said before, the pulse script that does it
+understands the CSV format and simply stores the right stuff away.
+So if we want to be able to do what troops was suggesting,
+which is examining the tags on a given show,
+then find all the other shows that share the same tags we can do so.
+And I'll come on to a method of doing that in a moment.
+But I'm just going to skip through a bunch of queries
+doing various tag searches.
+So if you want to find all the shows with the given tag,
+I'm using pretty much the same examples
+as I did in the last episode just to compare things.
+You're not going to see a huge difference in speed
+admittedly because this database is quite small.
+But I think you'll find that it's a better organized thing.
+So it does produce better results potentially.
+So in the last episode, we looked in the tags field, as I said,
+now we're going to use the tags table.
+And we're going to find all the shows associated
+with the tag community, then we can report them.
+The query is a bit more complicated.
+Well, I guess it's actually not that much more complicated.
+In database terms, it's pretty simple.
+The previous example doing the same sort of thing
+got very hairy when it came to selecting stuff out of CSV lists.
+I'm not going to dig too deeply into this, I think.
+Because, as I said before, this is not really a database tutorial.
+But essentially what it's doing is it's using the ability of SQL
+to examine multiple tables at once.
+So it's looking in the EPS table and the tags table.
+And it's looking in the tags table for all of the tags
+which equal the string community.
+So I'm looking for precisely that.
+No other, not community news or anything like that.
+And the way that the query is organized
+means that we get back the details from the EPS table.
+So I've got the ID number, the show number,
+the data of the show, the title.
+I've truncated the title using the substring function
+just to the first 30 characters just to make it easier to see
+on this page.
+And it shows the tags from the EPS table,
+the CSV stuff.
+And it shows all instances where there's community.
+I only added those tags because you can check
+that these really are the rows
+which contain the community string.
+There are nine rows come back.
+I've got a little sort of breakout box in the notes
+which tries to explain the query a little bit more.
+But I won't read that out.
+I've said good proportion of what's in there anyway,
+with that meaning too.
+But if you really want to find out more
+then you can do reading that, I think.
+Just for interest, I used the SQLEO tool
+that can Fallon mentioned in episode 1965.
+And I used it to examine the database
+and to demonstrate the table.
+So effectively it's doing the same query
+as the one I just mentioned.
+But it's in a more graphical form.
+I thought that might be useful.
+It's actually a great tool.
+I'm going to get more into using that myself.
+In Ken's example, his table had little lines joining them
+showing the relationship between them.
+It's these relationships that make the sort of database
+be referred to as relational databases.
+But there aren't any in this database.
+There are no relationships.
+Explicit relationships here.
+They're not there because we don't have
+these capabilities within this database.
+I think it's probably due to the age of the database design.
+Within my SQL and MariaDB you need to go to some length
+to set up these relationships,
+which are just part of the database system.
+Even in things like SQLite you can do this
+without any great trouble.
+Anyway, that's another thing that we,
+I think we need to sort out but
+and still with one thing at a time.
+So my next example was showing combinations of tags.
+So if we wanted to find a combination of tag community
+and or HPR.
+I did both of those example and HPR and or HPR.
+You can search for them in the CSV tag.
+But using the tags table this is easier
+and there's another query here which I have not
+broken out and explained.
+Not really sure that I should think we need
+to have a series on how databases work or something.
+But the essence of it is that it's doing similar sort of query
+and it's saying return all of the rows
+in the X table where it matches tags
+which are either community or HPR.
+So it's an all type example.
+It uses the thing called group by
+which is a way of deduplicating the result.
+We get back 14 rows.
+Then I did as the AND version of the same thing
+which it's simply, it does the same thing
+but it's asking for only those cases
+where a given row has got both matches in it.
+So that returns five rows.
+There's a sort of brief explanation of how that works.
+But again, I want it's like reading out knitting patterns
+or something I think this.
+I don't hesitate to read out regular expressions
+but structured query languages.
+I'll be going a little bit over the top, I don't know.
+So let's get on to the case where we're doing what
+what troops are suggesting.
+We're having been given a show, show number.
+We go looking for the tags that that show contains
+and return the other shows that relate to it.
+I might put that better in the notes.
+It's a more complex query.
+And I've done it by building a SQL file
+called Find Show Sharing Tags
+with some underscores in there.
+It's included in the notes here.
+I've also displayed it in the notes
+so you can have a look at it.
+There are two queries in the file.
+The first one simply reports, you wouldn't use this for real.
+This is just for demonstration.
+The first one just reports what tags are on a given show.
+So you have to set, mySQL has the concept of variable.
+So you set a variable, in this case called at show,
+variables begin to an outside, to a number.
+And then it searches, a query searches the tags database.
+The table is say for the instances where that show number
+is the ID number in the tags table.
+Then there's a more complex query, the most complex so far.
+So I'm not going to explain it.
+But the essence of it is that it is searching the ex database.
+It's actually doing a bit more than that.
+It's doing searches of three table simultaneously.
+And it's doing it with each of the tags
+that came out of the target show.
+And it's returning data such as the actual tag
+that it's looking for, just to make it easier to understand.
+Then the show number, the date, the host, host name.
+And I just added that in just to demonstrate
+that it could be done really.
+And it contains the title as well.
+So I've got a demonstration of this actually running
+to run this within the database system.
+You first need to set the at show variable.
+I've set it to 2071.
+And the way one thing you can do in MariaDB and MySQL
+is you start a line with backslash.dot,
+which means run the SQL that you find in this file.
+And they follow it with the name of the file.
+So simply invoked this file.
+So it's a script, it's an SQL script effectively.
+So it returns for 2071.
+It returns three tags, amateur radio, electronics,
+and open source.
+This particular show is the undocumented features
+by UV5R radio by MrX.
+So the table that comes back is long.
+It's got 30 rows in it.
+And there's the shows that match amateur radio.
+Shows that match electronics.
+The shows that match open source.
+That's 30 shows.
+These have been made unique as well.
+So you're not getting the same show showing up twice.
+Look to check that I'm not talking nonsense.
+Yeah, that was the intention anyway.
+Then I did the same on 2072,
+which is a sigflup show called
+that awesome time I deleted my home directory.
+The tags on that show are dd file system and grep.
+I'm going to get one row back in this case, which is grep.
+Remember I mentioned there were two instances
+of grep in the table.
+But this thing deliberately avoids repeating
+the show that we're looking for.
+So there's only one comes out.
+So as I've said here, in hint,
+there's only one show coming back.
+This demonstrates the shortage of good tags
+in the database at the moment.
+Need I say more smiley face.
+So that's a hint to anybody who's made it this far.
+Really do with some help adding tags.
+It is possible to do regular expression-y type things
+with this as well, because sometimes you might want to be
+doing something more than matching a tag verbatim.
+This is not solving the same problem,
+but it's just a general thought.
+This is, I've said it's just fun.
+I was experimenting with other types of query,
+and I came up with one that looks
+for a partial tag using a regular expression.
+So this tag, the tag being searched for
+is anything containing a word ending in working.
+And it uses mySQL and MariaDB's regular expression
+word boundary operator.
+Which is a strange thing, which I won't try and read out.
+It's in the notes, and it just again
+to prove the sort of things that can be done with it.
+It returns the show number, the date, the host, the title.
+Then it shows the tags which are stored in the EPS table,
+the CSV one.
+And then it's using a feature of the database.
+It also concatenates together all of the tags
+that were found in the tags table.
+They come out in sorted order because we
+sort them in the table.
+They come out sorted from the table.
+I won't go into details.
+I'm using some quite advanced bits and pieces.
+So conclusion then.
+Probably don't need to say that I prefer
+this solution to the string of comma separated variables.
+Downside of my original solution using stored procedures
+and SQL is already been mentioned.
+It's far too heavyweight.
+On the other hand, the purl script,
+it only finds the differences and makes changes.
+It might do nothing at all, whereas the other one
+would tear down the table and rebuild it regardless.
+And it's just not a very good solution.
+Probably there are ways that it could be done more efficiently,
+but I'm not keen on it, to be honest.
+Both of these approaches depend on the fact
+that the EPS table contains a tags field.
+And it's using them, the tags that are stored there
+to build the table.
+So I'm not sure that that would be the best way
+of doing things in the final solution, the final way
+in which we solve this.
+Ideally, if this table, if this state of both
+is being redesigned from scratch,
+you would never have stored the tags in the episodes.
+You would have simply had a separate tags table.
+So there's a lot to be said for doing that,
+but it does require quite a lot more infrastructure
+to manage it at the point at which tags being entered
+as a new show has been.
+However, it wouldn't be that difficult.
+These are trivial things that people
+implementing databases do all the time.
+I've included the epilogue that I included the last one
+saying, please include tags when you're uploading.
+It just makes life so much easier if you have added them
+because you know best what's good to highlight in your show.
+And if you have a bit of spare time
+and feel that you could help to add missing tags,
+then that would be amazingly helpful.
+Even if you can just put aside an hour or something
+every year that I haven't had enough people,
+just any contribution would be much appreciated.
+What you need to do is to go to the site,
+the page on the HPL website,
+which explains how to check a show
+and prepare the tags for it and then send them in as an email.
+And then we will add them to the database
+of the script or two.
+So it would be most appreciated if you could do that.
+And we will get further on with the tag implementation project.
+So I'm going to stop there.
+I hope that wasn't too hard going.
+I hope you managed to get something out of it.
+And as I said before, I very much appreciate any feedback
+you can to give me on the subject.
+Okay then, bye-bye.
+Buh-bye.
+You've been listening to heckaPublicRadio at heckaPublicRadio.org.
+We are a community podcast network
+that releases shows every weekday Monday through Friday.
+Today's show, like all our shows,
+was contributed by an HPL listener like yourself.
+If you ever thought of recording a podcast
+and click on our contributing,
+to find out how easy it really is.
+heckaPublicRadio was founded by the digital dog pound
+and the Infonomicon Computer Club.
+And it's part of the binary revolution at binrev.com.
+If you have comments on today's show,
+please email the host directly,
+leave a comment on the website
+or record a follow-up episode yourself.
+Unless otherwise status,
+today's show is released under Creative Commons,
+Attribution, ShareLife, 3.0 license.

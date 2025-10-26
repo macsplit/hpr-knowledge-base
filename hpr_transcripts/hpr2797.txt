@@ -1,0 +1,281 @@
+Episode: 2797
+Title: HPR2797: Writing Web Game in Haskell - Simulation at high level
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2797/hpr2797.mp3
+Transcribed: 2025-10-19 16:58:51
+
+---
+
+This in HP are episode 2797 entitled, Writing Web Game in Hackel, Simulation at High Level.
+It is hosted by Tuku Toroto and in about 26 minutes long, and Karina Clean Flag.
+The summary is, Tuku Toroto gives over new on simulation in their 4x game.
+This episode of HP R is brought to you by archive.org.
+Support universal access to all knowledge, by heading over to archive.org, forward slash, donate.
+Hello, this is Hackel Topic Radio, and I'm Tuku Toroto.
+Today I'm going to talk about the Writing Web Game in Hackel, and especially the Simulation
+at High Level.
+So far, we have been concentrating on separate pieces, so now it's time to pull those pieces
+together and have something more, more concrete going on.
+So when I was thinking how to build the game, and think in all kinds of different simulations,
+I, in the end, I often do the system, the simulation is done in steps, and they are taking
+every step is one month, more or less, one or more or less.
+The time is in decimal system, so for example, current time now will be 2019 or more three,
+and that's stored in the data phase as a 2020, 193, because interquests are much more
+nicer than floats when you are adding continuously to them.
+It floats you at some point start to get rounding errors and all kinds of surprises.
+So in the end, I want that the turn resolution happens every 24 hours, a real time, automatically,
+but that part I haven't been, I haven't yet figured out how to do, so currently I'm just
+triggering manually.
+So there's an interface where I press a button at that point, this process that I'm going
+to describe next, start, and it simulates what happens during one decimal month in the game world.
+So main processing is, well, this has couple parts that I haven't run through those yet,
+and I'll probably explain those later, and I'm not going to read out the time signature
+of the function, it's rather long, but it's in the show notes if you're interested on seeing it.
+Any idea is that it's a function that has access to the data phase, it can both read and write
+there, and it returns a time in the end, it tells what's the time in the universe
+after the processing has been done.
+And I found it kind of interesting that in bed systems, the libraries that I'm using
+for the data phase access, you have very granular control over what kind of things your functions can do.
+So if you have some process that you know that it only reads from the database,
+you can tell that in the database that this function only does reading, and if somebody tries
+to add at some point in the future, in that function or in any function that it calls,
+it could be a very complicated process that takes really long to run, and it has many parts
+and multiple reads. If somebody were to add something there that tries to write into the data phase,
+you would have a compilation error, so you have to tell in bed systems if the function or any
+function that it calls has read or write access or both into the database.
+Okay, so the main idea is that there's a process-turn function that takes no parameters,
+and it's a, well, I'm reading it out a little bit.
+So it starts a process-turn equals two, so it's a monotic code.
+And the new time arrow to the left at the end of the time.
+Here we are calling advanced time function that updates the time in the database for one month forward.
+Then Android turns it, so now that's in the new time variable.
+Andersko arrow left, remove, export status is now time.
+So here we are, if you remember previous episode, we are going to talk about planetary
+statuses that planet can have a good harvest, bad harvest, they might be some monster
+attacking the, or things like that, this part goes through all the, all the
+statuses in the database and removes the those that are marked to be removed
+when the time is what we just passed in, or later.
+And the Andersko arrow left means that whatever removed expect statuses returns via
+discarding. We could call this without that Andersko arrow to the left,
+but then we would be getting a compilation warning.
+And I like to keep the code so clean that there's no warnings at all.
+Because while the code might work in some cases with those warnings, there might be some
+hard cases where it doesn't work. And if you have lots of warnings, you might,
+lots of warnings that aren't important to you. And then there's one important,
+you might miss that if there's lots of warnings and you have all, and you have gotten
+used to the fact that there's a 500 warnings, so one more, you don't spot it.
+So I keep the code as clean as possible.
+So then statuses have been removed. Then these factions are all to the left,
+select list, open-fucked, close-fucked, open-fucked, ask, as a faction ID, close-fucked.
+Here, select list is a persistent method. Here we are loading from the faction table,
+we are loading all the factions that are there, and storing them by the IDs,
+and storing them into the factions variable.
+And now the factions variable is a list of faction entities, and entity is a data type
+that has a primary key and the actual data of what you found from the database.
+So now we have a list of those. And onwards, underscore,
+are all to the left, map M, open-parent-handle-faction-events, new-time-close-currents-factions.
+Again, discarding, let's see, receiving from this function, we are not interested in doing that.
+And then we are, map M is a, it's a, again, it's kind of like a map or a map for
+that we have been talking previously, but little, that capital M in the end is a hint
+that it's used in the monadic context. So now that we are doing a database access,
+we cannot use the map, we use the map M. I'll try to explain them briefly
+on list-plating this episode. So what we are doing is that we are calling
+that handle-faction-events, and giving that to our client time,
+and we are calling that function to each of the factions that we loaded previously.
+So we are doing sort of like a loop here. So this, this will handle special event
+as a resolution that I talk, talk previously. So if these are, for example,
+a cracky worm attack on a planet and player has chosen what they want to do, or hand chosen.
+This part is, this part triggers the handling for that.
+Onward, then there's a map M on the score, handle-faction-food-factions.
+This handle-faction-food doesn't return anything sensible if returns a unit.
+So we don't have to, we don't have anything, anything that we would need to discard.
+So we are not using that underscore arrow to the left, but we are using a source hand
+map M on the score, that's the same thing. There's just so many of these things that
+it's hard to keep track of, track of these sometimes. So handle-faction-food,
+here we are, again we are calling this function to each and every of the factions
+in turn. So this one will take care of the food production and food consumption.
+I haven't gone through through what actually happened inside of this function,
+in previous episodes, maybe I will do that at some point.
+It's a kind quite simple, the current isn't that much interesting,
+but if an event is more interesting stuff happening in there, I will call through that.
+But in any case, this will produce food in a planet, and then the population on the planet
+will consume that food, and what food is left over or biological resources,
+as they are called in the game, are stored in the stores, and if your population
+is consuming more food, then the produce and then they are using the food from the stores.
+Okay, then map M underscore open-parent handle-faction-construction,
+new-time close-parent factions. Again, we are calling the handle-faction-construction
+with new times and each of the factions, and this will take care of the various
+construction products. This I haven't gone through previously, I will do that.
+I have to do some work there still before I can explain the idea and what I'm doing there.
+But basically, you have construction projects on various places,
+and this is where those construction products are.
+Progressing and maybe completing, and then these are generated.
+They're usually. Then, underscore arrow to the left map M,
+open-parent access-al-events, new-time close-parent factions.
+So here we are calling access-al-events, new-time,
+to with each and every of the factions, and this is the part that adds a new
+special, possible new special events. I'm sure if I have gone through this part in
+detail, I might or might not have. But this is the place where new special events
+can happen randomly. There's a bit list of special events and then you,
+and then they have a randomized, then they have some
+representatives of chance occurring and based on, and then they have some
+preconditions and based on that, all that information, each faction may or may
+not get a special event at any, to some place.
+And the final step is map M, underscore open-parent, handle-faction observations,
+new-time close-parent factions. Handle-faction observations,
+I have gone through, I believe, this is where you, well,
+all kinds of reports are generated for you. If you have a population
+on a planet, they will write a report to you that this is what we see.
+If you have a space ship somewhere, they will write a report to these
+what we see. If you have a probe somewhere, they will write a report to these
+what we will see. All that information is stored into the database and
+whenever information about something is looked upon, like you want to know
+what you know, for example, some planet, then all those reports that have been
+written for that planet are retrieved and they are combined and that's
+your current knowledge of the place. Some of that information might be
+mapped to date, some of that information might be obsolete,
+some of that information might be downright wrong, and some of that information
+might be completely lacking. So you don't have a defect you
+of the universe around, only the what you actually have seen and observed,
+and there might be some information that is out of date.
+Because you haven't been, you haven't been at that place with information.
+It's like if you make an expedition to some faraway place and see that,
+okay, here's a rocky planet, nothing to see here. Come back.
+Then that's the information that you will be shown when you check the
+status of the planet. There might be a huge civilization there,
+but you don't know because you haven't seen that.
+And the final line on the code, that processor function is return new time.
+So here we are returning the new time, the time,
+current time of the universe after the processing. And why are we using it
+return here when we haven't been using it pretty much anywhere else?
+And that's the answer is that the processor is a monadic function.
+In this case, it deals with input and output,
+specifically the database. So there's a bit of extra work that you have to do
+to be allowed to do that. In Haskell functions are used here.
+So they work in a way that when given same set of parameters,
+they always return the same answer and there's no dependencies to outside systems.
+So I think another term is referentially transparent.
+You could replace function with a huge lookup table that would have all the
+combination of the parameters and answers to us.
+So there's no, the outside work doesn't affect them,
+or some are another part of the system doesn't affect the answer.
+The data comes out and the data comes out is always the same
+on the given set of inputs. It doesn't change.
+But that of course does not work when you start dealing with the database.
+For example, here you have a bit of extra instruction.
+So if you remember math, that's a way of running a function over a list.
+So you have that signature of the math is an open parent,
+A, R, O, B, close parent, R, O, list A, R, O, list B.
+So when given a function and a list, it will produce you a new list.
+And the elements of that new list are what you call when you run that function
+to elements of the old list.
+FMAT is a similar concept.
+It's a type signature is an open parent, A, R, O, B,
+close parent, R, O, F, A, R, O, F, B.
+Again, same concept, but instead of working on a list,
+it works on F and F can be some structure.
+It could be a list, it could be a maybe, it could be a either.
+So FMAT works for sanctos that I talk about earlier.
+So MAPM is the same thing, but for the monot.
+Each type signature is MAPM.
+It's a monot M, that arrow, open parent, A, R, O,
+M, D, close parent, R, O, D, A, R, O, M,
+open parent, D, B, close parent.
+So if you have this in a show notes and you look at them
+and take couple steps backwards and screen really hard,
+then you can see that they are very similar.
+All three take a function and they take something
+and then they produce something else.
+And that works only with the list.
+FMAT works with the functions.
+It can have different kind of structure.
+It's a more generalized.
+And MAPM, you have that monot M are hanging around there.
+So instead of function being from A to B, it's from A to M B.
+So that B value is part of a structure M.
+And M is the monot.
+There are many kinds of monot.
+It's a really fascinating topic.
+It's not as difficult as you might have let believe.
+Well, when somebody explains that to you in a really well,
+it's a really simple concept.
+But the problem here is that it's a fairly abstract.
+And if you explain the abstract part,
+you don't really get why they are important in the programming,
+especially the Haskell.
+But the way I learned then was that I didn't concentrate on the abstract part,
+but I concentrate on what you can do with them,
+what they actually do for you.
+And here they are learned how to do it.
+I'm going to try to explain them at a bit later episode.
+But I need to come up with a really good explanation.
+But for now, it's enough to understand that the map M is similar to map and F map,
+but it also gives, it also deals with the input output in this situation.
+Monats are not only for the input and out, they are highly versatile.
+You can use them for many things.
+And they are sort of the next step in the chain.
+Let's start with the function and continue with the applicative that I talked earlier.
+But for now, it's enough to know that in this case they are there for dealing with the input and out.
+Okay, so, talk to the processor.
+Each step is done for all of the factions before moving to the next step.
+First, the status removal are done for everything in one go,
+but for example, the special element resolution is done for all factions.
+And then the food production and consumption is done for all factions.
+And so on.
+Originally, I handled each faction at a time.
+Like, did all these things to one faction and then process another faction and then did the next.
+But then I started thinking that it...
+Well, it started feeling that these are discontinuation in the universe.
+Like, one part of the universe is one month ahead of another part of the universe.
+And if there's any interactions between those...
+Those universes and those parts of the universe,
+the later point in the simulation, it looks funny and...
+So, I had it originally working like that, and then I thought that it might be more sensible to run it in a slices.
+So, parts of the universe update.
+So, like, the whole universe updates in the terms of the special events and then all of the universe updates
+in terms of the food products and consumption and so on.
+So, then it's still done one place at a time, but it's not so...
+It's not so big leap in a long go.
+That's the thing with the computer simulation.
+You are usually dealing with a discrete time.
+Like, you have a step that you are doing it.
+You could do continuous simulations, I think, with some fancy mathematics.
+But that could be way beyond of my skills.
+It would be interesting exercise, but I suspect that that would be way beyond my skills and that might be...
+pretty taxing for the computer to do.
+Okay, so, after all this, the time the universe has moved one month, month, month, month, month, month,
+and players can review reports, special events, tattoos, and whatnot.
+They can browse around with the interface and do what they want to do.
+And, like I said, this will run when I track on figures times when I get that written.
+And that will cost me to figure out how to do that.
+So, even if players have not made the choices, then this will run.
+It just means that they didn't feel or didn't have time to make those choices.
+The world keeps rolling even when somebody doesn't do anything.
+And, in the end, I want to add a little bit of automation to the game.
+So, you could have instructions.
+You could give us some cover on the planet.
+Instructions that I want you to cover on this planet in some specific way.
+Like, I want you to take the planet to this direction, or that direction, or whatever.
+And, here's your resources.
+And, just go wild.
+And, after that, if the player will not have to micromanage that planet by themselves.
+Of course, there might be a situation where some player is actually playing as a governor of a planet.
+And, then, the whole point of the game is to take the free sources that they have.
+And, to do with the planet what they want to do, or what borders they have been given by somebody else,
+there might be a vessel of some star or octopus who governs them.
+Who has a domain of multiple planets and has delegated the authority to some, some, some governors.
+And, that star lord, could be a dual player, or could be a computer player.
+But, in any case, the planetary governor would be a player, and they would be playing and managing that single planet.
+And, maybe they would be very ambitious players, and they would secretly start playing a political game,
+and maybe a military game, and try to declare independence and start their own empire that way.
+Okay, I think that's enough for now.
+And, the best thing nowadays is to catch me, is either the e-mails, or a steady verse where I'm to do it and master them, but social.
+Okay, Ad Astra.
+You've been listening to Hacker Public Radio at Hacker Public Radio.org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contribute link to find out how easy it really is.
+Hacker Public Radio was founded by the digital dog pound and the Infonomicon Computer Club, and is part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly.
+Leave a comment on the website, or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released on the creative comments,
+and the contribution, share a light, three-dot-oh license.

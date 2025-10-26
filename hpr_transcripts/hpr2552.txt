@@ -1,0 +1,95 @@
+Episode: 2552
+Title: HPR2552: What is stow?
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2552/hpr2552.mp3
+Transcribed: 2025-10-19 05:25:07
+
+---
+
+This in HPR episode 2,552 entitled What is To?
+It is hosted by Clacket and in about 12 minutes long and carrying a clean flag.
+The summary is, how does To work, why would you want it and what are its limitations?
+This episode of HPR is brought to you by AnanasToast.com
+Get 15% discount on all shared hosting with the offer code HPR15
+That's HPR15
+Better web hosting that's honest and fair at AnanasToast.com
+Hi, I'm Clacket. A week ago I was talking about MCS 2. That was 5 minutes ago.
+I've not been looking at my phone and another suitable episode that I can do on my way home from the bank is
+What is Stowe?
+Stowe has a long history dating back to the 90s which is pretty long in internet time anyway.
+So you have this situation that you're on a machine and you have something you want to build from source.
+So you take that thing and you configure, make install and then it's the question where you're going to install it.
+If you are the administrator of the machine, you can probably just go with the defaults, put it in slush USR, slash local.
+And that will be fine.
+But then there's a new version of this thing coming out and then you need to have some way to upgrade.
+Maybe you can just make install again on a new version and it will override the old stuff and that will just work.
+Or maybe it won't and if it does work, if you have a package that has removed some files since last time those files will still be sloshing around there in your slash USR, slash local.
+And what if you want to uninstall your package entirely?
+Then some packages over make uninstall. Most packages don't. Those that do may or may not work.
+So there are a couple of ways around this. On Debian there's a package I forget the name now but you can basically monitor your make install process.
+And note all the files that you installed and then it makes a Debian package out of what just happened.
+So that Debian package gets installed and then you can uninstall it using the normal Debian tools. So that's one way.
+But there's also a more generic way and I think it's the simplest possible package manager.
+The website says and angry people on the internet have told me that it's not a package manager. It's say what is it?
+It's a Simlink tree management software. It's a package manager.
+You just, the packages are just handled as Simlink trees.
+So what this means is that you install your thing, let's say you are a local user.
+So you're a non-root user. So you're doing this out of the necessity of being able to handle packages at all.
+You cannot use the Debian wrapper. I'll check install I think it's called the Debian wrapper.
+All you have is your local home directory and that's it.
+What you do then is you, when you make install, if it's a nicely behaved auto tools like configured package, then you can configure with dash dash prefixed equals slash home slash clock slash dot local.
+And then when you install it, you can do make install prefix equals slash home slash clock, slash dot local slash stow slash package name dash version.
+So what that means is the package will think that it lives in just your home directory dot local.
+But when you install it, you install it somewhere else.
+And the recommendation is you call it package dot package slash package name slash version.
+So that the next time a new version of this package comes out, you can just call that package name dash the new version.
+And then what you do is you simlink the version directory to a nonversion director with just a plain name.
+So I have my app 1.0.
+I install that to dot local slash my app 1.0.
+And then I simlink my app dash 1.0 to my app.
+And then what I do is if I have stow installed, I just go to home directory dot local slash stow and then I just stow package name.
+And that's it.
+So it expects that in package name, you will have the usual ETC, lab, bin, etc.
+OK, directories.
+And it will, if I lie to you, I will say that it will take all the files in there.
+It will create the according directory structure in your dot local.
+And then we'll simlink all the files into that directory structure.
+It's a little bit cleverer than that in reality.
+If you have only one packet that has a lib directory, you will not create a lib directory called your files into there.
+It will just make your dot local slash lib a simlink directed to the lib inside your package.
+So you save a couple of I notes there and a couple of layers of interaction.
+And the next time you go around and you install their app 1.0, then if that also has a lib directory, stow will recognize that, hey, this is a simlink, but actually it's a simlink that I manage.
+It's linking to inside the stow directory.
+So we will just split that up, make sure, OK, now it's a real dot local slash lib directory.
+And I'm simulating all the things from my app and their app into this directory.
+So this is all nice when you have self-contained packages and no dependencies.
+When you have dependencies, you have a couple of choices to make and they are all bad in different ways.
+So you can say that, OK, I'm going to build, I have my lib and then I'm going to build my app which depends on my lib.
+So I can either say, OK, my app depends on slash home slash clock slash dot local slash lib slash slash my lib dot SO.
+And that's going to work.
+But then if a new my lib comes out, let's say you had version 1.0 and version 1.1 comes out.
+And according to semantic versioning, this 1.1 is supposed to be compatible with 1.0 and it probably is.
+And in that case, you install your new 1.1 in your stow my lib 1.1.
+You re-point your my lib singling and then you stow dash capital R.
+This means go through my my directories and check if there's any dead references to this package and if so, delete them.
+And if I have any new references in the in the directory that I'm not represented, assume links them, please assume link them.
+But what if 1.1 and 1.0 are not compatible? Maybe it breaks my app because someone made a mistake or maybe you misunderstood their versioning scheme or whatever.
+So in that case, you should have instead of telling it to use just dot local slash lib to find my lib.
+You should have told it instead. Oh, you should have used the local slash stow slash specific package version my lib dash 1.0 slash lib.
+So you could always do that. But of course, then you have a new problem that, okay, I do the 1.1 came out.
+Now it works just fine with my app but my app is already compiled to use 1.0 and it's not locked on that directory.
+If you remove that directory, it's going to stop working.
+So you need to keep my lib 1.0 hanging around and then maybe when my app 2 comes around, maybe you compile that with my lib 1.1.
+And now you've got a bunch of directories lying around and you don't know really which one depends on which.
+If you remove my app 1.0, of course, you would be able to remove my lib 1.0 as well. But you have to know that.
+Otherwise, you'll just think, oh, better just have it lying around just to be sure.
+So if you get into these complicated situations, then it's time to graduate from stow academy and move on to get a doctorate in nix or geeks because this is basically what they do on the next level.
+Everything depends on an absolute version. And when you remove things, you can garbage collect the things that they depend on.
+I've already talked about that in another episode. So I will refer you back to the how awesome is geeks and everyday geeks use episodes in the show notes.
+This has been Hacker Public Radio.
+We have been listening to Hacker Public Radio at HackerPublicRadio.org.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast and clicking our contribute link to find out how easy it really is,
+Hacker Public Radio was founded by the Digital Dog Pound and the Infonomicon Computer Club and is part of the binary revolution at binwrap.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released under a creative commons attribution share-like 3.0 license.

@@ -1,0 +1,156 @@
+Episode: 1870
+Title: HPR1870: 19 - Home SSH Server
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1870/hpr1870.mp3
+Transcribed: 2025-10-18 10:30:44
+
+---
+
+This episode of HBR is brought to you by AnanasThost.com, get 15% discount on all shared hosting
+with the offer code HBR15, that's HBR15, better web hosting that's honest and fair at AnanasThost.com
+Hello, this is Ahuka, welcoming you to Hacker Public Radio and another exciting episode
+in our security and privacy series and we started a mini series on SSH that is going to last for a number of episodes because there's a whole lot to talk about.
+Now, SSH is an interesting and complicated thing to take a look at and one of the things that I think is important is that you get a little practice with this stuff and understand the technology
+and so what I want to do now is talk about setting up a home server so that you can do this kind of practicing behind a firewall where ideally you won't have too much of an issue of security.
+Now, once you get out on the open internet it helps if you understand how all of this stuff works but to do that requires I think a little bit of practice.
+And so while the focus of this series is really not going to be primarily on server administration that's a different thing entirely and not really something that I'm qualified to get into to any great depth.
+But I think if you understand what is going on on the server and how you interact with it then it's going to make it easier for you to use SSH in a secure manner.
+So I do want to just talk a little bit about setting up a server at home.
+Now, I think these days it is more common that people own more than one computer and when we say server really all we mean is a computer different from the one you're currently sitting in front of and that computer could be across the room or upstairs or down the hall or on the other side of the world.
+I mean it really depends but if we're talking about a home server then it's probably one pretty local to you.
+And if you've got a second computer this is really simple to get going on.
+If you don't something like a Raspberry Pi, it doesn't cost a whole lot of money.
+I think that's something like $35 you can get a very nice Raspberry Pi and set that up to be your server and then you can practice all of this stuff.
+So I really do encourage you to do that.
+And I think certainly for most Linux users at least installing and setting up a server is really simple. You can do it in minutes.
+Now most Linux distros use OpenSSH for this purpose in our introductory tutorial. We talked about it. I pointed you to the manual at OpenSSH.com as a good resource but I'll put that link again in the show notes for this particular tutorial.
+So with that in mind let's get started.
+Well first you need to install a package. If you are on Ubuntu the package is called OpenSSH-server and you would use your usual app tools to do that.
+However you like to do that I happen to be a synaptic user. If you're on Fedora the package has exactly the same name OpenSSH-server but you would use Fedora's tools yum or whatever the new one is that they've just introduced.
+I'm not a Fedora user myself so I'm not really an expert on that but you should be able to get that information pretty easily.
+If you're on Suza the documentation that I've looked at says that they install SSH-server as a matter of course is part of the normal install so it's probably already there.
+Windows now this gets a little bit different at present OpenSSH is not a Windows program.
+If you have to get going right away you might want to look at PowerShell server as a possible replacement.
+There is an article on Microsoft TechNet that can get you started but this will eventually change since Microsoft in June of 2015 announced that they would support and contribute to the OpenSSH community.
+That is I think very welcome news and it means that we should soon have OpenSSH on all of the major platforms.
+Now there is a way to run OpenSSH with SIGWIN to me that introduces maybe one too many variables and I prefer to work with something native to the environment when I can.
+So if you're not in a desperate hurry you might want to wait a little bit until OpenSSH is a native Windows program.
+What about Macintosh?
+Okay well Macintosh at its heart OS 10 is BSD and that's the native home for OpenSSH. OpenSSH as a project is maintained by the BSD community.
+So you should have it already installed really and Raspberry Pi.
+Now if you want to go that route and I think for a lot of people that's an excellent solution.
+The Raspberry Pi documentation says that SSH server is enabled by default for command line only.
+Now really for what we're talking about command line is all we're going to be doing so that shouldn't be a problem.
+You know a little bit later on you know we can talk about basically X11 forwarding which is to take the remote desktop and display that desktop on your screen.
+And if you get to doing wanting to do something like that with a Raspberry Pi you would have to install a program called VNC.
+I'm not going to go into a lot of detail about that right now. If you want more information consult the Raspberry Pi documentation.
+So great option for people who want to experiment but don't happen to have a second computer for 35 bucks you can have a second computer essentially.
+Now accounts.
+When you log on to a remote system using SSH you are logging on to an account that you already have on that system.
+You log on with your username and password for that system.
+And when you log on you're working directory is your home directory on that system.
+Now you can see this by running the LS command when you log in you will get a listing of the files and directories within your home directory.
+So obviously your first order of business is to confirm that you have an account on the server before you attempt to log in and that you know the password for that account.
+Then configuring your server.
+And so I'm talking to people with a home server now.
+So we're not talking about a corporate system and kind of thing which involves so many more security considerations that it is well beyond what I can deal with in this little tutorial.
+So I happen to run a Linux distribution called Kobuntu which is Ubuntu with a KDE desktop.
+I happen to like it and that's what I run on my home network.
+If you use a different system please consult their documentation for particular details if you happen to encounter any differences.
+Most things are the same.
+There could be small details that are different.
+So first thing, there's a config file and it is in the directory slash ETC slash SSH.
+And the name of the file is SSHD underscore config COMFIG.
+Now be careful you get the correct file.
+If there is a config file for the client which is called SSH underscore config, note there is no D there, you don't want that.
+SSHD refers to the SSHDmin which listens to the port and handles login requests.
+This file comes with a standard configuration out of the box.
+You might want to take a look and see what is in there first.
+I noticed there are a lot of options, some things are commented out.
+To change them you need to use a text editor and remove the comment as well as change the value.
+But it might be wise first to create a backup of the file as it is before editing it.
+That way you can always return easily to a known good state.
+Now what I like to do is save a copy with the date I saved it.
+And I use the ISO 8601 standard for that purpose since it's the only reasonable way to write dates and avoids the ambiguity that comes with the US versus European issue of whether the month or the day comes first.
+I run into that at my job. I work for a Ford credit and it's an international.
+We've got people in European countries, Asian countries, the United States.
+And I start opening up project files and I'm looking at dates and you know is that June 9th or September 6th, I'm never entirely sure.
+So that's why you want something that's unambiguous.
+Now the ISO 8601 standard says you do it year, then month, then day.
+Now you can do that as just eight digits in a row.
+So the year is a four digits, then two digits for the month and two digits for the day.
+Or equally allowable is to break it up with dashes.
+So four digits for the year, dash, two digits for the month, dash, two digits for the day.
+The day is always a two digit number as is the month.
+So if it's a January the month is zero one and if it's the third of the month, it's the day is zero three.
+Now if you do this, your file names will always line up in proper chronological order and everything will make sense and it'll be totally unambiguous.
+So I date all of my files this way.
+So what I'm saying is create a backup and I like to date it so I can always go back and see.
+And maybe, you know, over time, if I make additional changes, I might end up with four or five different versions of that file.
+You know, it's just a little text file, not going to take up that much room.
+So I created a backup SSHD underscore config underscore and then my eight digit date.
+Then I edit my SSHD config file using a text editor.
+And in the operating system that I'm in, I like to use Kate, which is the KDE text editor.
+But in any event, use whichever one you like or, you know, even use EMAX if you really have no alternative.
+It's just a little joke for the EMAX people.
+So password authentication. This is one of the things.
+Now default setting says that anyone with a password and an account can log in.
+That's very convenient.
+But unfortunately, it's also convenient for someone trying to hack into your system within a home network that might not mean as much at first, particularly if you have a good firewall and never let your SSH port be exposed to the outside.
+But eventually you will probably want to enable connections from outside so you can access your systems from some other access point.
+And that's when password authentication will put you into danger.
+So imagine a scenario where you've started to master the use of SSH and you know you can log into a system and you've configured your firewall to let traffic go through.
+And so you're sitting at a coffee shop and decide, oh, I'm going to log into my home system.
+Well, you're transmitting a password in the clear.
+You should think about that a little bit.
+So that's the first thing. The second thing is, you know, how do you know that someone isn't intercepting your login attempt?
+There are things you can do, but you need to be pretty careful about this.
+So basically the way that most people advise for security is to do it with key pairs.
+And we will discuss over the next few tutorials exactly how you do that.
+But that basically uses the same technology that we've talked about when we talked about mail and then SSL certs.
+You know, it's basically the same technology applied over and over.
+So what you can do once we, you get everything set up as you can come back to your SSHD config file and remove the ability to log in with a password.
+And that'll give you a little more security. It will mean you will have to have your key in order to log in.
+So if you have a laptop that you frequently would do this with, you know, you could store it on your laptop or, you know, maybe you have something like a Ubike that you want to put it on.
+However, you want to do it. Now another thing, changing the port.
+Okay. That's an option that you might want to take a look at. It won't necessarily stop everything, but there are scanners looking for open SSH ports to crack.
+And moving your port is a simple measure to slow that kind of thing down.
+So if you look, there's some lines and it starts with a comment tag that says what ports, IPs and protocols we listen for and right under that, it'll say port 22.
+Well, you can change that to a different port.
+So put in some random five digit number and, you know, you can go up to 65,000 on this.
+And then save the file. And now you'll need to reconfigure your clients to log in on that port number.
+Another option, log more information.
+If you're setting up an SSH server, you probably want information on any logins.
+And in particular, any failed logins because that is an indication that someone may be trying to get onto your server that isn't supposed to be.
+Now the log that records everything is in slash var slash log slash a UTH dash log, which is a text file. You can open in any text editor.
+Now the default level of information is info, INFO.
+Now the open SSH manual has something to say about this log level is the setting gives the verbosity level that is used when logging messages from SSHD.
+The possible values are quiet, fatal, error, info, verbose, debug, debug one, debug two, debug three.
+The default is info and goes on and says logging in with debug level violates the privacy of users and is not recommended.
+So what I would recommend you do is change it from info to verbose.
+That will record a little more information, particularly those failed log in attempts.
+So look for the three lines that read comment tag, logging, syslog facility is set to AUTH, log level is set to INFO.
+That's what you want to change. So change it to log level V-E-R-B-O-S-E.
+So a good reason for adding this option is that the verbose mode, as I say, will log the failed log in attempts.
+And that's the sort of thing you should be paying attention to.
+Now failed attempts could be simply fat fingering the password, in which case you should know you did it and can ignore it.
+But if you see multiple failed log in attempts, it may mean someone is trying to guess passwords to get on your system.
+Now, once you have made whatever edits you want to do, you save your file and then you need to restart your server to use the new settings.
+And that's just sudo, space, restart, space, ssh.
+Now, this little thing is not anywhere near a complete look at server setup and configuration.
+It's not going to qualify you to be an expert, super sysadmin.
+It's just intended to let you set up a home server to experiment with behind a good firewall.
+I think it's difficult to understand ssh without something to experiment with.
+And setting up a server can give you a testbed to see how these commands on the client side work.
+And now that you have a server setup, we can experiment with the log in process, which is our next tutorial.
+So, this is Ahuka for Hacker Public Radio, signing off and reminding you as always to support free software.
+Bye-bye.
+You've been listening to Hacker Public Radio at HackerPublicRadio.org.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contribution to find out how easy it really is.
+Hacker Public Radio was founded by the Digital Dog Pound and the Infonomicon Computer Club,
+and is part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website
+or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released on the Creative Commons,
+Introduction, ShareLite, free.org license.

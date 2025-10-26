@@ -1,0 +1,156 @@
+Episode: 2768
+Title: HPR2768: Writing Web Game in Haskell - Planetary statuses
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2768/hpr2768.mp3
+Transcribed: 2025-10-19 16:34:38
+
+---
+
+This is an HBR episode 2007-168 entitled, writing web game in Hackel, Planetary Stators in
+It is hosted by Tuku Toroto and in about 19 minutes long, and Karima Clean Flag
+The summary is, Tukoto describes the system for recording Planetary Stators in a game
+This episode of HPR is brought to you by archive.org
+Support universal access to all knowledge by heading over to archive.org
+Forward slash donate
+Hello, you are listening to Hacker Public Radio and this is Tuku Toroto.
+Today I am talking about, once again, writing a web game in Hackel and focusing on the
+Planetary Stators.
+So in the episode 2748, I talked about how to adapt special elements to the game.
+And one drawback of the system that I described there, it describes how Krakki bombs can
+attack the planet.
+One drawback of the system that I described there is that it did not take into account
+the fact that it might already be a Krakki attack ongoing.
+So you could have a drawback ongoing on the same planet and that would be a bit confusing
+for the player because then you could deal with one and the other one will continue and so
+on.
+So this time we are looking to how to prevent this.
+Also, the system that I am talking about can be used for other things too, like for
+example how to record that a certain planet has a particular good harvest season.
+First thing we need is some data types to represent things and I create a data type
+of the system that is just a list of different types of the system that they might be.
+And it's just a data planetary status equals good harvest, pipe 4 harvest, pipe Krakki
+attack.
+And there's some more data about those games are an interesting photo for this episode.
+And since we are going to start this in the database, we also need to generate codes for
+that.
+So we are adding a derived persistent field planetary status in koresh mags.
+This allows us to declare a database table via column, column data type is a planetary
+status.
+Well actually it's a one on a database it is a watchar, but to us it looks like it would be
+a planetary status.
+I could have stored this as a plain strings, but declaring a separate data type ensures
+that the compiler will catch if I make a pipe or and also in a function type signature
+it's much easier to read when it's raised a planetary status instead of string.
+Like you know what's going but what we are, but you are doing it this thing with strings
+you have one you have to always sort of second guess.
+Okay, that's for storing that's that's different statuses that the planet might have.
+We also need a way to start a new database.
+So we are in that models file, there's a definition planet status, planet ID, planet ID,
+status planetary status, expression in maybe deriving Soviet equal.
+So that defines a database table, planet underscore status and a respective Haskell data
+path, planet status and there will be one row in database for each status that a planet
+has.
+I could have stored them as a list, but then there would be a one row per planet and that
+will have a statuses but searching that list might have there.
+When you want to know if some given planet has some specific status it's easier to just
+query the database for that planet ID and specific status instead of querying that planet ID
+getting that list of statuses and then checking that list if the element you are looking for
+is there.
+Okay, the expiration, well, the planet ID of course links to the planet that we are talking
+about status is the, what status is in effect, that's from the list that it defines just
+a moment ago, expiration is for dealing with the status expires and because it's in maybe
+it creates a column expiration in the database that has, that does not have not now constrained
+all the other fields or columns in that table has not now constrained, but this one doesn't
+have, this is also reflected in the planet status data type that has the planet status expiration
+field which data type is maybe in the instead of in.
+So it might or might not have value, so some statuses will expire automatically while some
+others will stay there until explicitly removed.
+I always only chose to represent time as an int because it was easy, but reasonably
+I'd be wondering if that has been a really good decision and I might have to get, I did
+the video to that decision and make a real tape right for that, but for now it's in.
+Okay, now we have a table where we can store info about the, that the planet has a status,
+some status.
+So we are going to return to the Kani attack, these are worms, the, of, these are worms that
+might attack a planet that has a population of 10 or creator or that have farm, five farming
+complexes and some population.
+So in this query, we are going to have to add a new, new join, I'm not going to read
+out the whole code because the actual database query, it's pretty long.
+And while it's not that complex, complex, it's still pretty, completely working.
+So the idea, idea here is that when we before, when we were loading a planet from planet
+table and joining to the population and building tables, we are also joining to the planet
+status table.
+And if there is a planet status cracky attack ongoing, we are omitting that planet, which
+means that there won't be any attacks, cracky attacks on a planet that already has a problem
+with cracky worms.
+Okay.
+And that's actually only thing that is needed for the, for dealing with the, or rather
+it's a half, half the thing that is needed dealing with the problem.
+So now we are not going to get a cracky attacks on a planet that already has a cracky worms
+in it.
+This means, of course, that we need to insert into the, when a cracky attack starts, we need
+to recall that this planet has a planet status and this is done by in the code that deals
+with the status of the cracky attack that randomly selects a planet where to attack and create
+a special event and create a new event.
+There we add a creation of the planet status and saving that into the database.
+So this one I'm trying to read aloud.
+So it's a, it's inside a two block.
+So it's let subtle frag equals planet status, dollar diamond, F mat and end the key planet,
+dollar a, asterisk diamond, just cracky attack, asterisk diamond, just nothing.
+And then on the next map M insert status.
+So the map M insert status like just it will insert that record that we created, just on a previous one.
+And the reason we are using those dollar diamond and asterisk, asterisk diamond operators,
+dollar diamond is such a, those, the status of the, annual brackets,
+with the dollar in between.
+So small than dollar created and the asterisk diamond is a small than, asterisk created.
+Those are used because we might, the planet might or might not be found.
+If we are in a case that we have a planet, then the F mat entity planet will return just planet.
+But if it, if we did not find us with the bulletinette, that will return nothing.
+If it returns nothing, then the planet status will be nothing.
+And if the, if it found a planet, then it will be a, then we can continue and use that dollar asterisk
+to add the status, just cracky attack and just nothing, which is the expiration.
+And this will create just planet status.
+And in when we are saving it, the map insert status like will save it only if the, if only if we have a,
+if we have a just planet status, if we have nothing, then it does nothing.
+This, this, this will not be because we could write a code that checks that,
+did we have a planet or not?
+In two different, and did we create a planet status?
+And then save it.
+We, we, the code checks the program checks that if those cases are true, but we didn't have to write them out.
+We just said that this is what I want to do and you deal with the little details.
+It, it might be a good idea to look the show notes at this point.
+It's easy to follow from there.
+But the bottom line is that when the crack is attack, we can create a planet status.
+Record on the data base telling that this planet has a cracky interest.
+Second piece of the puzzle is the status removal.
+It can happen manually or automatically at the given time.
+The former method is you, what we are using for the cracky attack here because it's not time-bound.
+It will continue until, until the worms are live for on their own volition or if the farmers of the field manage to deal with them.
+So, we had a code where we were, that fast call removed news.
+That basically just wrote a die and checked if the, if we, if we managed to remove the worms and then recorded the data that is, that, that is needed to create news about the event to the player.
+But that, they were going to add a, so it's going to be lived.
+Dola, the ledd, square bracket, planet status, plant ID equals equals dot, cracky worms plant ID event.
+Coma, planet status status, equal to equals, comma, no, equal to equals stop, cracky attack, close, close bracket.
+So, this, tell it where is, that's just creates a, SQL statement, tell it from planet status, where planet status, tell it from planet status, where planet ID equals to that ID that the event has hand.
+And status equals, cracky attack.
+So, this is because we chose to represent those, status is one row in the database, planet and status combination.
+It's easy to delete a, we can just remove one row and touch it.
+If we had to start the middle list, then we would have to load the list, I will load that single row, modify the list to remove that status from there and then update that back to the database much more, much more complicated, well not complicated, but a bit more action to do.
+And the remover of the expired status is done in the patient data, so it's, it's essentially the same thing, but we are using the less than equals dot operator to compare the expression of the current time and the expression column in the database.
+And there we don't even have to use the, use the planet status ID because we can just delete all the, we don't have to go through the statuses, the planet we can just bring for the expired ones.
+So, like I mentioned before, the, these statuses can, can be used for other things, one, one such thing that I have been tinkering with is the recording part for a good, open harvest season.
+So, when such an event, of course, we are just going to create a new record with a good harvest status and attach that to a planet and when we are calculating the food production of our output of a planet, we can query if this planet has a status at FX to the production and take it into account.
+And what is the system is for planet statuses only, the similar system can be built for other uses.
+I have a vision or idea that it will work for example for the star system level, you can have something that affects on the whole star system or it can be a space level, you can have a space that has a.
+That is exploring a galaxy and suddenly has a, some malfunction that, that causes problem again stored is similar system, there's a, that info.
+So, it only needs that we create a new paper in the database that links status and that entity that the status affects for each other.
+Of course, the report system for this because players are pretty much never shown the true status of the game.
+They are not shown that this planet has a, this list of statuses, there's a separate table that is used to record the info about what players know about planet statuses.
+And when they occur, when they are, when they are so, so info about planet, the data is varied from that table and not this, that the, that the, not actual planet status table.
+This allows that different players have a different view of the, of the word or universal of the game.
+But, that's about it. If you have any questions, comments, don't hesitate, contact me at the e-sports page.
+Nowadays, it's to either email or on ferry verse, they are to tour the at master room, that's also.
+And, of course, you can record your own hug a pamphlet radio episode.
+Ad astra.
+To find out how easy it really is, hecka public radio was found by the digital dog pound and the infonomicon computer club and is part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released on the creative comments, attribution, share a life, 3.0 license.
+Thanks for watching.

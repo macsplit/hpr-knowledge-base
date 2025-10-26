@@ -1,0 +1,338 @@
+Episode: 1161
+Title: HPR1161: PAM Two Factor Auth SSH
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr1161/hpr1161.mp3
+Transcribed: 2025-10-17 20:49:37
+
+---
+
+And hello, this today is Sunday, December 20, 2012.
+Today we're going to talk about plug-able authentication modules and two-factor authentication
+with SSH.
+Today is going to be hopefully, I'll make it as colorful as possible.
+This is, I think, sometimes a dry topic.
+But if, you know, any feedback or any questions or if you guys have any information about what I cover here today,
+just contact me via my email address.
+That's Beto at havenfoundme.com.
+Again, that's Beto at havenfoundme.com.
+And that's V-E-T-O Beto.
+So today we're going to cover Debian and Red Hat based systems.
+I'm using Sentos and Debian as my, in my lab, I guess you could say, or as my base.
+And I have an Android device as well as an iOS device, an iPhone or as an Galaxy S3.
+A few things that if you guys wanted to do before we start off is just go ahead and go to the Google Play Store or the iOS app store
+and download the Google Authenticator app.
+That app is going to help you later on when we're going to need it to import our verification profiles so that we can authenticate to our SSH server.
+So FYI, any files that we configure today, I highly recommend that you back them up first.
+Usually what you can do is just rename, like copy the file and copy it with the file name and end it with like a .old.
+So like today we're going to mess with the file called in the EtsyPam.d SSHD.
+And I would just basically just rename, just copy it and name it SSHD.old.
+You know, that's only because pluggable authentication modules can really screw up your system.
+You basically can lock yourself out of your system.
+So the most important thing right now is just remember what you did to what application and to what file.
+So that if you do have to reboot and go into run level one and do all that, you can do it without...
+You know, you can do that and go ahead and just restore from backup versus having to have to reinstall an entire operating system.
+Because I really hate that. I really hate for that to happen to you.
+If you're configuring a server that you have no physical access to, I would highly recommend that you have two simultaneous SSH connections to the server.
+And go ahead and authenticate as root, you don't have the SSH as root, you can just, you know, SSH as your normal user and then just, you know, pseudo or as your, as a root user.
+And make sure both of them are logged in as root user and to ensure that they don't log themselves out because of timeout or whatever, just, you know, do like a quick, you know,
+man, I have config like full of open up a file and DI or something, you know, just to make sure that you have two connections to one server that you're going to be messing around with the SSH configurations too.
+Because if you do, if you do mess up, you know, at least what, you know, as long as you don't log off your internet connection doesn't get severed or anything like that.
+You can just, you know, restore like that. So, and this is something you can do, even if it's a local server to just have, you know, two SSH connections set up and, you know, you'll be good to go.
+Anyway, so given that, you know, go ahead and just to give us an overview of Pam and SSH and Google Authenticator, you know, just to put it all in a 30,000 foot view or in one package, however you want to say it.
+The biggest thing is that Pam or Pugable Authentication modules allow you to authenticate to your Linux system and Unix.
+And it's there too as Pam, but in other, in other Nix systems, it may not be, they may not be dependent on Pam, but you can implement Pam, which is really cool.
+Other like AIX, you know, they use like methods.config, but you can still implement Pugable Authentication modules into the primary authentication settings for the system.
+So anyway, Debian and Sentaw specifically, what you have is Pam, Pugable Authentication Models. And what we're going to work with, we're going to work with a specific module today called the Google Authenticator module.
+And we're going to work with a specific application, which is SSH, SSHD or SSH or Open SSH server. However you want to classify it.
+But my system, it's Open SSH, but it's labeled as SSHD in the, in the Etsy slash Pam dot D slash SSH D file. So that's the big overall is we're going to be using one module and we're going to use one application.
+You could use tons of other applications. You can use Samba, Sue, Sudo. You can use Login, you can use GDM. You can use a lot of other applications defined in your forward slash Etsy, forward slash Pam dot D directory.
+And, you know, you can use this, you can use different modules too. There's the wind bind module from Samba. There's a, you know, there's, there's the Barata one time pad module that you can use similar, that's similar to this Google Authenticator is a little slightly different in some ways though.
+But again, there are many different modules and then there are many different applications. So basically what this creates is a chain. What you're doing basically is if you have several different modules, you can create a chain of authentication settings that will basically allow a user to authenticate to a system.
+Which will require them to input specific authentication credentials. So in this case, what we're going to do today is we're going to implement SSH with the Google Authenticator.
+And when we SSH to a box, we'll have to input a six digit verification code generated from our Android or iOS device.
+And that's really cool. From a security perspective, from, you know, ease of use, from, you know, a lot of different perspectives. That's really neat because you'll basically be able to use a trusted device on an unreliable network to get to authenticate via SSH to a trusted and trusted destination.
+And that's really good. You know, that's really useful.
+Other scenarios too, you could use this on an unreliable or on trusted device. It's just the problem with that is key loggers, but, you know, it is a good, it is a good method to conceal your system credentials.
+Because remember, you system credentials, once a user has access to your system, if you, if a user has system, if they have the ability to, you know, to access your system somehow, you know, whether it's physically or, or some other, some other method, you know, like using, you know, when using a Webman or something like that or LDAP or something where your system credentials.
+Allow you to like, surrogate as a root user, you know, that's a problem because, you know, you're just going to get, you know, once they've got physical access, it's done, you know, the game is over.
+But if it's a remote user and, you know, they're able to actually get a shell prompt on your, on your device, you know, system credentials is going to what we needed in order to, to surrogate as, as a root user.
+Again, like I said, if you wanted to, to surrogate, to, to pseudo or SU as, and the system, you could implement the Google Authenticator to do that.
+So you could inevitably have your verification code be required every time your password, every time you prompted for a password, system wide.
+It's up to your discretion. It's up to you how you want to implement this. I'm simply implementing it from, you know, to use it via SSH because I feel that I'm always going to be using a trusted device.
+If I ever find myself using an untrusted device, you know, I'll guess I'll have to reconsider some things or maybe use an on-screen keyboard or something, you know.
+But again, you know, this is a really good first step to, you know, opening up a lot of other methods of protecting yourself and your system and all these other things that we have.
+So, I'm just going to, you know, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to,
+I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to
+I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to
+, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going
+going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to of course all of these.
+I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm just going to, I'm
+Okay, so, now, the couple of things that are you going to need is, a couple of things
+to understand is, we backed up our files, we've got simultaneous connections, and we know
+what we want to implement this at, so right now we're going to implement it with SSH.
+Debian systems, one thing that I have to point out is that you're, there's a comment
+off, configure a authentication setting that you may have to disable, it's up to you again,
+up to your discretion, and that's simply because if it's not disabled in the SSH.D. configuration
+file, which, which exists in your forward slash edc forward slash pam.d. If you don't disable
+that, then if when you implement the Google Authenticator, plugable pam module, it's going
+to prompt you for the verification code, but then it's going to ask you for your, your
+Unix account password. Again, this goes back to the whole, you know, you know, how many levels
+are layers of security you want to implement, and you know, what do you want to do ultimately?
+So anyway, on census, there is, this doesn't exist, so you'll simply just implement the
+Google Authenticator to the top of your authentication chain, and that's it, you know, that's all
+you need. Also keep in mind that you don't have to have the Google Authenticator as like
+the only thing that to authenticate your system. As I said, you could have your, you could
+have your system credentials be prompted for, or you can use another, another layer of
+one time passwords where, you know, or some other pam module that requires or ask for your
+credential information. You know, like I said, pam is really neat, is very good, is very,
+is very flexible because, you know, you're creating a series of authentication events that
+are either sufficient, required or just, you know, looked over in a sense, you know, they
+may not even be needed or something, but, but what I guess what I'm trying to explain is,
+if you want to have multiple layers of credentials that you have to enter mandatory in order to
+access the system, you can do it. And that's, you know, that's ultimately, that's what I'm
+getting at. Anyway, so going back to this, it's a few simple steps, which you're going to need
+on your system, you're going to need GCC installed, Git, and you're going to need make. These are
+development tools, need required for this implementation of the Google Authenticator, because ultimately what
+you're doing is you're going to be calling the Git repository of the Google Authenticator, then
+you're going to be, that Git repository actually includes the iOS and iOS Android and Blackberry
+applications, which is a little, a little trick. If you're doing Android development, you might
+be able to actually run this Android application on your desktop. So you kind of, in a sense, have a
+desktop client, but, you know, that's, you know, for Android developers or even iOS developers,
+if they want to run the iOS app on their Mac. Anyway, so in that Git repository that you're going
+to clone, it's going to include the, it's going to include the, the smartphone applications as
+well as the, the, the, the PAM libraries that you need to compile, which create the
+plugable authentication module. Anyway, so after you run a Git command, it's going to be like a Git
+clone, HTTPS, colon, bobslash, bobslashcode.google.com, bobslashp, bobslashgoogle-authenticator. Again,
+all this information is going to be on the show notes, all this, all the links and all the commands,
+they're all going to be in the show notes. So you're going to run this command, you're going to clone
+the repo and make sure you do this in like a good working directory, like a, you know, in your
+downloads or your documents or somewhere in a home directory where, you know, it's not scattered
+somewhere. So just make sure you change directories before you run this Git command because it'll
+clone it wherever your present working directory is at. As you do that, you're going to clone it,
+you're going to change the directories into the libPAM directory inside the Google Authenticator
+development files. And then from there, you're going to run a command called make space install.
+And this basically creates and installs the plugable authentication module. The cool part is
+that they upgraded it so that in the past, you actually had to manually move and change the
+permissions and the ownership of the application and the file and the PAM module to the appropriate
+directories. You don't have to do that anymore. You just run make install and that's it. It'll
+create the, it'll compile, it'll create compile and move everything and install everything that
+you need in the appropriate directories. The next part is going to be the important part because
+however you wish to implement, the Google Authenticator is going to be up to your discretion.
+Me, I'm simply going to use the Google Authenticator for SSH access. So in order to do that,
+I'm going to, on my devian system, I'm going to go to Etsy slash, on my devian and red
+has system, I'm going to go to forward slash. I'm going to open, I'm going to use my text,
+my favorite text editor, nano, vi, whatever. And I'm going to go vi, space, forward slash, Etsy,
+forward slash, PAM, VAM.D, forward slash, SSHD. That's going to open up the SSH authentication settings.
+What you can simply do is on the very online, on the second line or the very, the very top of that
+file doesn't matter, the very, very top first line of that file. You're going to type in
+off a UTH, hit the tab key, required, hit the tab key, PAM, PAM, underscore, Google, underscore
+Authenticator.so. Save it. Now on your devian system, if you're running a devian system,
+look down around line number 10, 11 or 12, around there. You're going to look at a line at a
+stanza that begins with an at symbol. And it says, at include space, comment, dash, off.
+What this does is it includes the common authentication modules in the common off file.
+That's in the same directory that the SSHD files in. What I'm going to do is I'm actually going to
+put a pound sign in front of the, I'm going to put up, I'm going to at the start of that line,
+where the app sign and symbol that, I'm going to put a pound sign there to comment that line out.
+Because I do not want to include the common off. If someone has, if you guys feel that that's wrong,
+or I'm crazy, or something like that, just shoot me an email, betoathavenfoamie.com,
+and let me know. I can let others know that, hey, this is why it's good to have the common off
+included. Now, some will say that it's good to have the common off included, because then if the
+verification code fails, or for some reason, you know, it's failing on your phone, or you've got
+to get to that system in a hurry, you can break the chain by, instead of making the Google
+Authenticator a requirement, you make it sufficient. And what that is is, you know, it's not required,
+but if you put it, if you put the correct verification code in, it'll work. But then the common off will
+kick in. That's if we don't, that's if we don't comment the common off out. Basically, what that
+means is, if I make the Google Authenticator sufficient, if I put the wrong code in, I will still
+be required to put in my system credentials, and I will still be allowed access to the system.
+What I'm doing is I'm making the Google Authenticator the only thing that gives me the ability to
+SSH to my box. So, depending, it's up to, it's upon your discretion how you want to implement this.
+So, you can make the Google Authenticator sufficient, and common off will, you know, still kick in,
+or you can actually make the Google Authenticator required, and still be required to put in your
+system credentials. You know, there's plus size and, and, and, and, and all sizes, all up to your
+discretion. All right. So, I'm going to comment out or just even delete it, but I comment that out,
+comment off the, the ad include space, comment off. All right. So now, my SSH defiles configured,
+my, my Google Authenticators in place, and the last thing I need to do now is the two,
+the two last things I have to do now is I have to configure my SSH server, and I have to restart my
+SSH server as well, and I actually have to generate my Google Authenticator profile so that I can
+import that to my phone. So, those three things, instead of two things, three things.
+So, the next part is to go into my SSHD underscore config file, which is located on the devian
+red has system, or, or census, is going to be in your forward slash Etsy, forward slash SSH,
+forward slash SSHD underscore config. All right. In this, in this file is your SSH configuration.
+Now, in a later, and in another, in another episode, I would like to go over heartening your SSH
+server, because there are some things that you can do to, you know, to, to make your SSH server a
+little more secure and little more up to date, and, but we'll go that in another, another episode.
+In this, in this show, all we're going to, all we're concerned about in the file in the SSHD
+underscore config file, which is also your SSH server configuration file. All we're concerned about
+is one stanza. Go ahead and open up the, this file with your favorite text editor,
+as root, as a root user, or as a privilege user, and you're going to change the challenge
+response authentication stanza. It should be set to know what you want to do is change that
+node to a yes. After you change the node to a yes, the next step is to restart your SSH server.
+In order to restart your SSH server on devian or sentos, you will make sure, oh yeah, when you
+change that stanza challenge response authentication to yes, make sure you make sure you backed up
+that file first, and then save that after you change that stanza to yes.
+After you've saved the file, what you want to do is restart the SSH server. Remember what I said,
+you must make sure you're connected to your box right now via SSH, make sure that you have more
+than one SSH connection, and make sure that those connections are logged in as a privilege user,
+so that if you have to roll back settings, you can roll them back.
+So in order to restart SSH, you simply type in service, space, SSH,
+space, restart. On sentos, I believe it's service, space, SSH, D, space, restart.
+So on your devian system, it's SSH, on your sentos system, it's SSH, D.
+All right, the last thing we have to do now,
+let's generate our Google Authenticator profile for the user that we want to use
+the Google Authentication with. So let's go ahead and SU, if you're rude right now,
+which you should be, SU, space, and type in the username you want to set up the Google profile for.
+So now you should have that user set up. Now, if this user's path isn't set up for user
+been local, I believe, what you would have to do then is just type in the absolute path to
+to the Google Authenticator application. And in order to do that, I believe you can,
+I believe what you can do is, well, I believe what you can do as the root user is just type in
+where is, space, Google, dashboard indicator, and that'll give you the absolute path to the
+application. On my system, and more than likely on everyone else's system because of the github,
+is slash user slash local slash bin slash Google Authenticator. You've only had to do this if the
+user's path is not set up, so just, you know, FYI. So as the user that you want to SSH as,
+you go ahead and the user that you are, these are two two important things before you do this.
+Make sure the user was able to SSH in the past. So this is a user that, you know, whatever
+user you use to SSH to the box for this tutorial, go ahead and, you know, that's the user you
+want to do this with. If you have other users, go ahead and do it for them as well, but just make
+sure they can SSH or have SSH in the past, you know, just so that, you know, to rule out, you know,
+you know, any, any issues. So run the command Google Authenticator, and if you need to know the path,
+again, it's a forward slash user, forward slash local, forward slash bin, forward slash Google Authenticator.
+What this is going to do is going to generate a couple things. You're going to have a verification key.
+You're going to also have a URL and a verification code, and there are, this is the neat part about it.
+You're going to have some emergency scratch codes. These emergency scratch codes are basically
+codes to be used in the event that you lost your phone or, you know, you've got to, you know,
+you don't have the ability to use the Google Authenticator app or something like that. Your battery
+died. These scratch codes are one time use. So, you know, you use them and that's it.
+The URL is basically, it basically is a URL to generate the QR code you need in order to
+import the profile to your iOS or Android device. Now, you could, you could just manually type in
+the secret key, which is the same. You know, it's instead of having to use the QR code,
+you'll type in like this 15 or 16 digit secret key, which is no big deal. It's just that with the
+QR code. I find it a little more useful because it automatically puts in the username
+and server name. So, instead of you having to manually put that in too. So, you know, up to you
+and your abilities. So, anyway, so now you've got your Google Authenticator secret key and the URL,
+if you want to use a QR code. You have your emergency scratch code and, you know, you're good to
+go now. The next thing now you got to do is just put in that secret key or put in that URL on a
+web browser and go to your Android or iOS device and from your Android or iOS device,
+you will simply open up the Google Authenticator app, go to the settings and set up an account,
+manually add an account, scan a barcode or enter provided key. However, again, however you're
+going to do it. Use the Google goggles on your iOS device or whatever QR scanner you got for your
+iOS device, Google goggles on your Android device and then you point the phone to the QR code
+from your web browser. That's displayed on your web browser after putting that link. That
+is going to the link that was provided to you and boom, it's going to be imported and you're
+going to see it there with the username at the server name. You know, that's it. You now have
+implemented two factor off and you've generated a two factor off profile using Google Authenticator.
+A few tidbits before we test this, when you run the Google Authenticator command,
+there's a couple of questions that ask you. One of them is do you want the tokens to be time-based?
+I say yes because if you have multiple devices like I do, it's beneficial for them to be time-based
+because then what happens is you don't have to worry about the device needed to be in sync.
+So meaning not in sync with time, but in sync with the series in which I use this code today
+on this device. So that means I got to match up the other device to the series number that
+device A is on. With the time-based, all I need to make sure is the time is correct on my phone
+and that's it. I don't have to worry about anything else. So that means I can have four, five,
+six, seven, ten devices with running Google Authenticator so that if the battery runs out of one
+device, I got another device that can still provide me the authentication that I need in order
+to get to my server. Another question that I ask you is that you want to disable multiple uses
+of the same authentication token. And I say yes to this as well. I just want this to be one time.
+So if the token is used, that's it. That means that if someone tries to e-drop on my communication
+and they see that I use this six digit pen, they can't go back and try to SSH with the same user
+name to the same server, trying to use the same one time pad. That's it. Therefore I have to wait
+every 30 seconds. After I use one, I have to wait for the next one, which is no big deal.
+That's RSA, Secure ID, uses that same concept. By default, tokens are good for 30 seconds,
+and in order to compensate for possible timescube. Okay, so the third question that I ask you is
+time synchronization issues. If I want to extend the window of which tokens could be used. So
+basically in a one minute and 30 second window, I can use, if my phone is off by one minute,
+I can still use the token that was from one minute ago on my server. You can extend this to
+four minutes, but again, you don't really need that. It's best to keep things tight at one minute
+30 seconds, you know, you shouldn't have any issues. If the last question I ask is pretty neat,
+if the computer that you are logging into is in hardened against brute force login attempts,
+you can enable rate limiting for the authentication module. By default, this limit attack is no more
+three login attempts every 30 seconds. So basically you can't, you is protecting against brute force
+attacks, which is really good. Especially, you know, given that you're trying to, if you don't have
+something like this, implement it against SSH, you know, they basically just have to crack six digits
+from a specific time period. And there's only, I believe, what is it? Like 10 to the 6,
+so that's like one, I don't know. Anyway, so, you know, I put, yes, yes, yes, yes, yes, for all that.
+So, and then I get my secret key and I get my URL from my QR code and I get my scratch off code,
+and I'm good to go now. So, you know, I hope this was informative. I hope this stuff is really useful
+for any of you. Anyway, so now let's go ahead and test my SSH configuration. Just make sure,
+like I said, you have simultaneous connections to your server right now. You know, just don't sever
+just open up a new terminal and SSH to your server now. And you should have a prompt for,
+instead of it saying, you know, username at this server and your password, it should actually say
+verification code. And that's a good sign. That means that everything's working as intended.
+On SentOS, I put mine as sufficient. So, I was actually getting the username at server with the
+password. Like I said, don't worry, just go ahead and use the verification code because it worked
+with me on my SentOS box. It didn't prompt me for my, it didn't prompt me saying verification code.
+All this said was my user in my normal, like the normal login banner, which is username at
+server in brackets with the password and the prompt there. So, if that happens and you know,
+you've implemented this correctly, go ahead and try the verification code and it'll more than
+like you just logged you in. I've noticed that if you don't restart SSH, this is what usually
+happens. You don't get prompted, you don't get the verification code prompt, you get the normal
+SSH prompt. So, just make sure you went through the steps correctly and all that.
+Anyway, so now your SSH and your box using Google ToolFactor are the last thing I need for you guys
+to try because just in case if some of you, you know, implemented the pluggable authentication
+module in a different application like Sue or Sudo, go ahead and run the Sudo. However,
+you surrogate yourself as a group, go ahead and do that right now because if you messed around with
+other files while trying to do this, you know, especially the Sue or Surrogate files, you know,
+you may lock yourself out of being able to surrogate as a root user. So, go ahead and just do that
+real quick and you should just be prompted for a password, go ahead and put your password and then
+you should be a root right now. And if that works out then you should be good to go. That means,
+you know, you successfully SSH to your box using Google ToolFactor authentication with something you
+have and something you know and you successfully implemented the pluggable authentication module
+for SSH and only for SSH and as well as you've been able to, you know, deter any attackers from
+trying to gain access to your system via remote access through SSH.
+A few more things before you continue to make sure that when you use the URL,
+link the QR code, use that link in a private browser mode because if you don't and that link is
+going to show up in your web history. And if a malicious attacker has, if someone has gained access
+to your, you know, your Firefox Inc or Google Chrome web browser, they can ultimately basically
+look in your web history and pull up your QR code or, you know, whatever server you have and just
+basically mimic that QR code on their device and now they've got the Google authentication
+verification codes needed to access your server. So just like I said, pull up a private browser mode
+or just don't even bother if you want, it's up to you, it's your discretion but, you know,
+this is just to keep security in mind and to avoid any future incidents if someone actually gains
+access to your information via different avenues. So, you know, just different things to think about.
+Another thing too is if you have a web history, if in your command line interface you keep a web history
+or not a web history but a command line history where like on a Mac you can see, you know, the last
+1000 lines or 500 lines displayed on your command line, just make sure that that's cleaned up as well
+because, you know, the URL, the verification, the secret key and all the emergency scratch-offs are
+going to be displayed. So just make sure after you do things like this that you clean up
+in any places where this information can still be stored just because all it takes for someone
+to gain access, you know, without even having to talk to you or, you know, or even having access
+to your server. So just something to keep in mind, you know, whatever you're doing these kinds of
+things is make sure you go into some sort of cleanup mode and, you know, you go back a few steps
+and you say, you know, can I generate that QR code in a different fashion where it's in my
+command line history, it's in my web URL history or what, or is it in my, or it's in my
+my clipboard history as well, you know, and I got to be careful with that as well. Anyway,
+other than that, I think I don't really have anything else. I hope you guys didn't find this
+to, you know, I hope I didn't drag this on too slow and I hope you guys really enjoyed or found
+this useful and I hope you guys implement some sort of two-packed authentication on your system,
+Google, like I said, Google Authenticator is a really good plugable authentication module.
+There's another one called Barada or Barada. I don't know if it's Spanish or some other word.
+It does have an Android app called Gort, G-O-R-T and it's the same concept as a Google Authenticator.
+You can import multiple profiles. The only downside is that it's not time-based. It's kind of
+Siri-based, so the issue with that is if you use a code, a one-time pad, every pad that exists
+before that is deprecated, meaning you can't use them. They're disabled or removed from
+what is the list. So the issue behind that is if you have multiple devices, then you won't be
+able to actually use those multiple devices because you'll actually have to catch one device.
+You actually have to make one device synchronize with the others and that means that if you use
+101-time pads on device A, on device B, you've got to catch up to the 101-time pad,
+which is what the system is looking for because even though you may skip some to kind of be like,
+oh, you know, maybe I can skip some and I'll leave some one-time pads available.
+I'll start from 100 on this device and I'll start from 1 on device B. It won't work because
+everything below 100 below the 100th time that you used it is going to be deprecated.
+That's the one the outside that I found to it, but again, it doesn't matter. It's still to
+factor off. If you have one device, it works. No big deal. Get it on your system and use it,
+implement it. Use these technologies and harden your system as best as you can. Anyway,
+I hope you guys enjoyed. I hope this was very useful. Again, I'll have a lot of the steps
+and links on the show notes. I also want to, like I said, I also want to end the future,
+talk about getting SSH-hearted up on your systems and what you can do to get your SSH server
+up with the times, I guess. Again, thanks for listening. Thanks for taking the time to listen
+to Hacker Public Radio. I also want to thank Hacker Public Radio and the community and the
+contributors for all you guys do and all the listeners out there. Have a great evening.
+Have a great new year and thanks again. If you have any questions, you can contact me.
+That's Beto at HeavenFamily.com, B-E-T-O-A-H-A-V-E-N-T-F-O-U-N-D-M-E-D.com. All right, good night and bye.
+You have been listening to Hacker Public Radio or Hacker Public Radio.
+We are a community podcast network that releases shows every weekday Monday through Friday.
+Today's show, like all our shows, was contributed by an HBR listener by yourself.
+If you ever consider recording a podcast, then visit our website to find out how easy it really is.
+Hacker Public Radio was founded by the Digital Dark Pound and the Infonomicom Computer Club.
+HBR is funded by the binary revolution at binref.com. All binref projects are crowd-responsive
+by linear pages. From shared hosting to custom private clouds, go to lunarpages.com for all your
+hosting needs. Unless otherwise stasis, today's show is released under a creative commons,
+attribution, share a like, details or license.

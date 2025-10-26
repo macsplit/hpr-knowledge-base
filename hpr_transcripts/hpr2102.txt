@@ -1,0 +1,108 @@
+Episode: 2102
+Title: HPR2102: AngularJS's ng-repeat, and the browser that shall not be named
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr2102/hpr2102.mp3
+Transcribed: 2025-10-18 14:19:05
+
+---
+
+This in HPR episode 2,102 entitled, and your JSNG repeat, and the browser that shall not be named.
+It is hosted by RON and is about 11 minutes long.
+The summary is a method for optimizing the rendering of items when using and your JSNG repeat directive.
+This episode of HPR is brought to you by an honesthost.com.
+Get 15% discount on all shared hosting with the offer code HPR15, that's HPR15.
+Better web hosting that's honest and fair at an honesthost.com.
+Hi, this is Rowan and welcome to my second submission to Hacker Public Radio.
+At my work we are in the process of revamping our internal call logging system.
+Moving from a .NET and Microsoft ASPX pages for both the client side and back-in processing,
+to an HTML5-based single-page application using AngularJS for the client side and a face
+with a .NET web API service for the back-in processing.
+The main page for both versions contains a list of the current days calls laid out in
+a table with nine columns.
+Users are able to switch to a specific days calls by selecting a date via calendar widget
+or by moving one day at a time via previous or next buttons.
+By the end of the typical day the page will contain between 40 and 50 calls.
+During recent testing of the SBA client on a proprietary browser we all love to hate
+or at least have a love hate relationship with if you have to support it, I noticed that
+rendering of a whole days worth of calls would take seconds, freezing the UI completely.
+This page is changing dates painful as we reload the data anytime you enter the page.
+That's how we manually pull for new data.
+We are planning to implement either a timer-based polling or a push service or web sockets
+eventually, but it didn't make the page almost unusable with that seven-second freeze.
+The page did render fine in both Mozilla and WebKit-based JavaScript Gid engines, but
+Microsoft's engine just would choke on it.
+For a bit of search for AngularJS slow rendering and AngularJS optimized, I found many references
+about using Angular's ng-repeat directive when rendering a long list of data.
+For those of you who are not sure what AngularJS is, it's a JavaScript framework designed
+to help you write single-page applications, basically lets you put custom HTML tags or
+custom attributes within your HTML tags, which then binds some JavaScript and CSS to
+those either tags or attributes.
+I tried a couple of methods mentioned to optimize the ng-repeat directive.
+I used the track by feature of ng-repeat to use the calls ID as the internal ID of the
+row.
+So ng-repeat didn't have to generate a hashed ID for each row.
+I implemented Angular's one-time binding feature to reduce the number of watches being created,
+reducing the test day's number of watches from 11, 20, to 596.
+But even these two combined optimizations didn't have enough effect to render the page
+in acceptable amount of time.
+The next optimization I played with was using ng-repeat with the LimitTube filter.
+This limits the number of items rendered in the list that the ng-repeat is looping
+through.
+This is particularly useful combined with the paging of data.
+I set the LimitTube option to different values to see how it affected the rendering time.
+I found that rendering 5 rows was fast and consistent for every day's worth of data
+I viewed.
+From my reading, I knew if I updated the LimitTube amount while keeping the array of items
+the same ng-repeat would only render any un-rendered items and not render the whole list.
+Within your code, you basically set up an ng-repeat equal to, say, c or item in your list
+of items and then you filter it by a certain size.
+For me, I'm limiting it to initially 5, but you're basically setting the LimitTube filter
+to a variable which you will be incrementing.
+If you look in the show notes, you'll see how the code might use to update the LimitTube
+variable.
+Any time the list is updated, the display render size, which is the number of things
+currently being rendered, is reset to the default number for this example 5.
+Then I have a function called update display render size, which is called.
+This function calls itself repeatedly via Angular's timeout service and timeout is just
+a wrapper for JavaScript set timeout function.
+It increments the display render size variable, which is being watched by the LimitTube
+filter of the main ng-repeat each time this play render size variable is incremented.
+ng-repeat renders the next set of items.
+This is repeated into all the items in the list of rendered.
+The magic happens because ng-repeat blocks any other JavaScript, which does not affect
+Angular's digest path for Angular.
+It basically sets up all these different watches on variables, and then anytime there's
+a change, it then re-figures out what's changed and what in your HTML needs updated, and
+so it goes down, this recurses down through all these different paths, and then renders
+everything.
+So by calling the function update display render size with a timeout, the function doesn't
+get called again until after the next set of items is renders.
+I make the timeout delay to zero, so normally with a timeout you'd be setting it for so
+many seconds or minutes to occur again in the future.
+I say zero so that it will be called immediately after the rendering stops blocking.
+And it was cool because in this instance the sum of the rendering time for parts of
+the list is shorter than the sum of the rendering time for all of the list items at one time.
+So it went from like seven seconds to under a half a seconds in rendering time.
+There are a couple small glitches with this solution, scrolling can be a bit jerky as
+the chunk sized renders cause a series of micro UI freezes instead of one big long one.
+This settles down once the whole list is rendered.
+Also if you don't have a fixed or 100% wide table layout and you don't have fixed column
+sizes, the table layout will dance a little on the screen until the columns have been filled
+with their largest amounts of data.
+This is a result of the table layout being recalculated as more data fills it.
+This all being said, the solution works great and move the pause, like I said before, from
+seconds to under half a second or less, making the page go from unbearable to usable on
+Microsoft's latest browser offerings.
+I hope you found this little bit of esoteric, angular optimization interesting and hopefully
+helpful.
+Thanks for listening.
+You've been listening to HackerPublicRadio at HackerPublicRadio.org.
+We are a community podcast network that releases shows every weekday, Monday through Friday.
+Today's show, like all our shows, was contributed by an HPR listener like yourself.
+If you ever thought of recording a podcast, then click on our contributing to find out
+how easy it really is.
+HackerPublicRadio was founded by the digital dog pound and the infonomicon computer club
+and is part of the binary revolution at binrev.com.
+If you have comments on today's show, please email the host directly, leave a comment
+on the website or record a follow-up episode yourself.
+Unless otherwise stated, today's show is released under Creative Commons, Attribution,
+ShareLite, 3.0 license.

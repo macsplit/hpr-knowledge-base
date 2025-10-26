@@ -1,0 +1,233 @@
+Episode: 3537
+Title: HPR3537: getting to blinky with flashforth
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr3537/hpr3537.mp3
+Transcribed: 2025-10-25 01:08:23
+
+---
+
+This is Haka Public Radio episode 3537 for Tuesday, 22nd of February 2022, today's show is
+entitled, Getting To Blink It With Flash Forth, It Discoasted by Dryer Little Hi-O, and is
+about 28 minutes long, and carries a clean flag. The summer is, making a heart-yling
+robot useful.
+Hello Haka Public Radio, Brian and Ohio here. I'm out from under my rock, and doing
+another episode on putting forth onto Arduino boards. On the last episode I talked about
+a link to donate to the project, the Flash Forth project, and I said I was going to put
+it in the show notes. I didn't do it, but I'll make sure I get it in this time. There's
+a couple of ways to get there, but I'll put the long PayPal link as opposed to the source
+forge page, and then the clicking on the donate button there. To get started to put
+a Flash Forth onto an Arduino board, there's a few things you'll need, hardware and software-wise.
+Starting with the hardware, you'll need, of course, an Arduino board of some sort, Arduino
+Uno or Pro Mini. I think the Leonardo's work and the Arduino Mega. The reason I say all
+that is that there are in the last episode I talked about compiling. Flash Forth has pre-compiled
+binaries that are available when you download the project, and so you don't have to initially
+you don't have to do any compiling of anything. You can just upload the program from the file
+that you download from the Flash Forth site. That being said, the only pre-built binaries are
+for those chipsets. The AtMega328, the AtMega25060, the Leonardo boards, which are AtMega3254,
+and there's actually two separate binaries. One where you're using the onboard USB and one where you're not.
+So just have to be careful. For today's show, I'm using an Arduino Pro Mini clone that I got off,
+I'm sorry, I said Pro Mini, but I mean an Arduino Nano board that I got off of
+eBay for $15 or something like that, and so I've got a bunch of these around. That's what I'll
+be using to do the demo. The other hardware you'll need is you'll need a programmer. I've used
+the Aida Fruit, the USB Tiny programmer for many years. I did an episode 2799 on how to build your own
+programmer using an Arduino Nano clone, basically the same one of the boards that I bought in that same
+group that I did for that episode. So if you just want to build one yourself, you can go to
+2799 and listen to that. You'll need some cables. Whatever cables are available, you need for the
+boards. For this setup, it's kind of nice. It's one cable. It's one of these USBAs or something,
+slightly fatter, and it's the one that came with all the little boards. So you only need one cable
+for that. So a pretty small amount of hardware there. If you software-wise, you're going to of course need
+Flashforth. I'll put a download link for where to get the project. It's from SourceForge. Don't
+be frightened by that. SourceForge is probably no worse than GitHub. Maybe better actually than GitHub.
+Now that Microsoft has their filthy fingers in GitHub. So anyway, get Flashforth. You have to unzip it,
+and then you'll also need AVR-Dude. AVR-Dude is a program that is the communication program,
+between your file. It's a way to get your file, your hex file, onto the board. It's a flasher.
+It's a very powerful program. Let's you do a lot of things on the board at a very low level. So
+they get AVR-Dude and install it. You'll also need some kind of a serial terminal program. You can use
+minicom, putty, can use Emacs. There's a built-in serial term for Emacs. I don't think there's one for
+VIM. Maybe there is, who knows. And anyway, so I need some kind of terminal program. I'll leave that up to you.
+There's also in the Flashforth project, there's a couple of, there's a Python-based
+terminal shell, and there's a TCL-based terminal shell. They're actually both very pretty good. You can
+the nice thing that they have is it allows pretty easy uploading of words from your whatever editing
+program you have, and it also has command history. So you can, if you're doing things over and over,
+you can just up arrow and hit enter, which is kind of something you'll find you'll do as you develop
+four programs on these microcontrollers. As far as installing goes, there is a guide at Flashforth,
+the Flashforth website. Specifically, there's some for the PIX microcontrollers. There's some for
+N1 for that at mega chips, and that's what we're going to look at today.
+And so to get started, first thing you're going to need to do is you're going to need to plug in your
+programmer into your board. For my little nano boards, I guess this is a piece of hardware
+you'd want to have is because I'm using the programmer I built. It works better or easier if you use
+one of these solderless breadboards, and plug in your programmer, and there's a little wire on this
+specific programmer, there's a little wire that goes into the reset pin that controls
+resetting the chip that you're flashing. Then you plug in the end of the USB cable into your
+programmer, and you plug in your programmer into your computer. So I plug it into mine.
+I've got my computer, I'm running Slackware 15, which is tremendously awesome. And then after you've
+downloaded the Flashforth software, you can unzip that somewhere, so I'll go over to where that's
+that. I made a demo directory, went into there, and then if you navigate into where you've
+unzip the Flashforth software, you'll find a folder that's AVR and hex, and if you navigate
+over to that and you LS on it, you'll see that there's some one, two, three, four binaries in there,
+hex binaries that are already prebuilt for the different chips. The one that we want to use is
+the 328 16 megahertz 384 hex. That's just a title, it's nothing special about that, it's a way of
+identifying. But basically what it tells, what's telling me is that it's for a 328 chip,
+it's running 16 megahertz, and the UART, the serial term, the BOD rate is 38,400, which is
+not too fast enough. And then you're going to do an AVR Duke incantation that can vary depending on your
+program, for mine, and actually it's on the website too, on the website in the flashforth.com
+website, if you go to the ad mega top menu bar selection, and you scroll down a little bit,
+there's an AVR Duke command there that you can copy and then paste into your shell, your
+bash shell, and depending on the program you're using, you might have to modify that. But what that line
+of AVR Duke command line command will tell the AVR Duke the kind of chip, what kind of programmer,
+any kind of special BOD rate you might need, what you do for the programmer built from
+HPR 2799, you need to use BOD rate of 19200, and then whatever port it's at, it's usually
+dev, TTYUSB, something 1 or 0 or something. And then there's a couple little flags,
+a race flag, which erases the chip, but the dot U flag, which is for unsafe, because you're doing something unsafe,
+and then another capital U, I don't know why it's just what it is, capital U, and then the file you want to flash,
+which in this case it's the 328, 16 MHz 384 hex file, and then the last part is some
+uses, you're going to be setting fuses in the chip, and the fuses on these boards, on these microchips
+are low level configuration that's set up things like memory configuration, and whether or
+not there's going to be a boot loader or whether or not there's all kinds of things. So it's a little
+beyond the scope here, but the fuse numbers given here are the ones you were
+going to use, they're the extended fuses as a hex ff, the high fuses, hex df, and the
+low fuses as a hex ff. Now, when you do this, your chip is no longer
+compatible with the Arduino IDE. You can go back to that, if you want to, you can re-reput
+the Arduino boot loader, but basically what's happening is, is the boot loader section of this
+chip will now have the fourth virtual machine kernel put in it, and that allows for
+those words that you need to be able to extend your dictionary right to the flash and
+be able to persistently keep that over resets or power cycles, and so you're using the boot loader
+section to be able to reprogram the chip dynamically at the serial terminal program that you're
+using to be able to make the chip useful to you. So anyway, once you've done that,
+picked, figured out what ABR dude, all your special settings, whatever you hit enter,
+and you'll start seeing some stuff, I'll read the chip, and then I'll race the chip,
+and then it writes the chip, the flashing, and then it tells you it's done it, and then it reads it again to verify it,
+and then it sets the fuses, and it's done, just that fast. And now you can unplug your
+programmer from the board, and you can plug it in, your plug in the board you just flashed,
+plug it in, put the USB cable into the board, re-plug it in to reset it into your computer,
+and now you're going to want to get to your whatever serial terminal program you're going to use, in my case,
+I'm using EMAX, and so I'll start up the serial terminal, I'm not going to tell you, you can figure that out,
+and that's all specific to whatever program you're using, so that could vary. And if you have success,
+you'll see when your terminal program opens, you'll see E-flashforth5 at MEGA328P04.09.2021,
+and you're now, your chip now has flashforth on it, and in your few at enter you should see it okay,
+and greater than sign with a little hash symbol or octathorop, a comma, RAM, and another greater than less than sign with the angle brackets,
+and that's all, you're at the command prompt now, and your chip is running just fine,
+and you're ready to do some flash development. So now, if things didn't work out for you,
+let me switch over to a different buffer here.
+I heard it just, if things didn't go, if you didn't get that, if you didn't get the prompt,
+the things to watch for are the few settings could be off, make sure those are correct,
+you can also flash, sometimes I've had two in the past with different forth, not this one particularly,
+but others flash those few settings individually, don't do all that programming all at once.
+Another thing to check, of course, is your bot rate, make sure you got a good bot rate,
+make sure you put the right hex file on board, if use for some reason, those things are very specific,
+the few settings, and the hex file, make sure that's all good to go, that they're all together.
+Hopefully it did work, it should work, just give it a try, and if not, you might have to do a little troubleshooting,
+make sure you check your connections, and Linux, check your permissions,
+for like Slack where I had to put myself in the dialog group, and then everything works just fine,
+but that depends on distribution and how they do their permissions.
+And that's about it, that's the only troubleshooting hints I can give you.
+And now, main to the main part of this demonstration is let's do a little bit of programming on this chip.
+Now, go back to your terminal program, and you see OK RAM.
+And one piece of a document that's really helpful is to have is the data sheet for that,
+whatever chip you're using, from this case, it would be the data sheet for the at-mega320AP.
+And when you look at the data sheet that you can get from AtML, in that document,
+it's about a 350-page document, towards the end there, in section 30, there's a registry summary.
+And if you go to the registry summary, the registries, and these chips are what everything works on.
+You manipulate bits inside registers to make things happen.
+That's what's happening if you're using the Arduino environment, or MicroPython,
+or compiling a C program, and uploading it, that's what's happening.
+You are manipulating bits in registers to make pins on the chip change their voltage value,
+or to input things, or to make parts of the chip like the analog to digital converters work.
+Those are all manipulated in these registers.
+And so what programming languages like to do is to obscure those things,
+and that's not a bad thing, I'm just saying that's what they do.
+Instead of having to deal with numbers, you're dealing with just very simple words that they're easily to see.
+I think in Arduino, it's to set up a pin, you'd say, digital pin up, or something, or output, or something, I don't really remember.
+But it's something like that.
+So in a similar fashion, in Flashforth, it's the same kind of thing, except you can manipulate it at a very low level if you want.
+And so today, what we're going to do is we're going to initially just make that ubiquitous digital 13,
+and Arduino speak of LED that's attached on all Arduino boards.
+Make that thing turn off and on.
+That's the gold standard of the Hello World in the microcontroller world.
+Now there is another easier one that a Hello World, that's kind of a cheat, but let's just do it anyway.
+And so to do that, we're going to type in a few things here.
+First thing you're going to type is colon space.
+We'll just call it Hello Space.
+And then we're going to do colon, quote, space, hello, comma, world, close quote, and a semicolon.
+And what you, when you hit Enter, you should say, okay, RAM.
+And what that is, is you've just created a word and forth.
+And the word is hello.
+What you've done is the first thing is the colon.
+Again, everything in fourth is a, everything in fourth on the line is a word.
+It has meaning.
+There's no syntax sugar.
+So everything means something.
+And the things that it means are, and the colon tells the interpreter that I want to go into compiling mode.
+And then what it does next is the next thing that it's printed out is the word that you're compiling.
+That would be a Hello.
+The next word that you print is the dot, quote.
+And that's a built in flash, a fourth word that says print this to the terminal.
+And then you, you have to have a space there because now it's saying, whatever's coming next until I get to another quote, I'm just going to print that to the terminal.
+And in this case, I did Hello, world, close quote.
+And then a, and then the semicolon says tells the interpreter, I'm done.
+I'm done with what I want to compile it.
+Please compile it.
+If it, then compiles the word into the dictionary.
+And it's, if it works, it says, OK, if it doesn't work, it'll give you an error.
+But in my case, it says, OK, now if I type Hello, it'll say Hello, world.
+On the same line, it's kind of messy, but it's Hello, world, one way in the using flash, fourth.
+Now that word is persistent.
+If I power cycle the chip, if I reset it, it'll, and I type in Hello, it'll come back out.
+There is a word built into flash called empty, that will empty the dictionary of everything that you've put into it.
+I won't, I won't do that here today, but there's ways to reset the chip without reflashing it, which is a very nice feature of flash fourth.
+Let's see, let's get this buffer up.
+All right.
+OK, now the next one we're going to do, next little demo, is back still at the serial term.
+This time we're, I'm going to type in, I'm not going to use the compiler.
+This is immediate mode.
+I'm going to put in a dollar sign, 25, and I'm going to do, oh, look back to that.
+I'm going to do a percent sign, and I'm going to go, 76, 5, 4, 3, 2, 1, 0.
+Did a percent sign, 2, 0s, a 1, a 0, and then 4, 0s.
+Percent sign tells the interpreter, hey, the next number that's coming your way is a binary representation of a number.
+And then the same token, the next thing I'm going to do is a dollar sign, 25.
+And that tells the interpreter, hey, the next number that you're going to see is a hex number, hexadecimal number.
+And then the last is a command, see, now look at your board before when you hit enter.
+It's C, with an exclamation port, which is C stored.
+You're going to store the binary number, 0, 0, 1, 0, 0, 0, 0, 0, 0, at the hex value of 25.
+That's a registered number.
+It's going to put that value into that register, and what should happen is that light on the board should come on.
+And it does.
+Now to turn it off, you can just go dollar sign, you can just use 0, dollar sign, 25, C, store, and now you're storing the value of 0, which should turn it off.
+And it does.
+And so now to build a couple of words, the first word is going to be LED on.
+And to do that, you're going to do colon, space, LED, dash on.
+That's the name of the word you're creating, because you just turn the compiler on when you put the colon on.
+And then you're going to recopy that line that you just did, which is percent sign, 0, 0, 1, 0, 1, 2, 3, 4, 0s.
+And then dollar sign, 25, C, exclamation port, which is C, store, and then the semicolon, which is closed the compilers.
+And so LED on is going to be defined by that.
+It says, OK, that means that's in there.
+And then I'm going to do LED off, which is another word.
+So I did a colon, LED, dash off, and I'll just put a 0, and then dollar sign, 25, C, store, semicolon, hit that, it says OK, RAM.
+And now I'm going to do flash. So I did another, this is a new, so now you've, there's now three, three words that you've created in the flash dictionary.
+The first one, hello, which is that hello world.
+The second one is LED on, which is turns that, that LED on, and the second one is LED off.
+And we can test those. We can do LED, LED, dash on, and the light comes on.
+And I can do LED, dash off, and the light turns off.
+And now I can make a word, to make a word, I start the compiler, which starts with a colon, and I'll do flash, LED, and it's going to be LED on.
+And then I'm going to put an octathorp, or a hashtag one, which is a, I'm sorry, 1000, which is a, the hashtag tells the, the, that the next number is going to be a decimal number.
+And so hash, the octathorp, or hashtag 1000, and then, MS, a space, MS, which is a delay function that's built into flash forth, that convenience function.
+And I'm going to go LED, dash off, and I'm going to do the same thing, I'm going to pause for a second, and then I'm going to go, so that's hashtag 1000 milliseconds,
+1000 space, MS, sorry, and then a semicolon, and so that closed to, to stop the compiler.
+So I'll just read it off real here, it's a colon, a flash dash LED, which is the, the word that you're creating, LED on, which is, which is, links to that word that you created earlier.
+The hashtag 1000 milliseconds, or hashtag 1000 space, MS, which will delay for, do, just pause the, whatever you're doing for 1000 seconds, and then, or 1000 milliseconds, which is one second.
+And then I'm going to call the word LED off, which turns the LED off.
+Again, that's calling back what you created, LED off the word you created, and then again, hashtag 1000 space, MS, and semicolon.
+Hit enter, you hit OK RAM, and now if I do flash, if I just type in flash, LED, at the prompt there, I hit enter, my, my light is flashing very slowly.
+Oh, you know what? Because it's not, it's, I put in the wrong number of 1000, is it 1000?
+Oh, no, no, no, I don't know why, because it's just one time.
+It did it one time, just what it says, flash LED, if you wanted to go on, over and over, you can do, you can just type flash LED a few times, on, on flash LED, a few times, I'll do it three times, and it should flash three times, and it did.
+You can do it begin again, loop if you want to make it endless, there's all kinds of different things you can do.
+But for now, that's probably enough, and I'll have those words in the show notes, so you can look at them as opposed to necessarily, and try to figure out what I just rambled on about.
+Sorry about that, but that's it. That's how you get flash forth on a microcontroller.
+The power of it is, you can play with registers, make the chip do things, interact with peripherals, do all kinds of cool stuff without having to do that right compile upload cycle.
+You're at a read, you're at a loop, a repel loop, where you can just work interactively with the chip, see things how they work, and build words, building block style, make little things work, add on, connect them together, make larger programs.
+So that's flash forth on the chip, and like that concludes this series on doing flash forth, if you're interested in it, if you want any, of course there's links for all the all kinds of information in those show notes that have had those last episodes.
+There's a good, a good amount of community action on the flash forth website. There's some YouTube channels that are available. It's a very cool way to work with microcontrollers, and it's fun, and it's very robust and useful and powerful.
+If you have any questions of myself, you can of course email me, or you can make a show, maybe tell us about a fourth project that you put together through this.
+Anyway, it's probably enough for now. This is Brian in Ohio, signing off, I want to remind everybody that there's two kinds of people in the world, those with guns, and those that dig. Bye bye.
+You've been listening to Hecker Public Radio at HeckerPublicRadio.org. Today's show was contributed by an HBR listener like yourself. If you ever thought of recording a podcast, then click on our contributing to find out how easy it really is.
+The hosting for HBR is kindly provided by an honesthost.com, the internet archive, and our sync.net. Unless otherwise stated, today's show is released under Creative Commons, Attribution, ShareLike, 3.0 license.

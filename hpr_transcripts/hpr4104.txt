@@ -1,0 +1,369 @@
+Episode: 4104
+Title: HPR4104: Introduction to jq - part 1
+Source: https://hub.hackerpublicradio.org/ccdn.php?filename=/eps/hpr4104/hpr4104.mp3
+Transcribed: 2025-10-25 19:39:26
+
+---
+
+This is Hacker Public Radio Episode 4104 for Thursday, the 25th of April 2024.
+Today's show is entitled Introduction to J.Q. Part 1.
+It is hosted by Dave Morris and is about 19 minutes long.
+It carries an explicit flag.
+The summary is, a J's and data format and using the J.Q. utility to process it.
+Hello everybody, this is Dave Morris for Hacker Public Radio.
+Today I've got a new show which is the first in what I see as a barely short series.
+What I want to look at in this series is the JSON data format and in particular,
+a command line tool called J.Q, which you can use to process such data.
+There's loads and loads of ways of processing JSON, creating it, reading it,
+manipulating it, rewriting it, and all that type of thing.
+Mainly it's in languages like Java, JavaScript, Python, and Pearl for that matter.
+But I won't be looking at those.
+I'll just be looking at the way that JSON is put together.
+It's pretty simple. I hope you'll find anyway.
+And spending most of the time talking about J.Q.
+I assume J.Q stands for JSON Query, but I've not actually found a reference to it.
+If I do, I'll put it in the notes.
+The command is described on its GitHub page, which I've linked in the notes.
+And here's its description.
+J.Q. is a lightweight and flexible command line JSON processor.
+Pretty much what I've said.
+There's another longer definition following.
+J.Q. is like said for JSON data.
+You can use it to slice and filter and map and transform structured data
+with the same ease that said, or grip, and friends, let you play with text.
+So hopefully that gives you a flavor of what it is.
+Slightly confusing, to me, anyways, that J.Q. is the tool.
+That's what you type on the command line.
+But it uses a command language, a programming language.
+It's very powerful.
+Takes a little bit of getting used to, I find.
+Anyway, I'm hoping to introduce it to you,
+so you don't find it too much of a shock.
+But it's very, very powerful and useful.
+But its name is also J.Q.
+So J tends to be written as . slash J.Q in the documentation for the command
+and J.Q for the programming language.
+I don't do much in the way of programming language episodes,
+they've done all consenting, so it's not really programming languages.
+But this one is quite interesting as a type of language
+that you might find is quite fun to use.
+I've got into it a lot more than I thought I would.
+I'm starting off with it several years ago.
+So we're going to look first at what Jason is.
+J.S.O.N is the way he's written, and it stands for Javascript object notation.
+There's a Wikipedia page for it, of course, which is linked in the notes.
+And there it states, Jason is an open standard file format
+and data interchange format that uses human readable text
+to store and transmit data objects consisting of attribute value pairs
+and arrays or other serializable values.
+It's a common data format with diverse uses in electronic data
+and to change, including that web applications with servers.
+It's used a lot.
+You'll probably bump into it in your travels around the internet.
+A lot of queries that you can do on web pages will return you Jason data.
+There's a definition, rfc8259.
+That's where you would find its formal definition.
+It's pretty simple, I would say, in principle.
+If you've seen this type of thing before, anyway.
+So what I've done is I prepared a list of the basic data types of Jason,
+which I took from the Wikipedia page and truncated a bit.
+So the things you can find in Jason data is a number.
+It's a signed decimal number that can be fractional
+and may use exponential notation.
+But you can't include non-numbers.
+Next one is a string.
+That's a sequence of zero more and unicode characters they emphasize
+because you can put anything in there.
+You can put the weird symbols that you find in the unicode character sets,
+which is great.
+That's all been dealt with from pretty much day one, I think,
+whereas other data formats have had to add all of that as unicode has developed.
+Strings have to be delimited with double quotation marks.
+They do have a backslash escaping syntax.
+We'll deal with these in detail later on in the series.
+Next one is Boolean.
+That's either of the values or the words true or false.
+I'm not sure if they're casensitive, they're really written.
+That was lowercase true, lowercase false.
+Then there's an array.
+There's an ordered list of zero or more elements,
+each of which may be of any type.
+So you can have an array of numbers of Booleans of Strings
+or of mixed items.
+So each of which may be of any type.
+Arrays use square bracket notation with comma separated elements.
+So a list of numbers would be square bracket 1, 2, 3, 4 with comms in between.
+Close square bracket.
+And other things like Booleans and Strings would have to conform to their syntaxes.
+The next one, penultimate one really is an object.
+And an object is a collection of name value pairs,
+where the names which are also called keys are strings.
+So that means they have to be double quoted.
+Objects are delimited with curly brackets or braces
+and use comms to separate each pair.
+Well, within each pair, the colon character
+separates the key or name from its value.
+And we'll be looking at these in a bit more detail.
+Then the last one is the word no and you double L,
+which is an empty value.
+But you can put it in there to say,
+we haven't got a value for this at the moment.
+It could just admit the thing,
+but in the case it's more useful to have a no,
+meaning we'll get a number later,
+but a value later, but we haven't gone yet.
+So I've listed the examples of the data types
+in the order I listed there are brief definitions.
+So I've got 42, that's a number.
+I've got quotes HPR, which is a string.
+I've got the word true, which is a billion.
+Now I've got an array, which is in square brackets,
+quotes hacker comma, quotes public comma, quotes radio,
+close square bracket.
+So that's obviously an array of three strings.
+And then I've got in curly brackets or braces,
+a couple of items.
+So it's the name and value pairs.
+The first pair is quotes first name,
+double quotes of course, colon quote john comma,
+double quotes all the time.
+And then after the comma quotes last name,
+double quote colon, and then in quote dough.
+So we've got a first name and a last name label or key.
+And we've got the values john and dough.
+So that's an object.
+And last one is just the word no,
+which we've already really looked at.
+So jq going on to jq is pretty much available across the board, I believe.
+I've not dug into all of the different variants of it,
+but it's available for Unix Linux Windows,
+Mac OS, and so forth.
+And it's a, and you also get it in the source form
+and build it yourself if you want to, of course.
+I've given a link to the download page,
+as part of the project, which gives you loads details
+about where to get different versions of it.
+So one Debian and Debian derived releases of Linux,
+you would just do something like pseudo space,
+apt space install space jq and that would be installed.
+So it's in pretty much all repositories, I believe.
+So there's a lot of documentation for jq, it's really good,
+but it's documented very, very well.
+And I've given a link to the manual.
+There's a tutorial, just a single page,
+but I think the manual is the place to go to really learn about it.
+So I'm going to be referring to it as we travel through this.
+I'm not going to be covering it all, you'll be relieved to know.
+But I will hope that you will get enough from this series
+to be able to go to the manual and find out more
+and carry on from where I leave you.
+The manual is really good in that it has examples,
+which are little pop-up sections,
+which when you click on them, open up to show jq examples
+with test data in and the results of processing it.
+So I've certainly learned a ton from that.
+There's also loads of advice available out there on the usual places,
+which Google Searchers will find for you.
+Now what prompted me to start on this down this road?
+It's been on my to-do list for a while to talk about this
+because it took me long time to understand it and find the power of it.
+I'm sure you aren't as dense as I am, but still,
+I thought it was beautiful to share what I learned.
+But one of the things that prompted me to get on with it now
+is that Ken has prepared a statistics page on the website,
+on the HBA website, under HTTPS.
+Go on slosh.
+Hub.hackabubb.radio.org.
+The final bit is stats.json.json.
+So in all lowercase.
+So you can use the link.
+You find it on the calendar page, which is linked,
+and you've got the bottom where it says workflow,
+which again is linked, and you can click on it,
+and bam, you will get a blob of Jason.
+And I'm going to use that a bit in this series,
+just as a reference, really,
+so you can have a bit of Jason to look at.
+It's included in the notes here.
+If you click on it from a browser,
+click on that link from a browser.
+Then in my experience, anyway,
+I haven't tried every browser on the planet,
+but I tried a few.
+It opens up in the browser,
+and the browser tends to format it quite nicely for you.
+Because there's nothing,
+there's no definition of how Jason has to be formatted.
+You know, your strings have got to start with an open quote,
+a double quote, and then have text,
+and then close quote.
+Your objects have got to start with a curly bracket, blah, blah, blah.
+But where they are, where the new lines are,
+how they're indented, all that stuff is not defined.
+But it makes it easier if it's nicely laid out
+and indented, and all that stuff.
+So I think most browsers tend to do that for you.
+Certainly ones I've tried to,
+and they even color code it and stuff.
+What I'm talking about here is how you could do this
+from the command line.
+So I've given an example of using the curl utility.
+Carrom and what curl stands for it,
+you are Ellen, it means a universal resource locator thingy
+that you can use to has a link.
+Curl at space, hyphen S,
+will download stuff from a link,
+and we'll, by default, display it to you on the terminal.
+And obviously the link I'm using here
+is the one I mentioned earlier on.
+Gens in Stats.Json.
+Pipe that into JQ,
+assuming you've got it installed, et cetera.
+JQ is then followed by a single full stop period
+enclosed in quotes.
+I'll talk a bit more about this.
+That's called a filter.
+Filters are what we're going to be spending most of our time on.
+But that's like the sort of basic filter.
+So what it will do is simply take whatever JQ gets
+when its input will process it, read it, understand it,
+and validate it, I think.
+I've not tried the stuff which is junk.
+See what happens, but I'm sure it will object.
+But it will validate it, and then it will display it,
+print it.
+And whatever, unless you tell it not to,
+it will format it in a sort of pretty printed way.
+I'm piping that into the NL command,
+which stands for number lines.
+Number lines where I say W3,
+which means the number is to be a width 3,
+and then it's high for S, and then two spaces in quotes,
+means put two spaces after the number,
+just keep it apart from the texture number.
+I'm doing this because I'm going to refer to the numbers
+in this block of Json in a minute.
+So yeah, Curl is useful way of doing this.
+There are other ways you can use Wget,
+you can do other things.
+But this is what I tend to use.
+If you don't have it installed, I strongly recommend you install it.
+But you do use.
+So here's the listing with the numbers.
+And I just thought it would be useful to talk about what it is.
+Obviously, I haven't said exactly what this file is,
+but this is the latest version of the HBR statistics
+that Ken's put together in a JSON format
+where before it was a plain text format.
+plain text could be passed to get values out of it,
+but it wasn't straightforward.
+Whereas this is a format which is recognized
+by many, many libraries and programming languages
+and of course by JQ.
+So you can use some sort of magic
+to find the relevant elements that you want
+and display them.
+Now, Mr X did a show recently whose number I've forgotten
+to the moment, but I'll put it in the notes
+where he was looking for the next free slot number.
+Not a number, but a next free value anyway.
+So you will see, if you look through the stuff there,
+there's a field called with a label next free
+that I'll underscore followed by eight.
+But that's inside an object called slot.
+So that tells you how many shows there are to go
+before the next free slot.
+In other words, we've only got eight at this moment
+in the or at the moment I captured this anyway,
+which wasn't today necessarily,
+but certainly won't be the time you'll listen to this.
+But there's only eight shows to be heard
+before we fall off a cliff.
+So let's look at the general layout of this thing
+just very briefly.
+What we have here is a bunch of nested JSON objects.
+Nested means things inside the other,
+and another one thing inside of another,
+like the Russian dolls thing.
+The opening brace on first line,
+and the closing brace on the last line, number 43,
+they define the whole thing as an object, a JSON object.
+And then within it, we have a number just a standalone number
+because it's an object, things within it have to be
+in the format key colon value.
+So we've got the key is stat generated,
+and the value is a long number.
+It's actually the number of seconds since the epoch, I think.
+So you can actually convert that into a date and time,
+if you wish, though it's common to store such things
+as seconds since epoch was there.
+They're pretty easy to process, okay?
+And then the next thing is an object called age,
+which is from lines three to 18.
+The reason I'm numbering the lines here
+and telling you about them is because,
+if you're eyes are anything like mine,
+it's really hard to see the closed scene bracket
+of the matches, the opening bracket.
+So I'm just doing this to make it easier.
+So three to 18 is the object called age,
+and you'll see that there's a bunch of things inside there,
+which I'm not gonna go into detail about,
+but there's two strings with dates,
+and there's two objects.
+So you can keep going down this tunnel,
+down this rabbit hole as much as you want to, really,
+as much as is relevant, anyway.
+There's an object called shows on lines 19 to 25,
+hosts on line 26.
+That's a number with a key, keys hosts.
+Then we've got an object called slot,
+which spans lines 27, 30, got one called workflow,
+which is 31 to 34, and we've got one called Q,
+which is 35 to 42.
+And that's really it.
+Once you realize the sort of layout of the thing
+and what you can expect,
+then it's pretty straightforward, actually.
+I think anyway, compared to other data formats,
+which have been popular, and probably still are,
+this is a really nice and easy one to deal with.
+I've certainly had experiences with predecessor of Jason,
+which is actually related, and it's called Yamo, yet YAML,
+and also XML, I've done a bit of work in XML,
+really don't like XML, too many tags and stuff.
+And Yamo is extremely fussy about indentation,
+and it's like the sort of Python of data formats.
+This one doesn't care about where things are on the line,
+but they have to be syntactically correct.
+Quoted, columns are right places, commas are the right places,
+curly brackets, and all that good stuff.
+So we'll look at ways in which you can take this data
+and reformat and find out things,
+or indeed pick out that one value that Mr. X was looking for
+in his Python script, we'll be doing that as we proceed.
+So in the next episode, I'm planning to just look at
+the options that JQ can use.
+And there are a few that'll be relevant next time.
+I think most will get revealed as they become appropriate
+to what we're dealing with.
+There's not much point in just going through a great list
+of options, because if you're anything like me,
+you'll forget about the time you need them.
+And then we're going to start looking at JQ filters,
+which is, as I said, where most of this show is going to,
+this series of shows is going to take us.
+And yeah, well, I hope you found that useful,
+and speak to you next time.
+Bye.
+You have been listening to Hecker Public Radio
+at Hecker Public Radio, does work.
+Today's show was contributed by a HBR listening
+like yourself.
+If you ever thought of recording podcasts,
+you click on our contribute link to find out how easy
+it really is.
+Hosting for HBR has been kindly provided
+by an honesthost.com, the internet archive, and our sings.net.
+On the Sadois status, today's show is released
+under a Creative Commons Attribution 4.0 International License.
