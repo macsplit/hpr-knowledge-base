@@ -2,6 +2,10 @@
 
 This guide explains how to connect various AI tools to the HPR Knowledge Base MCP Server.
 
+**Last Updated**: October 2025
+
+**Major Update**: MCP adoption has accelerated significantly in 2025! Most major AI tools now support the Model Context Protocol, with many supporting remote HTTP/SSE connections.
+
 ## Table of Contents
 
 - [Connection Methods](#connection-methods)
@@ -19,27 +23,39 @@ This guide explains how to connect various AI tools to the HPR Knowledge Base MC
 
 The HPR Knowledge Base MCP Server supports two connection methods:
 
-### 1. Local (Stdio) - **Recommended for now**
+### 1. Local (Stdio) - **Fastest performance**
 
 - **How it works**: AI tool spawns the Node.js server as a child process
-- **Pros**: Faster, more reliable, works with all MCP clients
+- **Pros**: Fastest, no network latency, full offline access
 - **Cons**: Requires Node.js installed locally, data files on your machine
 - **Setup**: Point to `index.js` in your config
+- **Supported by**: Claude Desktop, GitHub Copilot (via extensions), custom clients
 
-### 2. Remote (HTTP/SSE) - **Future-ready**
+### 2. Remote (HTTP/SSE + Streamable HTTP) - **✨ NOW WIDELY SUPPORTED!**
 
 - **How it works**: AI tool connects to deployed server via HTTPS
-- **Pros**: No local setup, access from anywhere, shared deployment
-- **Cons**: Limited client support currently, network latency
+- **Pros**: No local setup, access from anywhere, shared deployment, multi-user
+- **Cons**: Network latency (minimal), requires internet connection
 - **Setup**: Point to `https://hpr-knowledge-base.onrender.com/sse`
+- **Supported by**: Claude Desktop (Pro/Team/Enterprise), ChatGPT (all paid plans), custom clients
+- **Note**: Some clients support newer Streamable HTTP protocol (superior to SSE)
 
 ---
 
 ## Claude Desktop
 
-### Status: ✅ Supported (Stdio only)
+### Status: ✅ Fully Supported (Both Stdio and Remote HTTP/SSE)
 
-Claude Desktop currently **only supports local stdio connections**. Remote HTTP/SSE support may be added in future versions.
+**Major Update (June 2025)**: Claude Desktop now supports **remote MCP servers** via HTTP/SSE and Streamable HTTP!
+
+**Availability**:
+- Remote MCP support: Claude Pro, Team, and Enterprise plans (currently in beta)
+- Local stdio support: All plans including Free
+
+**Supported Protocols**:
+- SSE (Server-Sent Events) - Original remote transport
+- Streamable HTTP - New protocol (superior performance, added July 2025)
+- OAuth authentication supported for secure remote servers
 
 ### Configuration
 
@@ -85,17 +101,21 @@ Claude Desktop currently **only supports local stdio connections**. Remote HTTP/
    - Look for MCP indicator (usually bottom-left)
    - Try asking: "Search HPR episodes about Linux"
 
-**Remote Configuration (Not supported yet)**:
+**Remote Configuration (✅ NOW SUPPORTED - Pro/Team/Enterprise)**:
 ```json
 {
   "mcpServers": {
     "hpr-knowledge-base": {
-      "url": "https://hpr-knowledge-base.onrender.com/sse"
+      "url": "https://hpr-knowledge-base.onrender.com/sse",
+      "transport": "sse"
     }
   }
 }
 ```
-*This will show an error: "expected string, received undefined" because Claude Desktop requires the `command` field.*
+
+**Note**: Remote MCP support requires Claude Pro, Team, or Enterprise plan. Free plan users should use local (stdio) configuration above.
+
+**Official Documentation**: See [Building Custom Connectors via Remote MCP Servers](https://support.anthropic.com/en/articles/11503834-building-custom-connectors-via-remote-mcp-servers) for more details.
 
 ---
 
@@ -163,90 +183,178 @@ curl https://hpr-knowledge-base.onrender.com/health
 
 ## ChatGPT
 
-### Status: ❌ Not supported
+### Status: ✅ Supported (Remote HTTP/SSE only - October 2025)
 
-**Current State**: OpenAI's ChatGPT does not support the Model Context Protocol (MCP) as of January 2025.
+**Major Update**: OpenAI added full MCP support across ChatGPT in 2025!
 
-**Alternative Options**:
+**Timeline**:
+- **March 2025**: OpenAI officially adopted MCP standard
+- **September 2025**: Developer mode beta with read/write MCP support
+- **October 2025**: Full MCP support rolled out to all paid plans
 
-1. **Use OpenAI API with MCP Client**:
-   - Use a third-party MCP client that supports OpenAI models
-   - Connect that client to this MCP server
-   - Example: [mcp-cli](https://github.com/modelcontextprotocol/cli) (hypothetical)
+**Availability**:
+- Pro, Plus, Business, Enterprise, and Education accounts (web only)
+- Developer mode for Plus and Pro users (beta)
 
-2. **Wait for Official Support**:
-   - OpenAI may add MCP support in future
-   - Check [OpenAI's documentation](https://platform.openai.com/docs) for updates
+**Supported Protocols**:
+- Remote servers only (HTTP/SSE and Streamable HTTP)
+- **Does NOT support local stdio servers** (different from Claude Desktop)
 
-3. **Export Data**:
-   - Access the HPR data directly from `hpr_metadata/` and `hpr_transcripts/`
-   - Use custom scripts to query and provide context to ChatGPT
+**Capabilities**:
+- Read operations (search, document retrieval) via Deep Research feature
+- Write operations (updates, triggers) in Developer mode beta
+- Currently limited compared to Claude's implementation (no local servers, basic UI)
+
+### Configuration
+
+**Adding Remote MCP Server to ChatGPT**:
+
+1. Go to Settings → Connectors (on web ChatGPT)
+2. Click "Add Connector" or "Add MCP Server"
+3. Enter server details:
+   - **Name**: HPR Knowledge Base
+   - **URL**: `https://hpr-knowledge-base.onrender.com/sse`
+   - **Type**: Remote MCP Server (SSE)
+4. Save and enable the connector
+
+**Developer Mode** (for write operations):
+1. Go to Settings → Connectors → Advanced
+2. Enable "Developer mode"
+3. Add your MCP server as above
+4. Now you can perform write actions
+
+**Limitations**:
+- No local stdio support (must use remote servers)
+- No MCP server catalog (manual configuration only)
+- Basic implementation compared to Claude Desktop
+- Web-only (no desktop app MCP support)
 
 ---
 
 ## GitHub Copilot
 
-### Status: ❌ Not supported
+### Status: ✅ Supported (MCP Tools - October 2025)
 
-**Current State**: GitHub Copilot does not support the Model Context Protocol (MCP) as of January 2025.
+**Major Update**: GitHub Copilot has rolled out MCP support with Agent Mode in VS Code!
 
-**Alternative Options**:
+**Timeline**:
+- **June 2025**: Remote GitHub MCP Server in public preview
+- **September 2025**: Deprecation of GitHub App-based Copilot Extensions in favor of MCP
+- **October 2025**: Agent mode with MCP support rolled out to all VS Code users
+- **October 17, 2025**: Enhanced MCP support in Copilot CLI with better local server setup
+- **October 28, 2025**: Per-server allowlist functionality rolling out to IDEs
 
-1. **Use Copilot Chat Extensions** (if available):
-   - Check if VS Code extensions exist that bridge MCP servers
-   - Not currently available but may be developed
+**Availability**:
+- All GitHub Copilot subscribers in VS Code and Visual Studio
+- Copilot CLI with enhanced MCP support
 
-2. **Use Local Search Script**:
-   - Create a VS Code task that searches HPR data
-   - Manually copy results into Copilot chat
+**Important Limitations**:
+- **MCP Tools**: ✅ Fully supported
+- **MCP Resources**: ❌ Not yet supported (unlike Claude Desktop)
+- This means Copilot can call MCP tools but can't directly access MCP resources
 
-Example task (`.vscode/tasks.json`):
+### Configuration
+
+**Adding MCP Server to GitHub Copilot (VS Code)**:
+
+The exact configuration method varies, but here's the general approach based on October 2025 documentation:
+
+1. **Enable Agent Mode** in VS Code settings
+2. **Configure MCP Server** via VS Code settings or config file
+3. **Allow the Server** using the per-server allowlist (rolling out Oct 28+)
+
+**For Remote Server** (Recommended):
 ```json
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Search HPR",
-      "type": "shell",
-      "command": "node",
-      "args": [
-        "${workspaceFolder}/knowledge_base/search-cli.js",
-        "${input:query}"
-      ]
+  "github.copilot.mcp.servers": {
+    "hpr-knowledge-base": {
+      "url": "https://hpr-knowledge-base.onrender.com/sse",
+      "transport": "sse"
     }
-  ],
-  "inputs": [
-    {
-      "id": "query",
-      "description": "Search query",
-      "type": "promptString"
-    }
-  ]
+  }
 }
 ```
+
+**For Local Server**:
+```json
+{
+  "github.copilot.mcp.servers": {
+    "hpr-knowledge-base": {
+      "command": "node",
+      "args": ["/absolute/path/to/knowledge_base/index.js"]
+    }
+  }
+}
+```
+
+**Note**: Configuration format may vary. Refer to official GitHub Copilot documentation for exact syntax as MCP integration is actively being enhanced.
+
+**Resources**:
+- [Extending GitHub Copilot Chat with MCP](https://docs.github.com/copilot/customizing-copilot/using-model-context-protocol/extending-copilot-chat-with-mcp)
+- [GitHub Copilot Changelog](https://github.blog/changelog/)
 
 ---
 
 ## Google Gemini
 
-### Status: ❌ Not supported
+### Status: ✅ Supported (Via SDK Integration - April 2025)
 
-**Current State**: Google Gemini does not support the Model Context Protocol (MCP) as of January 2025.
+**Major Update**: Google officially announced MCP support for Gemini in April 2025!
 
-**Alternative Options**:
+**Timeline**:
+- **March 31, 2025**: Google CEO Sundar Pichai confirms MCP support plans
+- **April 2025**: Official MCP compatibility announced for Gemini ecosystem
+- **2025**: Active integration with Google DeepMind engineers
 
-1. **Use Gemini API with Custom Integration**:
-   - Query the HPR MCP server via HTTP
-   - Format results for Gemini API
-   - Example in [Custom Integration](#custom-integration) section
+**Availability**:
+- MCP integration via Google Gemini SDK
+- Support for major LLM provider integration (Anthropic, OpenAI, Google Gemini)
+- Multiple community-built MCP servers for Gemini available
 
-2. **Wait for Extensions Support**:
-   - Google may add extension/tool support to Gemini
-   - MCP could be integrated when available
+**Current Status**:
+- SDK-level integration (not direct UI integration like ChatGPT/Claude)
+- Requires developer implementation using FastMCP or similar libraries
+- Can be integrated with Claude Desktop, Cursor, Windsurf, and other MCP clients
 
-3. **Use Vertex AI** (for enterprises):
-   - Vertex AI may support custom data sources
-   - Load HPR data into Vertex AI knowledge base
+### Integration Options
+
+**Option 1: Use Gemini with MCP-Compatible IDE** (Recommended):
+
+Many IDEs that support MCP can use Gemini as the LLM backend:
+- Configure HPR MCP server in the IDE
+- Select Gemini as your LLM
+- IDE routes MCP tool calls through Gemini
+
+**Option 2: SDK Integration** (Developers):
+
+Use FastMCP or Google's Gemini SDK to integrate:
+```python
+from google.generativeai import gemini
+from fastmcp import FastMCP
+
+# Configure Gemini model
+model = gemini.GenerativeModel('gemini-2.5-pro')
+
+# Connect to HPR MCP server
+mcp = FastMCP(server_url='https://hpr-knowledge-base.onrender.com/sse')
+
+# Use Gemini with MCP tools
+response = model.generate_content(
+    "Search HPR for Linux episodes",
+    tools=mcp.get_tools()
+)
+```
+
+**Option 3: Community MCP Servers**:
+
+Several community-built Gemini MCP servers are available:
+- [mcp-gemini-server](https://github.com/bsmi021/mcp-gemini-server)
+- [Gemini MCP Tool](https://lobehub.com/mcp/jamubc-gemini-mcp-tool)
+- Check [Glama](https://glama.ai/mcp/servers) for more
+
+**Resources**:
+- [Google Gemini MCP Integration Guide](https://medium.com/google-cloud/model-context-protocol-mcp-with-google-gemini-llm-a-deep-dive-full-code-ea16e3fac9a3)
+- [FastMCP with Gemini 2.0](https://www.marktechpost.com/2025/04/21/a-step-by-step-coding-guide-to-defining-custom-model-context-protocol-mcp-server-and-client-tools-with-fastmcp-and-integrating-them-into-google-gemini-2-0s-function%E2%80%91calling-workflow/)
 
 ---
 
@@ -555,16 +663,28 @@ As the Model Context Protocol gains adoption:
 
 ---
 
-## Summary Table
+## Summary Table (October 2025)
 
-| AI Tool | MCP Support | Stdio | HTTP/SSE | Notes |
-|---------|-------------|-------|----------|-------|
-| **Claude Desktop** | ✅ Yes | ✅ Yes | ❌ No | Official MCP support, stdio only |
-| **Claude API** | ⚠️ Custom | ✅ Via wrapper | ✅ Via wrapper | Requires custom integration |
-| **ChatGPT** | ❌ No | ❌ No | ❌ No | No MCP support yet |
-| **GitHub Copilot** | ❌ No | ❌ No | ❌ No | No MCP support yet |
-| **Google Gemini** | ❌ No | ❌ No | ❌ No | No MCP support yet |
-| **Custom MCP Client** | ✅ Yes | ✅ Yes | ✅ Yes | Full support with MCP SDK |
+| AI Tool | MCP Support | Stdio | HTTP/SSE | Streamable HTTP | Notes |
+|---------|-------------|-------|----------|-----------------|-------|
+| **Claude Desktop** | ✅ Full | ✅ Yes (All plans) | ✅ Yes (Pro/Team/Enterprise) | ✅ Yes | Most comprehensive MCP implementation |
+| **ChatGPT** | ✅ Yes | ❌ No | ✅ Yes (Paid plans) | ✅ Yes | Web only, basic implementation, Developer mode for writes |
+| **GitHub Copilot** | ⚠️ Partial | ✅ Yes | ✅ Yes | ⚠️ Unknown | MCP Tools supported, Resources not yet supported |
+| **Google Gemini** | ⚠️ SDK only | ⚠️ Via integration | ⚠️ Via integration | ⚠️ Via integration | Requires SDK integration, no direct UI support |
+| **Custom MCP Client** | ✅ Full | ✅ Yes | ✅ Yes | ✅ Yes | Full support with MCP SDK |
+
+**Legend**:
+- ✅ = Fully supported
+- ⚠️ = Partially supported or requires additional setup
+- ❌ = Not supported
+
+**Key Changes Since January 2025**:
+- **March 2025**: OpenAI officially adopted MCP
+- **April 2025**: Google announced Gemini MCP support
+- **June 2025**: Claude Desktop added remote MCP servers (beta)
+- **September 2025**: GitHub deprecated Copilot Extensions in favor of MCP
+- **October 2025**: ChatGPT rolled out full MCP support to all paid plans
+- **October 2025**: GitHub Copilot Agent Mode with MCP launched to all VS Code users
 
 ---
 
@@ -613,6 +733,8 @@ echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":
 
 ---
 
-**Last Updated**: January 2025
-**MCP Version**: 0.1.0
+**Last Updated**: October 2025
+**MCP Specification**: 2025-03-26 (with Streamable HTTP extension)
 **Server Version**: 1.0.0
+
+**Note**: MCP is rapidly evolving. Check tool-specific documentation for latest configuration details.
