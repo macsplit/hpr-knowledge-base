@@ -661,6 +661,10 @@ ${match.context}
 // Create Express app
 const app = express();
 
+// Trust proxy headers (required for Render, Heroku, etc.)
+// This allows rate limiting to work correctly behind reverse proxies
+app.set('trust proxy', true);
+
 // Enable CORS
 app.use(cors());
 

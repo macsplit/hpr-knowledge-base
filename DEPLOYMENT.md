@@ -415,6 +415,27 @@ If legitimate users hit rate limits:
 - Implement authentication for higher limits
 - Consider using API keys
 
+### Rate Limiting Not Working (All Users Blocked Together)
+
+**Error in logs**:
+```
+ValidationError: The 'X-Forwarded-For' header is set but the Express 'trust proxy' setting is false
+```
+
+**Cause**: Server is behind a reverse proxy (Render, Heroku, etc.) but Express doesn't trust proxy headers.
+
+**Impact**: All users appear to have the same IP address, so they share one rate limit bucket. When one user hits the limit, everyone gets blocked.
+
+**Solution**: Already fixed in `server-http.js` with:
+```javascript
+app.set('trust proxy', true);
+```
+
+If you still see this error:
+1. Pull latest code from repository
+2. Redeploy to your hosting platform
+3. Verify logs no longer show the ValidationError
+
 ### Connection Timeouts
 
 If requests timeout:
