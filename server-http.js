@@ -671,6 +671,9 @@ app.use(cors());
 // Enable compression
 app.use(compression());
 
+// ⭐ FIX: Apply JSON body parsing globally for the SDK to read POST bodies
+app.use(express.json());
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: RATE_LIMIT_WINDOW_MS,
@@ -701,11 +704,10 @@ app.get('/health', (req, res) => {
 // SSE endpoint for MCP
 app.get('/sse', async (req, res) => {
   let pingInterval = null; 
-  // NEW FLAG: Tracks if the 200 SSE headers have been flushed
   let headersSent = false; 
 
   try {
-    // Check system health (MUST be done before sending headers)
+    // Check system health
     checkMemory();
     checkConcurrency();
 
@@ -724,19 +726,19 @@ app.get('/sse', async (req, res) => {
     // Send an initial comment (ping) to complete the HTTP handshake and flush headers
     res.write(':\n'); 
     res.flushHeaders();
-    headersSent = true; // Flag is set after successful header flush
+    headersSent = true; 
     
     // 2. Start the heartbeat/ping interval
     pingInterval = setInterval(() => {
-        // Send a comment line (ignored by clients) every 20s to keep the proxy alive
+        // Send a comment line every 20s to keep the proxy alive
         res.write(':\n');
     }, SSE_HEARTBEAT_INTERVAL_MS); 
 
     // Create a new MCP server instance for this connection
     const server = createMCPServer();
 
-    // Create SSE transport
-    const transport = new SSEServerTransport('/message', res);
+    // Create SSE transport, specifying the POST message path
+    const transport = new SSEServerTransport('/message', res); 
 
     // Connect server with timeout and circuit breaker
     await withTimeout(
@@ -748,7 +750,7 @@ app.get('/sse', async (req, res) => {
     req.on('close', () => {
       activeRequests--;
       if (pingInterval) {
-          clearInterval(pingInterval); // STOP THE PING ON CLOSE
+          clearInterval(pingInterval); 
       }
       console.error(`SSE connection closed. Active requests: ${activeRequests}`);
     });
@@ -756,42 +758,34 @@ app.get('/sse', async (req, res) => {
   } catch (error) {
     activeRequests--;
     if (pingInterval) {
-        clearInterval(pingInterval); // Stop ping on connection failure
+        clearInterval(pingInterval); 
     }
     console.error('SSE connection error:', error.message);
 
-    // --- START CORRECTED ERROR HANDLING ---
     if (!headersSent) {
       // Case 1: Error before SSE headers were flushed (e.g., checkMemory failed)
-      // Send a standard HTTP error response.
       res.status(503).json({
         error: error.message,
         circuitBreaker: circuitBreaker.state,
       });
     } else {
       // Case 2: Error after SSE headers were flushed (stream is open)
-      // Cannot change status. Send an SSE 'error' event and end the connection.
+      // Send an SSE 'error' event and end the connection.
       const errorData = JSON.stringify({ 
           message: error.message, 
           circuitBreaker: circuitBreaker.state 
       });
       res.write(`event: error\ndata: ${errorData}\n\n`);
-      res.end(); // Forcefully close the connection
+      res.end(); 
     }
-    // --- END CORRECTED ERROR HANDLING ---
   }
 });
 
-// POST endpoint for MCP messages
-app.post('/message', express.json(), async (req, res) => {
-  try {
-    // SSE transport handles this internally
-    res.status(200).send();
-  } catch (error) {
-    console.error('Message error:', error.message);
-    res.status(500).json({ error: error.message });
-  }
-});
+
+// ⭐ CRITICAL FIX: Removed the custom app.post('/message') handler.
+// The SSEServerTransport (created in app.get('/sse')) now automatically handles
+// the POST requests to '/message' and sends the 200 OK response, fixing the 502 issue.
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
