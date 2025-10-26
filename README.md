@@ -63,7 +63,19 @@ This starts an HTTP server on port 3000 (configurable via `PORT` environment var
 - **Health check**: `http://localhost:3000/health`
 - Built-in rate limiting, compression, and graceful degradation
 
-### Using with Claude Desktop
+### Using with AI Tools
+
+**Claude Desktop** (and other MCP-compatible clients):
+
+See **[CONFIGURATION.md](CONFIGURATION.md)** for detailed setup instructions for:
+- ✅ **Claude Desktop** (stdio - fully supported)
+- ⚠️ **Other MCP Clients** (varies by client)
+- ❌ **ChatGPT** (not supported - workarounds included)
+- ❌ **GitHub Copilot** (not supported - alternatives included)
+- ❌ **Google Gemini** (not supported - integration options)
+- 🔧 **Custom Integration** (Python/Node.js examples)
+
+**Quick Start (Claude Desktop)**:
 
 Add this to your Claude Desktop configuration file:
 
@@ -83,6 +95,8 @@ Add this to your Claude Desktop configuration file:
 ```
 
 Replace `/absolute/path/to/knowledge_base/` with the actual path to this directory.
+
+**Note**: Claude Desktop currently only supports local (stdio) connections. Remote HTTP/SSE support coming in future versions.
 
 ### Using with Other MCP Clients
 
