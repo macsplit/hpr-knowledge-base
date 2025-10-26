@@ -17,12 +17,13 @@ import HPRDataLoader from './data-loader.js';
 // Configuration
 const PORT = process.env.PORT || 3000;
 const MAX_CONCURRENT_REQUESTS = 10;
-const REQUEST_TIMEOUT_MS = 30000;
+// Increased the timeout for the long-lived SSE connection connect() call
+const REQUEST_TIMEOUT_MS = 60000; // 60 seconds (was 30s)
 const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
-const RATE_LIMIT_MAX_REQUESTS = 50; // 50 requests per minute per IP
+const RATE_LIMIT_MAX_REQUESTS = 100; // 100 requests per minute per IP
 const MEMORY_THRESHOLD_MB = 450;
 const CIRCUIT_BREAKER_THRESHOLD = 5;
-const CIRCUIT_BREAKER_TIMEOUT_MS = 60000;
+const CIRCUIT_BREAKER_TIMEOUT_MS = 60000; // 60 seconds (how long it stays OPEN)
 const SSE_HEARTBEAT_INTERVAL_MS = 20000; // 20 seconds to prevent proxy timeout
 
 // Initialize data loader
@@ -30,6 +31,9 @@ console.error('Loading HPR knowledge base data...');
 const dataLoader = new HPRDataLoader();
 await dataLoader.load();
 console.error('Data loaded successfully!');
+
+// Map to store active SSE transports, keyed by connectionId
+const activeSseTransports = new Map();
 
 // Circuit Breaker class for graceful degradation
 class CircuitBreaker {
@@ -148,12 +152,17 @@ function formatEpisode(episode, includeNotes = false) {
 ${episode.summary}`;
 
   if (seriesInfo) {
-    result += `\n\n## Series
+    result += `
+
+## Series
 **${seriesInfo.name}**: ${stripHtml(seriesInfo.description)}`;
   }
 
   if (includeNotes && episode.notes) {
-    result += `\n\n## Host Notes\n${stripHtml(episode.notes)}`;
+    result += `
+
+## Host Notes
+${stripHtml(episode.notes)}`;
   }
 
   return result;
@@ -662,8 +671,11 @@ ${match.context}
 // Create Express app
 const app = express();
 
-// Trust proxy headers (required for Render, Heroku, etc.)
-app.set('trust proxy', true);
+// Create a single MCP server instance
+const mcpServer = createMCPServer();
+
+// Trust first proxy hop (Render/Heroku) without allowing arbitrary spoofing
+app.set('trust proxy', 1);
 
 // Enable CORS
 app.use(cors());
@@ -671,7 +683,7 @@ app.use(cors());
 // Enable compression
 app.use(compression());
 
-// ⭐ FIX: Apply JSON body parsing globally for the SDK to read POST bodies
+// Apply JSON body parsing globally for the SDK to read POST bodies.
 app.use(express.json());
 
 // Rate limiting
@@ -701,10 +713,21 @@ app.get('/health', (req, res) => {
   });
 });
 
+// ⭐ NEW ENDPOINT: Circuit breaker reset
+app.post('/reset', (req, res) => {
+  if (circuitBreaker.state === 'OPEN') {
+    circuitBreaker.reset();
+    console.error('Circuit breaker manually reset.');
+    res.json({ status: 'ok', message: 'Circuit breaker reset to CLOSED.' });
+  } else {
+    res.json({ status: 'ok', message: 'Circuit breaker already CLOSED.' });
+  }
+});
+
 // SSE endpoint for MCP
 app.get('/sse', async (req, res) => {
   let pingInterval = null; 
-  let headersSent = false; 
+  let transport;
 
   try {
     // Check system health
@@ -714,56 +737,50 @@ app.get('/sse', async (req, res) => {
     activeRequests++;
     console.error(`New SSE connection. Active requests: ${activeRequests}`);
 
-    // 1. Send no-buffering headers and flush immediately
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-      // CRITICAL: Tells proxies (like NGINX) not to buffer the response
-      'X-Accel-Buffering': 'no', 
-    });
+    // Create SSE transport, specifying the POST message path
+    transport = new SSEServerTransport('/message', res); 
+    activeSseTransports.set(transport.sessionId, transport);
 
-    // Send an initial comment (ping) to complete the HTTP handshake and flush headers
-    res.write(':\n'); 
-    res.flushHeaders();
-    headersSent = true; 
-    
-    // 2. Start the heartbeat/ping interval
+    // Connect server with timeout and circuit breaker
+    // This calls transport.start() internally, which sets up headers and sends the endpoint event.
+    await circuitBreaker.execute(() => mcpServer.connect(transport));
+
+    // 2. Start the heartbeat/ping interval (after transport.start() has set up res.write)
     pingInterval = setInterval(() => {
         // Send a comment line every 20s to keep the proxy alive
         res.write(':\n');
     }, SSE_HEARTBEAT_INTERVAL_MS); 
 
-    // Create a new MCP server instance for this connection
-    const server = createMCPServer();
-
-    // Create SSE transport, specifying the POST message path
-    const transport = new SSEServerTransport('/message', res); 
-
-    // Connect server with timeout and circuit breaker
-    await withTimeout(
-      circuitBreaker.execute(() => server.connect(transport)),
-      REQUEST_TIMEOUT_MS
-    );
-
-    // Handle connection close
+    // Handle connection close (will execute when client closes the connection)
     req.on('close', () => {
       activeRequests--;
       if (pingInterval) {
           clearInterval(pingInterval); 
       }
+      if (transport) {
+        activeSseTransports.delete(transport.sessionId);
+      }
       console.error(`SSE connection closed. Active requests: ${activeRequests}`);
+      // Ensure the server stream is ended gracefully if it hasn't already
+      if (!res.writableEnded) {
+        res.end();
+      }
     });
 
   } catch (error) {
+    // Handle error during connection establishment or connection timeout
     activeRequests--;
     if (pingInterval) {
         clearInterval(pingInterval); 
     }
+    if (transport) {
+      activeSseTransports.delete(transport.sessionId);
+    }
     console.error('SSE connection error:', error.message);
 
-    if (!headersSent) {
+    if (!res.headersSent) {
       // Case 1: Error before SSE headers were flushed (e.g., checkMemory failed)
+      // We can still set the status code.
       res.status(503).json({
         error: error.message,
         circuitBreaker: circuitBreaker.state,
@@ -781,11 +798,22 @@ app.get('/sse', async (req, res) => {
   }
 });
 
+// POST endpoint for MCP messages
+app.post('/message', async (req, res) => {
+  const connectionId = req.headers['x-connection-id'];
+  const transport = activeSseTransports.get(connectionId);
 
-// ⭐ CRITICAL FIX: Removed the custom app.post('/message') handler.
-// The SSEServerTransport (created in app.get('/sse')) now automatically handles
-// the POST requests to '/message' and sends the 200 OK response, fixing the 502 issue.
-
+  if (transport) {
+    try {
+      await transport.handlePostMessage(req, res, req.body);
+    } catch (error) {
+      console.error('Error processing MCP message via POST:', error);
+      res.status(400).json({ error: 'Bad Request', message: error.message });
+    }
+  } else {
+    res.status(404).json({ error: 'Not Found', message: 'No active SSE connection for this ID.' });
+  }
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
