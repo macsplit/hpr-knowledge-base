@@ -700,18 +700,18 @@ app.get('/health', (req, res) => {
 
 // SSE endpoint for MCP
 app.get('/sse', async (req, res) => {
-  let pingInterval = null; // Declare pingInterval to be accessible in req.on('close')
+  let pingInterval = null; 
+  // NEW FLAG: Tracks if the 200 SSE headers have been flushed
+  let headersSent = false; 
 
   try {
-    // Check system health
+    // Check system health (MUST be done before sending headers)
     checkMemory();
     checkConcurrency();
 
     activeRequests++;
     console.error(`New SSE connection. Active requests: ${activeRequests}`);
 
-    // === START SSE FIXES FOR RENDER/PROXY TIMEOUTS ===
-    
     // 1. Send no-buffering headers and flush immediately
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
@@ -723,17 +723,14 @@ app.get('/sse', async (req, res) => {
 
     // Send an initial comment (ping) to complete the HTTP handshake and flush headers
     res.write(':\n'); 
-    res.flushHeaders(); 
+    res.flushHeaders();
+    headersSent = true; // Flag is set after successful header flush
     
     // 2. Start the heartbeat/ping interval
     pingInterval = setInterval(() => {
-        // Send a comment line (which is ignored by clients) every 20s
+        // Send a comment line (ignored by clients) every 20s to keep the proxy alive
         res.write(':\n');
-        // NOTE: In a real-world scenario, you might also need to call res.flush()
-        // or ensure your underlying HTTP library flushes the write.
     }, SSE_HEARTBEAT_INTERVAL_MS); 
-
-    // === END SSE FIXES ===
 
     // Create a new MCP server instance for this connection
     const server = createMCPServer();
@@ -763,15 +760,25 @@ app.get('/sse', async (req, res) => {
     }
     console.error('SSE connection error:', error.message);
 
-    if (!res.headersSent) {
-      // Send a 503 error if headers haven't been sent yet
+    // --- START CORRECTED ERROR HANDLING ---
+    if (!headersSent) {
+      // Case 1: Error before SSE headers were flushed (e.g., checkMemory failed)
+      // Send a standard HTTP error response.
       res.status(503).json({
         error: error.message,
         circuitBreaker: circuitBreaker.state,
       });
+    } else {
+      // Case 2: Error after SSE headers were flushed (stream is open)
+      // Cannot change status. Send an SSE 'error' event and end the connection.
+      const errorData = JSON.stringify({ 
+          message: error.message, 
+          circuitBreaker: circuitBreaker.state 
+      });
+      res.write(`event: error\ndata: ${errorData}\n\n`);
+      res.end(); // Forcefully close the connection
     }
-    // If headers were sent (i.e., stream started but failed mid-way), 
-    // simply let the connection close, which the client will see as an error.
+    // --- END CORRECTED ERROR HANDLING ---
   }
 });
 
