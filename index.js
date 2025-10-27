@@ -290,6 +290,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'search_episodes',
         description: 'Search HPR episodes by keywords in title, summary, tags, or host notes. Can filter by host, series, tags, and date range.',
+        annotations: {
+          readOnlyHint: true,
+          openWorldHint: true
+        },
         inputSchema: {
           type: 'object',
           properties: {
@@ -328,6 +332,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'get_episode',
         description: 'Get detailed information about a specific HPR episode including transcript if available',
+        annotations: {
+          readOnlyHint: true,
+          openWorldHint: true
+        },
         inputSchema: {
           type: 'object',
           properties: {
@@ -350,6 +358,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'search_transcripts',
         description: 'Search through episode transcripts using phrases or multiple terms with AND/OR matching and optional host filters',
+        annotations: {
+          readOnlyHint: true,
+          openWorldHint: true
+        },
         inputSchema: {
           type: 'object',
           properties: {
@@ -402,6 +414,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'get_host_info',
         description: 'Get information about an HPR host including all their episodes',
+        annotations: {
+          readOnlyHint: true,
+          openWorldHint: true
+        },
         inputSchema: {
           type: 'object',
           properties: {
@@ -424,6 +440,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'get_series_info',
         description: 'Get information about an HPR series including all episodes in the series',
+        annotations: {
+          readOnlyHint: true,
+          openWorldHint: true
+        },
         inputSchema: {
           type: 'object',
           properties: {
