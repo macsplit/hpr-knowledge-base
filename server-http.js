@@ -139,7 +139,14 @@ function formatEpisode(episode, includeNotes = false) {
   const host = dataLoader.getHost(episode.hostid);
   const seriesInfo = episode.series !== 0 ? dataLoader.getSeries(episode.series) : null;
 
-  let result = `# HPR${String(episode.id).padStart(4, '0')}: ${episode.title}
+  let result = `# HPR${String(episode.id).padStart(4, '0')}: ${episode.title}`;
+
+  // Add match type indicator for fuzzy matches
+  if (episode.matchType === 'fuzzy') {
+    result += ` *(fuzzy match, distance: ${episode.matchDistance})*`;
+  }
+
+  result += `
 
 **Date:** ${episode.date}
 **Host:** ${host?.host || 'Unknown'} (ID: ${episode.hostid})
@@ -718,7 +725,14 @@ All content is contributed by the community, for the community.`,
           };
         }
 
-        let text = `# ${host.host}
+        let text = `# ${host.host}`;
+
+        // Add match type indicator for fuzzy matches
+        if (host.matchType === 'fuzzy') {
+          text += ` *(fuzzy match, distance: ${host.matchDistance})*`;
+        }
+
+        text += `
 
 **Host ID:** ${host.hostid}
 **Email:** ${host.email}

@@ -11,9 +11,11 @@ Hacker Public Radio is a community-driven podcast where hosts contribute content
 This MCP server provides:
 
 - **Episode Search**: Search through thousands of HPR episodes by title, summary, tags, or host notes
-- **Transcript Search**: Full-text search across all episode transcripts
+  - **Fuzzy Matching**: Automatically handles typos and misspellings (e.g., "linx" finds "linux", "pythoon" finds "python")
+- **Transcript Search**: Full-text search across all episode transcripts with flexible matching modes
 - **Episode Details**: Get complete information about any episode including transcript and comments
 - **Host Information**: Look up hosts and see all their contributions
+  - **Fuzzy Matching**: Handles name variations and typos (e.g., "klattu" finds "Klaatu")
 - **Series Browsing**: Explore mini-series of related episodes
 - **Statistics**: View overall HPR statistics and recent episodes
 
@@ -189,6 +191,45 @@ Get information about a series and all its episodes.
 Get information about series 4 (Databases series)
 ```
 
+## Fuzzy Matching
+
+The server includes intelligent fuzzy matching for episode and host searches to handle typos and misspellings.
+
+### How It Works
+
+1. **Exact Match First**: The server always tries exact substring matching first for speed
+2. **Fuzzy Fallback**: If no exact matches are found, it falls back to fuzzy matching using Levenshtein distance
+3. **Match Indicators**: Results include indicators showing whether they're exact or fuzzy matches
+
+### Examples
+
+**Host Search:**
+- Query: `"klattu"` → Finds: **Klaatu** *(fuzzy match, distance: 1)*
+- Query: `"ken"` → Finds: **Ken Fallon** *(exact match)*
+
+**Episode Search:**
+- Query: `"pythoon"` → Finds episodes with **python** in the title *(fuzzy match, distance: 1)*
+- Query: `"linx"` → Finds episodes with **linux** *(may match exactly in summary/tags, or fuzzy in title)*
+
+### Distance Thresholds
+
+- **Hosts**: Maximum distance of 2 characters (handles 1-2 typos)
+- **Episodes**: Maximum distance of 3 characters (more lenient for longer titles)
+
+### What the AI Agent Sees
+
+When fuzzy matching is used, results include:
+- `matchType: 'exact'` or `matchType: 'fuzzy'`
+- `matchDistance: N` (for fuzzy matches, indicating how many character edits were needed)
+
+This allows AI agents to provide context to users, such as: *"I found results for 'klaatu' (you typed 'klattu')"*
+
+### Technical Details
+
+The fuzzy matching uses the **Levenshtein distance algorithm**, which counts the minimum number of single-character edits (insertions, deletions, substitutions) needed to change one string into another.
+
+**Note**: Transcript search uses regex-based matching and does not use fuzzy matching, as the flexible regex patterns already handle many variations.
+
 ## Available Resources
 
 ### `hpr://stats`
@@ -314,7 +355,7 @@ The Hacker Public Radio content itself is released under various Creative Common
 
 Contributions are welcome! This server can be extended with:
 
-- Advanced search features (fuzzy matching, relevance ranking)
+- Advanced search features (relevance ranking, semantic search)
 - Tag cloud generation
 - Episode recommendations
 - Audio file access

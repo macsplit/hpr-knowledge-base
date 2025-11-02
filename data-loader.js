@@ -9,6 +9,45 @@ function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+/**
+ * Calculate Levenshtein distance between two strings
+ * Returns the minimum number of single-character edits (insertions, deletions, substitutions)
+ * needed to change one string into the other.
+ */
+function levenshteinDistance(a, b) {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+
+  const matrix = [];
+
+  // Initialize first column
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+
+  // Initialize first row
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+
+  // Fill in the rest of the matrix
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1, // substitution
+          matrix[i][j - 1] + 1,     // insertion
+          matrix[i - 1][j] + 1      // deletion
+        );
+      }
+    }
+  }
+
+  return matrix[b.length][a.length];
+}
+
 class HPRDataLoader {
   constructor() {
     this.episodes = [];
@@ -135,7 +174,8 @@ class HPRDataLoader {
   }
 
   /**
-   * Search episodes by keyword in title, summary, or tags
+   * Search episodes by keyword in title, summary, or tags with fuzzy matching fallback
+   * Returns episodes with matchType indicator ('exact' or 'fuzzy')
    */
   searchEpisodes(query, options = {}) {
     const {
@@ -144,36 +184,77 @@ class HPRDataLoader {
       seriesId = null,
       tag = null,
       fromDate = null,
-      toDate = null
+      toDate = null,
+      maxDistance = 3  // More lenient for longer episode titles
     } = options;
 
     const queryLower = query.toLowerCase();
+
+    // Helper to check if episode matches filters (excluding query)
+    const matchesFilters = (ep) => {
+      const matchesHost = !hostId || ep.hostid === hostId;
+      const matchesSeries = seriesId === null || ep.series === seriesId;
+      const matchesTag = !tag || ep.tags.toLowerCase().includes(tag.toLowerCase());
+      const matchesDateRange = (!fromDate || ep.date >= fromDate) &&
+                                (!toDate || ep.date <= toDate);
+      return matchesHost && matchesSeries && matchesTag && matchesDateRange;
+    };
+
+    // Try exact substring match first (fast path)
     let results = this.episodes.filter(ep => {
-      // Basic text search
       const matchesQuery = !query ||
         ep.title.toLowerCase().includes(queryLower) ||
         ep.summary.toLowerCase().includes(queryLower) ||
         ep.tags.toLowerCase().includes(queryLower) ||
         ep.notes.toLowerCase().includes(queryLower);
 
-      // Filter by host
-      const matchesHost = !hostId || ep.hostid === hostId;
+      return matchesQuery && matchesFilters(ep);
+    }).map(ep => ({
+      ...ep,
+      matchType: 'exact'
+    }));
 
-      // Filter by series
-      const matchesSeries = seriesId === null || ep.series === seriesId;
+    // If no exact matches and we have a query, try fuzzy match on title
+    if (results.length === 0 && query && query.trim().length > 0) {
+      const fuzzyResults = this.episodes
+        .filter(matchesFilters)
+        .map(ep => {
+          // Check if any word in the title is close to the query
+          const titleWords = ep.title.toLowerCase().split(/\s+/);
+          let minDistance = Infinity;
 
-      // Filter by tag
-      const matchesTag = !tag || ep.tags.toLowerCase().includes(tag.toLowerCase());
+          for (const word of titleWords) {
+            const distance = levenshteinDistance(queryLower, word);
+            if (distance < minDistance) {
+              minDistance = distance;
+            }
+          }
 
-      // Filter by date range
-      const matchesDateRange = (!fromDate || ep.date >= fromDate) &&
-                                (!toDate || ep.date <= toDate);
+          return {
+            episode: ep,
+            distance: minDistance
+          };
+        })
+        .filter(result => result.distance <= maxDistance)
+        .sort((a, b) => a.distance - b.distance)
+        .map(result => ({
+          ...result.episode,
+          matchType: 'fuzzy',
+          matchDistance: result.distance
+        }));
 
-      return matchesQuery && matchesHost && matchesSeries && matchesTag && matchesDateRange;
+      results = fuzzyResults;
+    }
+
+    // Sort by date (newest first), maintaining match quality
+    results.sort((a, b) => {
+      // If both are fuzzy matches, sort by distance first, then date
+      if (a.matchType === 'fuzzy' && b.matchType === 'fuzzy') {
+        const distDiff = (a.matchDistance || 0) - (b.matchDistance || 0);
+        if (distDiff !== 0) return distDiff;
+      }
+      return b.date.localeCompare(a.date);
     });
-
-    // Sort by date (newest first)
-    results.sort((a, b) => b.date.localeCompare(a.date));
 
     return results.slice(0, limit);
   }
@@ -329,14 +410,49 @@ class HPRDataLoader {
   }
 
   /**
-   * Search hosts by name or email
+   * Search hosts by name or email with fuzzy matching fallback
+   * Returns hosts with matchType indicator ('exact' or 'fuzzy')
    */
-  searchHosts(query) {
+  searchHosts(query, options = {}) {
+    const { maxDistance = 2 } = options;
     const queryLower = query.toLowerCase();
-    return this.hosts.filter(host =>
+
+    // Try exact substring match first (fast path)
+    const exactMatches = this.hosts.filter(host =>
       host.host.toLowerCase().includes(queryLower) ||
       host.email.toLowerCase().includes(queryLower)
-    );
+    ).map(host => ({
+      ...host,
+      matchType: 'exact'
+    }));
+
+    if (exactMatches.length > 0) {
+      return exactMatches;
+    }
+
+    // Fall back to fuzzy match if no exact matches
+    const fuzzyMatches = this.hosts
+      .map(host => {
+        const hostLower = host.host.toLowerCase();
+        const emailLower = host.email.toLowerCase();
+        const hostDistance = levenshteinDistance(queryLower, hostLower);
+        const emailDistance = levenshteinDistance(queryLower, emailLower);
+        const minDistance = Math.min(hostDistance, emailDistance);
+
+        return {
+          host,
+          distance: minDistance
+        };
+      })
+      .filter(result => result.distance <= maxDistance)
+      .sort((a, b) => a.distance - b.distance)
+      .map(result => ({
+        ...result.host,
+        matchType: 'fuzzy',
+        matchDistance: result.distance
+      }));
+
+    return fuzzyMatches;
   }
 
   /**
